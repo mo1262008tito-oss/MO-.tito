@@ -1,0 +1,402 @@
+/* استيراد الخطوط */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap');
+
+:root {
+  --primary-glow: #8e44ad;
+  --secondary-glow: #9b59b6;
+  --accent-gold: #f1c40f;
+  --bg-dark: #0f0c29;
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+/* 1. خلفية متحركة 3D (تأثير النجوم والنيون) */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Cairo', sans-serif;
+  background: radial-gradient(circle at center, #1b1464 0%, #0f0c29 100%);
+  color: white;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* تأثير الجزيئات المتطايرة في الخلفية */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: 
+    radial-gradient(1px 1px at 20px 30px, #fff, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 40px 70px, #fff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 50px 160px, var(--secondary-glow), rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 90px 40px, var(--accent-gold), rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  animation: starsAnimation 100s linear infinite;
+  z-index: -1;
+  opacity: 0.5;
+}
+
+@keyframes starsAnimation {
+  from { transform: translateY(0); }
+  to { transform: translateY(-1000px); }
+}
+
+/* 2. بطاقات الزجاج المطورة (Glassmorphism 3D) */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 25px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  transform-style: preserve-3d; /* لجعل الهوفر ثلاثي الأبعاد */
+}
+
+/* تأثير الهوفر المتطور */
+.glass-card:hover {
+  transform: translateY(-15px) rotateX(5deg) rotateY(-2deg);
+  border-color: var(--secondary-glow);
+  box-shadow: 0 20px 40px rgba(142, 68, 173, 0.3);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* لمعان متحرك يمر على البطاقة عند الهوفر */
+.glass-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+  transition: 0.5s;
+}
+
+.glass-card:hover::before {
+  left: 200%;
+}
+
+/* 3. أزرار نيون متوهجة */
+.active-btn {
+  background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
+  border: none;
+  padding: 12px 35px;
+  border-radius: 50px;
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  transition: 0.4s;
+  box-shadow: 0 4px 15px rgba(37, 117, 252, 0.4);
+}
+
+.active-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 25px var(--secondary-glow);
+  letter-spacing: 1px;
+}
+
+/* 4. الأنيميشن الخاص بالعناصر */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.floating {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* 5. تصميم المدخلات (Inputs) المتطور */
+input, textarea {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  color: white !important;
+  padding: 12px 20px !important;
+  transition: 0.3s;
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--accent-gold) !important;
+  box-shadow: 0 0 15px rgba(241, 196, 15, 0.2);
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 6. شريط التمرير (Scrollbar) الملون */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--primary-glow), var(--accent-gold));
+  border-radius: 10px;
+
+
+}
+
+/* حاوية الناف بار الأساسية */
+.modern-nav {
+    position: sticky;
+    top: 20px;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    padding: 0 20px;
+    perspective: 1000px; /* لتمكين البعد الثالث */
+  }
+  
+  .nav-container {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 30px;
+    width: 95%;
+    max-width: 1200px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* شعار المنصة 3D */
+  .logo-3d {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #f1c40f;
+    text-shadow: 2px 2px 0px #8e44ad, 4px 4px 0px rgba(0,0,0,0.2);
+    transform: rotateY(-10deg);
+  }
+  
+  /* الروابط بتأثير الخروج من الشاشة */
+  .nav-links {
+    display: flex;
+    gap: 15px;
+  }
+  
+  .nav-item-3d {
+    text-decoration: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-style: preserve-3d;
+    position: relative;
+  }
+  
+  /* حركة الـ Hover (الخروج من الشاشة) */
+  .nav-item-3d:hover {
+    background: rgba(142, 68, 173, 0.3);
+    transform: translateZ(50px) translateY(-5px) rotateX(10deg);
+    box-shadow: 0 10px 20px rgba(142, 68, 173, 0.4);
+  }
+  
+  .nav-item-3d:hover .icon-3d {
+    transform: translateZ(30px) scale(1.2);
+    filter: drop-shadow(0 0 10px #f1c40f);
+  }
+  
+  .nav-item-3d.active {
+    background: linear-gradient(45deg, #8e44ad, #9b59b6);
+    transform: translateZ(20px);
+    box-shadow: 0 0 20px rgba(155, 89, 182, 0.6);
+  }
+  
+  /* زر الدخول الاحترافي */
+  .login-btn-3d {
+    text-decoration: none;
+    background: #f1c40f;
+    color: #000 !important;
+    padding: 10px 25px;
+    border-radius: 12px;
+    font-weight: bold;
+    transition: 0.3s;
+    transform: skewX(-10deg);
+  }
+  
+  .login-btn-3d:hover {
+    transform: skewX(-10deg) scale(1.1) translateZ(30px);
+    box-shadow: -5px 5px 15px rgba(241, 196, 15, 0.4);
+  }
+  
+  /* أنيميشن بسيط للأيقونات */
+  .icon-3d {
+    transition: 0.3s;
+    display: inline-block;
+  }
+  /* تصميم البروجرس الدائري */
+.circular-progress {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(#f1c40f 85%, rgba(255,255,255,0.1) 0deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 0 20px rgba(241, 196, 15, 0.3);
+  }
+  
+  .circular-progress::before {
+    content: "";
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #1a1a2e; /* نفس لون الخلفية */
+  }
+  
+  .progress-value {
+    position: relative;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff;
+  }
+  
+  /* تأثيرات الـ Stat Cards */
+  .stat-card {
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  
+  .stat-card:hover {
+    transform: scale(1.05) rotateZ(1deg);
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* الأفاتار المصغر */
+  .avatar-mini {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #8e44ad, #f1c40f);
+  }
+  
+  /* تحسين الاستجابة للموبايل */
+  @media (max-width: 768px) {
+    .content-layout {
+      grid-template-columns: 1fr;
+    }
+    .dash-header {
+      flex-direction: column;
+      text-align: center;
+    }
+    .progress-circle-box {
+      margin-top: 20px;
+    }
+  }
+  /* الهيدر الترحيبي */
+.hero-dash {
+    background: linear-gradient(135deg, rgba(142, 68, 173, 0.4), rgba(41, 128, 185, 0.4)) !important;
+    padding: 50px !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    border-radius: 30px !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+}
+
+/* الأزرار السريعة كأنها أيقونات طائرة */
+.quick-actions-bar {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 40px;
+    overflow-x: auto;
+    padding: 10px;
+}
+
+.action-node {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 12px 25px;
+    border-radius: 50px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.4s;
+}
+
+.action-node:hover {
+    background: #9b59b6;
+    transform: translateZ(30px) translateY(-5px);
+    box-shadow: 0 10px 20px rgba(155, 89, 182, 0.4);
+}
+
+/* كروت الكورسات الاحترافية */
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
+    perspective: 1000px;
+}
+
+.course-card-premium {
+    display: flex;
+    gap: 20px;
+    padding: 20px !important;
+    transition: 0.5s;
+    border-left: 5px solid var(--c) !important;
+}
+
+.course-card-premium:hover {
+    transform: scale(1.03) rotateY(-5deg);
+    background: rgba(255,255,255,0.08) !important;
+}
+
+.course-icon {
+    font-size: 3rem;
+    background: rgba(255,255,255,0.05);
+    padding: 15px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.progress-container {
+    background: rgba(255,255,255,0.1);
+    height: 8px;
+    border-radius: 10px;
+    margin: 15px 0;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background: var(--c);
+    height: 100%;
+    border-radius: 10px;
+    box-shadow: 0 0 10px var(--c);
+}
+
+.play-course-btn {
+    background: var(--c);
+    border: none;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.add-new {
+    border: 2px dashed rgba(255,255,255,0.2) !important;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    cursor: pointer;
+}
