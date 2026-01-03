@@ -3,9 +3,9 @@ import { db } from '../firebase';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import { Book, Download, Eye, Search, FileText } from 'lucide-react';
-import './Library.css';
+import './library.css';
 
-const Library = () => {
+const library = () => {
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -75,5 +75,6 @@ const Library = () => {
     </div>
   );
 };
+
 
 export default Library;
