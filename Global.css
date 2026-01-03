@@ -20,6 +20,97 @@
   scroll-behavior: smooth;
 }
 
+/* 1. تصفير الإعدادات العامة لضمان التصاق المحتوى بالسقف */
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: #02050a; /* لون الخلفية الأساسي */
+  overflow-x: hidden;
+}
+
+/* 2. الحاوية الأم لجميع الصفحات (توضع كـ Class لأي Page) */
+.page-container {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  /* جعل الخلفية ثابتة خلف الكلام تماماً */
+  background: radial-gradient(circle at center, #0a0e27 0%, #02050a 100%) !important;
+  background-attachment: fixed !important;
+  background-size: cover;
+  
+  /* توزيع المحتوى من الأعلى لضمان عدم وجود فراغ */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 100px; /* مسافة للناف بار فقط */
+  z-index: 1;
+}
+
+/* 3. تصغير الدوائر المتحركة (Blobs) وجعلها لا تزيح الكلام */
+.blob-bg {
+  position: fixed; /* ثابتة في الخلفية لا تتحرك مع السكرول */
+  width: 120px;
+  height: 120px;
+  background: var(--main-purple, #9b59b6);
+  filter: blur(70px);
+  opacity: 0.1;
+  z-index: -1; /* خلف كل شيء */
+  pointer-events: none; /* لا تعيق الضغط على الأزرار */
+  border-radius: 50%;
+  animation: move-bg 15s infinite alternate ease-in-out;
+}
+
+.blob-2 {
+  top: 70%;
+  left: 80%;
+  background: var(--main-gold, #f1c40f);
+  animation-delay: -5s;
+}
+
+/* الحاوية العالمية التي تضمن أن الكلام يطفو فوق الخلفية */
+.universal-page-container {
+  position: relative;
+  z-index: 2; /* يرفع المحتوى فوق الخلفية */
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  padding-top: 80px; /* مسافة فقط للناف بار لكي لا يغطي العنوان */
+  display: block; /* لضمان عدم وجود مسافات Flex تلقائية */
+}
+
+/* ضبط خلفية الجزيئات (Particles) لتكون في القاع */
+canvas {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: -1 !important; /* خلف الكلام دائماً */
+  background: radial-gradient(circle at center, #0a0e27 0%, #02050a 100%);
+}
+
+/* تنسيق أي صفحة داخلية لتبدأ من الأعلى */
+.page-content-wrapper {
+  margin-top: 0 !important;
+  padding-top: 20px;
+}
+
+@keyframes move-bg {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(50px, 100px) scale(1.2); }
+}
+
+/* 4. إزالة أي مسافات تلقائية من العناصر الكبيرة */
+.welcome-section, .dashboard-grid, .courses-grid, .religious-content {
+  width: 90%;
+  max-width: 1200px;
+  margin-top: 0 !important;
+  position: relative;
+  z-index: 2; /* فوق الخلفية */
+}
 body {
   background-color: var(--bg-dark);
   color: var(--text-white);
@@ -29,21 +120,6 @@ body {
   background-image: 
     radial-gradient(circle at 10% 20%, rgba(155, 89, 182, 0.05) 0%, transparent 20%),
     radial-gradient(circle at 90% 80%, rgba(241, 196, 15, 0.05) 0%, transparent 20%);
-}
-
-/* 2. شريط التنقل (Navbar) المطور */
-.navbar {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  padding: 1.5rem 5%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 1000;
-  background: rgba(10, 10, 10, 0.8);
-  backdrop-filter: blur(15px);
-  border-bottom: 1px solid var(--glass-border);
 }
 
 .nav-links {
@@ -80,17 +156,6 @@ body {
   width: 100%;
 }
 
-/* 3. تأثيرات الزجاج المطورة (Cards) */
-.glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  border-radius: 24px;
-  padding: 25px;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
 
 /* إضافة لمعة عند الهوفر */
 .glass-card::before {
@@ -150,30 +215,16 @@ body {
   50% { text-shadow: -2px 0 0 var(--main-purple), 2px 0 0 var(--main-gold); }
   100% { text-shadow: 2px 0 0 var(--main-purple), -2px 0 0 var(--main-gold); }
 }
-
-/* 6. رسومات CSS (Decorations) */
 .blob {
   position: absolute;
-  width: 200px;
-  height: 200px;
+  width: 50px;       /* تم تصغير الحجم من 200px إلى 50px */
+  height: 50px;      /* تم تصغير الحجم من 200px إلى 50px */
   background: var(--main-purple);
-  filter: blur(80px);
-  opacity: 0.2;
+  filter: blur(40px); /* قللنا التمويه ليناسب الحجم الصغير */
+  opacity: 0.1;       /* قللنا الشفافية جداً لتصبح غير مرئية تقريباً */
   z-index: -1;
   border-radius: 50%;
-  animation: move 10s infinite alternate;
-}
-
-@keyframes move {
-  from { transform: translate(0, 0); }
-  to { transform: translate(100px, 50px); }
-}
-
-/* 7. شريط البحث المطور */
-.search-container {
-  position: relative;
-  max-width: 500px;
-  margin: 20px auto;
+  animation: move 20s infinite alternate; /* جعلنا الحركة أبطأ بكثير لتقليل الإزعاج */
 }
 
 .search-input {
@@ -258,30 +309,6 @@ body {
 /* تأثير عند السكرول */
 .nav-sticky {
   top: 10px;
-}
-
-.nav-sticky .nav-container-3d {
-  background: var(--nav-bg);
-  backdrop-filter: blur(20px);
-  max-width: 95%;
-  border-radius: 25px;
-}
-
-/* 2. جسم الناف بار (3D Glass) */
-.nav-container-3d {
-  width: 100%;
-  max-width: 1200px;
-  background: var(--nav-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--nav-border);
-  border-radius: 100px; /* شكل الكبسولة العصري */
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 25px;
-  box-shadow: var(--nav-shadow);
-  transition: var(--transition);
 }
 
 /* 3. اللوجو (Logo 3D Effect) */
@@ -414,262 +441,6 @@ body {
   transition: 0.3s;
 }
 
-@media (max-width: 992px) {
-  .hamburger-3d { display: flex; }
-  
-  .nav-menu-3d {
-    position: absolute;
-    top: 80px;
-    right: -100%;
-    flex-direction: column;
-    background: var(--nav-bg);
-    backdrop-filter: blur(20px);
-    width: 250px;
-    padding: 30px;
-    border-radius: 20px;
-    border: 1px solid var(--nav-border);
-    transition: 0.5s ease-in-out;
-  }
-
-  .nav-menu-3d.mobile-open {
-    right: 20px;
-  }
-}
-
-
-
-
-
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap');
-
-:root {
-  --primary-glow: #8e44ad;
-  --secondary-glow: #9b59b6;
-  --accent-gold: #f1c40f;
-  --bg-dark: #0f0c29;
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.1);
-}
-
-/* 1. خلفية متحركة 3D (تأثير النجوم والنيون) */
-body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Cairo', sans-serif;
-  background: radial-gradient(circle at center, #1b1464 0%, #0f0c29 100%);
-  color: white;
-  min-height: 100vh;
-  overflow-x: hidden;
-  position: relative;
-}
-
-/* تأثير الجزيئات المتطايرة في الخلفية */
-body::before {
-  content: "";
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: 
-    radial-gradient(1px 1px at 20px 30px, #fff, rgba(0,0,0,0)),
-    radial-gradient(1px 1px at 40px 70px, #fff, rgba(0,0,0,0)),
-    radial-gradient(2px 2px at 50px 160px, var(--secondary-glow), rgba(0,0,0,0)),
-    radial-gradient(2px 2px at 90px 40px, var(--accent-gold), rgba(0,0,0,0));
-  background-repeat: repeat;
-  background-size: 200px 200px;
-  animation: starsAnimation 100s linear infinite;
-  z-index: -1;
-  opacity: 0.5;
-}
-
-@keyframes starsAnimation {
-  from { transform: translateY(0); }
-  to { transform: translateY(-1000px); }
-}
-
-/* 2. بطاقات الزجاج المطورة (Glassmorphism 3D) */
-.glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid var(--glass-border);
-  border-radius: 24px;
-  padding: 25px;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  transform-style: preserve-3d; /* لجعل الهوفر ثلاثي الأبعاد */
-}
-
-/* تأثير الهوفر المتطور */
-.glass-card:hover {
-  transform: translateY(-15px) rotateX(5deg) rotateY(-2deg);
-  border-color: var(--secondary-glow);
-  box-shadow: 0 20px 40px rgba(142, 68, 173, 0.3);
-  background: rgba(255, 255, 255, 0.07);
-}
-
-/* لمعان متحرك يمر على البطاقة عند الهوفر */
-.glass-card::before {
-  content: "";
-  position: absolute;
-  top: 0; left: -100%;
-  width: 50%; height: 100%;
-  background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
-  transition: 0.5s;
-}
-
-.glass-card:hover::before {
-  left: 200%;
-}
-
-/* 3. أزرار نيون متوهجة */
-.active-btn {
-  background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
-  border: none;
-  padding: 12px 35px;
-  border-radius: 50px;
-  color: white;
-  font-weight: 800;
-  cursor: pointer;
-  position: relative;
-  z-index: 1;
-  overflow: hidden;
-  transition: 0.4s;
-  box-shadow: 0 4px 15px rgba(37, 117, 252, 0.4);
-}
-
-.active-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 25px var(--secondary-glow);
-  letter-spacing: 1px;
-}
-
-/* 4. الأنيميشن الخاص بالعناصر */
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
-}
-
-.floating {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* 5. تصميم المدخلات (Inputs) المتطور */
-input, textarea {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid var(--glass-border) !important;
-  border-radius: 12px !important;
-  color: white !important;
-  padding: 12px 20px !important;
-  transition: 0.3s;
-  outline: none;
-}
-
-input:focus {
-  border-color: var(--accent-gold) !important;
-  box-shadow: 0 0 15px rgba(241, 196, 15, 0.2);
-  background: rgba(255, 255, 255, 0.1) !important;
-}
-
-/* 6. شريط التمرير (Scrollbar) الملون */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--bg-dark);
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(var(--primary-glow), var(--accent-gold));
-  border-radius: 10px;
-
-
-}
-
-/* حاوية الناف بار الأساسية */
-.modern-nav {
-    position: sticky;
-    top: 20px;
-    z-index: 9999;
-    display: flex;
-    justify-content: center;
-    padding: 0 20px;
-    perspective: 1000px; /* لتمكين البعد الثالث */
-  }
-  
-  .nav-container {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 30px;
-    width: 95%;
-    max-width: 1200px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-  }
-  
-  /* شعار المنصة 3D */
-  .logo-3d {
-    font-size: 1.8rem;
-    font-weight: 900;
-    color: #f1c40f;
-    text-shadow: 2px 2px 0px #8e44ad, 4px 4px 0px rgba(0,0,0,0.2);
-    transform: rotateY(-10deg);
-  }
-  
-  /* الروابط بتأثير الخروج من الشاشة */
-  .nav-links {
-    display: flex;
-    gap: 15px;
-  }
-  
-  .nav-item-3d {
-    text-decoration: none;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transform-style: preserve-3d;
-    position: relative;
-  }
-  
-  /* حركة الـ Hover (الخروج من الشاشة) */
-  .nav-item-3d:hover {
-    background: rgba(142, 68, 173, 0.3);
-    transform: translateZ(50px) translateY(-5px) rotateX(10deg);
-    box-shadow: 0 10px 20px rgba(142, 68, 173, 0.4);
-  }
-  
-  .nav-item-3d:hover .icon-3d {
-    transform: translateZ(30px) scale(1.2);
-    filter: drop-shadow(0 0 10px #f1c40f);
-  }
-  
-  .nav-item-3d.active {
-    background: linear-gradient(45deg, #8e44ad, #9b59b6);
-    transform: translateZ(20px);
-    box-shadow: 0 0 20px rgba(155, 89, 182, 0.6);
-  }
-  
-  /* زر الدخول الاحترافي */
-  .login-btn-3d {
-    text-decoration: none;
-    background: #f1c40f;
-    color: #000 !important;
-    padding: 10px 25px;
-    border-radius: 12px;
-    font-weight: bold;
-    transition: 0.3s;
-    transform: skewX(-10deg);
-  }
   
   .login-btn-3d:hover {
     transform: skewX(-10deg) scale(1.1) translateZ(30px);
@@ -741,24 +512,89 @@ input:focus {
     .progress-circle-box {
       margin-top: 20px;
     }
-  }
-/* الإعدادات العامة للخلفية - فضاء ونجوم */
-body {
+  }/* الإعدادات العامة - فضاء ونجوم */
+
+  /* الإعدادات العامة - منع الفراغات */
+/* 1. ضبط الجسم لضمان عدم وجود فراغات بيضاء */
+body, html {
   margin: 0;
   padding: 0;
-  background: radial-gradient(circle at center, #0a0e27 0%, #02050a 100%);
-  color: white;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  overflow-x: hidden;
+  background-color: #020205; /* لون احتياطي نفس لون الفضاء */
 }
 
-/* حاوية الصفحة الرئيسية */
+/* 2. الحاوية الكونية (التعديل الجذري) */
+.cosmic-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* يضمن البدء من أعلى بكسل */
+  
+  /* جعل الخلفية ثابتة تغطي كل تمدد للكلام */
+  background: radial-gradient(circle at center, #0a0e27 0%, #02050a 100%) !important;
+  background-attachment: fixed !important; 
+  background-size: cover;
+  
+  min-height: 100vh;
+  width: 100%;
+  padding: 0 0 50px 0; /* صفر من الأعلى تماماً */
+  margin: 0;
+  position: relative;
+  overflow-x: hidden; /* منع الاهتزاز الجانبي */
+  overflow-y: auto;   /* السماح بالنزول إذا كان الكلام كثيراً دون الخروج من الخلفية */
+}
+
+/* 3. رفع الهيدر (البانر الذهبي) */
+.main-cosmic-header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-top: 5px; /* مسافة ضئيلة جداً لعدم الالتصاق الفيزيائي بالمتصفح */
+  margin: 0;
+}
+
+.gold-frame-banner {
+  margin-top: 0 !important; /* تصفير المارجن */
+}
+
+/* 4. إزالة المارجن التلقائي من العناوين */
+h1, h2, h3 {
+  margin-top: 0;
+}
+
+/* إضافة طبقة نجوم خفيفة خلف الكلام */
+.home-wrapper::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: radial-gradient(white, rgba(255,255,255,0.05) 1px, transparent 15px);
+  background-size: 50px 50px;
+  opacity: 0.2;
+  z-index: -1;
+}
+/* حاوية الصفحة الرئيسية - التعديل هنا */
 .home-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40px 20px;
+  /* قللنا الـ padding العلوي من 40 إلى 10 لرفع الكلام */
+  padding: 10px 20px; 
   min-height: 100vh;
+  /* هذا السطر يضمن أن العناصر تبدأ من أعلى نقطة */
+  justify-content: flex-start; 
+  position: relative;
+  z-index: 1;
+}
+
+/* إضافة تأثير النجوم المتلألئة فوق الخلفية دون التأثير على الكلام */
+.home-wrapper::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: 
+    radial-gradient(white, rgba(255,255,255,0.2) 1px, transparent 20px);
+  background-size: 100px 100px;
+  opacity: 0.1;
+  z-index: -1; /* لجعل النجوم خلف الكلام دائماً */
 }
 
 /* تأثير النص 3D المتوهج (مثل الصورة) */
@@ -767,7 +603,7 @@ body {
   font-weight: bold;
   text-align: center;
   background: linear-gradient(to bottom, #fff, #4facfe);
-  -webkit-background-clip: text;
+ 
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 0 15px rgba(79, 172, 254, 0.8));
   margin-bottom: 10px;
@@ -791,22 +627,6 @@ body {
   margin-top: 40px;
 }
 
-.square-card {
-  aspect-ratio: 1 / 1; /* لجعل الشكل مربعاً تماماً */
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  position: relative;
-  overflow: hidden;
-}
-
 /* تأثير التوهج عند التحويم */
 .square-card:hover {
   transform: translateY(-15px) scale(1.03);
@@ -825,22 +645,9 @@ body {
   50% { transform: translateY(-20px); }
 }
 
-/* عداد البومودورو */
-.pomodoro-box {
-  width: 300px;
-  height: auto;
-  min-height: 250px;
-  margin: 40px auto;
-  border: 2px solid rgba(79, 172, 254, 0.3);
-}
 
-.timer-num {
-  font-size: 3.5rem;
-  font-weight: 800;
-  color: #00f2fe;
-  text-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
-  margin: 15px 0;
-}
+
+
 
 /* الأزرار المتوهجة */
 .start-btn {
@@ -859,96 +666,831 @@ body {
   box-shadow: 0 6px 25px rgba(79, 172, 254, 0.7);
   transform: scale(1.05);
 }
-
-/* كارت رسالة اليوم */
-.daily-quote-card {
-  background: rgba(0, 0, 0, 0.4);
-  padding: 15px 30px;
-  border-radius: 15px;
-  border-right: 4px solid #4facfe;
-  max-width: 600px;
-  margin: 20px auto;
-}
-
-.badge {
-  color: #4facfe;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-
-/* 1. رفع المحتوى للأعلى وتصغير مساحة الهيرو */
+/* 1. تصفير الحاوية الأم تماماً */
 .home-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px 20px; /* تقليل الحواف العلوية جداً */
+  padding: 0 20px 40px 20px; /* جعلنا الأعلى 0 */
   min-height: 100vh;
+  justify-content: flex-start !important; /* البدء من السقف */
 }
 
+/* 2. إلغاء المارجن التلقائي لأول عنصر */
 .welcome-3d-container {
-  padding: 20px 10px; /* تقليل الفراغ الداخلي لرفع النص */
-  margin-top: 0; 
+  padding: 0px 10px; /* تصفير البادينج العلوي */
+  margin-top: 0 !important; /* إجبار المارجن يكون صفر */
   text-align: center;
   max-width: 800px;
 }
 
-/* 2. تصغير الخطوط لجعلها أرشق وأكثر أدباً */
+/* 3. تصفير مارجن العنوان */
 .text-3d {
-  font-size: clamp(1.8rem, 3.5vw, 2.5rem); /* تصغير العنوان الرئيسي */
-  font-weight: 800;
-  color: #ffffff;
-  margin-bottom: 10px;
-  text-shadow: 0 4px 10px rgba(0,0,0,0.3); /* ظل أنعم وأقل ضخامة */
+  margin-top: 0 !important; /* أهم سطر لرفع الكلام */
+  font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+  padding-top: 5px; /* مسافة بسيطة جداً للجمالية */
 }
 
-.refined-message-box {
-  padding: 20px; /* تصغير الصندوق */
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 15px;
+/* 4. تعديل كارت الرسالة ليصعد للأعلى */
+.daily-quote-card {
+  margin: 0 auto 20px auto; /* جعلنا الأعلى 0 */
+  background: rgba(0, 0, 0, 0.4);
+  padding: 15px 30px;
 }
 
-.intro-p {
-  font-size: 1.1rem; /* خط أصغر وأوضح */
-  color: #cbd5e0;
-  margin-bottom: 15px;
+/* تأثيرات الـ 3D لكروت أعضاء الفريق */
+.member-card-3d {
+  position: relative;
+  padding-top: 60px; /* مساحة لخروج الصورة */
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  transform-style: preserve-3d;
 }
 
-.literary-quote {
-  font-size: 1.3rem; /* تصغير المقولة */
-  padding: 10px 0;
-  margin: 10px 0;
+.image-popout-container {
+  position: absolute;
+  top: -50px;
+  left: 50%;
+  transform: translateX(-50%) translateZ(20px);
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 5px solid var(--primary-glow);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  z-index: 10;
+  transition: all 0.5s ease;
 }
 
-.welcome-footer {
-  font-size: 0.95rem; /* خط صغير جداً وأنيق */
-  opacity: 0.8;
+.popout-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  transition: all 0.5s ease;
 }
 
-/* 3. تعديل المربعات لتكون متناسقة مع الخط الصغير */
-.square-grid {
-  gap: 15px; /* تقليل المسافات بين المربعات */
+/* حركة الهوفر - خروج الصورة للخارج */
+.member-card-3d:hover {
+  transform: rotateX(10deg) rotateY(-5deg);
+}
+
+.member-card-3d:hover .image-popout-container {
+  transform: translateX(-50%) translateZ(100px) translateY(-20px) scale(1.1);
+  box-shadow: 0 20px 50px rgba(142, 68, 173, 0.6);
+  border-color: var(--accent-gold);
+}
+
+.dev-tag {
+  background: var(--primary-glow);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.member-name {
+  margin: 15px 0;
+  color: var(--accent-gold);
+}
+
+.skills-tags {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
   margin-top: 20px;
 }
 
-.square-card {
-  width: 200px; /* تصغير حجم المربع */
-  height: 200px;
-  padding: 15px;
-}
-
-.square-card h3 {
-  font-size: 1rem; /* تصغير عناوين الكروت */
-  margin: 8px 0;
-}
-
-.square-card p {
-  font-size: 0.85rem; /* خط الوصف داخل المربعات */
-}
-
-/* زر الانطلاق داخل المربعات */
-.go-btn, .small-btn {
+.skills-tags span {
+  background: rgba(255,255,255,0.1);
   padding: 5px 15px;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  border: 1px solid var(--glass-border);
+}
+
+.link-active {
+  background: rgba(241, 196, 15, 0.1);
+  border-radius: 12px;
+  color: var(--main-gold);
+}
+
+/* زر تسجيل الدخول المتطور */
+.auth-btn-3d {
+  position: relative;
+  background: linear-gradient(45deg, #f1c40f, #e67e22);
+  border: none;
+  padding: 10px 25px;
+  border-radius: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  overflow: hidden;
+  transition: 0.4s;
+  box-shadow: 0 10px 20px rgba(241, 196, 15, 0.3);
+}
+
+.auth-btn-3d:hover {
+  transform: scale(1.05) rotateX(10deg);
+  box-shadow: 0 15px 30px rgba(241, 196, 15, 0.5);
+}
+
+
+/* حاوية تسجيل الدخول الفائقة */
+.login-ultimate-container {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #1b1464 0%, #050505 100%);
+  perspective: 1500px;
+  overflow: hidden;
+}
+
+/* كرة الضوء المتحركة في الخلفية */
+.bg-glow-sphere {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(142, 68, 173, 0.3) 0%, transparent 70%);
+  filter: blur(50px);
+  animation: pulseGlow 8s infinite alternate;
+}
+
+@keyframes pulseGlow {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+  100% { transform: translate(-30%, -30%) scale(1.3); opacity: 0.8; }
+}
+
+/* الكارت الـ 3D */
+.login-card-3d {
+  width: 100%;
+  max-width: 450px;
+  padding: 40px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transform-style: preserve-3d;
+  transition: transform 0.4s ease;
+  z-index: 10;
+}
+
+.login-card-3d:hover {
+  transform: rotateX(5deg) rotateY(-5deg) translateY(-10px);
+  border-color: var(--accent-gold);
+}
+
+/* صورة المستخدم التفاعلية */
+.user-avatar-preview {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid var(--accent-gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--accent-gold);
+  box-shadow: 0 0 20px rgba(241, 196, 15, 0.3);
+  transform: translateZ(50px);
+}
+
+/* المدخلات الأنيقة */
+.input-field {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.input-field input {
+  width: 100%;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 10px 40px !important;
+  font-size: 1.1rem;
+  color: #fff !important;
+  transition: 0.3s;
+}
+
+.input-field input:focus {
+  border-bottom-color: var(--accent-gold) !important;
+}
+
+.field-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.6;
+}
+.login-mega-btn:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(241, 196, 15, 0.6);
+}
+
+.error-alert-3d {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  border-right: 4px solid #e74c3c;
+  animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* 3. اللوجو */
+.nav-logo .logo-text {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #f1c40f;
+  text-shadow: 0 0 15px rgba(241, 196, 15, 0.5);
+  cursor: pointer;
+}
+
+/* 4. القائمة (إلغاء النقاط الرأسية وجعلها أفقية) */
+.nav-links-list {
+  display: flex !important; /* إجبار العناصر على الصف الأفقي */
+  flex-direction: row !important;
+  list-style: none !important; /* إلغاء النقاط البيضاء تماماً */
+  margin: 0;
+  padding: 0;
+  gap: 10px; /* المسافة بين الروابط */
+}
+
+/* 5. الروابط الفردية وتأثير الـ Hover المتوهج */
+.nav-link-anchor {
+  text-decoration: none;
+  color: #eee;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 10px 15px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-style: preserve-3d;
+}
+
+.nav-link-anchor:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1c40f;
+  transform: translateZ(30px) translateY(-3px); /* خروج 3D للخارج */
+  text-shadow: 0 0 10px rgba(241, 196, 15, 0.6);
+}
+
+/* الرابط النشط */
+.link-active {
+  background: rgba(241, 196, 15, 0.12) !important;
+  color: #f1c40f !important;
+  box-shadow: inset 0 0 10px rgba(241, 196, 15, 0.1);
+}
+
+/* 6. زر الدخول المتوهج */
+.auth-btn-3d {
+  background: linear-gradient(135deg, #f1c40f, #e67e22);
+  color: #000;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(241, 196, 15, 0.3);
+  transition: 0.4s;
+  transform-style: preserve-3d;
+}
+
+.auth-btn-3d:hover {
+  transform: scale(1.05) translateZ(40px);
+  box-shadow: 0 0 30px rgba(241, 196, 15, 0.5);
+}
+
+/* إخفاء الهامبرغر في الشاشات الكبيرة لضمان الأفقية */
+.nav-mobile-toggle {
+  display: none;
+}
+
+/* 7. استجابة الموبايل */
+@media (max-width: 900px) {
+  .nav-links-list {
+    display: none !important; /* سيتم تفعيل المنيو الجانبية هنا */
+  }
+  .nav-mobile-toggle {
+    display: block;
+  }
+}
+
+
+
+
+
+
+.future-login-wrapper {
+  height: 100vh;
+  width: 100%;
+  background: #020205;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  perspective: 1000px;
+}
+
+/* دوائر الطاقة الخلفية */
+.energy-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 0;
+  animation: floatOrb 10s infinite alternate ease-in-out;
+}
+.orb-1 { width: 400px; height: 400px; background: rgba(142, 68, 173, 0.2); top: -10%; left: -10%; }
+.orb-2 { width: 350px; height: 350px; background: rgba(241, 196, 15, 0.15); bottom: -5%; right: -5%; }
+
+@keyframes floatOrb {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(50px, 50px) scale(1.2); }
+}
+
+/* الكارت الطائر */
+.floating-card-3d {
+  width: 100%;
+  max-width: 450px;
+  padding: 3px; /* لمحيط النيون */
+  background: linear-gradient(135deg, #f1c40f 0%, #9b59b6 100%);
+  border-radius: 25px;
+  position: relative;
+  z-index: 10;
+  animation: hoverCard 4s infinite ease-in-out;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+}
+
+.card-content {
+  background: #08080c;
+  border-radius: 22px;
+  padding: 40px;
+  text-align: center;
+}
+
+@keyframes hoverCard {
+  0%, 100% { transform: translateY(0) rotateX(5deg); }
+  50% { transform: translateY(-20px) rotateX(2deg); }
+}
+
+/* العناوين */
+.cyber-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: 5px;
+  background: linear-gradient(to right, #fff, #f1c40f);
+ 
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 5px;
+}
+
+.cyber-subtitle {
+  color: #555;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  margin-bottom: 30px;
+}
+
+/* المدخلات */
+.cyber-input-wrapper {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.cyber-input-wrapper input {
+  width: 100%;
+  padding: 15px 20px;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 10px;
+  color: white;
+  outline: none;
+  transition: 0.3s;
+}
+
+.cyber-input-wrapper input:focus {
+  border-color: #f1c40f;
+  box-shadow: 0 0 15px rgba(241, 196, 15, 0.2);
+}
+
+/* زر النيون */
+.neon-submit-btn {
+  width: 100%;
+  padding: 15px;
+  background: transparent;
+  border: 2px solid #f1c40f;
+  color: #f1c40f;
+  font-weight: 900;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.4s;
+  letter-spacing: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.neon-submit-btn:hover {
+  background: #f1c40f;
+  color: #000;
+  box-shadow: 0 0 30px #f1c40f;
+}
+
+/* زر جوجل */
+.google-futuristic-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.google-futuristic-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+
+.about-ultra-page {
+  background: #02060c;
+  min-height: 100vh;
+  color: white;
+  direction: rtl;
+  padding-bottom: 100px;
+  overflow-x: hidden;
+}
+
+/* خلفية الأنيميشن */
+.bg-animation {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+.glowing-orb {
+  position: absolute;
+  top: 20%; left: 10%;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(0, 242, 255, 0.1), transparent 70%);
+  filter: blur(50px);
+  animation: float 10s infinite alternate;
+}
+
+/* هيرو الصفحة */
+.hero-section {
+  height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.tech-badge {
+  background: rgba(0, 242, 255, 0.1);
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  padding: 5px 20px;
+  border-radius: 20px;
+  display: inline-block;
+  font-size: 0.8rem;
+  margin-bottom: 20px;
+}
+
+.main-title {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-weight: 800;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #00f2ff, #ffcc00);
+  -webkit-text-fill-color: transparent;
+}
+
+/* الكروت المطورة */
+.team-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 100px;
+}
+
+.ultra-card {
+  display: flex;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 40px;
+  overflow: visible;
+  position: relative;
+}
+
+.ultra-card.reverse { flex-direction: row-reverse; }
+
+.image-side {
+  flex: 1;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.member-img-3d {
+  width: 120%;
+  transform: translateY(-50px) scale(1.1);
+  filter: drop-shadow(0 20px 50px rgba(0,0,0,0.5));
+  z-index: 5;
+  transition: 0.5s ease;
+}
+
+.ultra-card:hover .member-img-3d {
+  transform: translateY(-70px) scale(1.2);
+}
+
+.info-side {
+  flex: 1.5;
+  padding: 60px;
+}
+
+.role-chip {
+  background: var(--cyan);
+  color: black;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 15px;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  margin-bottom: 20px;
+}
+
+.role-chip.gold { background: var(--gold); }
+
+.tech-stack {
+  display: flex;
+  gap: 10px;
+  margin: 25px 0;
+}
+
+.tech-item {
+  border: 1px solid var(--cyan);
+  padding: 4px 12px;
+  border-radius: 8px;
   font-size: 0.8rem;
 }
+
+.tech-item.gold { border-color: var(--gold); color: var(--gold); }
+
+/* إحصائيات */
+.stats-section {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  margin-top: 100px;
+}
+
+.stat-card {
+  text-align: center;
+}
+
+.stat-card h3 {
+  font-size: 2.5rem;
+  color: var(--cyan);
+  margin-bottom: 5px;
+}
+
+@keyframes float {
+  from { transform: translate(0, 0); }
+  to { transform: translate(50px, 50px); }
+}
+
+/* الموبايل */
+@media (max-width: 900px) {
+  .ultra-card, .ultra-card.reverse {
+    flex-direction: column;
+    padding: 20px;
+  }
+  .member-img-3d {
+    width: 80%;
+    transform: translateY(-30px);
+  }
+}
+
+
+
+
+
+:root {
+  --bg: #02060c;
+  --cyan: #00f2ff;
+  --gold: #ffcc00;
+  --glass: rgba(255, 255, 255, 0.03);
+  --border: rgba(255, 255, 255, 0.08);
+}
+
+.modern-home {
+  min-height: 100vh;
+  background: var(--bg);
+  background: radial-gradient(circle at top right, #0a192f 0%, #02060c 100%);
+  color: white;
+  direction: rtl;
+  font-family: 'Tajawal', sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* 1. النافبار الأفقي (متوافق مع الهاتف) */
+.global-horizontal-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  padding: 15px 5%;
+  background: rgba(2, 6, 12, 0.7);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-brand {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-left: 30px;
+}
+
+.nav-brand span { color: var(--cyan); }
+
+.nav-items-wrapper {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 5px;
+}
+
+.nav-items-wrapper::-webkit-scrollbar { display: none; }
+
+.h-nav-item {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #888;
+  padding: 8px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.3s;
+}
+
+.h-nav-item.active {
+  background: rgba(0, 242, 255, 0.1);
+  color: var(--cyan);
+  border-color: rgba(0, 242, 255, 0.2);
+}
+
+/* 2. العناصر العائمة */
+.ambient-background {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.f-icon {
+  position: absolute;
+  opacity: 0.15;
+  font-weight: 900;
+  font-size: 3rem;
+  color: white;
+}
+
+.tech-1 { top: 15%; left: 10%; color: var(--cyan); }
+.deen-1 { bottom: 20%; right: 10%; color: var(--gold); }
+.tech-2 { top: 40%; right: 5%; color: var(--cyan); }
+
+/* 3. الهيرو والتحية */
+.main-content {
+  position: relative;
+  z-index: 1;
+  padding: 40px 5%;
+}
+
+.hero-greeting {
+  margin-bottom: 50px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 255, 136, 0.1);
+  color: #00ff88;
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  margin-bottom: 15px;
+}
+
+.greeting-text h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  margin-bottom: 15px;
+}
+
+.highlight { color: var(--cyan); text-shadow: 0 0 20px rgba(0, 242, 255, 0.3); }
+
+.hero-msg {
+  max-width: 700px;
+  font-size: 1.2rem;
+  opacity: 0.8;
+  line-height: 1.8;
+}
+
+/* 4. شبكة البوكسات الـ 3D */
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+  perspective: 1200px;
+}
+
+.portal-card-3d {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 35px;
+  padding: 35px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow: hidden;
+}
+
+.card-glow {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(circle at top right, var(--accent), transparent 70%);
+  opacity: 0.1;
+  transition: 0.5s;
+}
+
+.p-badge {
+  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 12px;
+  border-radius: 8px;
+  color: var(--accent);
+}
+
+.p-icon {
+  margin: 25px 0;
+  color: var(--accent);
+  filter: drop-shadow(0 0 15px var(--accent));
+}
+
+.card-body h3 { font-size: 1.8rem; margin-bottom: 12px; }
+.card-body p { opacity: 0.6; font-size: 0.95rem; line-height: 1.6; }
+
+.card-footer {
+  margin-top: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.arrow-icon {
+  transition: transform 0.3s;
+}
+
+.portal-card-3d:hover .arrow-icon {
+  transform: translateX(-10px);
+}
+
+/* موبايل وتناسب الشاشات */
+@media (max-width: 768px) {
+  .global-horizontal-nav {
+    justify-content: flex-start;
+  }
+  .nav-brand { margin-left: 15px; font-size: 1.2rem; }
+  .main-content { padding: 20px 5%; }
+  .portal-grid { grid-template-columns: 1fr; }
+}
+
+
