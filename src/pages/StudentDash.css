@@ -1,5 +1,7 @@
 
 
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
 
 :root {
   --neon-gold: #f1c40f;
@@ -41,8 +43,6 @@ button { cursor: pointer; transition: 0.3s; }
 .cyber-input-field {
   width: 100%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px;
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
 .dash-container-refined {
   background: radial-gradient(circle at center, #0a192f 0%, #020c1b 100%);
@@ -117,4 +117,5 @@ button { cursor: pointer; transition: 0.3s; }
   color: #64ffda;
   font-size: 1.5rem;
   animation: pulse 1s infinite alternate;
+
 }
