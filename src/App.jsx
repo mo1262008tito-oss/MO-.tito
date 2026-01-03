@@ -19,7 +19,7 @@ import AllCourses from './pages/AllCourses';
 import CoursePlayer from './pages/CoursePlayer';
 import Religious from './pages/Religious';
 import About from './pages/About';
-import library from './pages/library';
+import Library from './pages/library';
 
 import './Global.css';
 
@@ -106,3 +106,4 @@ function App() {
 
 
 export default App;
+
