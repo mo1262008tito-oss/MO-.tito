@@ -1,0 +1,414 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;800&display=swap');
+
+:root {
+  --cyan: #00f2ff;
+  --gold: #ffcc00;
+  --bg: #02060c;
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --border: rgba(0, 242, 255, 0.15);
+  --neon-glow: 0 0 15px rgba(0, 242, 255, 0.4);
+}
+
+.rel-master-root {
+  min-height: 100vh;
+  background: var(--bg);
+  background: radial-gradient(circle at center, #0a192f 0%, #02060c 100%);
+  color: white;
+  font-family: 'Tajawal', sans-serif;
+  direction: rtl;
+  padding-bottom: 100px; /* مساحة للـ Dock السفلي */
+}
+
+/* Nav HUD */
+.rel-nav {
+  padding: 25px 5%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+}
+
+.rel-back {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: 0.3s;
+}
+
+.rel-back:hover {
+  background: var(--cyan);
+  color: black;
+  box-shadow: var(--neon-glow);
+}
+
+.rel-xp-status {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: rgba(0,0,0,0.5);
+  padding: 8px 20px;
+  border-radius: 30px;
+  border: 1px solid var(--gold);
+}
+
+.xp-text span {
+  font-size: 0.8rem;
+  color: var(--gold);
+  display: block;
+}
+
+.xp-mini-bar {
+  width: 100px;
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  margin-top: 4px;
+}
+
+.xp-mini-bar .fill {
+  height: 100%;
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold);
+}
+
+/* Grid Layout */
+.rel-grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr;
+  gap: 25px;
+  padding: 0 5%;
+  margin-top: 20px;
+}
+
+/* Cards Style */
+.rel-card {
+  background: var(--card-bg);
+
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--cyan);
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+
+/* Prayer Times */
+.prayer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prayer-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 15px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 12px;
+}
+
+.prayer-item .time {
+  color: var(--cyan);
+  font-weight: 800;
+}
+
+/* Tasbih Central Hub */
+.rel-col-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-bead {
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  border: 4px solid var(--cyan);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  background: radial-gradient(circle, rgba(0,242,255,0.1), transparent);
+  box-shadow: 0 0 50px rgba(0,242,255,0.1);
+  position: relative;
+}
+
+.bead-content {
+  text-align: center;
+}
+
+.bead-content .count {
+  display: block;
+  font-size: 5rem;
+  font-weight: 800;
+  text-shadow: var(--neon-glow);
+}
+
+.bead-content .label {
+  color: var(--cyan);
+  letter-spacing: 2px;
+}
+
+.bead-actions {
+  display: flex;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.bead-actions button {
+  background: none;
+  border: 1px solid var(--border);
+  color: white;
+  padding: 8px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+}
+
+/* Worship Todo */
+.todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,255,255,0.03);
+  padding: 12px;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.todo-item.done {
+  opacity: 0.5;
+  border: 1px solid var(--cyan);
+}
+
+.circle-check {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+}
+
+.todo-text p {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.todo-text span {
+  font-size: 0.7rem;
+  color: var(--gold);
+}
+
+/* Audio Player */
+.radio-select {
+  width: 100%;
+  background: #000;
+  color: white;
+  border: 1px solid var(--border);
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.player-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.play-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--cyan);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Inspiration Box */
+.daily-inspiration {
+  margin-top: 40px;
+  text-align: center;
+  padding: 20px;
+  background: rgba(255, 204, 0, 0.05);
+  border-radius: 20px;
+  border: 1px dashed var(--gold);
+}
+
+.daily-inspiration p {
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--gold);
+}
+
+/* Dock Footer */
+.rel-footer-nav {
+  position: fixed;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  padding: 10px 40px;
+  border-radius: 50px;
+  border: 1px solid var(--cyan);
+  display: flex;
+  gap: 40px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.rel-footer-nav button {
+  background: none;
+  border: none;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.rel-footer-nav button:hover {
+  color: var(--cyan);
+  transform: translateY(-5px);
+}
+
+/* Portal Overlay */
+.portal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.portal-content {
+  width: 90%;
+  height: 85%;
+  background: #050a14;
+  border: 1px solid var(--cyan);
+  border-radius: 25px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.portal-header {
+  padding: 15px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #000;
+}
+
+.portal-content iframe {
+  flex: 1;
+  border: none;
+}
+
+/* Mobile Responsive */
+@media (max-width: 1024px) {
+  .rel-grid-container {
+    grid-template-columns: 1fr;
+  }
+  .rel-col-main {
+    order: -1;
+  }
+}
+
+/* تمييز الصلاة القادمة */
+.next-prayer-box {
+  background: linear-gradient(135deg, rgba(0, 242, 255, 0.1), transparent);
+  padding: 15px;
+  border-radius: 15px;
+  text-align: center;
+  margin-bottom: 15px;
+  border: 1px solid var(--border);
+}
+
+.glow-text {
+  color: var(--cyan);
+  font-size: 2rem;
+  margin: 5px 0;
+  text-shadow: 0 0 15px var(--cyan);
+}
+
+.active-p {
+  background: rgba(255, 204, 0, 0.15) !important;
+  border-right: 4px solid var(--gold) !important;
+}
+
+/* تحسين شكل الـ Todo */
+.circle-check {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.circle-check.checked {
+  background: var(--cyan);
+  border-color: var(--cyan);
+  color: black;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.stat-box {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 10px;
+  border-radius: 15px;
+  text-align: center;
+}
+
+.stat-box h4 {
+  font-size: 1.5rem;
+  color: var(--gold);
+  margin: 0;
+}
+
+.location-tag {
+  font-size: 0.7rem;
+  opacity: 0.5;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}

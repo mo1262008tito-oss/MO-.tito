@@ -1,0 +1,118 @@
+:root {
+  --primary: #00f2ff;
+  --secondary: #a855f7;
+  --dark-bg: #020617;
+  --glass: rgba(255, 255, 255, 0.05);
+}
+
+.hs-content-page, .locker-wrapper {
+  min-height: 100vh;
+  background: var(--dark-bg);
+  background: radial-gradient(circle at top, #0f172a, #020617);
+  color: white;
+  direction: rtl;
+}
+
+/* واجهة القفل */
+.locker-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.locker-glass-card {
+  /* أضف السطر التالي قبل السطر الأصلي */
+  -webkit-backdrop-filter: blur(25px); 
+  backdrop-filter: blur(25px);
+}
+.locker-glass-card {
+  background: var(--glass);
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 40px;
+  padding: 50px 30px;
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+}
+
+.lock-shield {
+  width: 70px; height: 70px;
+  background: rgba(0, 242, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  color: var(--primary);
+  box-shadow: 0 0 30px rgba(0, 242, 255, 0.2);
+}
+
+.activation-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.act-card {
+  background: rgba(255,255,255,0.03);
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.act-card h3 { font-size: 1rem; margin-bottom: 15px; color: var(--primary); }
+
+.act-card input {
+  width: 100%; background: #000; border: 1px solid #333;
+  padding: 10px; border-radius: 10px; color: white; margin-bottom: 15px;
+}
+
+/* الأزرار */
+.primary-btn { background: var(--primary); color: #000; width: 100%; padding: 10px; border-radius: 10px; font-weight: 800; border: none; cursor: pointer; }
+.secondary-btn { background: var(--secondary); color: white; width: 100%; padding: 10px; border-radius: 10px; font-weight: 800; border: none; cursor: pointer; }
+
+/* التبويبات */
+.hs-hero { padding-top: 120px; text-align: center; }
+.tabs-container {
+  display: flex; justify-content: center; gap: 15px; margin: 30px 0;
+  overflow-x: auto; padding: 10px;
+}
+
+.tab-btn {
+  background: var(--glass); border: 1px solid var(--glass);
+  color: white; padding: 12px 25px; border-radius: 30px; cursor: pointer;
+  transition: 0.3s; white-space: nowrap;
+}
+
+.tab-btn.active { background: var(--primary); color: #000; font-weight: 800; box-shadow: 0 0 20px rgba(0, 242, 255, 0.4); }
+
+/* شبكة الكورسات */
+.grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px; padding: 20px 5%;
+}
+
+.course-box-3d {
+  background: var(--glass); border-radius: 25px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.course-box-3d:hover { transform: translateY(-10px) rotateX(5deg); border-color: var(--primary); }
+
+.course-thumb { height: 180px; background-size: cover; background-position: center; position: relative; }
+.tag { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; }
+
+.course-body { padding: 20px; }
+.entry-btn { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 20px; border-radius: 12px; cursor: pointer; margin-top: 15px; width: 100%; }
+
+/* ريسبونسف الموبايل */
+@media (max-width: 768px) {
+  .activation-grid { grid-template-columns: 1fr; }
+  .locker-glass-card { padding: 30px 20px; }
+  .grid-layout { grid-template-columns: 1fr; }
+  .hs-hero h1 { font-size: 1.5rem; }
+}

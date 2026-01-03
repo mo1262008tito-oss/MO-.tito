@@ -1,0 +1,140 @@
+.library-container {
+  min-height: 100vh;
+  padding: 120px 8% 50px;
+  background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+  color: white;
+  direction: rtl;
+}
+
+.library-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.library-header h1 {
+  font-size: 3rem;
+  background: linear-gradient(45deg, #00f2ff, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 10px;
+}
+
+.search-bar-wrapper {
+  position: relative;
+  max-width: 600px;
+  margin: 30px auto 0;
+}
+
+.search-bar-wrapper input {
+  width: 100%;
+  padding: 15px 50px 15px 20px;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  font-size: 1rem;
+  outline: none;
+}
+
+.search-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #00f2ff;
+}
+
+/* شبكة الكتب */
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+.book-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 25px;
+  padding: 20px;
+  transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+}
+
+.book-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  border-color: #00f2ff;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+}
+
+.book-cover {
+  height: 180px;
+  background: rgba(0, 242, 255, 0.05);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.book-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #a855f7;
+  padding: 4px 12px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.book-info h3 {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+  color: #fff;
+}
+
+.book-info p {
+  font-size: 0.9rem;
+  opacity: 0.6;
+  margin-bottom: 20px;
+}
+
+.book-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.view-btn, .download-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.view-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.view-btn:hover { background: rgba(255, 255, 255, 0.2); }
+
+.download-btn {
+  background: #00f2ff;
+  color: #000;
+}
+
+.download-btn:hover { transform: scale(1.05); }
+
+/* ريسبونسف للموبايل */
+@media (max-width: 600px) {
+  .library-header h1 { font-size: 2rem; }
+  .books-grid { grid-template-columns: 1fr; }
+}

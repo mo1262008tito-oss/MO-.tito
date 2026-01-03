@@ -1,0 +1,120 @@
+
+
+
+:root {
+  --neon-gold: #f1c40f;
+  --deep-bg: #020205;
+  --glass: rgba(255, 255, 255, 0.05);
+}
+
+body { background: var(--deep-bg); color: white; font-family: 'Orbitron', sans-serif; margin: 0; }
+
+/* Effects */
+.future-login-wrapper, .dash-container {
+  min-height: 100vh;
+  padding: 20px;
+  display: flex; flex-direction: column; align-items: center;
+  perspective: 1000px;
+}
+
+.glass-card:hover { transform: translateY(-10px) rotateX(2deg); border-color: var(--neon-gold); }
+
+/* Pomodoro Timer */
+.timer-val { font-size: 3rem; color: var(--neon-gold); text-shadow: 0 0 15px var(--neon-gold); margin: 10px 0; }
+
+/* Courses Grid */
+.courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 15px; }
+
+.course-card { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; text-align: center; }
+
+.progress-bar { height: 5px; background: #222; border-radius: 5px; margin: 10px 0; overflow: hidden; }
+.progress-bar .fill { height: 100%; background: var(--neon-gold); }
+
+/* Buttons */
+button { cursor: pointer; transition: 0.3s; }
+.cyber-btn, .neon-submit-btn { background: var(--neon-gold); border: none; font-weight: bold; border-radius: 5px; }
+
+/* Login Specific */
+.floating-card-3d { animation: float 4s infinite ease-in-out; }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+.cyber-input-field {
+  width: 100%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+.dash-container-refined {
+  background: radial-gradient(circle at center, #0a192f 0%, #020c1b 100%);
+  min-height: 100vh;
+  color: #64ffda;
+  font-family: 'Orbitron', sans-serif;
+  padding: 20px;
+  overflow-x: hidden;
+}
+
+/* XP Bar Header */
+.xp-system {
+  width: 200px;
+  text-align: center;
+}
+.xp-bar {
+  height: 8px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 5px;
+  border: 1px solid #64ffda44;
+}
+.xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #64ffda, #f1c40f);
+  box-shadow: 0 0 10px #64ffda;
+  transition: width 0.5s ease;
+}
+
+/* Module Cards (Courses) */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+}
+.module-card {
+  background: linear-gradient(135deg, rgba(100, 255, 218, 0.05), rgba(10, 25, 47, 0.5));
+  border: 1px solid rgba(100, 255, 218, 0.1);
+  padding: 25px;
+  border-radius: 20px;
+  position: relative;
+  transition: 0.3s;
+  overflow: hidden;
+}
+.module-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  border-color: #64ffda;
+  box-shadow: 0 0 20px rgba(100, 255, 218, 0.2);
+}
+
+/* Digital Clock */
+.digital-clock {
+  font-size: 3rem;
+  color: #64ffda;
+  text-shadow: 0 0 15px #64ffda;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Animations */
+@keyframes pulse {
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+.loading-screen {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #020c1b;
+  color: #64ffda;
+  font-size: 1.5rem;
+  animation: pulse 1s infinite alternate;
+}
