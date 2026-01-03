@@ -19,7 +19,7 @@ import AllCourses from './pages/AllCourses';
 import CoursePlayer from './pages/CoursePlayer';
 import Religious from './pages/Religious';
 import About from './pages/About';
-import Library from './pages/library';
+import library from './pages/library';
 
 import './Global.css';
 
@@ -103,5 +103,6 @@ function App() {
     </Router>
   );
 }
+
 
 export default App;
