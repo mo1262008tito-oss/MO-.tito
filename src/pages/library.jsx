@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Book, Download, Eye, Search, FileText } from 'lucide-react';
 import './library.css';
 
-const library = () => {
+const Library = () => {
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -78,5 +78,6 @@ const library = () => {
 
 
 export default Library;
+
 
 
