@@ -302,50 +302,68 @@ const Religious = ({ user }) => {
         <button onClick={() => setActivePortal('khatma')}><Star /> الختمة</button>
         <button onClick={() => setActivePortal('qa')}><MessageCircle /> سؤال وجواب</button>
       </footer>
-{/* بوابات الخدمات المتطورة */}
+
+
+      {/* بوابات الخدمات - نسخة الشاشة الكاملة */}
       <AnimatePresence>
         {activePortal && (
           <motion.div 
-            className="portal-overlay" 
+            className="full-portal-overlay" 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }}
-            onClick={() => setActivePortal(null)} // إغلاق عند الضغط خارج المحتوى
           >
             <motion.div 
-              className="portal-content" 
+              className="full-portal-container" 
               initial={{ y: "100%" }} 
               animate={{ y: 0 }} 
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
               exit={{ y: "100%" }}
-              onClick={(e) => e.stopPropagation()} // منع الإغلاق عند الضغط داخل النافذة
             >
-              <div className="portal-header">
-                <h3>
-                  {activePortal === 'quran' && "المصحف الإلكتروني الكامل"}
-                  {activePortal === 'khatma' && "جامع علوم القرآن والتفاسير"}
-                  {activePortal === 'azkar' && "حصن المسلم والأذكار"}
-                  {activePortal === 'qa' && "أسئلة وأجوبة في العقيدة والمنهج"}
-                </h3>
-                <button className="close-portal" onClick={() => setActivePortal(null)}><X /></button>
+              {/* شريط التحكم العلوي */}
+              <div className="portal-top-bar">
+                <button className="portal-exit-btn" onClick={() => setActivePortal(null)}>
+                  <ArrowRight size={20} />
+                  <span>العودة للواحة</span>
+                </button>
+                
+                <div className="portal-title-hub">
+                  <div className="portal-status-dot"></div>
+                  <h3>
+                    {activePortal === 'quran' && "المصحف الشريف"}
+                    {activePortal === 'khatma' && "علوم القرآن والتفسير"}
+                    {activePortal === 'azkar' && "الأذكار والرقية"}
+                    {activePortal === 'qa' && "أسئلة العقيدة والمنهج"}
+                  </h3>
+                </div>
+
+                <button className="portal-refresh-btn" onClick={() => {
+                   const ifr = document.getElementById('portal-iframe');
+                   ifr.src = ifr.src;
+                }}>
+                  <RefreshCw size={18} />
+                </button>
               </div>
 
-              <div className="portal-body">
+              {/* منطقة المحتوى الكبير */}
+              <div className="portal-iframe-wrapper">
                 <iframe 
+                  id="portal-iframe"
                   src={
                     activePortal === 'quran' ? "https://quran.com" : 
                     activePortal === 'khatma' ? "https://tafsir.app/" : 
                     activePortal === 'qa' ? "https://islamqa.info/ar/categories/very-important/1/topics/1" : 
                     "https://www.azkary.com"
                   } 
-                  title="islam-service-frame" 
+                  title="Islamic Service Content"
                   loading="lazy"
+                  allowFullScreen
                 />
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
         </div>
 
   );
@@ -355,3 +373,4 @@ const Religious = ({ user }) => {
 
 
 export default Religious;
+
