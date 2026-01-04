@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { auth, db } from '../firebase';
 import { doc, onSnapshot, updateDoc, arrayUnion, increment } from 'firebase/firestore';
+import { motion, AnimatePresence } from 'framer-motion'; // تأكد من تثبيتها
+import { Layout, Book, Target, Zap, Power, Box, Search, X, CheckCircle } from 'lucide-react'; // أيقونات احترافية
 import './StudentDash.css';
 
 const StudentDash = () => {
   const [student, setStudent] = useState(null);
   const [showLibrary, setShowLibrary] = useState(false);
   const [taskText, setTaskText] = useState("");
+  const [notif, setNotif] = useState("");
   
   // Pomodoro
   const [minutes, setMinutes] = useState(25);
@@ -14,13 +17,12 @@ const StudentDash = () => {
   const [isActive, setIsActive] = useState(false);
 
   const library = [
-    { id: 'web1', name: 'Web Dev Mastery', desc: 'React & Firebase' },
-    { id: 'ai1', name: 'AI Engineering', desc: 'Python & ML' },
-    { id: 'ui1', name: 'UI/UX Design', desc: 'Figma Pro' }
+    { id: 'web1', name: 'Web Dev Mastery', desc: 'React & Firebase Ecosystem', icon: '🌐' },
+    { id: 'ai1', name: 'AI Engineering', desc: 'Python & Neural Networks', icon: '🧠' },
+    { id: 'ui1', name: 'UI/UX Design', desc: 'Futuristic Interface Design', icon: '🎨' }
   ];
 
   useEffect(() => {
-    // جلب البيانات مع التأكد من وجود مستخدم
     if (auth.currentUser) {
       const unsub = onSnapshot(doc(db, "users", auth.currentUser.uid), (d) => {
         if (d.exists()) setStudent(d.data());
@@ -37,17 +39,26 @@ const StudentDash = () => {
         if (seconds === 0) { setMinutes(m => m - 1); setSeconds(59); }
         else { setSeconds(s => s - 1); }
       }, 1000);
-    } else { clearInterval(interval); }
+    } else if (minutes === 0 && seconds === 0) {
+      setIsActive(false);
+      triggerNotif("MISSION COMPLETE: FOCUS SESSION FINISHED");
+    }
     return () => clearInterval(interval);
   }, [isActive, minutes, seconds]);
 
+  const triggerNotif = (msg) => {
+    setNotif(msg);
+    setTimeout(() => setNotif(""), 4000);
+  };
+
   const enroll = async (course) => {
-    if (student.myCourses?.some(c => c.id === course.id)) return alert("Already in your storage!");
+    if (student.myCourses?.some(c => c.id === course.id)) return triggerNotif("MODULE ALREADY SYNCED");
     const ref = doc(db, "users", auth.currentUser.uid);
     await updateDoc(ref, { 
       myCourses: arrayUnion({ ...course, progress: 0 }),
-      points: increment(50) // مكافأة تسجيل
+      points: increment(50)
     });
+    triggerNotif(`NEW MODULE ACQUIRED: ${course.name}`);
   };
 
   const addTask = async () => {
@@ -55,114 +66,154 @@ const StudentDash = () => {
     const ref = doc(db, "users", auth.currentUser.uid);
     await updateDoc(ref, { 
       tasks: arrayUnion({ id: Date.now(), text: taskText, completed: false }),
-      points: increment(10) // نقاط لكل مهمة
+      points: increment(10)
     });
     setTaskText("");
+    triggerNotif("MISSION LOGGED IN NEURAL LINK");
   };
 
-  if (!student) return <div className="loading-screen">INITIALIZING NEURAL LINK...</div>;
+  if (!student) return (
+    <div className="loading-vortex">
+      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}>
+        <Zap size={50} color="#00f2ff" />
+      </motion.div>
+      <span>SYNCHRONIZING WITH SERVER...</span>
+    </div>
+  );
 
   return (
-    <div className="dash-container-refined">
-      {/* Dynamic Background Particles (CSS handles this) */}
-      <div className="stars"></div>
+    <div className={`dash-main-root ${isActive ? 'focus-mode-active' : ''}`}>
+      {/* Neural Link Notification */}
+      <AnimatePresence>
+        {notif && (
+          <motion.div initial={{ x: 300 }} animate={{ x: 0 }} exit={{ x: 300 }} className="neural-notif">
+            <Zap size={18} /> {notif}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <header className="main-nav">
-        <div className="identity-tag">
-          <div className="avatar-wrapper">
-            <img src={student.photoURL || "https://via.placeholder.com/50"} alt="" />
-            <div className="status-indicator"></div>
-          </div>
-          <div className="name-block">
-            <h3>{student.displayName}</h3>
-            <span className="rank-text">RANK: ELITE EXPLORER</span>
+      <header className="space-header">
+        <div className="user-profile-section">
+          <motion.div whileHover={{ scale: 1.1 }} className="avatar-orb">
+            <img src={student.photoURL || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} alt="avatar" />
+            <div className="pulse-ring"></div>
+          </motion.div>
+          <div className="user-meta">
+            <h2>{student.displayName} <span className="status-badge">ONLINE</span></h2>
+            <p className="rank-title">SYSTEM ARCHITECT | LVL {Math.floor(student.points / 500) + 1}</p>
           </div>
         </div>
 
-        <div className="xp-system">
-          <div className="xp-label">XP LEVEL {Math.floor(student.points / 100) + 1}</div>
-          <div className="xp-bar">
-            <div className="xp-fill" style={{width: `${student.points % 100}%`}}></div>
+        <div className="global-stats-hub">
+          <div className="stat-box">
+            <span className="label">ENERGY (XP)</span>
+            <span className="value">{student.points}</span>
+            <div className="energy-bar"><motion.div initial={{ width: 0 }} animate={{ width: `${(student.points % 500) / 5}%` }} className="energy-fill" /></div>
           </div>
         </div>
 
-        <button onClick={() => auth.signOut()} className="power-off-btn">LOGOUT</button>
+        <button onClick={() => auth.signOut()} className="disconnect-btn">
+          <Power size={20} /> <span>DISCONNECT</span>
+        </button>
       </header>
 
-      <div className="dashboard-content">
-        {/* Left Column: Pomodoro & Tasks */}
-        <aside className="side-tools">
-          <div className="glass-panel pomodoro-refined">
-            <h5><i className="timer-icon"></i> FOCUS MODE</h5>
-            <div className="digital-clock">
+      <div className="grid-layout">
+        {/* Left Wing: Tools */}
+        <aside className="left-wing">
+          <motion.div whileHover={{ y: -5 }} className="glass-module pomodoro-v2">
+            <h3><Target size={18} /> FOCUS CORE</h3>
+            <div className={`timer-display ${isActive ? 'breathing' : ''}`}>
               {String(minutes).padStart(2,'0')}:<span>{String(seconds).padStart(2,'0')}</span>
             </div>
-            <button className={`trigger-btn ${isActive ? 'active' : ''}`} onClick={() => setIsActive(!isActive)}>
-              {isActive ? "PAUSE INTERFACE" : "ENGAGE FOCUS"}
-            </button>
-          </div>
-
-          <div className="glass-panel todo-refined">
-            <h5>ACTIVE MISSIONS</h5>
-            <div className="task-input-group">
-              <input value={taskText} onChange={(e)=>setTaskText(e.target.value)} placeholder="Transmit new task..." />
-              <button onClick={addTask}>+</button>
+            <div className="timer-controls">
+              <button onClick={() => setIsActive(!isActive)}>
+                {isActive ? "ABORT" : "INITIATE"}
+              </button>
+              <button onClick={() => {setIsActive(false); setMinutes(25); setSeconds(0);}}>RESET</button>
             </div>
-            <div className="task-scroller">
+          </motion.div>
+
+          <div className="glass-module missions-v2">
+            <h3><Layout size={18} /> MISSION LOG</h3>
+            <div className="input-vortex">
+              <input value={taskText} onChange={(e)=>setTaskText(e.target.value)} placeholder="Type new mission..." />
+              <button onClick={addTask}><Zap size={16}/></button>
+            </div>
+            <div className="mission-scroller custom-scroll">
               {student.tasks?.map(t => (
-                <div key={t.id} className="task-node">
-                  <div className="node-dot"></div>
-                  {t.text}
-                </div>
+                <motion.div initial={{ x: -20 }} animate={{ x: 0 }} key={t.id} className="mission-node">
+                  <CheckCircle size={14} className="node-icon" />
+                  <span>{t.text}</span>
+                </motion.div>
               ))}
             </div>
           </div>
         </aside>
 
-        {/* Main Center: Courses */}
-        <main className="center-deck">
-          <div className="deck-header">
-            <h2>ACQUIRED MODULES</h2>
-            <button className="scan-btn" onClick={() => setShowLibrary(true)}>SCAN FOR NEW COURSES</button>
+        {/* Center Wing: Knowledge Deck */}
+        <main className="center-deck-v2">
+          <div className="deck-nav">
+            <h1>ACQUIRED KNOWLEDGE</h1>
+            <button className="scan-trigger" onClick={() => setShowLibrary(true)}>
+              <Search size={18} /> SCAN LIBRARY
+            </button>
           </div>
 
-          <div className="modules-grid">
-            {student.myCourses?.length > 0 ? student.myCourses.map(c => (
-              <div key={c.id} className="module-card">
-                <div className="card-glare"></div>
-                <span className="module-id">ID: {c.id}</span>
-                <h4>{c.name}</h4>
-                <div className="progress-info">
-                  <span>SYNC: {c.progress}%</span>
-                  <div className="mini-bar"><div className="fill" style={{width: `${c.progress}%`}}></div></div>
+          <div className="knowledge-grid">
+            {student.myCourses?.map(c => (
+              <motion.div 
+                whileHover={{ scale: 1.02, rotateY: 5 }}
+                key={c.id} 
+                className="knowledge-card"
+              >
+                <div className="card-header">
+                  <span className="icon-wrap">{c.icon || '📦'}</span>
+                  <div className="meta">
+                    <h4>{c.name}</h4>
+                    <code>SYSTEM_ID: {c.id}</code>
+                  </div>
                 </div>
-                <button className="launch-btn">INITIATE</button>
-              </div>
-            )) : (
-              <div className="no-data">NO ACTIVE MODULES FOUND. PLEASE SCAN LIBRARY.</div>
-            )}
+                <div className="sync-status">
+                  <div className="sync-label">SYNC PROGRESS: {c.progress}%</div>
+                  <div className="sync-bar"><div className="fill" style={{width: `${c.progress}%`}} /></div>
+                </div>
+                <button className="enter-btn">ENTER SIMULATION</button>
+              </motion.div>
+            ))}
           </div>
         </main>
       </div>
 
-      {/* Library Modal */}
-      {showLibrary && (
-        <div className="modal-overlay blur-bg">
-          <div className="modal-content futuristic-modal">
-            <h2 className="glitch">GLOBAL KNOWLEDGE BASE</h2>
-            <div className="lib-grid-refined">
-              {library.map(l => (
-                <div key={l.id} className="lib-card">
-                  <h4>{l.name}</h4>
-                  <p>{l.desc}</p>
-                  <button onClick={() => enroll(l)}>SYNC TO PROFILE</button>
-                </div>
-              ))}
-            </div>
-            <button className="close-terminal-btn" onClick={()=>setShowLibrary(false)}>CLOSE TERMINAL</button>
-          </div>
-        </div>
-      )}
+      {/* Library Overdrive Modal */}
+      <AnimatePresence>
+        {showLibrary && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="library-overlay"
+          >
+            <motion.div 
+              initial={{ scale: 0.8, y: 100 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.8, y: 100 }}
+              className="library-modal"
+            >
+              <div className="modal-top">
+                <h2>CENTRAL DATABASE</h2>
+                <button onClick={()=>setShowLibrary(false)}><X /></button>
+              </div>
+              <div className="library-shelf">
+                {library.map(l => (
+                  <div key={l.id} className="shelf-item">
+                    <div className="item-info">
+                      <h3>{l.icon} {l.name}</h3>
+                      <p>{l.desc}</p>
+                    </div>
+                    <button onClick={() => enroll(l)}>DOWNLOAD</button>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
