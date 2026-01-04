@@ -102,6 +102,12 @@ function App() {
     <AllCourses />
   </ProtectedRoute>
 } />
+          // تغيير الشرط ليفحص فقط هل المستخدم مسجل دخول أم لا
+<Route path="/all-courses" element={
+  <ProtectedRoute isActive={!!user} loading={loading} redirectPath="/login">
+    <AllCourses />
+  </ProtectedRoute>
+} />
           
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
@@ -112,6 +118,7 @@ function App() {
 
 
 export default App;
+
 
 
 
