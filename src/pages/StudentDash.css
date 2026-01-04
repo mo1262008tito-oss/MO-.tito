@@ -1,221 +1,256 @@
-/* استيراد خط تقني من جوجل */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap');
 
+/* --- 1. الأساسيات والمتغيرات الفضائية --- */
 :root {
-  --neon-blue: #00f2ff;
-  --neon-purple: #bc13fe;
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --neon-cyan: #00f2ff;
+  --neon-purple: #7000ff;
+  --bg-deep: #020408;
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(0, 242, 255, 0.15);
+  --text-main: #e6edf3;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.dash-container-refined {
-  min-height: 100vh;
-  background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
-  color: #fff;
-  font-family: 'Rajdhani', sans-serif;
-  padding: 20px;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent; /* إزالة لون الضغط في الموبايل */
+}
+
+body {
+  background: var(--bg-deep);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--text-main);
   overflow-x: hidden;
-  position: relative;
 }
 
-/* تأثير النجوم العائمة في الخلفية */
-.stars {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: url('https://www.transparenttextures.com/patterns/stardust.png');
-  opacity: 0.3;
-  z-index: 0;
-  animation: floatStars 100s linear infinite;
-}
-
-@keyframes floatStars {
-  from { background-position: 0 0; }
-  to { background-position: 1000px 1000px; }
-}
-
-/* الهيدر العلوي */
-.main-nav {
-  position: relative;
-  z-index: 10;
+/* --- 2. حاوية التطبيق الرئيسية --- */
+.dash-main-root {
+  min-height: 100vh;
   display: flex;
+  flex-direction: column;
+  padding: 15px;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(112, 0, 255, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(0, 242, 255, 0.05) 0%, transparent 50%);
+  gap: 20px;
+}
+
+/* --- 3. الهيدر (Navigation Bar) --- */
+.space-header {
+  display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
   background: var(--glass-bg);
-  backdrop-filter: blur(15px);
+  backdrop-filter: blur(25px);
+  padding: 12px 20px;
   border-radius: 20px;
   border: 1px solid var(--glass-border);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  margin-bottom: 30px;
+  gap: 15px;
 }
 
-.identity-tag { display: flex; align-items: center; gap: 15px; }
+.user-profile-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-.avatar-wrapper {
+.avatar-orb {
   position: relative;
-  width: 60px; height: 60px;
-  border: 2px solid var(--neon-blue);
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  padding: 3px;
+  border: 2px solid var(--neon-cyan);
+  padding: 2px;
 }
 
-.avatar-wrapper img {
-  width: 100%; height: 100%;
+.avatar-orb img {
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   object-fit: cover;
 }
 
-.status-indicator {
-  position: absolute;
-  bottom: 2px; right: 2px;
-  width: 12px; height: 12px;
-  background: #39ff14;
-  border-radius: 50%;
-  box-shadow: 0 0 10px #39ff14;
+.user-meta h2 {
+  font-size: 1rem;
+  font-weight: 700;
 }
 
-/* نظام الـ XP */
-.xp-system { width: 300px; }
-.xp-label { font-size: 12px; color: var(--neon-blue); letter-spacing: 2px; margin-bottom: 5px; }
-.xp-bar {
-  height: 8px; background: rgba(255,255,255,0.1);
-  border-radius: 10px; overflow: hidden;
-}
-.xp-fill {
-  height: 100%; background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
-  box-shadow: 0 0 15px var(--neon-blue);
-  transition: width 1s ease;
+.status-badge {
+  font-size: 0.6rem;
+  background: #00ff88;
+  color: #000;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 5px;
 }
 
-/* توزيع الصفحة */
-.dashboard-content {
+/* --- 4. التخطيط الشبكي (Grid Layout) --- */
+.grid-layout {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 30px;
-  position: relative;
-  z-index: 5;
+  grid-template-columns: 1fr; /* موبايل: عمود واحد */
+  gap: 20px;
+  flex-grow: 1;
 }
 
-/* البطاقات الزجاجية العائمة */
-.glass-panel {
+/* تحويل السايدبار إلى صف في الموبايل أو شبكة في الديسكتوب */
+@media (min-width: 1024px) {
+  .grid-layout {
+    grid-template-columns: 320px 1fr; /* ديسكتوب: سايدبار ومحتوى رئيسي */
+  }
+}
+
+/* --- 5. الكروت الزجاجية (Glass Modules) --- */
+.glass-module {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(15px);
   border: 1px solid var(--glass-border);
-  border-radius: 25px;
-  padding: 25px;
-  margin-bottom: 25px;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-  transition: transform 0.3s ease;
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
-.glass-panel:hover {
-  transform: translateY(-5px);
-  border-color: var(--neon-blue);
-}
-
-/* Pomodoro Clock */
-.digital-clock {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 3rem;
+/* المؤقت الرقمي (Pomodoro) */
+.pomodoro-v2 {
   text-align: center;
-  color: var(--neon-blue);
-  text-shadow: 0 0 20px rgba(0, 242, 255, 0.5);
-  margin: 20px 0;
+  background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, transparent 100%);
 }
 
-.digital-clock span { opacity: 0.7; font-size: 2rem; }
+.timer-display {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: var(--neon-cyan);
+  margin: 15px 0;
+  text-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+}
 
-/* الأزرار */
-button {
+.timer-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.timer-controls button {
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--neon-cyan);
+  background: transparent;
+  color: white;
   cursor: pointer;
-  font-family: 'Orbitron', sans-serif;
-  transition: 0.3s;
+  transition: var(--transition);
 }
 
-.trigger-btn {
-  width: 100%; padding: 12px;
-  background: transparent; border: 1px solid var(--neon-blue);
-  color: var(--neon-blue); border-radius: 10px;
+.timer-controls button:first-child {
+  background: var(--neon-cyan);
+  color: #000;
 }
 
-.trigger-btn.active {
-  background: var(--neon-blue); color: #000;
-  box-shadow: 0 0 20px var(--neon-blue);
-}
-
-/* شبكة الكورسات */
-.modules-grid {
+/* --- 6. شبكة الكورسات (Knowledge Grid) --- */
+.knowledge-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 25px;
+  gap: 20px;
 }
 
-.module-card {
-  background: rgba(255, 255, 255, 0.03);
+.knowledge-card {
+  background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  padding: 30px;
-  position: relative;
+  border-radius: 24px;
+  padding: 20px;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 220px;
+}
+
+.knowledge-card:hover {
+  border-color: var(--neon-cyan);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 242, 255, 0.15);
+}
+
+/* --- 7. الأشرطة الحركية (Progress Bars) --- */
+.sync-bar, .energy-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
   overflow: hidden;
-  transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  margin-top: 8px;
 }
 
-.module-card:hover {
-  background: rgba(255, 255, 255, 0.07);
-  transform: scale(1.05) rotate(1deg);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+.fill, .energy-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
+  box-shadow: 0 0 10px var(--neon-cyan);
+  transition: width 1s ease-in-out;
 }
 
-.module-card::before {
-  content: ''; position: absolute; top: -50%; left: -50%;
-  width: 200%; height: 200%;
-  background: conic-gradient(transparent, var(--neon-blue), transparent 30%);
-  animation: rotateBorder 4s linear infinite;
-  opacity: 0.1;
+/* --- 8. المودال (Library Modal) --- */
+.library-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-@keyframes rotateBorder {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.library-modal {
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  background: #0d1117;
+  border: 1px solid var(--neon-cyan);
+  border-radius: 30px;
+  padding: 25px;
+  overflow-y: auto;
 }
 
-.launch-btn {
-  width: 100%; margin-top: 20px;
-  padding: 10px; background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
-  border: none; color: white; border-radius: 8px; font-weight: bold;
+/* --- 9. تحسينات الموبايل النهائية (Responsive App Look) --- */
+@media (max-width: 768px) {
+  .space-header {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .global-stats-hub {
+    width: 100%;
+  }
+
+  .knowledge-grid {
+    grid-template-columns: 1fr; /* كورسات فوق بعض في الموبايل */
+  }
+
+  .timer-display {
+    font-size: 2.8rem;
+  }
+
+  .neural-notif {
+    width: 80%;
+    left: 10%;
+    right: auto;
+  }
+
+  /* جعل الأزرار أسهل في الضغط (Touch Friendly) */
+  button {
+    min-height: 48px;
+  }
 }
 
-/* المودال (المكتبة) */
-.futuristic-modal {
-  background: rgba(10, 15, 25, 0.95);
-  border: 2px solid var(--neon-blue);
-  box-shadow: 0 0 100px rgba(0, 242, 255, 0.2);
-  padding: 40px; border-radius: 30px;
-  max-width: 900px; width: 90%;
-}
-
-.glitch {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 2rem;
-  color: var(--neon-blue);
-  text-transform: uppercase;
-  position: relative;
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-  .dashboard-content { grid-template-columns: 1fr; }
-  .side-tools { order: 2; }
-  .center-deck { order: 1; }
-}
-
-.loading-screen {
-  height: 100vh; display: flex; justify-content: center; align-items: center;
-  background: #000; color: var(--neon-blue); font-family: 'Orbitron';
-  letter-spacing: 5px; animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+/* --- 10. تأثيرات التحميل (Loading Screen) --- */
+.loading-vortex {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: var(--bg-deep);
+  color: var(--neon-cyan);
 }
