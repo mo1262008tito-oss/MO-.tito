@@ -521,3 +521,113 @@
   margin-top: 5px;
 }
 
+
+/* الحاوية الكبرى الخلفية */
+.full-portal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end; /* لتبدأ الحركة من الأسفل */
+}
+
+/* الحاوية الكبيرة (الفورم) */
+.full-portal-container {
+  width: 100%;
+  height: 100%; /* ملء الشاشة بالكامل */
+  background: #0d1117;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* شريط التحكم العلوي */
+.portal-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+  background: #161b22;
+  border-bottom: 1px solid rgba(0, 242, 255, 0.2);
+  direction: rtl;
+}
+
+.portal-exit-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 8px 15px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.portal-exit-btn:hover {
+  background: rgba(255, 0, 0, 0.1);
+  border-color: #ff4d4d;
+}
+
+.portal-title-hub {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.portal-status-dot {
+  width: 8px;
+  height: 8px;
+  background: #00f2ff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #00f2ff;
+  animation: pulse 2s infinite;
+}
+
+.portal-title-hub h3 {
+  color: #e6edf3;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.portal-refresh-btn {
+  background: none;
+  border: none;
+  color: #8b949e;
+  cursor: pointer;
+}
+
+/* حاوية الـ Iframe */
+.portal-iframe-wrapper {
+  flex: 1;
+  width: 100%;
+  background: #fff; /* بعض المواقع تحتاج خلفية بيضاء لتظهر بشكل صحيح */
+}
+
+.portal-iframe-wrapper iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* تأثير النبض للـ Status Dot */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+/* تعديلات الهاتف لضمان عدم وجود هوامش */
+@media (max-width: 768px) {
+  .portal-top-bar {
+    padding: 10px;
+  }
+  .portal-exit-btn span {
+    display: none; /* إخفاء النص والاكتفاء بالأيقونة في الشاشات الصغيرة جداً */
+  }
+}
