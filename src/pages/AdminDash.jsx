@@ -47,7 +47,22 @@ const AdminDash = () => {
   // --- وظائف التحكم ---
 
   // 1. توليد كود تفعيل متطور
-  const generateBatchCodes = async (count = 1) => {
+  const generateBatchCodes = async (count = 1) => {// داخل دالة توليد الكود في AdminDash
+const [selectedLessonId, setSelectedLessonId] = useState(''); // لتخزين ID الدرس المختار
+
+const generateLessonCode = async () => {
+  if (!selectedLessonId) return alert("اختر الدرس أولاً");
+  
+  const code = "LESSON-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+  await addDoc(collection(db, "activationCodes"), {
+    code,
+    isUsed: false,
+    type: "single_lesson",
+    lessonId: selectedLessonId, // ربط الكود بدرس معين
+    createdAt: serverTimestamp(),
+  });
+  alert("تم توليد كود للدرس بنجاح ✅");
+};
     setLoading(true);
     for(let i=0; i < count; i++) {
         const code = "MAFA-" + Math.random().toString(36).substring(2, 9).toUpperCase();
@@ -210,3 +225,4 @@ const AdminDash = () => {
 };
 
 export default AdminDash;
+
