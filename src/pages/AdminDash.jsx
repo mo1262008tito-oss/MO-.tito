@@ -2,55 +2,81 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { 
   collection, query, getDocs, updateDoc, doc, addDoc, 
-  onSnapshot, serverTimestamp, where, deleteDoc 
+  onSnapshot, serverTimestamp, where, deleteDoc, orderBy 
 } from "firebase/firestore";
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, BookOpen, CreditCard, Plus, Check, X, 
-  BarChart3, Hash, Library, Trash2, ShieldCheck 
+  BarChart3, Hash, Library, Trash2, ShieldCheck, Search,
+  Settings, UserPlus, Lock, Unlock, DollarSign
 } from 'lucide-react';
 import './AdminDash.css';
 
 const AdminDash = () => {
   const [activeSection, setActiveSection] = useState('stats');
-  const [stats, setStats] = useState({ students: 0, courses: 0, pending: 0 });
+  const [stats, setStats] = useState({ students: 0, courses: 0, pending: 0, totalIncome: 0 });
   const [payments, setPayments] = useState([]);
   const [generatedCodes, setGeneratedCodes] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
+
   const [newCourse, setNewCourse] = useState({ name: '', grade: '1', instructor: '', category: 'HighSchool' });
-  const [newBook, setNewBook] = useState({ title: '', author: '', fileUrl: '' });
 
   useEffect(() => {
-    // 1. جلب الإحصائيات الحية
-    const unsubStudents = onSnapshot(collection(db, "users"), (s) => setStats(prev => ({...prev, students: s.size})));
+    // جلب البيانات الحية
+    const unsubStudents = onSnapshot(collection(db, "users"), (s) => {
+        setStats(prev => ({...prev, students: s.size}));
+        setAllUsers(s.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+
     const unsubCourses = onSnapshot(collection(db, "courses"), (s) => setStats(prev => ({...prev, courses: s.size})));
     
-    // 2. جلب طلبات الدفع المعلقة
-    const qPayments = query(collection(db, "paymentRequests"), where("status", "==", "pending"));
-    const unsubPay = onSnapshot(qPayments, (s) => {
+    const unsubPay = onSnapshot(query(collection(db, "paymentRequests"), where("status", "==", "pending")), (s) => {
       setPayments(s.docs.map(d => ({ id: d.id, ...d.data() })));
       setStats(prev => ({...prev, pending: s.size}));
     });
 
-    // 3. جلب الأكواد المولدة سابقاً
-    const unsubCodes = onSnapshot(collection(db, "activationCodes"), (s) => {
+    const unsubCodes = onSnapshot(query(collection(db, "activationCodes"), orderBy("createdAt", "desc")), (s) => {
       setGeneratedCodes(s.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
     return () => { unsubStudents(); unsubCourses(); unsubPay(); unsubCodes(); };
   }, []);
 
-  // دالة توليد كود تفعيل عشوائي
-  const generateCode = async () => {
-    const code = "MAFA-" + Math.random().toString(36).substring(2, 8).toUpperCase();
-    await addDoc(collection(db, "activationCodes"), {
-      code,
-      isUsed: false,
-      createdAt: serverTimestamp(),
-      createdBy: "Admin"
+  // --- وظائف التحكم ---
+
+  // 1. توليد كود تفعيل متطور
+  const generateBatchCodes = async (count = 1) => {
+    setLoading(true);
+    for(let i=0; i < count; i++) {
+        const code = "MAFA-" + Math.random().toString(36).substring(2, 9).toUpperCase();
+        await addDoc(collection(db, "activationCodes"), {
+          code,
+          isUsed: false,
+          usedBy: null,
+          createdAt: serverTimestamp(),
+          type: "FullAccess" // يمكن تغييره لـ MonthAccess مثلاً
+        });
+    }
+    setLoading(false);
+  };
+
+  // 2. تفعيل/تعطيل طالب يدوياً
+  const toggleUserAccess = async (userId, currentStatus) => {
+    await updateDoc(doc(db, "users", userId), { 
+        isSecondaryActive: !currentStatus 
     });
   };
 
-  // دالة قبول الدفع وتفعيل حساب الطالب
+  // 3. حذف كود تفعيل
+  const deleteCode = async (codeId) => {
+    if(window.confirm("هل تريد حذف هذا الكود؟")) {
+        await deleteDoc(doc(db, "activationCodes", codeId));
+    }
+  };
+
+  // 4. قبول الدفع وتفعيل الطالب
   const approvePayment = async (requestId, studentId) => {
     try {
       await updateDoc(doc(db, "paymentRequests", requestId), { status: "approved" });
@@ -59,101 +85,124 @@ const AdminDash = () => {
     } catch (e) { alert("خطأ: " + e.message); }
   };
 
-  // دالة إضافة كورس جديد
-  const handleAddCourse = async () => {
-    if (!newCourse.name) return;
-    await addDoc(collection(db, "courses"), { ...newCourse, timestamp: serverTimestamp() });
-    setNewCourse({ name: '', grade: '1', instructor: '', category: 'HighSchool' });
-    alert("تم إضافة الكورس بنجاح 🚀");
-  };
-
   return (
-    <div className="admin-container">
-      {/* Sidebar الداخلي للوحة التحكم */}
+    <div className="admin-container" style={{direction: 'rtl'}}>
+      {/* Sidebar المطور */}
       <aside className="admin-sidebar">
         <div className="admin-profile">
-          <div className="admin-avatar"><ShieldCheck size={40} /></div>
+          <div className="admin-avatar pulse-effect"><ShieldCheck size={40} /></div>
           <h3>القائد محمود</h3>
-          <span>مدير المنصة</span>
+          <p className="status-online">متصل الآن</p>
         </div>
+        
         <nav className="admin-nav">
-          <button onClick={() => setActiveSection('stats')} className={activeSection === 'stats' ? 'active' : ''}><BarChart3 size={18} /> الإحصائيات</button>
-          <button onClick={() => setActiveSection('payments')} className={activeSection === 'payments' ? 'active' : ''}><CreditCard size={18} /> طلبات الدفع ({stats.pending})</button>
-          <button onClick={() => setActiveSection('codes')} className={activeSection === 'codes' ? 'active' : ''}><Hash size={18} /> مولد الأكواد</button>
-          <button onClick={() => setActiveSection('content')} className={activeSection === 'content' ? 'active' : ''}><Plus size={18} /> إضافة محتوى</button>
+          <button onClick={() => setActiveSection('stats')} className={activeSection === 'stats' ? 'active' : ''}><BarChart3 /> لوحة الإحصائيات</button>
+          <button onClick={() => setActiveSection('users')} className={activeSection === 'users' ? 'active' : ''}><Users /> إدارة الطلاب</button>
+          <button onClick={() => setActiveSection('payments')} className={activeSection === 'payments' ? 'active' : ''}>
+            <CreditCard /> طلبات الدفع 
+            {stats.pending > 0 && <span className="badge">{stats.pending}</span>}
+          </button>
+          <button onClick={() => setActiveSection('codes')} className={activeSection === 'codes' ? 'active' : ''}><Hash /> الأكواد المالية</button>
+          <button onClick={() => setActiveSection('content')} className={activeSection === 'content' ? 'active' : ''}><Plus /> إضافة محتوى</button>
         </nav>
       </aside>
 
       <main className="admin-main-content">
         <AnimatePresence mode="wait">
+          
+          {/* قسم الإحصائيات */}
           {activeSection === 'stats' && (
-            <motion.div initial={{opacity:0}} animate={{opacity:1}} key="stats" className="stats-grid">
-              <div className="stat-card">
-                <Users color="#00f2ff" />
-                <div><h4>{stats.students}</h4><p>طالب مسجل</p></div>
-              </div>
-              <div className="stat-card">
-                <BookOpen color="#a855f7" />
-                <div><h4>{stats.courses}</h4><p>كورس متاح</p></div>
-              </div>
-              <div className="stat-card urgent">
-                <CreditCard color="#ff4d4d" />
-                <div><h4>{stats.pending}</h4><p>طلبات انتظار</p></div>
-              </div>
-            </motion.div>
-          )}
-
-          {activeSection === 'payments' && (
-            <motion.div initial={{x:20, opacity:0}} animate={{x:0, opacity:1}} key="pay" className="admin-section">
-              <h2 className="section-title">مراجعة التحويلات المالية</h2>
-              <div className="payments-list">
-                {payments.map(pay => (
-                  <div key={pay.id} className="payment-row">
-                    <div className="pay-info">
-                      <strong>{pay.studentName}</strong>
-                      <a href={pay.screenshotUrl} target="_blank" rel="noreferrer">عرض الإيصال 🖼️</a>
-                    </div>
-                    <div className="pay-actions">
-                      <button onClick={() => approvePayment(pay.id, pay.studentId)} className="approve-btn"><Check size={16}/> قبول</button>
-                      <button className="reject-btn"><X size={16}/> رفض</button>
-                    </div>
-                  </div>
-                ))}
+            <motion.div initial={{opacity:0}} animate={{opacity:1}} className="stats-container">
+              <div className="stats-grid">
+                <div className="stat-card blue">
+                    <Users size={30} />
+                    <div className="info"><h3>{stats.students}</h3><p>طالب منضم</p></div>
+                </div>
+                <div className="stat-card purple">
+                    <BookOpen size={30} />
+                    <div className="info"><h3>{stats.courses}</h3><p>كورس مفعل</p></div>
+                </div>
+                <div className="stat-card orange">
+                    <DollarSign size={30} />
+                    <div className="info"><h3>{generatedCodes.filter(c => c.isUsed).length}</h3><p>مبيعات الأكواد</p></div>
+                </div>
+                <div className="stat-card red">
+                    <CreditCard size={30} />
+                    <div className="info"><h3>{stats.pending}</h3><p>طلبات معلقة</p></div>
+                </div>
               </div>
             </motion.div>
           )}
 
-          {activeSection === 'codes' && (
-            <motion.div initial={{x:20, opacity:0}} animate={{x:0, opacity:1}} key="codes" className="admin-section">
+          {/* قسم إدارة الطلاب (Access Control) */}
+          {activeSection === 'users' && (
+            <motion.div initial={{y:20, opacity:0}} animate={{y:0, opacity:1}} className="admin-section">
               <div className="section-header">
-                <h2>أكواد التفعيل المسبقة</h2>
-                <button onClick={generateCode} className="gen-btn">توليد كود جديد +</button>
+                <h2>قائمة الطلاب والتحكم في الوصول</h2>
+                <div className="search-box">
+                    <Search size={18} />
+                    <input type="text" placeholder="ابحث باسم الطالب..." onChange={(e) => setSearchTerm(e.target.value)} />
+                </div>
               </div>
-              <div className="codes-table">
+              <div className="users-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>الطالب</th>
+                      <th>البريد</th>
+                      <th>حالة الثانوية</th>
+                      <th>التحكم</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allUsers.filter(u => u.name?.includes(searchTerm)).map(user => (
+                      <tr key={user.id}>
+                        <td>{user.name}</td>
+                        <td>{user.email}</td>
+                        <td>
+                            <span className={`status-tag ${user.isSecondaryActive ? 'active' : 'inactive'}`}>
+                                {user.isSecondaryActive ? 'مفعل' : 'غير مفعل'}
+                            </span>
+                        </td>
+                        <td>
+                            <button className="toggle-access-btn" onClick={() => toggleUserAccess(user.id, user.isSecondaryActive)}>
+                                {user.isSecondaryActive ? <Lock size={16} color="#ff4d4d"/> : <Unlock size={16} color="#2ecc71"/>}
+                            </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {/* قسم الأكواد (Code Generator) */}
+          {activeSection === 'codes' && (
+            <motion.div initial={{opacity:0}} animate={{opacity:1}} className="admin-section">
+              <div className="section-header">
+                <h2>إدارة أكواد التفعيل المالي</h2>
+                <div className="actions">
+                    <button onClick={() => generateBatchCodes(5)} className="gen-btn-outline">توليد 5 أكواد</button>
+                    <button onClick={() => generateBatchCodes(1)} className="gen-btn">كود واحد +</button>
+                </div>
+              </div>
+              <div className="codes-grid">
                 {generatedCodes.map(c => (
-                  <div key={c.id} className={`code-item ${c.isUsed ? 'used' : 'unused'}`}>
-                    <code>{c.code}</code>
-                    <span>{c.isUsed ? 'تم استخدامه' : 'متاح للبيع'}</span>
+                  <div key={c.id} className={`code-card ${c.isUsed ? 'used' : 'unused'}`}>
+                    <div className="code-header">
+                        <code>{c.code}</code>
+                        <button onClick={() => deleteCode(c.id)} className="del-btn"><Trash2 size={14}/></button>
+                    </div>
+                    <div className="code-footer">
+                        <span>{c.isUsed ? `استخدمه: ${c.usedBy || 'طالب'}` : 'متاح للبيع'}</span>
+                    </div>
                   </div>
                 ))}
               </div>
             </motion.div>
           )}
 
-          {activeSection === 'content' && (
-            <motion.div initial={{x:20, opacity:0}} animate={{x:0, opacity:1}} key="content" className="admin-section content-forms">
-              <div className="form-box">
-                <h3>إضافة كورس ثانوي</h3>
-                <input type="text" placeholder="اسم الكورس" value={newCourse.name} onChange={e => setNewCourse({...newCourse, name: e.target.value})} />
-                <select onChange={e => setNewCourse({...newCourse, grade: e.target.value})}>
-                  <option value="1">الأول الثانوي</option>
-                  <option value="2">الثاني الثانوي</option>
-                  <option value="3">الثالث الثانوي</option>
-                </select>
-                <button onClick={handleAddCourse}>نشر الكورس</button>
-              </div>
-            </motion.div>
-          )}
         </AnimatePresence>
       </main>
     </div>
