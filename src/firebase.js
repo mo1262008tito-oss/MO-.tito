@@ -1,11 +1,14 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth'; 
-import { getStorage } from 'firebase/storage'; // 1. استيراد مكتبة التخزين
+import { getStorage } from 'firebase/storage';
+import { getDatabase } from 'firebase/database'; // استيراد قاعدة البيانات اللحظية
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDhrGwUiLL_V8Wl2fceAE3rhonE4xQMJDg',
   authDomain: 'mafat-platform.firebaseapp.com',
+  // أضفنا رابط قاعدة البيانات ليعمل عداد الأمة
+  databaseURL: 'https://mafat-platform-default-rtdb.firebaseio.com', 
   projectId: 'mafat-platform',
   storageBucket: 'mafat-platform.firebasestorage.app',
   messagingSenderId: '732155910926',
@@ -15,7 +18,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// 2. تعريف وتصدير الخدمات الأساسية
+// تعريف وتصدير الخدمات الأساسية
 export const db = getFirestore(app);
 export const auth = getAuth(app);
-export const storage = getStorage(app); // السطر الأهم لحل مشكلة الـ Storage
+export const storage = getStorage(app);
+export const rtdb = getDatabase(app); // تصدير rtdb لتعمل في صفحة الواحة
