@@ -347,18 +347,19 @@ const Religious = ({ user }) => {
 
               {/* منطقة المحتوى الكبير */}
               <div className="portal-iframe-wrapper">
-                <iframe 
-                  id="portal-iframe"
-                  src={
-                    activePortal === 'quran' ? "https://quran.com" : 
-                    activePortal === 'khatma' ? "https://tafsir.app/" : 
-                    activePortal === 'qa' ? "https://islamqa.info/ar/categories/very-important/1/topics/1" : 
-                    "https://www.azkary.com"
-                  } 
-                  title="Islamic Service Content"
-                  loading="lazy"
-                  allowFullScreen
-                />
+               <iframe 
+  id="portal-iframe"
+  src={
+    activePortal === 'quran' ? "https://quran.com" : 
+    activePortal === 'khatma' ? "https://tafsir.app/" : 
+    /* هذا هو الرابط الجديد الذي سيعمل معك بالتأكيد */
+    activePortal === 'qa' ? "https://www.islamweb.net/ar/fatawa/" : 
+    "https://www.azkary.com"
+  } 
+  title="Islamic Service Content"
+  loading="lazy"
+  allowFullScreen
+/>
               </div>
             </motion.div>
           </motion.div>
@@ -373,4 +374,5 @@ const Religious = ({ user }) => {
 
 
 export default Religious;
+
 
