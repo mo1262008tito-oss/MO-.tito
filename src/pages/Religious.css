@@ -438,3 +438,85 @@
   cursor: pointer;
   padding: 5px;
 }
+
+/* إشعار ذكر الله المتوهج */
+.spiritual-toast {
+  position: fixed;
+  top: 85px;
+  right: 25px;
+  background: rgba(13, 17, 23, 0.9);
+  border: 1px solid #00f2ff;
+  padding: 12px 25px;
+  border-radius: 100px;
+  color: #fff;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+  font-weight: 600;
+}
+
+/* عداد المجتمع الحديث */
+.global-counter-nexus {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 20px;
+  border-radius: 24px;
+  margin-bottom: 30px;
+  border: 1px solid rgba(0, 242, 255, 0.1);
+  direction: rtl;
+}
+
+.glow-number {
+  color: #00f2ff;
+  text-shadow: 0 0 15px rgba(0, 242, 255, 0.5);
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+/* لوحة الشرف 3D */
+.leader-item {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 15px;
+  margin-bottom: 10px;
+  transition: 0.3s;
+}
+
+.leader-item:hover { transform: scale(1.02); background: rgba(0, 242, 255, 0.05); }
+
+.rank {
+  width: 30px;
+  height: 30px;
+  background: #00f2ff;
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* متابعة الحفظ */
+.hifz-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.hifz-input input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 10px;
+  color: white;
+  margin-top: 5px;
+}
