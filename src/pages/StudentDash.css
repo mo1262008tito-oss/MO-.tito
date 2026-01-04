@@ -1,256 +1,246 @@
+/* إعدادات الاتجاه العربي */
+.rtl-support {
+  direction: rtl;
+  text-align: right;
+}
 
-/* --- 1. الأساسيات والمتغيرات الفضائية --- */
 :root {
   --neon-cyan: #00f2ff;
   --neon-purple: #7000ff;
-  --bg-deep: #020408;
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(0, 242, 255, 0.15);
-  --text-main: #e6edf3;
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --glass: rgba(15, 18, 26, 0.8);
+  --border: rgba(0, 242, 255, 0.3);
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  -webkit-tap-highlight-color: transparent; /* إزالة لون الضغط في الموبايل */
-}
-
-body {
-  background: var(--bg-deep);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  color: var(--text-main);
+.dash-main-root {
+  min-height: 100vh;
+  background: radial-gradient(circle at center, #0a0c14 0%, #020205 100%);
+  color: #fff;
+  padding: 20px;
   overflow-x: hidden;
 }
 
-/* --- 2. حاوية التطبيق الرئيسية --- */
-.dash-main-root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding: 15px;
-  background-image: 
-    radial-gradient(circle at 10% 20%, rgba(112, 0, 255, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 90% 80%, rgba(0, 242, 255, 0.05) 0%, transparent 50%);
-  gap: 20px;
-}
-
-/* --- 3. الهيدر (Navigation Bar) --- */
+/* الهيدر المضيء */
 .space-header {
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  background: var(--glass-bg);
-  backdrop-filter: blur(25px);
-  padding: 12px 20px;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  padding: 15px 30px;
   border-radius: 20px;
-  border: 1px solid var(--glass-border);
-  gap: 15px;
+  border: 1px solid var(--border);
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
+  margin-bottom: 30px;
 }
 
-.user-profile-section {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.avatar-orb {
+/* الكروت النيون (كما في الصورة) */
+.neon-border {
   position: relative;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  border: 2px solid var(--neon-cyan);
-  padding: 2px;
-}
-
-.avatar-orb img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.user-meta h2 {
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.status-badge {
-  font-size: 0.6rem;
-  background: #00ff88;
-  color: #000;
-  padding: 2px 6px;
-  border-radius: 10px;
-  margin-left: 5px;
-}
-
-/* --- 4. التخطيط الشبكي (Grid Layout) --- */
-.grid-layout {
-  display: grid;
-  grid-template-columns: 1fr; /* موبايل: عمود واحد */
-  gap: 20px;
-  flex-grow: 1;
-}
-
-/* تحويل السايدبار إلى صف في الموبايل أو شبكة في الديسكتوب */
-@media (min-width: 1024px) {
-  .grid-layout {
-    grid-template-columns: 320px 1fr; /* ديسكتوب: سايدبار ومحتوى رئيسي */
-  }
-}
-
-/* --- 5. الكروت الزجاجية (Glass Modules) --- */
-.glass-module {
-  background: var(--glass-bg);
-  backdrop-filter: blur(15px);
-  border: 1px solid var(--glass-border);
+  background: var(--glass);
   border-radius: 24px;
-  padding: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 2px solid var(--border);
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+  transition: 0.3s;
 }
 
-/* المؤقت الرقمي (Pomodoro) */
-.pomodoro-v2 {
-  text-align: center;
-  background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+.neon-border:hover {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 30px rgba(0, 242, 255, 0.4);
 }
 
 .timer-display {
   font-size: 3.5rem;
-  font-weight: 800;
+  font-weight: bold;
   color: var(--neon-cyan);
-  margin: 15px 0;
-  text-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+  text-shadow: 0 0 20px rgba(0, 242, 255, 0.6);
+  margin: 20px 0;
 }
 
-.timer-controls {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-
-.timer-controls button {
-  padding: 10px 20px;
-  border-radius: 12px;
-  border: 1px solid var(--neon-cyan);
-  background: transparent;
-  color: white;
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.timer-controls button:first-child {
-  background: var(--neon-cyan);
-  color: #000;
-}
-
-/* --- 6. شبكة الكورسات (Knowledge Grid) --- */
-.knowledge-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-.knowledge-card {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: 24px;
-  padding: 20px;
-  transition: var(--transition);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 220px;
-}
-
-.knowledge-card:hover {
-  border-color: var(--neon-cyan);
-  transform: translateY(-5px);
-  box-shadow: 0 15px 40px rgba(0, 242, 255, 0.15);
-}
-
-/* --- 7. الأشرطة الحركية (Progress Bars) --- */
-.sync-bar, .energy-bar {
-  width: 100%;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.1);
+/* شريط الطاقة */
+.energy-bar {
+  width: 150px;
+  height: 8px;
+  background: rgba(255,255,255,0.1);
   border-radius: 10px;
   overflow: hidden;
-  margin-top: 8px;
+  margin-top: 5px;
 }
 
-.fill, .energy-fill {
+.energy-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
   box-shadow: 0 0 10px var(--neon-cyan);
-  transition: width 1s ease-in-out;
 }
 
-/* --- 8. المودال (Library Modal) --- */
-.library-overlay {
-  position: fixed;
-  top: 0; left: 0; width: 100vw; height: 100vh;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(10px);
-  z-index: 2000;
+/* الأزرار */
+.enter-btn, .scan-trigger {
+  background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple));
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.enter-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px var(--neon-cyan);
+}
+
+/* سجل العمليات */
+.mission-node {
+  background: rgba(255,255,255,0.05);
+  margin-bottom: 10px;
+  padding: 12px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 10px;
+  border-right: 3px solid var(--neon-cyan);
 }
 
-.library-modal {
-  width: 90%;
-  max-width: 600px;
-  max-height: 80vh;
-  background: #0d1117;
+/* الإشعارات */
+.neural-notif {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(0, 242, 255, 0.1);
   border: 1px solid var(--neon-cyan);
-  border-radius: 30px;
-  padding: 25px;
-  overflow-y: auto;
+  padding: 15px 25px;
+  border-radius: 12px;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
 }
 
-/* --- 9. تحسينات الموبايل النهائية (Responsive App Look) --- */
+/* --- إعدادات الجوال الاحترافية (Mobile-First) --- */
+
 @media (max-width: 768px) {
+  .dash-main-root {
+    padding: 10px;
+    padding-bottom: 80px; /* مساحة للقائمة السفلية إذا أردت إضافتها لاحقاً */
+  }
+
+  /* جعل الهيدر عمودياً في الشاشات الصغيرة جداً */
   .space-header {
     flex-direction: column;
+    padding: 15px;
+    gap: 15px;
     text-align: center;
-    padding: 20px;
   }
-  
-  .global-stats-hub {
+
+  .user-profile-section {
+    flex-direction: column;
+  }
+
+  /* ضبط شبكة التوزيع لتكون عمود واحد */
+  .grid-layout {
+    grid-template-columns: 1fr; 
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  /* تكبير أزرار اللمس لتسهيل الضغط */
+  .enter-btn, .scan-trigger, .timer-controls button {
+    min-height: 45px;
     width: 100%;
+    font-size: 1rem;
   }
 
+  /* جعل بطاقات الوحدات تملأ الشاشة */
   .knowledge-grid {
-    grid-template-columns: 1fr; /* كورسات فوق بعض في الموبايل */
+    grid-template-columns: 1fr;
   }
 
+  .knowledge-card {
+    height: auto;
+    padding: 15px;
+  }
+
+  /* تصغير حجم عداد الوقت ليناسب شاشة الموبايل */
   .timer-display {
     font-size: 2.8rem;
+    margin: 15px 0;
   }
 
+  /* تحسين شكل المودال (نافذة المكتبة) على الجوال */
+  .library-modal {
+    width: 95%;
+    height: 90vh;
+    padding: 15px;
+    border-radius: 20px;
+  }
+
+  .shelf-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+
+  /* إخفاء بعض العناصر غير الضرورية لتوفير المساحة */
+  .rank-title {
+    font-size: 0.8rem;
+  }
+
+  /* تحسين الإشعارات لتظهر في الأعلى في الجوال */
   .neural-notif {
-    width: 80%;
-    left: 10%;
-    right: auto;
+    bottom: auto;
+    top: 10px;
+    left: 5%;
+    right: 5%;
+    width: 90%;
+    font-size: 0.85rem;
+    text-align: center;
   }
 
-  /* جعل الأزرار أسهل في الضغط (Touch Friendly) */
-  button {
-    min-height: 48px;
+  /* جعل أشرطة الطاقة أعرض ليسهل رؤيتها */
+  .energy-bar {
+    width: 100%;
+    max-width: 200px;
   }
 }
 
-/* --- 10. تأثيرات التحميل (Loading Screen) --- */
-.loading-vortex {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  background: var(--bg-deep);
-  color: var(--neon-cyan);
+/* --- تأثيرات إضافية تجعل الموقع يبدو كتطبيق (Native Feel) --- */
+
+/* منع التحديد العرضي للنصوص عند الضغط المستمر */
+* {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* السماح بتحديد النصوص فقط داخل حقول الإدخال */
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* سكرول بار مخفي وناعم للمهمات */
+.custom-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: var(--neon-cyan);
+  border-radius: 10px;
+}
+
+/* إضافة تأثير الضغط على الأزرار (Haptic-like effect) */
+button:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+}
+
+/* خلفية النجوم المتحركة لزيادة عمق الفضاء */
+.dash-main-root::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: url('https://www.transparenttextures.com/patterns/stardust.png');
+  opacity: 0.3;
+  z-index: -1;
+  pointer-events: none;
 }
