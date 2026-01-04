@@ -520,3 +520,43 @@
   color: white;
   margin-top: 5px;
 }
+
+.portal-content {
+  width: 95%;
+  max-width: 1200px;
+  height: 90vh; /* تأخذ 90% من طول الشاشة */
+  background: #0d1117;
+  border-radius: 25px 25px 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--primary-glow);
+}
+
+.portal-body {
+  flex: 1; /* تجعل الـ iframe يأخذ المساحة المتبقية */
+  width: 100%;
+}
+
+.portal-body iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: white; /* بعض المواقع تظهر بشكل أفضل بخلفية بيضاء */
+}
+
+/* تحسين شكل الهيدر في النافذة */
+.portal-header {
+  padding: 15px 25px;
+  background: linear-gradient(to left, #161b22, #0d1117);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 242, 255, 0.2);
+}
+
+.portal-header h3 {
+  color: var(--primary-glow);
+  font-size: 1.1rem;
+  margin: 0;
+}
