@@ -1583,3 +1583,37 @@ h1, h2, h3 {
   font-weight: bold;
   cursor: pointer;
 }
+
+
+.neon-submit-btn {
+  background: linear-gradient(45deg, #00f2ff, #7000ff);
+  border: none;
+  color: white;
+  padding: 15px;
+  border-radius: 12px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.neon-submit-btn:hover {
+  box-shadow: 0 0 30px rgba(0, 242, 255, 0.7);
+  transform: translateY(-3px);
+}
+
+.cyber-input-wrapper input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 242, 255, 0.2);
+  color: white;
+  padding: 12px;
+  width: 100%;
+  border-radius: 8px;
+  outline: none;
+}
+
+.cyber-input-wrapper input:focus {
+  border-color: #00f2ff;
+  box-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+}
