@@ -302,23 +302,56 @@ const Religious = ({ user }) => {
         <button onClick={() => setActivePortal('khatma')}><Star /> الختمة</button>
         <button onClick={() => setActivePortal('qa')}><MessageCircle /> سؤال وجواب</button>
       </footer>
-
-      {/* بوابات الخدمات */}
+{/* بوابات الخدمات المتطورة */}
       <AnimatePresence>
         {activePortal && (
-          <motion.div className="portal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <motion.div className="portal-content" initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}>
+          <motion.div 
+            className="portal-overlay" 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            onClick={() => setActivePortal(null)} // إغلاق عند الضغط خارج المحتوى
+          >
+            <motion.div 
+              className="portal-content" 
+              initial={{ y: "100%" }} 
+              animate={{ y: 0 }} 
+              exit={{ y: "100%" }}
+              onClick={(e) => e.stopPropagation()} // منع الإغلاق عند الضغط داخل النافذة
+            >
               <div className="portal-header">
-                <h3>{activePortal === 'quran' ? "المصحف الشريف" : activePortal === 'khatma' ? "الختمة الجماعية" : "المكتبة الإسلامية"}</h3>
-                <button onClick={() => setActivePortal(null)}><X /></button>
+                <h3>
+                  {activePortal === 'quran' && "المصحف الإلكتروني الكامل"}
+                  {activePortal === 'khatma' && "جامع علوم القرآن والتفاسير"}
+                  {activePortal === 'azkar' && "حصن المسلم والأذكار"}
+                  {activePortal === 'qa' && "أسئلة وأجوبة في العقيدة والمنهج"}
+                </h3>
+                <button className="close-portal" onClick={() => setActivePortal(null)}><X /></button>
               </div>
-              <iframe src={activePortal === 'quran' ? "https://quran.com" : "https://www.azkary.com"} title="islam-service" />
+
+              <div className="portal-body">
+                <iframe 
+                  src={
+                    activePortal === 'quran' ? "https://quran.com" : 
+                    activePortal === 'khatma' ? "https://tafsir.app/" : 
+                    activePortal === 'qa' ? "https://islamqa.info/ar/categories/very-important/1/topics/1" : 
+                    "https://www.azkary.com"
+                  } 
+                  title="islam-service-frame" 
+                  loading="lazy"
+                />
+              </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+
+        </div>
+
   );
+
 };
+
+
 
 export default Religious;
