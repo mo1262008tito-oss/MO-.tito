@@ -97,6 +97,12 @@ function App() {
             </ProtectedRoute>
           } />
 
+          <Route path="/all-courses" element={
+  <ProtectedRoute isActive={userData?.isSecondaryActive} loading={loading}>
+    <AllCourses />
+  </ProtectedRoute>
+} />
+          
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
@@ -106,5 +112,6 @@ function App() {
 
 
 export default App;
+
 
 
