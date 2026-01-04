@@ -1546,3 +1546,40 @@ h1, h2, h3 {
   border: 2px dashed rgba(255, 255, 255, 0.2);
 }
 
+.lock-screen-futuristic {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(0, 242, 255, 0.3);
+  padding: 50px;
+  border-radius: 20px;
+  text-align: center;
+  margin: 20px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+}
+
+.lock-icon {
+  font-size: 50px;
+  margin-bottom: 20px;
+  animation: pulse 2s infinite;
+}
+
+.code-input-wrapper input {
+  padding: 15px;
+  border-radius: 10px;
+  border: none;
+  background: #000;
+  color: #00f2ff;
+  font-family: 'Orbitron', sans-serif;
+  margin-right: 10px;
+  width: 250px;
+}
+
+.code-input-wrapper button {
+  padding: 15px 30px;
+  border-radius: 10px;
+  border: none;
+  background: #00f2ff;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+}
