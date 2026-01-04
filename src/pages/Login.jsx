@@ -8,7 +8,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-import './Global.css'; // تأكد من إضافة التنسيقات التي أرسلتها لك
+import './Login.css'; // تأكد من إضافة التنسيقات التي أرسلتها لك
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -174,4 +174,5 @@ const Login = () => {
 };
 
 export default Login;
+
 
