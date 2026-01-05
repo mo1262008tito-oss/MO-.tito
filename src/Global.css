@@ -1,1 +1,159 @@
+/* --- Global Reset & Blackout --- */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  /* اللون الأسود العميق لمنصتك لضمان عدم ظهور أي بياض */
+  background-color: #020408 !important; 
+  color: #ffffff;
+  font-family: 'Cairo', sans-serif;
+  overflow-x: hidden;
+}
+
+/* تنظيف أي فراغات افتراضية */
+* {
+  box-sizing: border-box;
+}
+
+/* --- معالجة شريط التنقل (Navbar) --- */
+/* لضمان أنه يطفو فوق المحتوى ولا يترك فراغاً أبيض خلفه */
+.super-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background: rgba(10, 15, 28, 0.8) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* --- معالجة الصفحات (Main Content) --- */
+/* هذا الكود يضمن أن كل صفحة تبدأ من خلف الناف بار وتأخذ لون الخلفية */
+main, .app-main-wrapper {
+  background-color: #020408;
+  min-height: 100vh;
+  padding-top: 0; /* لضمان عدم وجود فجوة علوية */
+}
+
+/* --- تخصيص شريط التمرير (Scrollbar) --- */
+/* لأن شريط التمرير الأبيض العادي يشوه التصميم المظلم */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #020408;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #00f2ff, #7000ff);
+  border-radius: 10px;
+}
+
+/* --- إخفاء أي بياض ناتج عن الصور غير المحملة --- */
+img {
+  color: transparent;
+}
+
+/* index.css */
+
+/* 1. تصفير شامل وحذف أي هوامش تسبب بياض في الأطراف */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 2. إجبار المتصفح على اللون الأسود العميق من الجذور */
+html, body, #root {
+    background-color: #020408 !important; /* هذا هو لون منصتك الأساسي */
+    min-height: 100vh;
+    width: 100%;
+    color: #ffffff;
+    font-family: 'Cairo', sans-serif;
+    overflow-x: hidden;
+}
+
+/* 3. دمج الناف بار مع الصفحة */
+/* نجعل الناف بار يطفو فوق الخلفية السوداء مباشرة */
+.super-nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 9999;
+    background: rgba(10, 15, 28, 0.8) !important; /* شفافية بسيطة */
+    backdrop-filter: blur(15px); /* تأثير الزجاج */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 4. تعديل شريط التمرير لأنه يظهر باللون الأبيض ويشوه المنظر */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #020408;
+}
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #00f2ff, #7000ff);
+    border-radius: 10px;
+}
+
+/* Global.css */
+
+/* 1. تصفير شامل لمنع أي هوامش بيضاء افتراضية من المتصفح */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 2. إجبار الخلفية السوداء على جذور الموقع (هذا يقتل البياض فوراً) */
+html, body, #root {
+    background-color: #020408 !important; /* لون المنصة الأساسي */
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    color: #ffffff;
+    /* منع الارتداد الأبيض عند السحب في الموبايل */
+    overscroll-behavior: none; 
+}
+
+/* 3. دمج الناف بار مع السقف تماماً */
+.super-nav {
+    position: fixed;
+    top: 0 !important;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(10, 15, 28, 0.9) !important;
+    backdrop-filter: blur(10px);
+}
+
+/* 4. تعديل الحاوية الرئيسية لتبدأ من خلف الناف بار */
+main, .app-main-wrapper {
+    background-color: #020408;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 5. إخفاء أي وميض أبيض أثناء تحميل الصور أو الانتقالات */
+img {
+    background-color: transparent !important;
+}
+
+/* 6. تنسيق شريط التمرير ليكون مظلماً (Scrollbar) */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #020408;
+}
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #00f2ff, #7000ff);
+    border-radius: 10px;
+}
+
+
 
