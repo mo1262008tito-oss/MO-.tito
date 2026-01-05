@@ -9,7 +9,7 @@ import {
   Users, BookOpen, Plus, Check, X, ShieldCheck, Search,
   Lock, Unlock, DollarSign, FileText, LayoutDashboard,
   PackagePlus, Download, Eye, Trash2, UserCheck, Wallet, ShieldAlert,
-  Hash, Video, HelpCircle, Layers, ClipboardList, Book, Save, Trash
+  Hash, Video, HelpCircle, Layers, ClipboardList, Book, Save
 } from 'lucide-react'; 
 
 import './AdminDash.css';
@@ -246,3 +246,4 @@ const StatCard = ({icon, title, value, color}) => (
 );
 
 export default AdminDash;
+
