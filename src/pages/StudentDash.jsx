@@ -1,35 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { auth, db } from '../firebase';
-import { doc, onSnapshot, updateDoc, arrayUnion, increment } from 'firebase/firestore';
+import { 
+  doc, onSnapshot, updateDoc, arrayUnion, 
+  increment, getDoc, collection, query, where, getDocs 
+} from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Layout, Book, Target, Zap, Power, Search, X, CheckCircle, Award, Database } from 'lucide-react';
+import { 
+  Layout, Book, Target, Zap, Power, Search, X, 
+  CheckCircle, Award, Database, MessageSquare, 
+  BookOpen, Star, Clock, Flame, ChevronLeft
+} from 'lucide-react';
 import './StudentDash.css';
 
 const StudentDash = () => {
   const [student, setStudent] = useState(null);
-  const [showLibrary, setShowLibrary] = useState(false);
+  const [activeTab, setActiveTab] = useState('my-courses'); // my-courses, store, notes
   const [taskText, setTaskText] = useState("");
   const [notif, setNotif] = useState("");
+  const [availableCourses, setAvailableCourses] = useState([]);
   
+  // مؤقت البومودورو (Pomodoro)
   const [minutes, setMinutes] = useState(25);
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
 
-  const library = [
-    { id: 'web1', name: 'احتراف تطوير الويب', desc: 'بيئة React و Firebase المتكاملة', icon: '🌐' },
-    { id: 'ai1', name: 'هندسة الذكاء الاصطناعي', desc: 'الشبكات العصبية ولغة بايثون', icon: '🧠' },
-    { id: 'ui1', name: 'تصميم واجهات المستقبل', desc: 'تجربة المستخدم والواجهات الفضائية', icon: '🎨' }
-  ];
-
   useEffect(() => {
     if (auth.currentUser) {
+      // 1. جلب بيانات الطالب وتحديثها لحظياً
       const unsub = onSnapshot(doc(db, "users", auth.currentUser.uid), (d) => {
         if (d.exists()) setStudent(d.data());
       });
+
+      // 2. جلب الكورسات المتاحة في المنصة (المتجر)
+      const fetchStore = async () => {
+        const q = collection(db, "courses_metadata");
+        const snap = await getDocs(q);
+        setAvailableCourses(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      };
+      
+      fetchStore();
       return () => unsub();
     }
   }, []);
 
+  // منطق المؤقت
   useEffect(() => {
     let interval = null;
     if (isActive && (minutes > 0 || seconds > 0)) {
@@ -39,7 +53,7 @@ const StudentDash = () => {
       }, 1000);
     } else if (minutes === 0 && seconds === 0) {
       setIsActive(false);
-      triggerNotif("اكتملت المهمة: انتهت جلسة التركيز بنجاح");
+      triggerNotif("انتهت جلسة التركيز! خذ استراحة قصيرة ☕");
     }
     return () => clearInterval(interval);
   }, [isActive, minutes, seconds]);
@@ -47,16 +61,6 @@ const StudentDash = () => {
   const triggerNotif = (msg) => {
     setNotif(msg);
     setTimeout(() => setNotif(""), 4000);
-  };
-
-  const enroll = async (course) => {
-    if (student.myCourses?.some(c => c.id === course.id)) return triggerNotif("هذه الوحدة مدمجة بالفعل في ملفك");
-    const ref = doc(db, "users", auth.currentUser.uid);
-    await updateDoc(ref, { 
-      myCourses: arrayUnion({ ...course, progress: 0 }),
-      points: increment(50)
-    });
-    triggerNotif(`تم اكتساب وحدة جديدة: ${course.name}`);
   };
 
   const addTask = async () => {
@@ -67,144 +71,153 @@ const StudentDash = () => {
       points: increment(10)
     });
     setTaskText("");
-    triggerNotif("تم تسجيل المهمة في الرابط العصبي");
+    triggerNotif("تمت إضافة المهمة للرابط العصبي 🧠");
   };
 
-  if (!student) return (
-    <div className="loading-vortex">
-      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}>
-        <Zap size={50} color="#00f2ff" />
-      </motion.div>
-      <span>جاري المزامنة مع الخادم الرئيسي...</span>
-    </div>
-  );
+  if (!student) return <div className="loading-screen">جاري تحميل مصفوفة البيانات...</div>;
 
   return (
-    <div className={`dash-main-root rtl-support ${isActive ? 'focus-mode-active' : ''}`}>
+    <div className={`student-nebula-root ${isActive ? 'focus-mode' : ''}`}>
       
-      {/* إشعارات النظام */}
+      {/* التنبيهات الذكية */}
       <AnimatePresence>
         {notif && (
-          <motion.div initial={{ x: -300 }} animate={{ x: 0 }} exit={{ x: -300 }} className="neural-notif">
-            <Zap size={18} /> {notif}
+          <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 20, opacity: 1 }} exit={{ y: -50 }} className="smart-alert">
+            <Zap size={20} /> {notif}
           </motion.div>
         )}
       </AnimatePresence>
 
-      <header className="space-header">
-        <div className="user-profile-section">
-          <motion.div whileHover={{ scale: 1.1 }} className="avatar-orb">
-            <img src={student.photoURL || "https://api.dicebear.com/7.x/bottts/svg?seed=Felix"} alt="avatar" />
-            <div className="pulse-ring"></div>
-          </motion.div>
-          <div className="user-meta">
-            <h2>{student.displayName} <span className="status-badge">نشط الآن</span></h2>
-            <p className="rank-title">مستكشف النظم | المستوى {Math.floor(student.points / 500) + 1}</p>
-          </div>
+      {/* شريط الأدوات الجانبي - Sidebar */}
+      <nav className="side-dock">
+        <div className="dock-logo"><Zap color="#00f2ff" /></div>
+        <button className={activeTab === 'my-courses' ? 'active' : ''} onClick={() => setActiveTab('my-courses')}><Layout /></button>
+        <button className={activeTab === 'store' ? 'active' : ''} onClick={() => setActiveTab('store')}><Database /></button>
+        <button className={activeTab === 'notes' ? 'active' : ''} onClick={() => setActiveTab('notes')}><BookOpen /></button>
+        <div className="dock-bottom">
+          <button onClick={() => auth.signOut()}><Power color="#ff4b2b" /></button>
         </div>
+      </nav>
 
-        <div className="global-stats-hub">
-          <div className="stat-box">
-            <span className="label">طاقة النور (XP)</span>
-            <span className="value">{student.points}</span>
-            <div className="energy-bar">
-              <motion.div initial={{ width: 0 }} animate={{ width: `${(student.points % 500) / 5}%` }} className="energy-fill" />
+      {/* المحتوى الرئيسي */}
+      <main className="nebula-container">
+        
+        {/* الهيدر العلوي */}
+        <header className="nebula-header">
+          <div className="profile-hub">
+            <div className="avatar-shield">
+              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${student.email}`} alt="user" />
             </div>
-          </div>
-        </div>
-
-        <button onClick={() => auth.signOut()} className="disconnect-btn">
-          <Power size={20} /> <span>قطع الاتصال</span>
-        </button>
-      </header>
-
-      <div className="grid-layout">
-        {/* الجناح الأيمن: الأدوات */}
-        <aside className="right-wing">
-          <motion.div whileHover={{ y: -5 }} className="glass-module pomodoro-v2">
-            <h3><Target size={18} /> نواة التركيز</h3>
-            <div className={`timer-display ${isActive ? 'breathing' : ''}`}>
-              {String(minutes).padStart(2,'0')}:<span>{String(seconds).padStart(2,'0')}</span>
-            </div>
-            <div className="timer-controls">
-              <button onClick={() => setIsActive(!isActive)}>
-                {isActive ? "إيقاف المهمة" : "بدء التركيز"}
-              </button>
-              <button onClick={() => {setIsActive(false); setMinutes(25); setSeconds(0);}}>إعادة ضبط</button>
-            </div>
-          </motion.div>
-
-          <div className="glass-module missions-v2">
-            <h3><Layout size={18} /> سجل العمليات</h3>
-            <div className="input-vortex">
-              <input value={taskText} onChange={(e)=>setTaskText(e.target.value)} placeholder="أضف مهمة جديدة..." />
-              <button onClick={addTask}><Zap size={16}/></button>
-            </div>
-            <div className="mission-scroller custom-scroll">
-              {student.tasks?.map(t => (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} key={t.id} className="mission-node">
-                  <CheckCircle size={14} className="node-icon" />
-                  <span>{t.text}</span>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </aside>
-
-        {/* الجناح المركزي: الوحدات المعرفية */}
-        <main className="center-deck-v2">
-          <div className="deck-nav">
-            <h1>الوحدات المكتسبة</h1>
-            <button className="scan-trigger" onClick={() => setShowLibrary(true)}>
-              <Database size={18} /> مسح المكتبة
-            </button>
-          </div>
-
-          <div className="knowledge-grid">
-            {student.myCourses?.map(c => (
-              <motion.div whileHover={{ scale: 1.02 }} key={c.id} className="knowledge-card neon-border">
-                <div className="card-header">
-                  <span className="icon-wrap">{c.icon || '📦'}</span>
-                  <div className="meta">
-                    <h4>{c.name}</h4>
-                    <code>معرف_النظام: {c.id}</code>
-                  </div>
-                </div>
-                <div className="sync-status">
-                  <div className="sync-label">مستوى المزامنة: {c.progress}%</div>
-                  <div className="sync-bar"><div className="fill" style={{width: `${c.progress}%`}} /></div>
-                </div>
-                <button className="enter-btn">دخول المحاكاة</button>
-              </motion.div>
-            ))}
-          </div>
-        </main>
-      </div>
-
-      {/* مودال قاعدة البيانات */}
-      <AnimatePresence>
-        {showLibrary && (
-          <div className="library-overlay">
-            <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} exit={{ scale: 0.8 }} className="library-modal">
-              <div className="modal-top">
-                <h2>قاعدة البيانات المركزية</h2>
-                <button onClick={()=>setShowLibrary(false)}><X /></button>
+            <div className="name-plate">
+              <h1>مرحباً، {student.name || 'أيها البطل'}</h1>
+              <div className="badges-row">
+                <span className="rank-badge"><Award size={14} /> مستوى {Math.floor((student.points || 0) / 100) + 1}</span>
+                <span className="streak-badge"><Flame size={14} /> 5 أيام متواصلة</span>
               </div>
-              <div className="library-shelf">
-                {library.map(l => (
-                  <div key={l.id} className="shelf-item">
-                    <div className="item-info">
-                      <h3>{l.icon} {l.name}</h3>
-                      <p>{l.desc}</p>
-                    </div>
-                    <button onClick={() => enroll(l)}>تحميل البيانات</button>
+            </div>
+          </div>
+
+          <div className="xp-counter">
+            <div className="xp-info"><span>طاقة المعرفة (XP)</span> <strong>{student.points || 0}</strong></div>
+            <div className="xp-bar-outer"><div className="xp-bar-inner" style={{width: `${(student.points % 100)}%`}}></div></div>
+          </div>
+        </header>
+
+        <div className="main-grid-layout">
+          
+          {/* المنطقة الوسطى - تتغير حسب التاب */}
+          <section className="content-core">
+            <AnimatePresence mode="wait">
+              
+              {/* تاب: كورساتي (الوحدات المفتوحة) */}
+              {activeTab === 'my-courses' && (
+                <motion.div key="my-courses" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                  <div className="section-title"><h2><Layout /> الوحدات المكتسبة</h2></div>
+                  <div className="courses-grid-v2">
+                    {student.enrolledContent?.length > 0 ? (
+                      availableCourses.filter(c => student.enrolledContent.includes(c.id)).map(course => (
+                        <div key={course.id} className="course-nebula-card">
+                          <div className="card-thumb" style={{backgroundImage: `url(${course.thumbnail})`}}>
+                            <div className="progress-orb">{course.progress || 0}%</div>
+                          </div>
+                          <div className="card-details">
+                            <h3>{course.title}</h3>
+                            <p>{course.instructor}</p>
+                            <button className="launch-btn" onClick={() => window.location.href='/high-school'}>دخول الوحدة <ChevronLeft size={16}/></button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="empty-state">
+                        <Database size={50} />
+                        <p>لا توجد كورسات مفعلة حالياً. اذهب للمتجر لتفعيل كود جديد.</p>
+                        <button onClick={() => setActiveTab('store')}>استكشاف الكورسات</button>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* تاب: المتجر (استكشاف) */}
+              {activeTab === 'store' && (
+                <motion.div key="store" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                  <div className="section-title"><h2><Database /> مكتبة المنصة</h2></div>
+                  <div className="store-grid">
+                    {availableCourses.map(c => (
+                      <div key={c.id} className="store-item">
+                        <img src={c.thumbnail} alt={c.title} />
+                        <div className="store-info">
+                          <h4>{c.title}</h4>
+                          <span>{c.price} ج.م</span>
+                          <button onClick={() => window.location.href='/high-school'}>تفعيل بالكود</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+            </AnimatePresence>
+          </section>
+
+          {/* الجناح الأيسر - أدوات المساعدة */}
+          <aside className="nebula-tools">
+            
+            {/* مؤقت التركيز */}
+            <div className="tool-card pomodoro-nebula">
+              <h3><Target size={18} /> جلسة تركيز العميق</h3>
+              <div className="timer-circles">
+                <svg viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="45" className="bg"></circle>
+                  <circle cx="50" cy="50" r="45" className="prog" style={{strokeDashoffset: 282 - (282 * (minutes * 60 + seconds)) / 1500}}></circle>
+                </svg>
+                <div className="time-text">{String(minutes).padStart(2,'0')}:{String(seconds).padStart(2,'0')}</div>
+              </div>
+              <button onClick={() => setIsActive(!isActive)} className={isActive ? 'stop' : 'start'}>
+                {isActive ? 'إيقاف المحاكاة' : 'بدء التركيز'}
+              </button>
+            </div>
+
+            {/* سجل المهام */}
+            <div className="tool-card mission-control">
+              <h3><CheckCircle size={18} /> قائمة المهام اليومية</h3>
+              <div className="task-input">
+                <input value={taskText} onChange={(e)=>setTaskText(e.target.value)} placeholder="ماذا ستنجز اليوم؟" />
+                <button onClick={addTask}><Zap size={14}/></button>
+              </div>
+              <div className="task-list">
+                {student.tasks?.slice(-5).map(t => (
+                  <div key={t.id} className="task-item">
+                    <div className="bullet"></div>
+                    <span>{t.text}</span>
                   </div>
                 ))}
               </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+            </div>
+
+          </aside>
+        </div>
+      </main>
     </div>
   );
 };
