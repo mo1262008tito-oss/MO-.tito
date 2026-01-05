@@ -9,275 +9,235 @@ import {
   Users, BookOpen, Plus, Check, X, ShieldCheck, Search,
   Lock, Unlock, DollarSign, FileText, LayoutDashboard,
   PackagePlus, Download, Eye, Trash2, UserCheck, Wallet, ShieldAlert,
-  Hash // <--- أضف هذه الكلمة هنا بالضبط
+  Hash, Video, HelpCircle, Layers, ClipboardList, Book
 } from 'lucide-react'; 
 
 import './AdminDash.css';
 
 const AdminDash = () => {
   const [activeSection, setActiveSection] = useState('stats');
-  const [stats, setStats] = useState({ students: 0, courses: 0, pending: 0, codes: 0, books: 0, income: 0 });
+  const [stats, setStats] = useState({ students: 0, courses: 0, pending: 0, codes: 0, books: 0 });
   const [payments, setPayments] = useState([]);
   const [generatedCodes, setGeneratedCodes] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterGrade, setFilterGrade] = useState('all');
-  const [showImgModal, setShowImgModal] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [books, setBooks] = useState([]);
   
-  // الحالة الموسعة لنموذج إضافة محتوى جديد
-  const [newContent, setNewContent] = useState({ 
-    title: '', grade: '1', instructor: '', url: '', type: 'paid_course', thumbnail: '' 
+  // --- حالات الكورسات المتكاملة ---
+  const [isAddingCourse, setIsAddingCourse] = useState(false);
+  const [newCourse, setNewCourse] = useState({
+    title: '', instructor: '', subject: 'فيزياء', grade: '1', 
+    price: 0, thumbnail: '', accessType: 'full', lessons: [] 
   });
-  
-  const [securitySettings, setSecuritySettings] = useState({ watermark: true });
-  const [batchCount, setBatchCount] = useState(10);
+  const [currentLesson, setCurrentLesson] = useState({ id: Date.now(), title: '', videoUrl: '', quiz: [] });
+  const [currentQuestion, setCurrentQuestion] = useState({ q: '', options: ['', '', '', ''], correct: 0 });
+
+  // --- حالات الكتب والأكواد ---
+  const [newBook, setNewBook] = useState({ title: '', grade: '1', url: '', thumbnail: '' });
+  const [codeGenSettings, setCodeGenSettings] = useState({ count: 10, type: 'full_course', targetId: '' });
 
   useEffect(() => {
     const unsubUsers = onSnapshot(collection(db, "users"), (s) => {
-        setStats(prev => ({...prev, students: s.size}));
         setAllUsers(s.docs.map(d => ({ id: d.id, ...d.data() })));
+        setStats(prev => ({...prev, students: s.size}));
     });
-
-    const unsubCourses = onSnapshot(collection(db, "courses"), (s) => setStats(prev => ({...prev, courses: s.size})));
-    const unsubBooks = onSnapshot(collection(db, "library"), (s) => setStats(prev => ({...prev, books: s.size})));
-    
+    const unsubCourses = onSnapshot(collection(db, "courses_metadata"), (s) => {
+        setCourses(s.docs.map(d => ({id: d.id, ...d.data()})));
+        setStats(prev => ({...prev, courses: s.size}));
+    });
+    const unsubBooks = onSnapshot(collection(db, "library"), (s) => {
+        setBooks(s.docs.map(d => ({id: d.id, ...d.data()})));
+        setStats(prev => ({...prev, books: s.size}));
+    });
     const unsubPay = onSnapshot(query(collection(db, "paymentRequests"), where("status", "==", "pending")), (s) => {
       setPayments(s.docs.map(d => ({ id: d.id, ...d.data() })));
       setStats(prev => ({...prev, pending: s.size}));
     });
-
     const unsubCodes = onSnapshot(query(collection(db, "activationCodes"), orderBy("createdAt", "desc")), (s) => {
-      const docs = s.docs.map(d => ({ id: d.id, ...d.data() }));
-      setGeneratedCodes(docs);
-      setStats(prev => ({...prev, codes: s.size, income: docs.filter(c => c.isUsed).length * 100}));
+      setGeneratedCodes(s.docs.map(d => ({id: d.id, ...d.data()})));
     });
 
     return () => { unsubUsers(); unsubCourses(); unsubBooks(); unsubPay(); unsubCodes(); };
   }, []);
 
-  // --- دالة إضافة المحتوى الذكية (التقسيم الثلاثي) ---
-  const handleAddContent = async (e) => {
+  // --- وظائف الكورسات ---
+  const addQuestionToLesson = () => {
+    setCurrentLesson({ ...currentLesson, quiz: [...currentLesson.quiz, currentQuestion] });
+    setCurrentQuestion({ q: '', options: ['', '', '', ''], correct: 0 });
+  };
+  const addLessonToCourse = () => {
+    setNewCourse({ ...newCourse, lessons: [...newCourse.lessons, { ...currentLesson, id: `les_${Date.now()}` }] });
+    setCurrentLesson({ id: Date.now(), title: '', videoUrl: '', quiz: [] });
+  };
+  const saveFullCourse = async () => {
+    await addDoc(collection(db, "courses_metadata"), { ...newCourse, createdAt: serverTimestamp() });
+    alert("تم نشر الكورس المتكامل بنجاح!");
+    setIsAddingCourse(false);
+  };
+
+  // --- وظائف الكتب ---
+  const handleAddBook = async (e) => {
     e.preventDefault();
-    try {
-      let collectionName = "";
-      let additionalData = {};
-
-      if (newContent.type === 'book') {
-        collectionName = "library"; // تذهب للمكتبة
-      } else if (newContent.type === 'free_course') {
-        collectionName = "courses"; // تذهب للكورسات المجانية
-        additionalData = { isFree: true };
-      } else if (newContent.type === 'paid_course') {
-        collectionName = "secondary_education"; // تذهب للمنهج المدفوع
-        additionalData = { isFree: false };
-      }
-
-      await addDoc(collection(db, collectionName), {
-        title: newContent.title,
-        grade: newContent.grade,
-        instructor: newContent.instructor,
-        url: newContent.url,
-        thumbnail: newContent.thumbnail,
-        createdAt: serverTimestamp(),
-        ...additionalData
-      });
-
-      alert(`تم بنجاح إضافة "${newContent.title}" إلى قسم ${collectionName} ✅`);
-      setNewContent({ title: '', grade: '1', instructor: '', url: '', type: 'paid_course', thumbnail: '' });
-    } catch (error) {
-      alert("خطأ في الإضافة: " + error.message);
-    }
+    await addDoc(collection(db, "library"), { ...newBook, createdAt: serverTimestamp() });
+    alert("تم إضافة الكتاب للمكتبة");
+    setNewBook({ title: '', grade: '1', url: '', thumbnail: '' });
   };
 
-  const exportCodes = () => {
-    const unused = generatedCodes.filter(c => !c.isUsed).map(c => c.code).join('\n');
-    const blob = new Blob([unused], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `أكواد_مافا_${new Date().toLocaleDateString()}.txt`;
-    link.click();
-  };
-
-  const approvePayment = async (payId, userId) => {
-    await updateDoc(doc(db, "paymentRequests", payId), { status: "approved" });
-    await updateDoc(doc(db, "users", userId), { isSecondaryActive: true });
-    alert("تم تفعيل حساب الطالب ✅");
-  };
-
-  const handleGenerateCodes = async (count) => {
+  // --- نظام توليد الأكواد الذكي ---
+  const handleGenerateCodes = async () => {
+    const { count, type, targetId } = codeGenSettings;
+    if (!targetId && type !== 'general') return alert("برجاء اختيار الكورس أو المحاضرة المستهدفة");
+    
     for(let i=0; i < count; i++) {
       const code = "MAFA-" + Math.random().toString(36).substring(2, 9).toUpperCase();
       await addDoc(collection(db, "activationCodes"), {
-        code, isUsed: false, usedBy: null, createdAt: serverTimestamp(), type: "FullAccess"
+        code, 
+        isUsed: false, 
+        type, // 'full_course' or 'single_lesson'
+        targetId, // ID الكورس أو ID الدرس
+        createdAt: serverTimestamp()
       });
     }
-    alert(`تم توليد ${count} كود`);
+    alert(`تم توليد ${count} كود بنجاح`);
   };
 
   return (
     <div className="admin-app-wrapper" style={{direction: 'rtl'}}>
       <aside className="cyber-sidebar">
-        <div className="brand">
-          <ShieldCheck color="#00f2ff" size={32} />
-          <span>MAFA CONTROL</span>
-        </div>
+        <div className="brand"><ShieldCheck color="#00f2ff" size={32} /><span>MAFA SYSTEM</span></div>
         <nav className="side-nav">
           <button onClick={() => setActiveSection('stats')} className={activeSection === 'stats' ? 'active' : ''}><LayoutDashboard size={20}/> الإحصائيات</button>
+          <button onClick={() => setActiveSection('courses')} className={activeSection === 'courses' ? 'active' : ''}><Layers size={20}/> الكورسات</button>
+          <button onClick={() => setActiveSection('books')} className={activeSection === 'books' ? 'active' : ''}><Book size={20}/> المكتبة</button>
           <button onClick={() => setActiveSection('users')} className={activeSection === 'users' ? 'active' : ''}><Users size={20}/> الطلاب</button>
-          <button onClick={() => setActiveSection('content')} className={activeSection === 'content' ? 'active' : ''}><PackagePlus size={20}/> المحتوى</button>
-          <button onClick={() => setActiveSection('payments')} className={activeSection === 'payments' ? 'active' : ''}>
-            <Wallet size={20}/> الدفع {stats.pending > 0 && <span className="notif-pulse">{stats.pending}</span>}
-          </button>
+          <button onClick={() => setActiveSection('payments')} className={activeSection === 'payments' ? 'active' : ''}><Wallet size={20}/> الدفع ({stats.pending})</button>
           <button onClick={() => setActiveSection('codes')} className={activeSection === 'codes' ? 'active' : ''}><Hash size={20}/> الأكواد</button>
         </nav>
       </aside>
 
       <main className="admin-body">
-        <header className="top-bar">
-          <div className="admin-welcome">
-            <h2>لوحة القائد محمود</h2>
-            <p>تحكم كامل في منصة MAFA التعليمية</p>
-          </div>
-          <div className="security-toggle-header">
-             <span>حماية العلامة المائية:</span>
-             <button 
-                onClick={() => setSecuritySettings({watermark: !securitySettings.watermark})}
-                className={securitySettings.watermark ? 'btn-secure-on' : 'btn-secure-off'}
-             >
-                {securitySettings.watermark ? <ShieldCheck size={18}/> : <ShieldAlert size={18}/>}
-                {securitySettings.watermark ? "نشط" : "معطل"}
-             </button>
-          </div>
-        </header>
-
         <AnimatePresence mode="wait">
+          
           {/* 1. الإحصائيات */}
           {activeSection === 'stats' && (
-            <motion.div initial={{opacity:0}} animate={{opacity:1}} className="stats-container">
-              <div className="stats-grid-pro">
-                <StatCard icon={<Users/>} title="طلاب المنصة" value={stats.students} color="blue" />
-                <StatCard icon={<BookOpen/>} title="كورسات مجانية" value={stats.courses} color="purple" />
-                <StatCard icon={<FileText/>} title="المكتبة" value={stats.books} color="green" />
-                <StatCard icon={<DollarSign/>} title="مبيعات (ج.م)" value={stats.income} color="orange" />
-              </div>
-            </motion.div>
+            <div className="stats-grid-pro">
+              <StatCard icon={<Users/>} title="الطلاب" value={stats.students} color="blue" />
+              <StatCard icon={<Layers/>} title="الكورسات" value={stats.courses} color="purple" />
+              <StatCard icon={<Book/>} title="الكتب" value={stats.books} color="green" />
+              <StatCard icon={<Wallet/>} title="طلبات معلقة" value={stats.pending} color="orange" />
+            </div>
           )}
 
-          {/* 2. إدارة المحتوى (الكتب والكورسات) */}
-          {activeSection === 'content' && (
-            <motion.div initial={{opacity:0, y: 20}} animate={{opacity:1, y: 0}} className="section-card">
-              <h3>📦 إدارة ونشر المحتوى الذكي</h3>
-              <form onSubmit={handleAddContent} className="admin-content-form">
-                <div className="form-row">
-                  <select 
-                    value={newContent.type} 
-                    onChange={(e)=>setNewContent({...newContent, type: e.target.value})}
-                    style={{border: '1px solid #00f2ff'}}
-                  >
-                    <option value="paid_course">🎓 كورس مدفوع (منهج ثانوي)</option>
-                    <option value="free_course">📺 كورس مجاني (يوتيوب/عام)</option>
-                    <option value="book">📚 كتاب / مذكرة (PDF)</option>
-                  </select>
-                  <input type="text" placeholder="عنوان المحتوى" required value={newContent.title} onChange={(e)=>setNewContent({...newContent, title: e.target.value})} />
-                </div>
-                <div className="form-row">
-                  <select value={newContent.grade} onChange={(e)=>setNewContent({...newContent, grade: e.target.value})}>
-                    <option value="1">أولى ثانوي</option>
-                    <option value="2">ثانية ثانوي</option>
-                    <option value="3">ثالثة ثانوي</option>
-                  </select>
-                  <input type="text" placeholder="اسم المدرس" value={newContent.instructor} onChange={(e)=>setNewContent({...newContent, instructor: e.target.value})} />
-                </div>
-                <input type="text" placeholder="رابط الفيديو أو ملف الـ PDF" required value={newContent.url} onChange={(e)=>setNewContent({...newContent, url: e.target.value})} />
-                <input type="text" placeholder="رابط الصورة المصغرة (Thumbnail)" value={newContent.thumbnail} onChange={(e)=>setNewContent({...newContent, thumbnail: e.target.value})} />
-                <button type="submit" className="btn-add-content shadow-glow">
-                   <Plus size={18}/> نشر المحتوى الآن
-                </button>
-              </form>
-            </motion.div>
-          )}
-
-          {/* 3. الطلاب */}
-          {activeSection === 'users' && (
+          {/* 2. إدارة الكورسات والدروس */}
+          {activeSection === 'courses' && (
             <div className="section-card">
               <div className="card-header">
-                <h3>قاعدة الطلاب</h3>
-                <div className="filter-group">
-                  <select onChange={(e)=>setFilterGrade(e.target.value)}><option value="all">كل الصفوف</option><option value="1">أولى</option><option value="2">ثانية</option><option value="3">ثالثة</option></select>
-                  <div className="search-wrapper"><Search size={16}/><input placeholder="ابحث بالاسم..." onChange={(e)=>setSearchTerm(e.target.value)}/></div>
-                </div>
+                <h3>📦 مستودع الكورسات</h3>
+                {!isAddingCourse && <button className="btn-primary" onClick={() => setIsAddingCourse(true)}><Plus/> إنشاء كورس</button>}
               </div>
-              <table className="modern-table">
-                <thead><tr><th>الطالب</th><th>الصف</th><th>الحالة</th><th>إجراء</th></tr></thead>
-                <tbody>
-                  {allUsers.filter(u => (filterGrade === 'all' || u.grade === filterGrade) && u.name?.toLowerCase().includes(searchTerm.toLowerCase())).map(user => (
-                    <tr key={user.id}>
-                      <td>{user.name} <br/> <small>{user.email}</small></td>
-                      <td>{user.grade || "3"} ث</td>
-                      <td><span className={`status-pill ${user.isSecondaryActive ? 'active' : 'locked'}`}>{user.isSecondaryActive ? 'نشط' : 'مقفل'}</span></td>
-                      <td className="actions-cell">
-                        <button onClick={() => updateDoc(doc(db,"users",user.id),{isSecondaryActive: !user.isSecondaryActive})} className="btn-table-icon">
-                          {user.isSecondaryActive ? <Lock size={16}/> : <Unlock size={16}/>}
-                        </button>
-                        <button onClick={() => deleteDoc(doc(db,"users",user.id))} className="btn-delete"><Trash2 size={16}/></button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+
+              {isAddingCourse ? (
+                <div className="course-creator-box glass-card">
+                  <div className="form-grid">
+                    <input type="text" placeholder="عنوان الكورس" onChange={e => setNewCourse({...newCourse, title: e.target.value})} />
+                    <select onChange={e => setNewCourse({...newCourse, grade: e.target.value})}><option value="1">1 ثانوي</option><option value="2">2 ثانوي</option><option value="3">3 ثانوي</option></select>
+                    <input type="number" placeholder="السعر" onChange={e => setNewCourse({...newCourse, price: e.target.value})} />
+                    <select onChange={e => setNewCourse({...newCourse, accessType: e.target.value})}><option value="full">كود يفتح الكورس كامل</option><option value="per_video">كود لكل محاضرة</option></select>
+                  </div>
+
+                  <div className="lesson-adder-section">
+                    <h4>➕ إضافة محاضرة</h4>
+                    <input type="text" placeholder="عنوان المحاضرة" value={currentLesson.title} onChange={e => setCurrentLesson({...currentLesson, title: e.target.value})} />
+                    <input type="text" placeholder="رابط الفيديو" value={currentLesson.videoUrl} onChange={e => setCurrentLesson({...currentLesson, videoUrl: e.target.value})} />
+                    
+                    <div className="quiz-adder">
+                        <h5>📝 أسئلة المحاضرة ({currentLesson.quiz.length})</h5>
+                        <input type="text" placeholder="السؤال" value={currentQuestion.q} onChange={e => setCurrentQuestion({...currentQuestion, q: e.target.value})} />
+                        <button onClick={addQuestionToLesson} className="btn-small">إضافة السؤال</button>
+                    </div>
+                    <button onClick={addLessonToCourse} className="btn-add-lesson">حفظ المحاضرة في الكورس</button>
+                  </div>
+
+                  <button className="btn-save-all" onClick={saveFullCourse}>نشر الكورس المتكامل ✅</button>
+                  <button onClick={()=>setIsAddingCourse(false)}>إلغاء</button>
+                </div>
+              ) : (
+                <div className="list-display">
+                    {courses.map(c => <div key={c.id} className="item-row"><span>{c.title}</span> <span>{c.lessons.length} فيديو</span> <button onClick={()=>deleteDoc(doc(db,"courses_metadata",c.id))}><Trash2 size={16}/></button></div>)}
+                </div>
+              )}
             </div>
           )}
 
-          {/* 4. الدفع والأكواد */}
-          {activeSection === 'payments' && (
-             <div className="section-card">
-               <h3>طلبات الدفع المعلقة</h3>
-               <div className="payments-grid">
-                 {payments.length === 0 && <p className="empty-msg">لا توجد طلبات معلقة حالياً</p>}
-                 {payments.map(p => (
-                   <div key={p.id} className="payment-ticket">
-                     <h4>{p.studentName}</h4>
-                     <button onClick={() => setShowImgModal(p.screenshotUrl)} className="view-receipt"><Eye size={16}/> إيصال الدفع</button>
-                     <div className="ticket-actions">
-                       <button onClick={() => approvePayment(p.id, p.studentId)} className="btn-approve">تفعيل</button>
-                       <button onClick={() => deleteDoc(doc(db,"paymentRequests",p.id))} className="btn-reject"><X size={16}/></button>
-                     </div>
-                   </div>
-                 ))}
+          {/* 3. إدارة المكتبة (الكتب) */}
+          {activeSection === 'books' && (
+            <div className="section-card">
+               <h3>📚 إضافة كتب ومذكرات</h3>
+               <form onSubmit={handleAddBook} className="form-grid">
+                  <input type="text" placeholder="عنوان الكتاب" value={newBook.title} onChange={e => setNewBook({...newBook, title: e.target.value})} />
+                  <input type="text" placeholder="رابط PDF" value={newBook.url} onChange={e => setNewBook({...newBook, url: e.target.value})} />
+                  <button type="submit" className="btn-primary">نشر الكتاب</button>
+               </form>
+               <div className="list-display">
+                  {books.map(b => <div key={b.id} className="item-row">{b.title} <button onClick={()=>deleteDoc(doc(db,"library",b.id))}><Trash2 size={16}/></button></div>)}
                </div>
-             </div>
+            </div>
           )}
 
+          {/* 4. إدارة الأكواد الذكية */}
           {activeSection === 'codes' && (
             <div className="section-card">
-               <div className="card-header">
-                 <h3>إدارة الأكواد</h3>
-                 <div className="btn-group">
-                   <button onClick={exportCodes} className="btn-export"><Download size={16}/> تصدير</button>
-                   <button onClick={() => handleGenerateCodes(parseInt(batchCount))} className="btn-primary">توليد {batchCount}</button>
-                   <input type="number" className="batch-input" value={batchCount} onChange={(e)=>setBatchCount(e.target.value)} />
-                 </div>
+               <h3>🎫 نظام توليد الأكواد المخصصة</h3>
+               <div className="code-gen-box">
+                  <select onChange={e => setCodeGenSettings({...codeGenSettings, type: e.target.value})}>
+                    <option value="full_course">كود يفتح كورس كامل</option>
+                    <option value="single_lesson">كود يفتح محاضرة واحدة</option>
+                  </select>
+
+                  <select onChange={e => setCodeGenSettings({...codeGenSettings, targetId: e.target.value})}>
+                    <option value="">-- اختر الهدف --</option>
+                    {courses.map(c => (
+                        <optgroup key={c.id} label={c.title}>
+                            <option value={c.id}>الكورس كاملاً</option>
+                            {c.lessons.map(l => <option key={l.id} value={l.id}>فيديو: {l.title}</option>)}
+                        </optgroup>
+                    ))}
+                  </select>
+
+                  <input type="number" value={codeGenSettings.count} onChange={e => setCodeGenSettings({...codeGenSettings, count: e.target.value})} />
+                  <button onClick={handleGenerateCodes} className="btn-primary">توليد الأكواد</button>
                </div>
-               <div className="codes-flow">
-                 {generatedCodes.map(c => (
-                   <div key={c.id} className={`mini-code-card ${c.isUsed ? 'is-used' : ''}`}>
-                     <code>{c.code}</code>
-                     {c.isUsed ? <UserCheck size={14}/> : <button onClick={()=>deleteDoc(doc(db,"activationCodes",c.id))}><Trash2 size={14}/></button>}
-                   </div>
-                 ))}
+
+               <div className="codes-grid">
+                  {generatedCodes.slice(0, 50).map(c => (
+                    <div key={c.id} className={`code-tag ${c.isUsed ? 'used' : ''}`}>
+                        {c.code} <small>{c.type === 'full_course' ? '📦' : '🎥'}</small>
+                    </div>
+                  ))}
                </div>
             </div>
           )}
-        </AnimatePresence>
 
-        {showImgModal && (
-          <div className="img-modal-overlay" onClick={() => setShowImgModal(null)}>
-            <div className="modal-content">
-              <img src={showImgModal} alt="إيصال" />
-              <button className="close-modal-btn">إغلاق</button>
+          {/* 5. الطلاب والدفع (كما في الكود السابق) */}
+          {activeSection === 'users' && (
+            <div className="section-card">
+                <h3>إدارة الطلاب</h3>
+                <table className="modern-table">
+                    <thead><tr><th>الاسم</th><th>الحالة</th><th>إجراء</th></tr></thead>
+                    <tbody>
+                        {allUsers.map(u => (
+                            <tr key={u.id}>
+                                <td>{u.name}</td>
+                                <td>{u.isSecondaryActive ? 'نشط' : 'معطل'}</td>
+                                <td><button onClick={()=>updateDoc(doc(db,"users",u.id), {isSecondaryActive: !u.isSecondaryActive})}><Unlock/></button></td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
-          </div>
-        )}
+          )}
+
+        </AnimatePresence>
       </main>
     </div>
   );
@@ -291,4 +251,3 @@ const StatCard = ({icon, title, value, color}) => (
 );
 
 export default AdminDash;
-
