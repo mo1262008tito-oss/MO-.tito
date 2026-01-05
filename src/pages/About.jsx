@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Github, Linkedin, Globe, Code, Cpu, Rocket } from 'lucide-react';
+import { Github, Linkedin, Globe, Cpu, Rocket } from 'lucide-react';
+import './About.css'; // تأكد من ربط الملف هنا
 
 const About = () => {
   const mahmoudImg = "m2.png"; 
@@ -37,15 +38,14 @@ const About = () => {
       </section>
 
       <div className="team-container">
-        {/* كارت محمود - الـ Architect */}
+        {/* كارت محمود */}
         <motion.div 
           variants={cardVariants}
           initial="offscreen"
           whileInView="onscreen"
-          viewport={{ once: true, amount: 0.5 }}
+          viewport={{ once: true, amount: 0.3 }}
           className="ultra-card"
         >
-          <div className="card-glass-effect"></div>
           <div className="image-side">
             <div className="blob-bg"></div>
             <img src={mahmoudImg} alt="Mahmoud" className="member-img-3d" />
@@ -57,6 +57,7 @@ const About = () => {
             <div className="tech-stack">
               <div className="tech-item">React</div>
               <div className="tech-item">Node.js</div>
+              <div className="tech-item">Firebase</div>
               <div className="tech-item">AI</div>
             </div>
             <div className="social-links">
@@ -65,15 +66,14 @@ const About = () => {
           </div>
         </motion.div>
 
-        {/* كارت مستر فتحي - الـ Director */}
+        {/* كارت مستر فتحي */}
         <motion.div 
           variants={cardVariants}
           initial="offscreen"
           whileInView="onscreen"
-          viewport={{ once: true, amount: 0.5 }}
+          viewport={{ once: true, amount: 0.3 }}
           className="ultra-card reverse"
         >
-          <div className="card-glass-effect"></div>
           <div className="image-side">
             <div className="blob-bg gold"></div>
             <img src={fathyImg} alt="Mr. Fathy" className="member-img-3d" />
@@ -94,20 +94,17 @@ const About = () => {
         </motion.div>
       </div>
 
-      {/* قسم الإحصائيات الذكي */}
       <section className="stats-section">
-        <div className="stat-card">
-          <h3>+10k</h3>
-          <p>سطر برمجي</p>
-        </div>
-        <div className="stat-card">
-          <h3>+500</h3>
-          <p>طالب متميز</p>
-        </div>
-        <div className="stat-card">
-          <h3>24/7</h3>
-          <p>دعم تقني</p>
-        </div>
+        {[
+          { h: "+10k", p: "سطر برمجي" },
+          { h: "+500", p: "طالب متميز" },
+          { h: "24/7", p: "دعم تقني" }
+        ].map((s, i) => (
+          <div key={i} className="stat-card">
+            <h3>{s.h}</h3>
+            <p>{s.p}</p>
+          </div>
+        ))}
       </section>
     </div>
   );
