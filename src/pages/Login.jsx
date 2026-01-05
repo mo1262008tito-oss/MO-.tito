@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { auth, db } from '../firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  updateProfile, 
+  GoogleAuthProvider, 
+  signInWithPopup 
+} from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { LogIn, UserPlus, Mail, Lock, User, Sparkles } from 'lucide-react';
@@ -14,6 +20,34 @@ const Login = () => {
   const [name, setName] = useState('');
   const navigate = useNavigate();
 
+  // دالة تسجيل الدخول بجوجل
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // التحقق إذا كان المستخدم جديداً لإنشاء ملف له في Firestore
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      
+      if (!userDoc.exists()) {
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          name: user.displayName,
+          email: user.email,
+          role: 'student', // القيمة الافتراضية
+          createdAt: new Date(),
+          photoURL: user.photoURL
+        });
+      }
+      
+      navigate('/');
+    } catch (error) {
+      console.error(error);
+      alert("حدث خطأ أثناء تسجيل الدخول بجوجل: " + error.message);
+    }
+  };
+
   const handleAuth = async (e) => {
     e.preventDefault();
     try {
@@ -24,12 +58,11 @@ const Login = () => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: name });
         
-        // إنشاء ملف الطالب في الفايرستور
         await setDoc(doc(db, "users", userCredential.user.uid), {
           uid: userCredential.user.uid,
           name: name,
           email: email,
-          role: 'student', // القيمة الافتراضية طالب
+          role: 'student',
           createdAt: new Date()
         });
         navigate('/');
@@ -41,7 +74,6 @@ const Login = () => {
 
   return (
     <div className="login-page">
-      {/* العناصر العائمة في الخلفية */}
       <div className="floating-elements">
         <motion.div animate={{ y: [0, -50, 0] }} transition={{ duration: 6, repeat: Infinity }} className="blob blob-1"></motion.div>
         <motion.div animate={{ y: [0, 50, 0] }} transition={{ duration: 8, repeat: Infinity }} className="blob blob-2"></motion.div>
@@ -101,6 +133,17 @@ const Login = () => {
               {isLogin ? <><LogIn size={20} /> دخول</> : <><UserPlus size={20} /> إنشاء حساب</>}
             </button>
           </form>
+
+          {/* فاصل "أو" */}
+          <div className="auth-divider">
+            <span>أو</span>
+          </div>
+
+          {/* زر جوجل */}
+          <button onClick={handleGoogleSignIn} className="google-auth-btn">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/layout/google.png" alt="Google" />
+            تسجيل الدخول بواسطة جوجل
+          </button>
 
           <div className="auth-toggle">
             <span>{isLogin ? 'ليس لديك حساب؟' : 'لديك حساب بالفعل؟'}</span>
