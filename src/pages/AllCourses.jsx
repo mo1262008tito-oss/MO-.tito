@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth } from '../firebase';
-import { collection, onSnapshot, doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Filter, BookOpen, User, Star, PlusCircle, LogIn } from 'lucide-react';
+import './AllCourses.css';
 
 const AllCourses = () => {
   const navigate = useNavigate();
@@ -10,7 +13,7 @@ const AllCourses = () => {
   const [availableCourses, setAvailableCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 1. جلب الكورسات الحقيقية من قاعدة البيانات
+  // 1. جلب الكورسات من Firestore
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "courses"), (snapshot) => {
       const coursesData = snapshot.docs.map(doc => ({
@@ -23,68 +26,79 @@ const AllCourses = () => {
     return () => unsub();
   }, []);
 
-  // 2. تصفية الكورسات
+  // 2. تصفية البحث
   const filteredCourses = availableCourses.filter(course => 
     (filter === 'الكل' || course.category === filter) &&
-    (course.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-     course.instructor.toLowerCase().includes(searchTerm.toLowerCase()))
+    (course.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+     course.instructor?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // 3. دالة التسجيل في كورس (ربط الكورس بحساب الطالب)
+  // 3. دالة الاشتراك (التحقق من الهوية)
   const handleEnroll = async (courseId, courseName) => {
     const user = auth.currentUser;
+
+    // إذا لم يسجل دخول، نرسله لصفحة الدخول
     if (!user) {
-      alert("يرجى تسجيل الدخول أولاً للالتحاق بالكورسات");
+      alert("⚠️ يجب تسجيل الدخول أولاً لتتمكن من إضافة الكورس لمكتبتك.");
       return navigate('/login');
     }
 
     try {
       const userRef = doc(db, "users", user.uid);
-      // إضافة معرف الكورس إلى مصفوفة الكورسات الخاصة بالطالب في Firestore
+      const userSnap = await getDoc(userRef);
+
+      // التحقق إذا كان الكورس مضافاً مسبقاً
+      if (userSnap.exists() && userSnap.data().enrolledCourses?.includes(courseId)) {
+        alert("هذا الكورس موجود بالفعل في مكتبتك!");
+        return navigate('/student-dash');
+      }
+
       await updateDoc(userRef, {
         enrolledCourses: arrayUnion(courseId)
       });
       
-      alert(`✅ تم الاشتراك في كورس "${courseName}" بنجاح!`);
+      alert(`🚀 تهانينا! تم إضافة "${courseName}" إلى لوحة التحكم الخاصة بك.`);
       navigate('/student-dash');
     } catch (error) {
-      console.error("Error enrolling:", error);
-      alert("حدث خطأ أثناء الاشتراك، ربما تحتاج لتفعيل حسابك أولاً.");
+      console.error("Enrollment error:", error);
+      alert("حدث خطأ، تأكد من صلاحيات حسابك.");
     }
   };
 
-  if (loading) return <div className="loader">جاري فتح المكتبة...</div>;
+  if (loading) return (
+    <div className="loader-container">
+      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="loader-icon">⚙️</motion.div>
+      <p>جاري استدعاء البيانات المعرفية...</p>
+    </div>
+  );
 
   return (
-    <div style={{ padding: '100px 5%', direction: 'rtl', color: '#fff' }}>
-      
-      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <h1 className="glitch" style={{ fontSize: '2.5rem', color: '#f1c40f' }}>🚀 مكتبة MaFa Tec</h1>
-        <p style={{ color: '#ccc' }}>استكشف المحتوى التعليمي وابدأ في بناء مستقبلك الآن</p>
-      </div>
+    <div className="all-courses-root rtl-support">
+      {/* هيدر الصفحة */}
+      <section className="library-header">
+        <motion.h1 initial={{ y: -20 }} animate={{ y: 0 }} className="glitch">
+          🚀 مستودع MaFa Tec المعرفي
+        </motion.h1>
+        <p>تصفح بحرية، تعلم بذكاء، وابنِ مستقبلك</p>
+      </section>
 
-      {/* شريط البحث والفلترة */}
-      <div className="glass-card" style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', padding: '20px', marginBottom: '30px', alignItems: 'center', justifyContent: 'space-between' }}>
-        <input 
-          type="text" 
-          placeholder="ابحث عن مادة أو مدرس..." 
-          className="search-input"
-          style={{ flex: 1, minWidth: '250px' }}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+      {/* شريط البحث والتحكم */}
+      <div className="control-panel glass-card">
+        <div className="search-box">
+          <Search size={20} />
+          <input 
+            type="text" 
+            placeholder="ابحث عن مادة، مدرس، أو تخصص..." 
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        
+        <div className="filter-group">
+          <Filter size={18} />
           {['الكل', 'علمي', 'أدبي', 'لغات'].map(cat => (
             <button 
               key={cat} 
-              className={`filter-btn ${filter === cat ? 'active' : ''}`}
-              style={{
-                padding: '8px 20px',
-                borderRadius: '20px',
-                border: '1px solid #f1c40f',
-                background: filter === cat ? '#f1c40f' : 'transparent',
-                color: filter === cat ? '#000' : '#fff',
-                cursor: 'pointer'
-              }}
+              className={filter === cat ? 'active' : ''} 
               onClick={() => setFilter(cat)}
             >
               {cat}
@@ -94,48 +108,51 @@ const AllCourses = () => {
       </div>
 
       {/* شبكة الكورسات */}
-      <div className="courses-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '25px' }}>
-        {filteredCourses.map(course => (
-          <div key={course.id} className="all-course-card glass-card hover-up" style={{ position: 'relative', padding: '20px' }}>
-            <div className="card-badge" style={{ position: 'absolute', top: '10px', right: '10px', background: '#f1c40f', color: '#000', padding: '2px 10px', borderRadius: '10px', fontSize: '0.7rem' }}>
-              {course.category || 'عام'}
-            </div>
-            <div className="course-main-icon" style={{ fontSize: '3rem', textAlign: 'center', margin: '20px 0' }}>
-              {course.category === 'علمي' ? '🧪' : course.category === 'لغات' ? '🌍' : '📚'}
-            </div>
-            <h3 style={{ marginBottom: '10px' }}>{course.name}</h3>
-            <p style={{ color: '#aaa', fontSize: '0.9rem' }}>👨‍🏫 {course.instructor}</p>
-            
-            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '15px 0', fontSize: '0.8rem', color: '#f1c40f' }}>
-              <span>⭐ 4.9</span>
-              <span>👥 متاح للجميع</span>
-            </div>
+      <main className="courses-grid">
+        <AnimatePresence>
+          {filteredCourses.map(course => (
+            <motion.div 
+              layout
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              key={course.id} 
+              className="modern-course-card glass-card"
+            >
+              <div className="card-tag">{course.category || 'عام'}</div>
+              
+              <div className="card-visual">
+                <span className="emoji-icon">
+                  {course.category === 'علمي' ? '🧪' : course.category === 'لغات' ? '🌍' : '📚'}
+                </span>
+              </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '15px' }}>
-              <span style={{ color: '#2ecc71', fontWeight: 'bold' }}>{course.price} ج.م</span>
-              <button 
-                className="enroll-btn" 
-                style={{ 
-                  background: '#f1c40f', 
-                  color: '#000', 
-                  border: 'none', 
-                  padding: '8px 15px', 
-                  borderRadius: '5px', 
-                  fontWeight: 'bold', 
-                  cursor: 'pointer' 
-                }}
-                onClick={() => handleEnroll(course.id, course.name)}
-              >
-                إضافة للمكتبة +
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-      
+              <div className="card-details">
+                <h3>{course.name}</h3>
+                <div className="info-row">
+                  <User size={14} /> <span>{course.instructor}</span>
+                </div>
+                <div className="info-row rating">
+                  <Star size={14} fill="#f1c40f" /> <span>4.9 (مراجعة الطلاب)</span>
+                </div>
+
+                <div className="card-footer">
+                  <div className="price-tag">{course.price} ج.م</div>
+                  <button className="action-btn" onClick={() => handleEnroll(course.id, course.name)}>
+                    {auth.currentUser ? <PlusCircle size={18} /> : <LogIn size={18} />}
+                    {auth.currentUser ? 'إضافة للمكتبة' : 'سجل للدخول'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </main>
+
       {filteredCourses.length === 0 && (
-        <div style={{ textAlign: 'center', marginTop: '50px', opacity: 0.5 }}>
-          <p>لا توجد نتائج تطابق بحثك حالياً..</p>
+        <div className="empty-state">
+          <BookOpen size={48} />
+          <p>لا توجد بيانات تطابق بحثك حالياً في هذا القطاع.</p>
         </div>
       )}
     </div>
