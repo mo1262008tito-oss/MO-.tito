@@ -194,6 +194,7 @@ const AdminDash = () => {
             )}
           </div>
         )}
+        
 
         {/* 3. قسم الأكواد (التوليد والنسخ) */}
         {activeSection === 'codes' && (
@@ -241,6 +242,7 @@ const AdminDash = () => {
   );
 };
 
+
 const StatBox = ({ icon, label, value, color }) => (
   <div className={`stat-box ${color}`}>
     <div className="icon-wrap">{icon}</div>
@@ -252,4 +254,5 @@ const StatBox = ({ icon, label, value, color }) => (
 );
 
 export default AdminDash;
+
 
