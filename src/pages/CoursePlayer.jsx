@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db, auth } from '../firebase';
 import { 
@@ -8,9 +8,12 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Play, CheckCircle, ChevronRight, MessageSquare, 
-  BookOpen, Star, Info, List, ArrowRight, Save
+  BookOpen, Star, Info, List, ArrowRight, Save, Award
 } from 'lucide-react';
 import './CoursePlayer.css';
+
+// استيراد نظام الامتحانات الذي أنشأناه
+import QuizSystem from './QuizSystem'; 
 
 const CoursePlayer = () => {
   const { id } = useParams();
@@ -23,7 +26,6 @@ const CoursePlayer = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
-    // 1. جلب بيانات الكورس والدروس
     const fetchData = async () => {
       const docSnap = await getDoc(doc(db, "courses", id));
       if (docSnap.exists()) setCourseData(docSnap.data());
@@ -47,7 +49,6 @@ const CoursePlayer = () => {
     fetchData();
   }, [id]);
 
-  // دالة الحماية وتحويل الرابط
   const getEmbedUrl = (url) => {
     if (!url) return "";
     let videoId = "";
@@ -56,15 +57,14 @@ const CoursePlayer = () => {
     return `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&iv_load_policy=3&autoplay=1`;
   };
 
-  // تسجيل إتمام الدرس ومنح نقاط
   const markAsComplete = async (lessonId) => {
     if (!auth.currentUser) return;
     const userRef = doc(db, "users", auth.currentUser.uid);
     await updateDoc(userRef, {
       completedLessons: arrayUnion(lessonId),
-      points: increment(20) // مكافأة الانتهاء من درس
+      points: increment(20)
     });
-    alert("أحسنت! تم إضافة 20 نقطة XP لرصيدك 🌟");
+    alert("أحسنت! تم إتمام الدرس وإضافة 20 نقطة XP 🌟");
   };
 
   if (loading) return (
@@ -77,12 +77,11 @@ const CoursePlayer = () => {
   return (
     <div className="smart-player-root">
       
-      {/* العلامة المائية للحماية - يظهر إيميل الطالب بشكل خافت جداً ويتحرك */}
+      {/* الحماية بالعلامة المائية */}
       <div className="watermark-overlay">
         <span>{auth.currentUser?.email} - MAFA Academy</span>
       </div>
 
-      {/* الشريط العلوي */}
       <nav className="player-nav">
         <button onClick={() => navigate(-1)} className="back-btn">
           <ArrowRight size={20} /> العودة للمكتبة
@@ -93,13 +92,12 @@ const CoursePlayer = () => {
         </div>
         <div className="user-progress-mini">
           <Star size={18} color="#f1c40f" />
-          <span>{auth.currentUser?.displayName}</span>
+          <span>{auth.currentUser?.displayName || "طالب MAFA"}</span>
         </div>
       </nav>
 
       <div className="player-main-layout">
         
-        {/* منطقة الفيديو والمحتوى */}
         <section className={`video-section ${!isSidebarOpen ? 'full-width' : ''}`}>
           <div className="video-wrapper-neon">
             <iframe 
@@ -121,26 +119,44 @@ const CoursePlayer = () => {
               </button>
             </div>
             <div className="lesson-desc">
-              {currentLesson?.description || "لا يوجد وصف لهذه المحاضرة، ركز في الشرح!"}
+              {currentLesson?.description || "ركز في كل كلمة، القادم أهم!"}
             </div>
           </div>
 
-          {/* مفكرة الطالب الشخصية */}
+          {/* نظام الامتحانات - يظهر هنا تلقائياً إذا وجدت أسئلة في قاعدة البيانات */}
+          <AnimatePresence>
+            {currentLesson?.quiz && currentLesson.quiz.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="quiz-section-container"
+              >
+                <div className="quiz-banner">
+                  <Award size={24} color="#00f2ff" />
+                  <h3>امتحان تقييم الفهم للدرس</h3>
+                </div>
+                <QuizSystem 
+                  quizData={currentLesson.quiz} 
+                  lessonId={currentLesson.id} 
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <div className="student-notes-area">
-            <h3><MessageSquare size={18} /> مذكراتك الشخصية (تُحفظ سحابياً)</h3>
+            <h3><MessageSquare size={18} /> مذكراتك الشخصية</h3>
             <textarea 
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="اكتب أهم النقاط التي ذكرها المستر هنا..."
+              placeholder="سجل ملاحظاتك هنا أثناء المشاهدة..."
             ></textarea>
             <button className="save-notes"><Save size={16} /> حفظ الملاحظات</button>
           </div>
         </section>
 
-        {/* قائمة الدروس الجانبية الذكية */}
         <aside className={`playlist-sidebar ${!isSidebarOpen ? 'closed' : ''}`}>
           <div className="sidebar-header">
-            <h3>محتوى الكورس</h3>
+            <h3>قائمة المحاضرات</h3>
             <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="toggle-sidebar">
               <List size={20} />
             </button>
@@ -156,9 +172,13 @@ const CoursePlayer = () => {
                 <div className="lesson-index">{String(index + 1).padStart(2, '0')}</div>
                 <div className="lesson-meta">
                   <h4>{lesson.title}</h4>
-                  <span><Play size={12} /> 45:00 دقيقة</span>
+                  <span>{lesson.quiz ? `${lesson.quiz.length} أسئلة` : "فيديو فقط"}</span>
                 </div>
-                {currentLesson?.id === lesson.id && <div className="playing-wave"><span></span><span></span><span></span></div>}
+                {currentLesson?.id === lesson.id && (
+                  <div className="playing-wave">
+                    <span></span><span></span><span></span>
+                  </div>
+                )}
               </motion.div>
             ))}
           </div>
