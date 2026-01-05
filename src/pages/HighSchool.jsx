@@ -1,189 +1,161 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase';
-import { doc, getDoc, updateDoc, increment, arrayUnion, onSnapshot } from "firebase/firestore";
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Play, CheckCircle, ChevronRight, MessageSquare, 
-  BookOpen, Star, List, ArrowRight, Save, Award, Shield, 
-  Unlock, Volume2, Maximize, Clock
+  GraduationCap, BookOpen, PlayCircle, Shield, 
+  ChevronLeft, Star, Users, Layout, Search, Filter
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-// استيراد المكونات الفرعية
-import QuizSystem from './QuizSystem'; 
-import './CoursePlayer.css';
+import './HighSchool.css';
 
-const CoursePlayer = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [courseData, setCourseData] = useState(null);
-  const [currentLesson, setCurrentLesson] = useState(null);
+const HighSchool = () => {
+  const [courses, setCourses] = useState([]);
+  const [filteredCourses, setFilteredCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isSidebarOpen, setSidebarOpen] = useState(true);
-  const [completedLessons, setCompletedLessons] = useState([]);
-  const [progress, setProgress] = useState(0);
+  const [activeTab, setActiveTab] = useState('الكل');
+  const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
 
-  // 1. جلب البيانات لحظياً (Real-time)
+  // 1. جلب البيانات من الفايربيس مع الحماية
   useEffect(() => {
-    if (!auth.currentUser) {
-      navigate('/login');
-      return;
-    }
+    const fetchCourses = async () => {
+      try {
+        // جلب كافة الكورسات التي تندرج تحت تصنيف الثانوي
+        const q = query(collection(db, "courses_metadata"));
+        const querySnapshot = await getDocs(q);
+        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // تصفية الكورسات لتشمل فقط مراحل الثانوي
+        const hsData = data.filter(c => 
+          c.category?.includes("ثانوي") || 
+          ["1 ثانوي", "2 ثانوي", "3 ثانوي"].includes(c.category)
+        );
 
-    const unsubCourse = onSnapshot(doc(db, "courses_metadata", id), (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        setCourseData(data);
-        if (!currentLesson && data.lessons?.length > 0) {
-          setCurrentLesson(data.lessons[0]);
-        }
+        setCourses(hsData);
+        setFilteredCourses(hsData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error:", error);
+        setLoading(false);
       }
-    });
+    };
+    fetchCourses();
+  }, []);
 
-    const unsubUser = onSnapshot(doc(db, "users", auth.currentUser.uid), (snap) => {
-      if (snap.exists()) {
-        const userData = snap.data();
-        setCompletedLessons(userData.completedLessons || []);
-      }
-    });
-
-    return () => { unsubCourse(); unsubUser(); };
-  }, [id, currentLesson, navigate]);
-
-  // 2. حساب نسبة الإنجاز
+  // 2. نظام الفلترة الذكي
   useEffect(() => {
-    if (courseData?.lessons?.length > 0) {
-      const done = courseData.lessons.filter(l => completedLessons.includes(l.id)).length;
-      setProgress(Math.round((done / courseData.lessons.length) * 100));
+    let result = courses;
+    if (activeTab !== 'الكل') {
+      result = result.filter(c => c.category === activeTab);
     }
-  }, [completedLessons, courseData]);
+    if (searchTerm) {
+      result = result.filter(c => c.title.toLowerCase().includes(searchTerm.toLowerCase()));
+    }
+    setFilteredCourses(result);
+  }, [activeTab, searchTerm, courses]);
 
-  const getEmbedUrl = (url) => {
-    if (!url) return "";
-    const videoId = url.includes("v=") ? url.split("v=")[1].split("&")[0] : url.split("youtu.be/")[1]?.split("?")[0];
-    return `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&iv_load_policy=3&showinfo=0`;
-  };
-
-  const handleLessonComplete = async (lessonId) => {
-    if (completedLessons.includes(lessonId)) return;
-    const userRef = doc(db, "users", auth.currentUser.uid);
-    await updateDoc(userRef, {
-      completedLessons: arrayUnion(lessonId),
-      points: increment(100) // مكافأة إنهاء الدرس
-    });
-  };
-
-  if (loading && !courseData) return <div className="vortex-loading">جاري تحضير المحاضرة...</div>;
+  if (loading) return (
+    <div className="hs-loader">
+      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}>
+        <GraduationCap size={50} color="#00f2ff" />
+      </motion.div>
+      <p>جاري تجهيز المناهج الثانوية...</p>
+    </div>
+  );
 
   return (
-    <div className="smart-player-root no-select" onContextMenu={e => e.preventDefault()}>
-      
-      {/* العلامة المائية للحماية */}
-      <div className="dynamic-watermark">
-        {auth.currentUser?.email} — MAFA PROTECT
-      </div>
+    <div className="hs-root no-select rtl" onContextMenu={e => e.preventDefault()}>
+      {/* 🛡️ علامة مائية لحماية حقوقك */}
+      <div className="hs-watermark">{auth.currentUser?.email} | MAFA-SECURE</div>
 
-      {/* شريط الإنجاز العلوي */}
-      <div className="progress-top-bar" style={{ width: `${progress}%` }}></div>
-
-      <nav className="player-nav">
-        <div className="nav-right">
-          <button onClick={() => navigate('/dashboard')} className="back-btn">
-            <ArrowRight size={20} />
-          </button>
-          <div className="course-info-hub">
-            <h2>{courseData?.title}</h2>
-            <div className="sub-meta">
-              <span><Clock size={12}/> {progress}% مكتمل</span>
-              <span className="divider">|</span>
-              <span>{courseData?.instructor}</span>
-            </div>
+      {/* 🔝 الهيدر السينمائي */}
+      <header className="hs-hero glass">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }}
+          className="hero-content"
+        >
+          <div className="badge"><Shield size={14}/> محتوى محمي وحصري</div>
+          <h1>بوابة التعليم الثانوي <span className="neon-text">المطورة</span></h1>
+          <p>تعلم بذكاء، تفوق بمتعة. كل ما تحتاجه من محاضرات واختبارات في مكان واحد.</p>
+          
+          <div className="search-box-v2 glass">
+             <Search size={20} />
+             <input 
+               type="text" 
+               placeholder="ابحث عن مادة أو مدرس..." 
+               onChange={(e) => setSearchTerm(e.target.value)}
+             />
           </div>
-        </div>
-        <div className="nav-left">
-          <div className="xp-badge"><Award size={16}/> +100 XP</div>
-        </div>
+        </motion.div>
+      </header>
+
+      {/* 📑 شريط التنقل بين الصفوف */}
+      <nav className="hs-tabs glass">
+        {['الكل', '1 ثانوي', '2 ثانوي', '3 ثانوي'].map((tab) => (
+          <button 
+            key={tab}
+            className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tab}
+          </button>
+        ))}
       </nav>
 
-      <div className="player-main-layout">
-        <section className={`content-area ${!isSidebarOpen ? 'expanded' : ''}`}>
-          
-          <div className="video-canvas">
-            <div className="video-frame-neon">
-              <iframe 
-                src={getEmbedUrl(currentLesson?.videoUrl)}
-                title="MAFA Video Player"
-                allowFullScreen
-              ></iframe>
-            </div>
-          </div>
-
-          <div className="lesson-details-box glass-card">
-            <div className="details-header">
-              <h1>{currentLesson?.title}</h1>
-              <button 
-                className={`complete-action-btn ${completedLessons.includes(currentLesson?.id) ? 'active' : ''}`}
-                onClick={() => handleLessonComplete(currentLesson?.id)}
-              >
-                {completedLessons.includes(currentLesson?.id) ? <CheckCircle /> : <Play />}
-                {completedLessons.includes(currentLesson?.id) ? 'تم اجتياز الدرس' : 'تحديد كمكتمل'}
-              </button>
-            </div>
-            <p className="description">{currentLesson?.description || "لا يوجد وصف لهذه المحاضرة."}</p>
-          </div>
-
-          {/* نظام الامتحانات المدمج */}
-          <AnimatePresence mode="wait">
-            {currentLesson?.quiz?.length > 0 && (
+      {/* 🗂️ شبكة الكورسات */}
+      <main className="hs-main">
+        <div className="courses-grid">
+          <AnimatePresence>
+            {filteredCourses.length > 0 ? filteredCourses.map((course, index) => (
               <motion.div 
-                key={currentLesson.id}
-                initial={{ opacity: 0, scale: 0.95 }}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="quiz-wrapper"
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ delay: index * 0.1 }}
+                key={course.id} 
+                className="hs-card glass-card"
+                onClick={() => navigate(`/course/${course.id}`)}
               >
-                <div className="quiz-header-tag">
-                  <Unlock size={18} /> اختبر فهمك للمحاضرة
+                <div className="card-thumb">
+                  <img src={course.thumbnail || 'https://via.placeholder.com/400x225'} alt={course.title} />
+                  <div className="overlay-play"><PlayCircle size={50} /></div>
+                  <div className="category-tag">{course.category}</div>
                 </div>
-                <QuizSystem 
-                   quizData={currentLesson.quiz} 
-                   lessonId={currentLesson.id}
-                   onPass={() => handleLessonComplete(currentLesson.id)} 
-                />
+                
+                <div className="card-info">
+                  <h3>{course.title}</h3>
+                  <div className="instructor-line">
+                    <Users size={14} /> <span>{course.instructor || "مدرس المادة"}</span>
+                  </div>
+                  <div className="card-stats">
+                    <span><BookOpen size={14}/> {course.lessons?.length || 0} درس</span>
+                    <span><Star size={14} color="#ffd700"/> 4.9</span>
+                  </div>
+                  <button className="hs-enter-btn">
+                    ابدأ التعلم الآن <ChevronLeft size={18} />
+                  </button>
+                </div>
               </motion.div>
+            )) : (
+              <div className="no-courses glass">
+                <Layout size={40} />
+                <p>لا توجد كورسات متاحة حالياً في هذا القسم.</p>
+              </div>
             )}
           </AnimatePresence>
-        </section>
+        </div>
+      </main>
 
-        <aside className={`playlist-sidebar ${!isSidebarOpen ? 'collapsed' : ''}`}>
-          <div className="sidebar-top">
-            <h3>قائمة المحاضرات</h3>
-            <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="toggle-sidebar">
-              <List size={20} />
-            </button>
-          </div>
-          
-          <div className="lesson-items-container">
-            {courseData?.lessons?.map((lesson, idx) => (
-              <div 
-                key={lesson.id} 
-                className={`lesson-card ${currentLesson?.id === lesson.id ? 'current' : ''} ${completedLessons.includes(lesson.id) ? 'done' : ''}`}
-                onClick={() => setCurrentLesson(lesson)}
-              >
-                <div className="status-icon">
-                  {completedLessons.includes(lesson.id) ? <CheckCircle size={18} /> : <span>{idx + 1}</span>}
-                </div>
-                <div className="lesson-text">
-                  <h4>{lesson.title}</h4>
-                  <p>{lesson.quiz?.length || 0} أسئلة تقييمية</p>
-                </div>
-                {currentLesson?.id === lesson.id && <motion.div layoutId="active-pill" className="active-pill" />}
-              </div>
-            ))}
-          </div>
-        </aside>
-      </div>
+      {/* footer بسيط */}
+      <footer className="hs-footer">
+        <p>© 2026 منصة تيتو التعليمية - جميع الحقوق محفوظة</p>
+      </footer>
     </div>
   );
 };
 
-export default CoursePlayer;
+export default HighSchool;
