@@ -6,10 +6,9 @@ import {
 } from "firebase/firestore";
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Users, BookOpen, CreditCard, Plus, Check, X, 
-  BarChart3, Hash, Trash2, ShieldCheck, Search,
+  Users, BookOpen, Plus, Check, X, ShieldCheck, Search,
   Lock, Unlock, DollarSign, FileText, LayoutDashboard,
-  PackagePlus, Download, Eye, Filter, UserCheck, Wallet
+  PackagePlus, Download, Eye, Trash2, UserCheck, Wallet, ShieldAlert
 } from 'lucide-react';
 import './AdminDash.css';
 
@@ -21,11 +20,15 @@ const AdminDash = () => {
   const [allUsers, setAllUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGrade, setFilterGrade] = useState('all');
-  const [showImgModal, setShowImgModal] = useState(null); // لعرض إيصال الدفع
-
+  const [showImgModal, setShowImgModal] = useState(null);
+  
+  // لنموذج إضافة محتوى جديد
   const [newContent, setNewContent] = useState({ 
     title: '', grade: '1', instructor: '', url: '', type: 'course', thumbnail: '' 
   });
+  
+  // إعدادات الحماية (العلامة المائية)
+  const [securitySettings, setSecuritySettings] = useState({ watermark: true });
   const [batchCount, setBatchCount] = useState(10);
 
   useEffect(() => {
@@ -45,13 +48,28 @@ const AdminDash = () => {
     const unsubCodes = onSnapshot(query(collection(db, "activationCodes"), orderBy("createdAt", "desc")), (s) => {
       const docs = s.docs.map(d => ({ id: d.id, ...d.data() }));
       setGeneratedCodes(docs);
-      setStats(prev => ({...prev, codes: s.size, income: docs.filter(c => c.isUsed).length * 100})); // افتراض سعر الكود 100
+      setStats(prev => ({...prev, codes: s.size, income: docs.filter(c => c.isUsed).length * 100}));
     });
 
     return () => { unsubUsers(); unsubCourses(); unsubBooks(); unsubPay(); unsubCodes(); };
   }, []);
 
-  // 1. تصدير الأكواد لملف نصي
+  // --- دالة إضافة كورس أو كتاب ---
+  const handleAddContent = async (e) => {
+    e.preventDefault();
+    try {
+      const collectionName = newContent.type === 'course' ? 'courses' : 'library';
+      await addDoc(collection(db, collectionName), {
+        ...newContent,
+        createdAt: serverTimestamp(),
+      });
+      alert(`تم إضافة ${newContent.type === 'course' ? 'الكورس' : 'الكتاب'} بنجاح ✅`);
+      setNewContent({ title: '', grade: '1', instructor: '', url: '', type: 'course', thumbnail: '' });
+    } catch (error) {
+      alert("خطأ في الإضافة: " + error.message);
+    }
+  };
+
   const exportCodes = () => {
     const unused = generatedCodes.filter(c => !c.isUsed).map(c => c.code).join('\n');
     const blob = new Blob([unused], { type: 'text/plain' });
@@ -61,7 +79,6 @@ const AdminDash = () => {
     link.click();
   };
 
-  // 2. قبول الدفع وتفعيل الطالب
   const approvePayment = async (payId, userId) => {
     await updateDoc(doc(db, "paymentRequests", payId), { status: "approved" });
     await updateDoc(doc(db, "users", userId), { isSecondaryActive: true });
@@ -80,7 +97,6 @@ const AdminDash = () => {
 
   return (
     <div className="admin-app-wrapper" style={{direction: 'rtl'}}>
-      {/* Sidebar المطور */}
       <aside className="cyber-sidebar">
         <div className="brand">
           <ShieldCheck color="#00f2ff" size={32} />
@@ -89,28 +105,34 @@ const AdminDash = () => {
         <nav className="side-nav">
           <button onClick={() => setActiveSection('stats')} className={activeSection === 'stats' ? 'active' : ''}><LayoutDashboard size={20}/> الإحصائيات</button>
           <button onClick={() => setActiveSection('users')} className={activeSection === 'users' ? 'active' : ''}><Users size={20}/> الطلاب</button>
+          <button onClick={() => setActiveSection('content')} className={activeSection === 'content' ? 'active' : ''}><PackagePlus size={20}/> المحتوى</button>
           <button onClick={() => setActiveSection('payments')} className={activeSection === 'payments' ? 'active' : ''}>
             <Wallet size={20}/> الدفع {stats.pending > 0 && <span className="notif-pulse">{stats.pending}</span>}
           </button>
           <button onClick={() => setActiveSection('codes')} className={activeSection === 'codes' ? 'active' : ''}><Hash size={20}/> الأكواد</button>
-          <button onClick={() => setActiveSection('content')} className={activeSection === 'content' ? 'active' : ''}><PackagePlus size={20}/> المحتوى</button>
         </nav>
       </aside>
 
       <main className="admin-body">
-        {/* Header */}
         <header className="top-bar">
           <div className="admin-welcome">
             <h2>لوحة القائد محمود</h2>
-            <p>لديك {stats.pending} طلبات دفع تحتاج مراجعة</p>
+            <p>تحكم كامل في منصة MAFA التعليمية</p>
           </div>
-          <div className="quick-stats-mini">
-             <div className="mini-box"><span>الأرباح:</span> <strong>{stats.income} ج.م</strong></div>
+          <div className="security-toggle-header">
+             <span>حماية العلامة المائية:</span>
+             <button 
+                onClick={() => setSecuritySettings({watermark: !securitySettings.watermark})}
+                className={securitySettings.watermark ? 'btn-secure-on' : 'btn-secure-off'}
+             >
+                {securitySettings.watermark ? <ShieldCheck size={18}/> : <ShieldAlert size={18}/>}
+                {securitySettings.watermark ? "نشط" : "معطل"}
+             </button>
           </div>
         </header>
 
         <AnimatePresence mode="wait">
-          {/* 1. قسم الإحصائيات */}
+          {/* 1. الإحصائيات */}
           {activeSection === 'stats' && (
             <motion.div initial={{opacity:0}} animate={{opacity:1}} className="stats-container">
               <div className="stats-grid-pro">
@@ -122,25 +144,57 @@ const AdminDash = () => {
             </motion.div>
           )}
 
-          {/* 2. قسم الطلاب مع الفلترة */}
+          {/* 2. إدارة المحتوى (إضافة كورس/كتاب) */}
+          {activeSection === 'content' && (
+            <motion.div initial={{opacity:0, y: 20}} animate={{opacity:1, y: 0}} className="section-card">
+              <h3>📦 إضافة محتوى جديد (كورس / كتب)</h3>
+              <form onSubmit={handleAddContent} className="admin-content-form">
+                <div className="form-row">
+                  <select value={newContent.type} onChange={(e)=>setNewContent({...newContent, type: e.target.value})}>
+                    <option value="course">كورس فيديو</option>
+                    <option value="book">كتاب / مذكرة (PDF)</option>
+                  </select>
+                  <input type="text" placeholder="عنوان المحتوى" required value={newContent.title} onChange={(e)=>setNewContent({...newContent, title: e.target.value})} />
+                </div>
+                <div className="form-row">
+                  <select value={newContent.grade} onChange={(e)=>setNewContent({...newContent, grade: e.target.value})}>
+                    <option value="1">أولى ثانوي</option>
+                    <option value="2">ثانية ثانوي</option>
+                    <option value="3">ثالثة ثانوي</option>
+                  </select>
+                  <input type="text" placeholder="اسم المدرس" value={newContent.instructor} onChange={(e)=>setNewContent({...newContent, instructor: e.target.value})} />
+                </div>
+                <input type="text" placeholder="رابط الفيديو أو ملف الـ PDF" required value={newContent.url} onChange={(e)=>setNewContent({...newContent, url: e.target.value})} />
+                <input type="text" placeholder="رابط الصورة المصغرة (Thumbnail)" value={newContent.thumbnail} onChange={(e)=>setNewContent({...newContent, thumbnail: e.target.value})} />
+                <button type="submit" className="btn-add-content"><Plus size={18}/> نشر المحتوى الآن</button>
+              </form>
+            </motion.div>
+          )}
+
+          {/* 3. الطلاب */}
           {activeSection === 'users' && (
             <div className="section-card">
               <div className="card-header">
-                <h3>قاعدة بيانات الطلاب</h3>
+                <h3>إدارة الطلاب</h3>
                 <div className="filter-group">
                   <select onChange={(e)=>setFilterGrade(e.target.value)}><option value="all">كل الصفوف</option><option value="1">أولى</option><option value="2">ثانية</option><option value="3">ثالثة</option></select>
-                  <div className="search-wrapper"><Search size={16}/><input placeholder="ابحث بالاسم..." onChange={(e)=>setSearchTerm(e.target.value)}/></div>
+                  <div className="search-wrapper"><Search size={16}/><input placeholder="ابحث..." onChange={(e)=>setSearchTerm(e.target.value)}/></div>
                 </div>
               </div>
               <table className="modern-table">
                 <thead><tr><th>الطالب</th><th>الصف</th><th>الحالة</th><th>إجراء</th></tr></thead>
                 <tbody>
-                  {allUsers.filter(u => (filterGrade === 'all' || u.grade === filterGrade) && u.name?.includes(searchTerm)).map(user => (
+                  {allUsers.filter(u => (filterGrade === 'all' || u.grade === filterGrade) && u.name?.toLowerCase().includes(searchTerm.toLowerCase())).map(user => (
                     <tr key={user.id}>
                       <td>{user.name} <br/> <small>{user.email}</small></td>
                       <td>{user.grade || "3"} ث</td>
                       <td><span className={`status-pill ${user.isSecondaryActive ? 'active' : 'locked'}`}>{user.isSecondaryActive ? 'نشط' : 'مقفل'}</span></td>
-                      <td><button onClick={() => updateDoc(doc(db,"users",user.id),{isSecondaryActive: !user.isSecondaryActive})} className="btn-table-icon">{user.isSecondaryActive ? <Lock size={16}/> : <Unlock size={16}/>}</button></td>
+                      <td className="actions-cell">
+                        <button onClick={() => updateDoc(doc(db,"users",user.id),{isSecondaryActive: !user.isSecondaryActive})} className="btn-table-icon">
+                          {user.isSecondaryActive ? <Lock size={16}/> : <Unlock size={16}/>}
+                        </button>
+                        <button onClick={() => deleteDoc(doc(db,"users",user.id))} className="btn-delete"><Trash2 size={16}/></button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -148,59 +202,50 @@ const AdminDash = () => {
             </div>
           )}
 
-          {/* 3. قسم طلبات فودافون كاش */}
+          {/* 4. الدفع والأكواد (تم دمج منطقك السابق) */}
           {activeSection === 'payments' && (
-            <div className="section-card">
-              <h3>مراجعة التحويلات المالية</h3>
-              <div className="payments-grid">
-                {payments.length === 0 && <p className="empty-msg">لا توجد طلبات معلقة حالياً</p>}
-                {payments.map(p => (
-                  <div key={p.id} className="payment-ticket">
-                    <div className="ticket-info">
-                      <h4>{p.studentName}</h4>
-                      <span>{p.timestamp?.toDate().toLocaleString()}</span>
-                    </div>
-                    <button onClick={() => setShowImgModal(p.screenshotUrl)} className="view-receipt"><Eye size={16}/> عرض الإيصال</button>
-                    <div className="ticket-actions">
-                      <button onClick={() => approvePayment(p.id, p.studentId)} className="btn-approve"><Check size={16}/> تفعيل الحساب</button>
-                      <button onClick={() => deleteDoc(doc(db,"paymentRequests",p.id))} className="btn-reject"><X size={16}/></button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+             <div className="section-card">
+               <h3>طلبات الدفع المعلقة</h3>
+               <div className="payments-grid">
+                 {payments.map(p => (
+                   <div key={p.id} className="payment-ticket">
+                     <h4>{p.studentName}</h4>
+                     <button onClick={() => setShowImgModal(p.screenshotUrl)} className="view-receipt"><Eye size={16}/> إيصال الدفع</button>
+                     <div className="ticket-actions">
+                       <button onClick={() => approvePayment(p.id, p.studentId)} className="btn-approve">تفعيل</button>
+                       <button onClick={() => deleteDoc(doc(db,"paymentRequests",p.id))} className="btn-reject"><X size={16}/></button>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             </div>
           )}
 
-          {/* 4. قسم الأكواد الجماعية */}
           {activeSection === 'codes' && (
             <div className="section-card">
-              <div className="card-header">
-                <h3>إدارة أكواد السنتر</h3>
-                <div className="btn-group">
-                  <button onClick={exportCodes} className="btn-export"><Download size={16}/> تصدير الأكواد</button>
-                  <button onClick={() => handleGenerateCodes(parseInt(batchCount))} className="btn-primary">توليد {batchCount} كود</button>
-                  <input type="number" className="batch-input" value={batchCount} onChange={(e)=>setBatchCount(e.target.value)} />
-                </div>
-              </div>
-              <div className="codes-flow">
-                {generatedCodes.map(c => (
-                  <div key={c.id} className={`mini-code-card ${c.isUsed ? 'is-used' : ''}`}>
-                    <code>{c.code}</code>
-                    {c.isUsed ? <UserCheck size={14}/> : <button onClick={()=>deleteDoc(doc(db,"activationCodes",c.id))}><Trash2 size={14}/></button>}
-                  </div>
-                ))}
-              </div>
+               <div className="card-header">
+                 <h3>أكواد التفعيل</h3>
+                 <div className="btn-group">
+                   <button onClick={exportCodes} className="btn-export"><Download size={16}/> ملف الأكواد</button>
+                   <button onClick={() => handleGenerateCodes(parseInt(batchCount))} className="btn-primary">توليد {batchCount} كود</button>
+                   <input type="number" className="batch-input" value={batchCount} onChange={(e)=>setBatchCount(e.target.value)} />
+                 </div>
+               </div>
+               <div className="codes-flow">
+                 {generatedCodes.map(c => (
+                   <div key={c.id} className={`mini-code-card ${c.isUsed ? 'is-used' : ''}`}>
+                     <code>{c.code}</code>
+                     {c.isUsed ? <UserCheck size={14}/> : <button onClick={()=>deleteDoc(doc(db,"activationCodes",c.id))}><Trash2 size={14}/></button>}
+                   </div>
+                 ))}
+               </div>
             </div>
           )}
         </AnimatePresence>
 
-        {/* مودال عرض الصورة */}
         {showImgModal && (
           <div className="img-modal-overlay" onClick={() => setShowImgModal(null)}>
-            <div className="modal-content">
-              <img src={showImgModal} alt="إيصال" />
-              <button className="close-modal">إغلاق</button>
-            </div>
+            <div className="modal-content"><img src={showImgModal} alt="إيصال" /></div>
           </div>
         )}
       </main>
@@ -216,4 +261,3 @@ const StatCard = ({icon, title, value, color}) => (
 );
 
 export default AdminDash;
-
