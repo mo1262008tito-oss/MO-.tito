@@ -8,6 +8,8 @@
   font-family: 'Cairo', sans-serif; /* الخط المفضل للتطبيقات العربية */
 }
 
+
+
 /* Sidebar - القائمة الجانبية */
 .cyber-sidebar {
   width: 280px;
@@ -179,4 +181,5 @@ input[type="radio"] {
   .cyber-sidebar { width: 100%; height: auto; position: relative; }
   .form-grid { grid-template-columns: 1fr; }
 }
+
 
