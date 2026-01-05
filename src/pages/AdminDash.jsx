@@ -22,12 +22,11 @@ const AdminDash = () => {
   const [filterGrade, setFilterGrade] = useState('all');
   const [showImgModal, setShowImgModal] = useState(null);
   
-  // لنموذج إضافة محتوى جديد
+  // الحالة الموسعة لنموذج إضافة محتوى جديد
   const [newContent, setNewContent] = useState({ 
-    title: '', grade: '1', instructor: '', url: '', type: 'course', thumbnail: '' 
+    title: '', grade: '1', instructor: '', url: '', type: 'paid_course', thumbnail: '' 
   });
   
-  // إعدادات الحماية (العلامة المائية)
   const [securitySettings, setSecuritySettings] = useState({ watermark: true });
   const [batchCount, setBatchCount] = useState(10);
 
@@ -54,17 +53,35 @@ const AdminDash = () => {
     return () => { unsubUsers(); unsubCourses(); unsubBooks(); unsubPay(); unsubCodes(); };
   }, []);
 
-  // --- دالة إضافة كورس أو كتاب ---
+  // --- دالة إضافة المحتوى الذكية (التقسيم الثلاثي) ---
   const handleAddContent = async (e) => {
     e.preventDefault();
     try {
-      const collectionName = newContent.type === 'course' ? 'courses' : 'library';
+      let collectionName = "";
+      let additionalData = {};
+
+      if (newContent.type === 'book') {
+        collectionName = "library"; // تذهب للمكتبة
+      } else if (newContent.type === 'free_course') {
+        collectionName = "courses"; // تذهب للكورسات المجانية
+        additionalData = { isFree: true };
+      } else if (newContent.type === 'paid_course') {
+        collectionName = "secondary_education"; // تذهب للمنهج المدفوع
+        additionalData = { isFree: false };
+      }
+
       await addDoc(collection(db, collectionName), {
-        ...newContent,
+        title: newContent.title,
+        grade: newContent.grade,
+        instructor: newContent.instructor,
+        url: newContent.url,
+        thumbnail: newContent.thumbnail,
         createdAt: serverTimestamp(),
+        ...additionalData
       });
-      alert(`تم إضافة ${newContent.type === 'course' ? 'الكورس' : 'الكتاب'} بنجاح ✅`);
-      setNewContent({ title: '', grade: '1', instructor: '', url: '', type: 'course', thumbnail: '' });
+
+      alert(`تم بنجاح إضافة "${newContent.title}" إلى قسم ${collectionName} ✅`);
+      setNewContent({ title: '', grade: '1', instructor: '', url: '', type: 'paid_course', thumbnail: '' });
     } catch (error) {
       alert("خطأ في الإضافة: " + error.message);
     }
@@ -137,22 +154,27 @@ const AdminDash = () => {
             <motion.div initial={{opacity:0}} animate={{opacity:1}} className="stats-container">
               <div className="stats-grid-pro">
                 <StatCard icon={<Users/>} title="طلاب المنصة" value={stats.students} color="blue" />
-                <StatCard icon={<BookOpen/>} title="الكورسات" value={stats.courses} color="purple" />
+                <StatCard icon={<BookOpen/>} title="كورسات مجانية" value={stats.courses} color="purple" />
                 <StatCard icon={<FileText/>} title="المكتبة" value={stats.books} color="green" />
                 <StatCard icon={<DollarSign/>} title="مبيعات (ج.م)" value={stats.income} color="orange" />
               </div>
             </motion.div>
           )}
 
-          {/* 2. إدارة المحتوى (إضافة كورس/كتاب) */}
+          {/* 2. إدارة المحتوى (الكتب والكورسات) */}
           {activeSection === 'content' && (
             <motion.div initial={{opacity:0, y: 20}} animate={{opacity:1, y: 0}} className="section-card">
-              <h3>📦 إضافة محتوى جديد (كورس / كتب)</h3>
+              <h3>📦 إدارة ونشر المحتوى الذكي</h3>
               <form onSubmit={handleAddContent} className="admin-content-form">
                 <div className="form-row">
-                  <select value={newContent.type} onChange={(e)=>setNewContent({...newContent, type: e.target.value})}>
-                    <option value="course">كورس فيديو</option>
-                    <option value="book">كتاب / مذكرة (PDF)</option>
+                  <select 
+                    value={newContent.type} 
+                    onChange={(e)=>setNewContent({...newContent, type: e.target.value})}
+                    style={{border: '1px solid #00f2ff'}}
+                  >
+                    <option value="paid_course">🎓 كورس مدفوع (منهج ثانوي)</option>
+                    <option value="free_course">📺 كورس مجاني (يوتيوب/عام)</option>
+                    <option value="book">📚 كتاب / مذكرة (PDF)</option>
                   </select>
                   <input type="text" placeholder="عنوان المحتوى" required value={newContent.title} onChange={(e)=>setNewContent({...newContent, title: e.target.value})} />
                 </div>
@@ -166,7 +188,9 @@ const AdminDash = () => {
                 </div>
                 <input type="text" placeholder="رابط الفيديو أو ملف الـ PDF" required value={newContent.url} onChange={(e)=>setNewContent({...newContent, url: e.target.value})} />
                 <input type="text" placeholder="رابط الصورة المصغرة (Thumbnail)" value={newContent.thumbnail} onChange={(e)=>setNewContent({...newContent, thumbnail: e.target.value})} />
-                <button type="submit" className="btn-add-content"><Plus size={18}/> نشر المحتوى الآن</button>
+                <button type="submit" className="btn-add-content shadow-glow">
+                   <Plus size={18}/> نشر المحتوى الآن
+                </button>
               </form>
             </motion.div>
           )}
@@ -175,10 +199,10 @@ const AdminDash = () => {
           {activeSection === 'users' && (
             <div className="section-card">
               <div className="card-header">
-                <h3>إدارة الطلاب</h3>
+                <h3>قاعدة الطلاب</h3>
                 <div className="filter-group">
                   <select onChange={(e)=>setFilterGrade(e.target.value)}><option value="all">كل الصفوف</option><option value="1">أولى</option><option value="2">ثانية</option><option value="3">ثالثة</option></select>
-                  <div className="search-wrapper"><Search size={16}/><input placeholder="ابحث..." onChange={(e)=>setSearchTerm(e.target.value)}/></div>
+                  <div className="search-wrapper"><Search size={16}/><input placeholder="ابحث بالاسم..." onChange={(e)=>setSearchTerm(e.target.value)}/></div>
                 </div>
               </div>
               <table className="modern-table">
@@ -202,11 +226,12 @@ const AdminDash = () => {
             </div>
           )}
 
-          {/* 4. الدفع والأكواد (تم دمج منطقك السابق) */}
+          {/* 4. الدفع والأكواد */}
           {activeSection === 'payments' && (
              <div className="section-card">
                <h3>طلبات الدفع المعلقة</h3>
                <div className="payments-grid">
+                 {payments.length === 0 && <p className="empty-msg">لا توجد طلبات معلقة حالياً</p>}
                  {payments.map(p => (
                    <div key={p.id} className="payment-ticket">
                      <h4>{p.studentName}</h4>
@@ -224,10 +249,10 @@ const AdminDash = () => {
           {activeSection === 'codes' && (
             <div className="section-card">
                <div className="card-header">
-                 <h3>أكواد التفعيل</h3>
+                 <h3>إدارة الأكواد</h3>
                  <div className="btn-group">
-                   <button onClick={exportCodes} className="btn-export"><Download size={16}/> ملف الأكواد</button>
-                   <button onClick={() => handleGenerateCodes(parseInt(batchCount))} className="btn-primary">توليد {batchCount} كود</button>
+                   <button onClick={exportCodes} className="btn-export"><Download size={16}/> تصدير</button>
+                   <button onClick={() => handleGenerateCodes(parseInt(batchCount))} className="btn-primary">توليد {batchCount}</button>
                    <input type="number" className="batch-input" value={batchCount} onChange={(e)=>setBatchCount(e.target.value)} />
                  </div>
                </div>
@@ -245,7 +270,10 @@ const AdminDash = () => {
 
         {showImgModal && (
           <div className="img-modal-overlay" onClick={() => setShowImgModal(null)}>
-            <div className="modal-content"><img src={showImgModal} alt="إيصال" /></div>
+            <div className="modal-content">
+              <img src={showImgModal} alt="إيصال" />
+              <button className="close-modal-btn">إغلاق</button>
+            </div>
           </div>
         )}
       </main>
