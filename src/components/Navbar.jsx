@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { 
-  Layout, School, BookOpen, Heart, Info, Sun, Moon, 
-  LogIn, Library, ShieldCheck, LogOut, GraduationCap, Sparkles
+  Home, School, BookOpen, Heart, Info, 
+  Library, ShieldCheck, LogOut, GraduationCap, 
+  Sparkles, LogIn, User
 } from 'lucide-react';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
@@ -11,100 +12,84 @@ import './Navbar.css';
 const Navbar = ({ userData }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [scrolled, setScrolled] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    document.body.classList.toggle('light-theme');
-  };
 
   const handleLogout = () => {
     signOut(auth).then(() => navigate('/login'));
   };
 
-  const links = [
-    { name: 'الرئيسية', path: '/', icon: <Layout size={22}/> },
+  // 1. قائمة الروابط للجميع
+  const publicLinks = [
+    { name: 'الرئيسية', path: '/', icon: <Home size={22}/> },
     { name: 'الثانوي', path: '/highschool', icon: <School size={22}/> },
     { name: 'المكتبة', path: '/library', icon: <Library size={22}/> },
     { name: 'الكورسات', path: '/all-courses', icon: <BookOpen size={22}/> },
     { name: 'الواحة', path: '/religious', icon: <Heart size={22}/> },
+    { name: 'حولنا', path: '/about', icon: <Info size={22}/> },
   ];
 
   return (
-    <nav className={`super-nav ${scrolled ? 'is-scrolled' : ''}`}>
+    <nav className="super-nav">
       <div className="nav-container">
         
         {/* Logo Section */}
-        <div className="nav-brand" onClick={() => navigate('/')}>
-          <div className="brand-logo-3d">
-            <Sparkles size={18} className="sparkle-icon" />
+        <div className="brand-section" onClick={() => navigate('/')}>
+          <div className="logo-cube">
+            <Sparkles size={18} color="#fff" />
           </div>
-          <span className="brand-name">MaFa<span>Tec</span></span>
+          <span className="brand-name">MaFa <span style={{color: 'var(--primary)'}}>Tec</span></span>
         </div>
 
-        {/* Desktop & Mobile Menu */}
-        <div className="nav-menu-wrapper">
-          <ul className="nav-links-hub">
-            {links.map((link) => (
-              <li key={link.path}>
-                <Link to={link.path} className={`nav-link-3d ${location.pathname === link.path ? 'active' : ''}`}>
-                  <i className="icon-slot">{link.icon}</i>
-                  <span className="label-slot">{link.name}</span>
-                </Link>
-              </li>
-            ))}
+        {/* Navigation Hub */}
+        <ul className="nav-hub">
+          {publicLinks.map((link) => (
+            <li key={link.path}>
+              <Link to={link.path} className={`nav-item-3d ${location.pathname === link.path ? 'active' : ''}`}>
+                <i>{link.icon}</i>
+                <span>{link.name}</span>
+              </Link>
+            </li>
+          ))}
 
-            {/* الطالب - تظهر دائماً للمسجلين */}
-            {userData && (
-              <li>
-                <Link to="/student-dash" className={`nav-link-3d student-dash-link ${location.pathname === '/student-dash' ? 'active' : ''}`}>
-                  <i className="icon-slot"><GraduationCap size={22} /></i>
-                  <span className="label-slot">لوحتي</span>
-                </Link>
-              </li>
-            )}
+          {/* لوحة الطالب - تظهر فقط للمسجلين */}
+          {userData && (
+            <li>
+              <Link to="/student-dash" className={`nav-item-3d ${location.pathname === '/student-dash' ? 'active' : ''}`}>
+                <i><GraduationCap size={22} /></i>
+                <span>لوحتي</span>
+              </Link>
+            </li>
+          )}
 
-            {/* الأدمن */}
-            {userData?.role === 'admin' && (
-              <li>
-                <Link to="/admin" className="nav-link-3d admin-slot">
-                  <i className="icon-slot"><ShieldCheck size={22} /></i>
-                  <span className="label-slot">الإدارة</span>
-                </Link>
-              </li>
-            )}
-          </ul>
-        </div>
+          {/* الإدارة - تظهر فقط للأدمن ومخفية تماماً عن غيره */}
+          {userData?.role === 'admin' && (
+            <li>
+              <Link to="/admin" className={`nav-item-3d admin-link ${location.pathname === '/admin' ? 'active' : ''}`}>
+                <i><ShieldCheck size={22} /></i>
+                <span>الإدارة</span>
+              </Link>
+            </li>
+          )}
+        </ul>
 
-        {/* Actions Section */}
-        <div className="nav-extra">
-          <button className="theme-trigger" onClick={toggleTheme}>
-            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
-
+        {/* Profile & Login Section */}
+        <div className="nav-actions">
           {userData ? (
-            <div className="user-hub">
-              <div className="user-orb" onClick={() => navigate('/student-dash')}>
-                {userData.name ? userData.name[0].toUpperCase() : 'S'}
+            <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
+              <div className="profile-orb" onClick={() => navigate('/student-dash')}>
+                 <User size={20} color="var(--primary)" />
               </div>
-              <button className="exit-trigger" onClick={handleLogout}>
-                <LogOut size={18} />
+              <button className="exit-trigger" onClick={handleLogout} style={{background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer'}}>
+                <LogOut size={20} />
               </button>
             </div>
           ) : (
-            <button className="login-trigger-3d" onClick={() => navigate('/login')}>
+            <button className="login-btn-3d" onClick={() => navigate('/login')}>
               <LogIn size={18} />
-              <span>دخول</span>
+              <span className="login-text">دخول</span>
             </button>
           )}
         </div>
+
       </div>
     </nav>
   );
