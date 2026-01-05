@@ -10,7 +10,7 @@ import {
   Play, CheckCircle, ChevronRight, MessageSquare, 
   BookOpen, Star, Info, List, ArrowRight, Save, Award
 } from 'lucide-react';
-import './CoursePlayer.css';
+
 
 // استيراد نظام الامتحانات الذي أنشأناه
 import QuizSystem from './QuizSystem'; 
@@ -189,3 +189,4 @@ const CoursePlayer = () => {
 };
 
 export default CoursePlayer;
+
