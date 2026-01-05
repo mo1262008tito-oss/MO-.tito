@@ -1,197 +1,176 @@
-/* Navbar.css */
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@600;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@600;900&display=swap');
 
 :root {
-  --nav-bg: rgba(10, 15, 28, 0.8);
-  --accent: #00f2ff;
-  --accent-glow: rgba(0, 242, 255, 0.5);
-  --admin-color: #ff3c78;
-  --glass: blur(15px) saturate(180%);
+  --primary: #00f2ff;
+  --admin-neon: #ff0055;
+  --glass-bg: rgba(10, 15, 28, 0.85);
+  --nav-height: 75px;
 }
 
 .super-nav {
   position: fixed;
   top: 0;
   width: 100%;
+  height: var(--nav-height);
   z-index: 9999;
-  transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 15px 0;
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   font-family: 'Cairo', sans-serif;
-}
-
-.super-nav.is-scrolled {
-  background: var(--nav-bg);
-  backdrop-filter: var(--glass);
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(0, 242, 255, 0.1);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  transition: 0.4s ease;
 }
 
 .nav-container {
-  max-width: 1300px;
+  max-width: 1400px;
   margin: 0 auto;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 30px;
+  padding: 0 20px;
 }
 
-/* Logo 3D */
-.nav-brand {
+/* الشعار */
+.brand-section {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   cursor: pointer;
 }
 
-.brand-logo-3d {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, var(--accent), #7000ff);
+.logo-cube {
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(135deg, var(--primary), #7000ff);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px var(--primary);
+  transform: rotate(-5deg);
+}
+
+.brand-name { font-weight: 900; font-size: 1.3rem; color: #fff; }
+
+/* الروابط الأساسية - نظام الهب */
+.nav-hub {
+  display: flex;
+  gap: 8px;
+  list-style: none;
+}
+
+.nav-item-3d {
+  text-decoration: none;
+  color: #a0aec0;
+  padding: 8px 15px;
   border-radius: 12px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 15px var(--accent-glow);
-  transform: rotate(-5deg);
-  transition: 0.3s;
-}
-
-.nav-brand:hover .brand-logo-3d {
-  transform: rotate(0deg) scale(1.1);
-}
-
-.brand-name {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: 1px;
-}
-
-.brand-name span { color: var(--accent); }
-
-/* Links Hub */
-.nav-links-hub {
-  display: flex;
-  list-style: none;
-  gap: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 6px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.nav-link-3d {
-  display: flex;
-  align-items: center;
   gap: 8px;
-  padding: 10px 18px;
-  text-decoration: none;
-  color: #a0aec0;
-  border-radius: 15px;
-  transition: 0.3s;
   font-weight: 600;
+  font-size: 0.9rem;
+  transition: 0.3s;
   position: relative;
 }
 
-.nav-link-3d:hover, .nav-link-3d.active {
-  color: var(--accent);
-  background: rgba(0, 242, 255, 0.1);
+.nav-item-3d:hover, .nav-item-3d.active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 10px rgba(0, 242, 255, 0.1);
 }
 
-.nav-link-3d.active::after {
+.nav-item-3d.active::after {
   content: '';
   position: absolute;
-  bottom: 5px;
-  width: 20px;
-  height: 3px;
-  background: var(--accent);
-  border-radius: 10px;
-  box-shadow: 0 0 10px var(--accent);
+  bottom: -5px;
+  left: 20%;
+  width: 60%;
+  height: 2px;
+  background: var(--primary);
+  box-shadow: 0 0 10px var(--primary);
 }
 
-.admin-slot { color: var(--admin-color) !important; }
-.admin-slot:hover { background: rgba(255, 60, 120, 0.1) !important; }
+/* تمييز الأدمن */
+.admin-link {
+  color: var(--admin-neon);
+  border: 1px solid rgba(255, 0, 85, 0.2);
+}
+.admin-link:hover {
+  background: rgba(255, 0, 85, 0.1) !important;
+  box-shadow: 0 0 15px rgba(255, 0, 85, 0.3) !important;
+}
 
-/* User Controls */
-.nav-extra { display: flex; align-items: center; gap: 15px; }
+/* الجانب الأيسر (تسجيل الدخول / الملف الشخصي) */
+.nav-actions { display: flex; align-items: center; gap: 15px; }
 
-.user-orb {
+.login-btn-3d {
+  background: var(--primary);
+  color: #000;
+  padding: 8px 20px;
+  border-radius: 50px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+}
+
+.profile-orb {
   width: 40px;
   height: 40px;
-  background: var(--accent);
-  color: #000;
+  background: #1a1f2e;
+  border: 2px solid var(--primary);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 0 15px var(--accent-glow);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
 }
 
-.exit-trigger {
-  background: rgba(255, 0, 0, 0.1);
-  border: none;
-  color: #ff4d4d;
-  padding: 8px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-/* --- Mobile System (The Bottom Bar) --- */
-@media (max-width: 850px) {
+/* --- نظام الهاتف (Bottom Navbar) --- */
+@media (max-width: 900px) {
   .super-nav {
     top: auto;
     bottom: 0;
-    padding: 0;
-    background: rgba(5, 8, 15, 0.9) !important;
-    backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    height: 70px;
     border-bottom: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
-  .nav-container { padding: 8px 15px; }
-  
-  .nav-brand, .nav-extra .theme-trigger { display: none; }
+  .brand-section, .nav-actions .login-text, .nav-item-3d span {
+    display: none; /* إخفاء النصوص لترك مساحة للأيقونات */
+  }
 
-  .nav-menu-wrapper { width: 100%; }
-
-  .nav-links-hub {
-    background: transparent;
-    border: none;
-    justify-content: space-around;
+  .nav-hub {
     width: 100%;
-    padding: 0;
+    justify-content: space-around;
+    gap: 0;
   }
 
-  .nav-link-3d {
+  .nav-item-3d {
     flex-direction: column;
-    gap: 4px;
-    padding: 8px;
-    font-size: 0.7rem;
+    padding: 10px;
   }
 
-  .nav-link-3d .icon-slot { transform: scale(1.1); }
-  
-  .nav-link-3d.active {
+  .nav-item-3d i { transform: scale(1.2); }
+
+  .nav-item-3d.active {
     background: transparent;
-    color: var(--accent);
-  }
-  
-  .nav-link-3d.active .icon-slot {
-    transform: translateY(-5px) scale(1.2);
-    filter: drop-shadow(0 0 8px var(--accent));
+    color: var(--primary);
+    transform: translateY(-5px);
   }
 
-  .user-hub {
+  .nav-actions {
     position: fixed;
-    top: 20px;
-    left: 20px;
-    background: var(--nav-bg);
+    top: 15px;
+    left: 15px;
+    background: var(--glass-bg);
     padding: 5px;
     border-radius: 50px;
-    border: 1px solid var(--accent);
+    border: 1px solid rgba(0, 242, 255, 0.3);
   }
 }
