@@ -5,38 +5,33 @@
   background: #020617;
   color: white;
   direction: rtl;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Cairo', sans-serif; /* الخط المفضل للتطبيقات العربية */
 }
 
 /* Sidebar - القائمة الجانبية */
 .cyber-sidebar {
   width: 280px;
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(10px);
-  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 1px solid rgba(0, 242, 255, 0.1);
   padding: 30px 20px;
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
   height: 100vh;
+  z-index: 1000;
 }
 
 .brand {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 1.2rem;
-  font-weight: bold;
+  font-size: 1.4rem;
+  font-weight: 900;
   color: #00f2ff;
   margin-bottom: 40px;
-  padding: 0 10px;
-}
-
-.side-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
 }
 
 .side-nav button {
@@ -50,205 +45,132 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  transition: 0.3s ease;
 }
 
 .side-nav button:hover {
   background: rgba(255, 255, 255, 0.03);
   color: white;
+  transform: translateX(-5px);
 }
 
 .side-nav button.active {
-  background: linear-gradient(90deg, rgba(0, 242, 255, 0.15), transparent);
+  background: linear-gradient(90deg, rgba(0, 242, 255, 0.1), transparent);
   color: #00f2ff;
-  border-right: 3px solid #00f2ff;
-}
-
-.notif-badge {
-  background: #ef4444;
-  color: white;
-  font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  margin-right: auto;
+  border-right: 4px solid #00f2ff;
 }
 
 /* المحتوى الرئيسي */
 .admin-body {
   flex: 1;
   padding: 40px;
-  overflow-y: auto;
+  background: radial-gradient(circle at top left, #0f172a, #020617);
 }
 
 /* كروت الإحصائيات */
 .stats-grid-pro {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 20px;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
 }
 
 .stat-card-new {
-  background: rgba(30, 41, 59, 0.5);
+  background: rgba(30, 41, 59, 0.4);
   padding: 25px;
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
   gap: 20px;
-}
-
-.stat-card-new.blue { border-bottom: 4px solid #3b82f6; }
-.stat-card-new.purple { border-bottom: 4px solid #a855f7; }
-.stat-card-new.orange { border-bottom: 4px solid #f59e0b; }
-.stat-card-new.green { border-bottom: 4px solid #10b981; }
-
-.s-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 15px;
-  background: rgba(255, 255, 255, 0.05);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #00f2ff;
-}
-
-/* نظام إدارة الكورسات الجديد */
-.course-creator-box {
-  background: rgba(15, 23, 42, 0.9);
-  padding: 30px;
-  border-radius: 24px;
-  border: 1px solid #1e293b;
-  margin-top: 20px;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  margin-bottom: 25px;
-}
-
-input, select {
-  background: #0f172a;
-  border: 1px solid #334155;
-  color: white;
-  padding: 12px 15px;
-  border-radius: 10px;
-  outline: none;
   transition: 0.3s;
 }
 
-input:focus, select:focus {
-  border-color: #00f2ff;
-  box-shadow: 0 0 0 2px rgba(0, 242, 255, 0.1);
+.stat-card-new:hover { transform: translateY(-5px); border-color: rgba(0, 242, 255, 0.3); }
+
+/* نظام إضافة الكورس والأسئلة (معدل ليتناسب مع الكود الجديد) */
+.course-creator-box {
+  background: rgba(15, 23, 42, 0.8);
+  padding: 35px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
-/* مضاف لـ Lesson Adder */
-.lesson-adder-section {
+.form-step { margin-bottom: 35px; }
+.form-step h4 { color: #00f2ff; margin-bottom: 20px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; }
+
+.options-input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   background: rgba(0, 0, 0, 0.2);
-  padding: 20px;
-  border-radius: 15px;
-  border: 1px dashed #334155;
-  margin-bottom: 20px;
-}
-
-.quiz-adder {
-  margin-top: 15px;
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 10px;
-}
-
-.btn-add-lesson {
-  width: 100%;
-  background: #1e293b;
-  color: #00f2ff;
-  border: 1px solid #00f2ff;
   padding: 10px;
-  border-radius: 8px;
-  margin-top: 10px;
+  border-radius: 12px;
+}
+
+/* الراديو بوتون النيوني */
+input[type="radio"] {
+  accent-color: #00f2ff;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
 }
+
+/* الأزرار الاحترافية */
+.btn-add-q {
+  background: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+  border: 1px solid #a855f7;
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+  transition: 0.3s;
+}
+
+.btn-add-q:hover { background: #a855f7; color: white; }
 
 .btn-save-all {
-  background: #00f2ff;
+  background: linear-gradient(135deg, #00f2ff, #00d1ff);
   color: #020617;
-  font-weight: bold;
-  padding: 15px 40px;
+  font-weight: 900;
+  padding: 18px 45px;
   border: none;
-  border-radius: 12px;
+  border-radius: 15px;
   cursor: pointer;
-  box-shadow: 0 10px 20px rgba(0, 242, 255, 0.2);
+  font-size: 1.1rem;
+  box-shadow: 0 10px 30px rgba(0, 242, 255, 0.3);
+  transition: 0.3s;
 }
 
-/* عرض الأكواد */
-.codes-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 10px;
-  margin-top: 20px;
-}
+.btn-save-all:hover { transform: scale(1.02); box-shadow: 0 15px 40px rgba(0, 242, 255, 0.5); }
 
-.code-tag {
-  background: #0f172a;
-  padding: 10px;
-  border-radius: 8px;
-  font-family: monospace;
-  font-size: 12px;
-  border: 1px solid #1e293b;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.code-tag.used {
-  opacity: 0.5;
+/* معاينة المحاضرات المضافة */
+.mini-lesson-card {
   background: #1e293b;
-  text-decoration: line-through;
-}
-
-/* الجداول الحديثة */
-.modern-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-.modern-table th {
-  text-align: right;
-  padding: 15px;
-  color: #94a3b8;
-  border-bottom: 1px solid #1e293b;
-}
-
-.modern-table td {
-  padding: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-}
-
-/* أزرار الإجراءات */
-.btn-primary {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 10px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.item-row {
+  padding: 12px 20px;
+  border-radius: 12px;
+  margin-top: 10px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.02);
-  padding: 15px 20px;
-  border-radius: 12px;
-  margin-bottom: 8px;
+  border-right: 4px solid #00f2ff;
+}
+
+/* استجابة الشاشات */
+@media (max-width: 900px) {
+  .admin-app-wrapper { flex-direction: column; }
+  .cyber-sidebar { width: 100%; height: auto; position: static; }
+  .options-input-grid { grid-template-columns: 1fr; }
 }
 
 /* Mobile Responsive */
@@ -257,3 +179,4 @@ input:focus, select:focus {
   .cyber-sidebar { width: 100%; height: auto; position: relative; }
   .form-grid { grid-template-columns: 1fr; }
 }
+
