@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { db, auth } from '../firebase';
 import { collection, onSnapshot, doc, updateDoc, arrayUnion, getDoc } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, BookOpen, User, Star, PlusCircle, LogIn } from 'lucide-react';
+import { Search, Filter, BookOpen, User, Star, PlusCircle, LogIn, PlayCircle } from 'lucide-react';
 import './AllCourses.css';
 
 const AllCourses = () => {
@@ -13,8 +13,9 @@ const AllCourses = () => {
   const [availableCourses, setAvailableCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 1. جلب الكورسات من Firestore
+  // 1. جلب الكورسات من Firestore (مجموعة courses المجانية)
   useEffect(() => {
+    // لاحظ أننا نسحب من مجموعة "courses" التي حددناها للمجاني في الأدمن
     const unsub = onSnapshot(collection(db, "courses"), (snapshot) => {
       const coursesData = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -26,20 +27,19 @@ const AllCourses = () => {
     return () => unsub();
   }, []);
 
-  // 2. تصفية البحث
+  // 2. تصفية البحث (تم تعديل البحث ليشمل title بدلاً من name ليطابق الأدمن)
   const filteredCourses = availableCourses.filter(course => 
-    (filter === 'الكل' || course.category === filter) &&
-    (course.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (filter === 'الكل' || course.grade === filter) && // التصفية حسب الصف الدراسي 1 أو 2 أو 3
+    (course.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
      course.instructor?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // 3. دالة الاشتراك (التحقق من الهوية)
-  const handleEnroll = async (courseId, courseName) => {
+  // 3. دالة الاشتراك
+  const handleEnroll = async (courseId, courseTitle) => {
     const user = auth.currentUser;
 
-    // إذا لم يسجل دخول، نرسله لصفحة الدخول
     if (!user) {
-      alert("⚠️ يجب تسجيل الدخول أولاً لتتمكن من إضافة الكورس لمكتبتك.");
+      alert("⚠️ يجب تسجيل الدخول أولاً لتتمكن من مشاهدة الكورس.");
       return navigate('/login');
     }
 
@@ -47,67 +47,60 @@ const AllCourses = () => {
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
 
-      // التحقق إذا كان الكورس مضافاً مسبقاً
-      if (userSnap.exists() && userSnap.data().enrolledCourses?.includes(courseId)) {
-        alert("هذا الكورس موجود بالفعل في مكتبتك!");
-        return navigate('/student-dash');
+      // إضافة الكورس لمكتبة الطالب إذا لم يكن موجوداً
+      if (userSnap.exists() && !userSnap.data().enrolledCourses?.includes(courseId)) {
+        await updateDoc(userRef, {
+          enrolledCourses: arrayUnion(courseId)
+        });
       }
-
-      await updateDoc(userRef, {
-        enrolledCourses: arrayUnion(courseId)
-      });
       
-      alert(`🚀 تهانينا! تم إضافة "${courseName}" إلى لوحة التحكم الخاصة بك.`);
-      navigate('/student-dash');
+      alert(`🚀 تم فتح كورس "${courseTitle}" بنجاح.`);
+      navigate(`/video-player/${courseId}`); // التوجه لصفحة المشاهدة
     } catch (error) {
-      console.error("Enrollment error:", error);
-      alert("حدث خطأ، تأكد من صلاحيات حسابك.");
+      alert("حدث خطأ في الوصول للكورس.");
     }
   };
 
   if (loading) return (
     <div className="loader-container">
       <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} className="loader-icon">⚙️</motion.div>
-      <p>جاري استدعاء البيانات المعرفية...</p>
+      <p>جاري تحميل الكورسات المجانية...</p>
     </div>
   );
 
   return (
     <div className="all-courses-root rtl-support">
-      {/* هيدر الصفحة */}
       <section className="library-header">
         <motion.h1 initial={{ y: -20 }} animate={{ y: 0 }} className="glitch">
-          🚀 مستودع MaFa Tec المعرفي
+          📺 محاضرات MAFA المجانية
         </motion.h1>
-        <p>تصفح بحرية، تعلم بذكاء، وابنِ مستقبلك</p>
+        <p>محتوى تعليمي متاح للجميع بجودة احترافية</p>
       </section>
 
-      {/* شريط البحث والتحكم */}
       <div className="control-panel glass-card">
         <div className="search-box">
           <Search size={20} />
           <input 
             type="text" 
-            placeholder="ابحث عن مادة، مدرس، أو تخصص..." 
+            placeholder="ابحث عن درس أو مدرس..." 
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         
         <div className="filter-group">
           <Filter size={18} />
-          {['الكل', 'علمي', 'أدبي', 'لغات'].map(cat => (
+          {['الكل', '1', '2', '3'].map(grade => (
             <button 
-              key={cat} 
-              className={filter === cat ? 'active' : ''} 
-              onClick={() => setFilter(cat)}
+              key={grade} 
+              className={filter === grade ? 'active' : ''} 
+              onClick={() => setFilter(grade)}
             >
-              {cat}
+              {grade === 'الكل' ? 'كل الصفوف' : `ثانية ${grade} ث`}
             </button>
           ))}
         </div>
       </div>
 
-      {/* شبكة الكورسات */}
       <main className="courses-grid">
         <AnimatePresence>
           {filteredCourses.map(course => (
@@ -119,28 +112,29 @@ const AllCourses = () => {
               key={course.id} 
               className="modern-course-card glass-card"
             >
-              <div className="card-tag">{course.category || 'عام'}</div>
+              {/* التاج يظهر الصف الدراسي */}
+              <div className="card-tag">الصف {course.grade} ثانوي</div>
               
               <div className="card-visual">
-                <span className="emoji-icon">
-                  {course.category === 'علمي' ? '🧪' : course.category === 'لغات' ? '🌍' : '📚'}
-                </span>
+                {/* إذا كان هناك صورة Thumbnail من الأدمن تعرض، وإلا نعرض أيقونة افتراضية */}
+                {course.thumbnail ? (
+                  <img src={course.thumbnail} alt={course.title} className="course-thumb-img" />
+                ) : (
+                  <PlayCircle size={50} color="#00f2ff" />
+                )}
               </div>
 
               <div className="card-details">
-                <h3>{course.name}</h3>
+                <h3>{course.title}</h3>
                 <div className="info-row">
-                  <User size={14} /> <span>{course.instructor}</span>
+                  <User size={14} /> <span>{course.instructor || 'القائد محمود'}</span>
                 </div>
-                <div className="info-row rating">
-                  <Star size={14} fill="#f1c40f" /> <span>4.9 (مراجعة الطلاب)</span>
-                </div>
-
+                
                 <div className="card-footer">
-                  <div className="price-tag">{course.price} ج.م</div>
-                  <button className="action-btn" onClick={() => handleEnroll(course.id, course.name)}>
-                    {auth.currentUser ? <PlusCircle size={18} /> : <LogIn size={18} />}
-                    {auth.currentUser ? 'إضافة للمكتبة' : 'سجل للدخول'}
+                  <div className="free-badge">مجاني بالكامل</div>
+                  <button className="action-btn" onClick={() => handleEnroll(course.id, course.title)}>
+                    {auth.currentUser ? <PlayCircle size={18} /> : <LogIn size={18} />}
+                    {auth.currentUser ? 'ابدأ المشاهدة' : 'سجل للدخول'}
                   </button>
                 </div>
               </div>
@@ -152,7 +146,7 @@ const AllCourses = () => {
       {filteredCourses.length === 0 && (
         <div className="empty-state">
           <BookOpen size={48} />
-          <p>لا توجد بيانات تطابق بحثك حالياً في هذا القطاع.</p>
+          <p>لا توجد كورسات مجانية مضافة لهذا الصف حالياً.</p>
         </div>
       )}
     </div>
