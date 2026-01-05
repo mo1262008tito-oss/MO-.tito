@@ -8,8 +8,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, BookOpen, Plus, Check, X, ShieldCheck, Search,
   Lock, Unlock, DollarSign, FileText, LayoutDashboard,
-  PackagePlus, Download, Eye, Trash2, UserCheck, Wallet, ShieldAlert
-} from 'lucide-react';
+  PackagePlus, Download, Eye, Trash2, UserCheck, Wallet, ShieldAlert,
+  Hash // <--- أضف هذه الكلمة هنا بالضبط
+} from 'lucide-react'; 
+
 import './AdminDash.css';
 
 const AdminDash = () => {
@@ -289,3 +291,4 @@ const StatCard = ({icon, title, value, color}) => (
 );
 
 export default AdminDash;
+
