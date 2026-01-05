@@ -1,191 +1,189 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { db, auth } from '../firebase';
-import { doc, getDoc, collection, query, where, getDocs, updateDoc, arrayUnion, onSnapshot } from "firebase/firestore";
-import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Key, PlayCircle, ArrowRight, ShieldCheck, CheckCircle, XCircle } from "lucide-react";
-import './HighSchool.css';
+import { doc, getDoc, updateDoc, increment, arrayUnion, onSnapshot } from "firebase/firestore";
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Play, CheckCircle, ChevronRight, MessageSquare, 
+  BookOpen, Star, List, ArrowRight, Save, Award, Shield, 
+  Unlock, Volume2, Maximize, Clock
+} from 'lucide-react';
 
-const HighSchool = () => {
-  const [activeTab, setActiveTab] = useState("1");
-  const [courses, setCourses] = useState([]);
-  const [userData, setUserData] = useState(null);
+// استيراد المكونات الفرعية
+import QuizSystem from './QuizSystem'; 
+import './CoursePlayer.css';
+
+const CoursePlayer = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [courseData, setCourseData] = useState(null);
+  const [currentLesson, setCurrentLesson] = useState(null);
   const [loading, setLoading] = useState(true);
-  
-  // حالات للتحكم في النوافذ المنبثقة
-  const [selectedCourse, setSelectedCourse] = useState(null); // الكورس المختار لعرض دروسه
-  const [activeVideo, setActiveVideo] = useState(null); // الفيديو المشغل حالياً
-  const [showActivation, setShowActivation] = useState(null); // العنصر المراد تفعيله (كورس أو فيديو)
-  const [inputCode, setInputCode] = useState('');
-  const [verifying, setVerifying] = useState(false);
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [completedLessons, setCompletedLessons] = useState([]);
+  const [progress, setProgress] = useState(0);
 
+  // 1. جلب البيانات لحظياً (Real-time)
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) { 
-        fetchUserData(user.uid);
-        fetchCourses();
-      } else { setLoading(false); }
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const fetchUserData = (uid) => {
-    onSnapshot(doc(db, "users", uid), (doc) => {
-      setUserData(doc.data());
-      setLoading(false);
-    });
-  };
-
-  const fetchCourses = () => {
-    onSnapshot(collection(db, "courses_metadata"), (snap) => {
-      setCourses(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-  };
-
-  // وظيفة التحقق: هل يمتلك الطالب حق الوصول لهذا الـ ID؟
-  const canAccess = (itemId) => {
-    if (!userData) return false;
-    // الوصول يكون متاحاً إذا كان الـ ID موجود في مصفوفة enrolledContent أو الطالب لديه تفعيل شامل
-    return userData.isSecondaryActive || (userData.enrolledContent && userData.enrolledContent.includes(itemId));
-  };
-
-  const handleVerifyCode = async () => {
-    if (!inputCode) return alert("أدخل الكود أولاً");
-    setVerifying(true);
-    
-    try {
-      const q = query(
-        collection(db, "activationCodes"), 
-        where("code", "==", inputCode), 
-        where("isUsed", "==", false),
-        where("targetId", "==", showActivation.id) // التأكد أن الكود مخصص لهذا الكورس/الفيديو
-      );
-      
-      const snap = await getDocs(q);
-      
-      if (!snap.empty) {
-        const codeDoc = snap.docs[0];
-        // 1. تحديث الكود كـ مستخدم
-        await updateDoc(doc(db, "activationCodes", codeDoc.id), { 
-          isUsed: true, 
-          usedBy: auth.currentUser.uid 
-        });
-        
-        // 2. إضافة الـ ID لقائمة محتوى الطالب
-        await updateDoc(doc(db, "users", auth.currentUser.uid), { 
-          enrolledContent: arrayUnion(showActivation.id) 
-        });
-
-        alert("تم التفعيل بنجاح! استمتع بالمشاهدة ✅");
-        setShowActivation(null);
-        setInputCode('');
-      } else {
-        alert("الكود غير صحيح، أو غير مخصص لهذا المحتوى، أو مستخدم مسبقاً.");
-      }
-    } catch (e) {
-      alert("خطأ في الاتصال: " + e.message);
+    if (!auth.currentUser) {
+      navigate('/login');
+      return;
     }
-    setVerifying(false);
+
+    const unsubCourse = onSnapshot(doc(db, "courses_metadata", id), (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        setCourseData(data);
+        if (!currentLesson && data.lessons?.length > 0) {
+          setCurrentLesson(data.lessons[0]);
+        }
+      }
+    });
+
+    const unsubUser = onSnapshot(doc(db, "users", auth.currentUser.uid), (snap) => {
+      if (snap.exists()) {
+        const userData = snap.data();
+        setCompletedLessons(userData.completedLessons || []);
+      }
+    });
+
+    return () => { unsubCourse(); unsubUser(); };
+  }, [id, currentLesson, navigate]);
+
+  // 2. حساب نسبة الإنجاز
+  useEffect(() => {
+    if (courseData?.lessons?.length > 0) {
+      const done = courseData.lessons.filter(l => completedLessons.includes(l.id)).length;
+      setProgress(Math.round((done / courseData.lessons.length) * 100));
+    }
+  }, [completedLessons, courseData]);
+
+  const getEmbedUrl = (url) => {
+    if (!url) return "";
+    const videoId = url.includes("v=") ? url.split("v=")[1].split("&")[0] : url.split("youtu.be/")[1]?.split("?")[0];
+    return `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&iv_load_policy=3&showinfo=0`;
   };
 
-  if (loading) return <div className="cyber-loader">جاري تحميل الأكاديمية...</div>;
+  const handleLessonComplete = async (lessonId) => {
+    if (completedLessons.includes(lessonId)) return;
+    const userRef = doc(db, "users", auth.currentUser.uid);
+    await updateDoc(userRef, {
+      completedLessons: arrayUnion(lessonId),
+      points: increment(100) // مكافأة إنهاء الدرس
+    });
+  };
+
+  if (loading && !courseData) return <div className="vortex-loading">جاري تحضير المحاضرة...</div>;
 
   return (
-    <div className="secondary-page-root">
-      {/* مشغل الفيديو */}
-      <AnimatePresence>
-        {activeVideo && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="video-player-overlay">
-            <div className="video-nav">
-              <button onClick={() => setActiveVideo(null)} className="back-btn"><ArrowRight /> العودة</button>
-              <h3>{activeVideo.title}</h3>
-            </div>
-            <iframe src={activeVideo.videoUrl.replace('/view', '/preview')} allow="autoplay" allowFullScreen></iframe>
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <div className="smart-player-root no-select" onContextMenu={e => e.preventDefault()}>
+      
+      {/* العلامة المائية للحماية */}
+      <div className="dynamic-watermark">
+        {auth.currentUser?.email} — MAFA PROTECT
+      </div>
 
-      {/* نافذة التفعيل بكود */}
-      <AnimatePresence>
-        {showActivation && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="activation-modal">
-            <div className="modal-card glass-card">
-                <XCircle className="close-icon" onClick={() => setShowActivation(null)} />
-                <Lock size={40} color="#00f2ff" />
-                <h3>تفعيل الوصول</h3>
-                <p>أنت تحاول الوصول إلى: <strong>{showActivation.title}</strong></p>
-                <div className="code-input-group">
-                    <Key size={20} />
-                    <input 
-                      type="text" 
-                      placeholder="أدخل كود التفعيل الخاص بهذا المحتوى" 
-                      value={inputCode}
-                      onChange={(e) => setInputCode(e.target.value)}
-                    />
+      {/* شريط الإنجاز العلوي */}
+      <div className="progress-top-bar" style={{ width: `${progress}%` }}></div>
+
+      <nav className="player-nav">
+        <div className="nav-right">
+          <button onClick={() => navigate('/dashboard')} className="back-btn">
+            <ArrowRight size={20} />
+          </button>
+          <div className="course-info-hub">
+            <h2>{courseData?.title}</h2>
+            <div className="sub-meta">
+              <span><Clock size={12}/> {progress}% مكتمل</span>
+              <span className="divider">|</span>
+              <span>{courseData?.instructor}</span>
+            </div>
+          </div>
+        </div>
+        <div className="nav-left">
+          <div className="xp-badge"><Award size={16}/> +100 XP</div>
+        </div>
+      </nav>
+
+      <div className="player-main-layout">
+        <section className={`content-area ${!isSidebarOpen ? 'expanded' : ''}`}>
+          
+          <div className="video-canvas">
+            <div className="video-frame-neon">
+              <iframe 
+                src={getEmbedUrl(currentLesson?.videoUrl)}
+                title="MAFA Video Player"
+                allowFullScreen
+              ></iframe>
+            </div>
+          </div>
+
+          <div className="lesson-details-box glass-card">
+            <div className="details-header">
+              <h1>{currentLesson?.title}</h1>
+              <button 
+                className={`complete-action-btn ${completedLessons.includes(currentLesson?.id) ? 'active' : ''}`}
+                onClick={() => handleLessonComplete(currentLesson?.id)}
+              >
+                {completedLessons.includes(currentLesson?.id) ? <CheckCircle /> : <Play />}
+                {completedLessons.includes(currentLesson?.id) ? 'تم اجتياز الدرس' : 'تحديد كمكتمل'}
+              </button>
+            </div>
+            <p className="description">{currentLesson?.description || "لا يوجد وصف لهذه المحاضرة."}</p>
+          </div>
+
+          {/* نظام الامتحانات المدمج */}
+          <AnimatePresence mode="wait">
+            {currentLesson?.quiz?.length > 0 && (
+              <motion.div 
+                key={currentLesson.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="quiz-wrapper"
+              >
+                <div className="quiz-header-tag">
+                  <Unlock size={18} /> اختبر فهمك للمحاضرة
                 </div>
-                <button onClick={handleVerifyCode} disabled={verifying} className="btn-confirm">
-                    {verifying ? "جاري التحقق..." : "تفعيل الآن"}
-                </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                <QuizSystem 
+                   quizData={currentLesson.quiz} 
+                   lessonId={currentLesson.id}
+                   onPass={() => handleLessonComplete(currentLesson.id)} 
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
 
-      <header className="page-header">
-        <h1>منصة MAFA الثانوية</h1>
-        <div className="grade-tabs">
-          {["1", "2", "3"].map(num => (
-            <button key={num} className={activeTab === num ? 'active' : ''} onClick={() => setActiveTab(num)}>
-              الصف {num === "1" ? "الأول" : num === "2" ? "الثاني" : "الثالث"}
+        <aside className={`playlist-sidebar ${!isSidebarOpen ? 'collapsed' : ''}`}>
+          <div className="sidebar-top">
+            <h3>قائمة المحاضرات</h3>
+            <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="toggle-sidebar">
+              <List size={20} />
             </button>
-          ))}
-        </div>
-      </header>
-
-      <main className="courses-container">
-        <div className="grid-grid">
-          {courses.filter(c => c.grade === activeTab).map(course => (
-            <motion.div whileHover={{ y: -5 }} key={course.id} className="secondary-course-card">
-              <div className="card-banner" style={{backgroundImage: `url(${course.thumbnail || 'https://via.placeholder.com/300x180'})`}}>
-                <div className="lock-badge">
-                   {canAccess(course.id) ? <CheckCircle size={18} color="#00ff88"/> : <Lock size={18} color="#ffcc00"/>}
+          </div>
+          
+          <div className="lesson-items-container">
+            {courseData?.lessons?.map((lesson, idx) => (
+              <div 
+                key={lesson.id} 
+                className={`lesson-card ${currentLesson?.id === lesson.id ? 'current' : ''} ${completedLessons.includes(lesson.id) ? 'done' : ''}`}
+                onClick={() => setCurrentLesson(lesson)}
+              >
+                <div className="status-icon">
+                  {completedLessons.includes(lesson.id) ? <CheckCircle size={18} /> : <span>{idx + 1}</span>}
                 </div>
-              </div>
-              <div className="card-info">
-                <h3>{course.title}</h3>
-                <p>👨‍🏫 {course.instructor} | 💰 {course.price} ج.م</p>
-                
-                {/* عرض الدروس داخل الكورس */}
-                <div className="lessons-list-mini">
-                    {course.lessons.map((lesson, idx) => (
-                        <div key={lesson.id} className="lesson-item-row">
-                            <span>{idx + 1}. {lesson.title}</span>
-                            <button 
-                                onClick={() => {
-                                    // إذا كان الكورس مدفوع بالكامل، نفحص وصول الكورس
-                                    // إذا كان الدفع لكل فيديو، نفحص وصول الفيديو
-                                    const targetId = course.accessType === 'full' ? course.id : lesson.id;
-                                    const targetTitle = course.accessType === 'full' ? course.title : lesson.title;
-
-                                    if (canAccess(targetId)) {
-                                        setActiveVideo(lesson);
-                                    } else {
-                                        setShowActivation({ id: targetId, title: targetTitle });
-                                    }
-                                }}
-                                className="play-mini-btn"
-                            >
-                                <PlayCircle size={18} />
-                            </button>
-                        </div>
-                    ))}
+                <div className="lesson-text">
+                  <h4>{lesson.title}</h4>
+                  <p>{lesson.quiz?.length || 0} أسئلة تقييمية</p>
                 </div>
+                {currentLesson?.id === lesson.id && <motion.div layoutId="active-pill" className="active-pill" />}
               </div>
-            </motion.div>
-          ))}
-        </div>
-      </main>
+            ))}
+          </div>
+        </aside>
+      </div>
     </div>
   );
 };
 
-export default HighSchool;
+export default CoursePlayer;
