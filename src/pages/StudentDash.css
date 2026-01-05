@@ -1,246 +1,282 @@
-/* إعدادات الاتجاه العربي */
-.rtl-support {
-  direction: rtl;
-  text-align: right;
-}
-
+/* --- Root Variables & Theme --- */
 :root {
   --neon-cyan: #00f2ff;
   --neon-purple: #7000ff;
-  --glass: rgba(15, 18, 26, 0.8);
-  --border: rgba(0, 242, 255, 0.3);
+  --bg-dark: #020617;
+  --card-bg: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --text-main: #f8fafc;
+  --text-dim: #94a3b8;
+  --xp-gold: #fbbf24;
 }
 
-.dash-main-root {
+/* --- Base Layout --- */
+.student-nebula-root {
   min-height: 100vh;
-  background: radial-gradient(circle at center, #0a0c14 0%, #020205 100%);
-  color: #fff;
-  padding: 20px;
-  overflow-x: hidden;
+  background: var(--bg-dark);
+  background-image: 
+    radial-gradient(circle at 10% 10%, rgba(0, 242, 255, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 90% 90%, rgba(112, 0, 255, 0.05) 0%, transparent 40%);
+  display: flex;
+  font-family: 'Cairo', sans-serif;
+  color: var(--text-main);
+  direction: rtl;
 }
 
-/* الهيدر المضيء */
-.space-header {
+/* --- Side Dock (Sidebar) --- */
+.side-dock {
+  width: 80px;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(20px);
+  border-left: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 0;
+  gap: 25px;
+  position: fixed;
+  right: 0;
+  height: 100vh;
+  z-index: 1000;
+}
+
+.dock-logo {
+  width: 45px;
+  height: 45px;
+  background: rgba(0, 242, 255, 0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+}
+
+.side-dock button {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  width: 50px;
+  height: 50px;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.side-dock button:hover, .side-dock button.active {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--neon-cyan);
+  box-shadow: inset 0 0 10px rgba(0, 242, 255, 0.1);
+}
+
+/* --- Main Container --- */
+.nebula-container {
+  flex: 1;
+  margin-right: 80px; /* الهروب من السايد بار */
+  padding: 40px;
+  max-width: 1400px;
+  margin-left: auto;
+}
+
+/* --- Header & XP System --- */
+.nebula-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  padding: 15px 30px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
-  margin-bottom: 30px;
-}
-
-/* الكروت النيون (كما في الصورة) */
-.neon-border {
-  position: relative;
-  background: var(--glass);
-  border-radius: 24px;
-  border: 2px solid var(--border);
-  box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
-  transition: 0.3s;
-}
-
-.neon-border:hover {
-  border-color: var(--neon-cyan);
-  box-shadow: 0 0 30px rgba(0, 242, 255, 0.4);
-}
-
-.timer-display {
-  font-size: 3.5rem;
-  font-weight: bold;
-  color: var(--neon-cyan);
-  text-shadow: 0 0 20px rgba(0, 242, 255, 0.6);
-  margin: 20px 0;
-}
-
-/* شريط الطاقة */
-.energy-bar {
-  width: 150px;
-  height: 8px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 10px;
-  overflow: hidden;
-  margin-top: 5px;
-}
-
-.energy-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
-  box-shadow: 0 0 10px var(--neon-cyan);
-}
-
-/* الأزرار */
-.enter-btn, .scan-trigger {
-  background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple));
-  border: none;
-  border-radius: 12px;
-  color: #fff;
-  padding: 10px 20px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.enter-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 20px var(--neon-cyan);
-}
-
-/* سجل العمليات */
-.mission-node {
-  background: rgba(255,255,255,0.05);
-  margin-bottom: 10px;
-  padding: 12px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border-right: 3px solid var(--neon-cyan);
-}
-
-/* الإشعارات */
-.neural-notif {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  background: rgba(0, 242, 255, 0.1);
-  border: 1px solid var(--neon-cyan);
-  padding: 15px 25px;
-  border-radius: 12px;
-  z-index: 1000;
+  margin-bottom: 40px;
+  background: var(--card-bg);
+  padding: 25px;
+  border-radius: 30px;
+  border: 1px solid var(--glass-border);
   backdrop-filter: blur(10px);
 }
 
-/* --- إعدادات الجوال الاحترافية (Mobile-First) --- */
+.profile-hub { display: flex; align-items: center; gap: 20px; }
+
+.avatar-shield {
+  width: 70px;
+  height: 70px;
+  border-radius: 20px;
+  background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple));
+  padding: 3px;
+}
+
+.avatar-shield img {
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  background: #0f172a;
+}
+
+.name-plate h1 { font-size: 1.5rem; font-weight: 900; margin-bottom: 5px; }
+
+.badges-row { display: flex; gap: 10px; }
+.rank-badge, .streak-badge {
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.rank-badge { background: rgba(251, 191, 36, 0.1); color: var(--xp-gold); border: 1px solid rgba(251, 191, 36, 0.2); }
+.streak-badge { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+.xp-counter { width: 250px; }
+.xp-info { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 8px; }
+.xp-bar-outer { height: 8px; background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; }
+.xp-bar-inner { height: 100%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); transition: 1s ease-out; }
+
+/* --- Content Grid Layout --- */
+.main-grid-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 30px;
+}
+
+/* --- Course Nebula Cards --- */
+.courses-grid-v2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.course-nebula-card {
+  background: var(--card-bg);
+  border-radius: 25px;
+  border: 1px solid var(--glass-border);
+  overflow: hidden;
+  transition: 0.3s;
+}
+
+.course-nebula-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 10px 30px rgba(0, 242, 255, 0.1);
+}
+
+.card-thumb {
+  height: 150px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.progress-orb {
+  position: absolute;
+  bottom: -15px;
+  left: 15px;
+  width: 45px;
+  height: 45px;
+  background: var(--bg-dark);
+  border: 2px solid var(--neon-cyan);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.card-details { padding: 30px 20px 20px; }
+.card-details h3 { font-size: 1.1rem; margin-bottom: 5px; }
+.card-details p { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 20px; }
+
+.launch-btn {
+  width: 100%;
+  padding: 12px;
+  background: rgba(0, 242, 255, 0.05);
+  border: 1px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: 0.3s;
+}
+
+.launch-btn:hover { background: var(--neon-cyan); color: var(--bg-dark); }
+
+/* --- Pomodoro & Tools --- */
+.nebula-tools { display: flex; flex-direction: column; gap: 20px; }
+
+.tool-card {
+  background: var(--card-bg);
+  padding: 25px;
+  border-radius: 25px;
+  border: 1px solid var(--glass-border);
+}
+
+.tool-card h3 { font-size: 1rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+
+/* Pomodoro Specific */
+.timer-circles {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 20px;
+}
+
+.timer-circles svg { transform: rotate(-90deg); }
+.timer-circles circle {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+.timer-circles .bg { stroke: rgba(255,255,255,0.05); }
+.timer-circles .prog {
+  stroke: var(--neon-cyan);
+  stroke-dasharray: 282;
+  transition: 1s linear;
+}
+
+.time-text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--neon-cyan);
+}
+
+/* --- Responsive Adaptability --- */
+@media (max-width: 1100px) {
+  .main-grid-layout { grid-template-columns: 1fr; }
+  .nebula-tools { display: grid; grid-template-columns: 1fr 1fr; }
+}
 
 @media (max-width: 768px) {
-  .dash-main-root {
-    padding: 10px;
-    padding-bottom: 80px; /* مساحة للقائمة السفلية إذا أردت إضافتها لاحقاً */
-  }
-
-  /* جعل الهيدر عمودياً في الشاشات الصغيرة جداً */
-  .space-header {
-    flex-direction: column;
-    padding: 15px;
-    gap: 15px;
-    text-align: center;
-  }
-
-  .user-profile-section {
-    flex-direction: column;
-  }
-
-  /* ضبط شبكة التوزيع لتكون عمود واحد */
-  .grid-layout {
-    grid-template-columns: 1fr; 
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  /* تكبير أزرار اللمس لتسهيل الضغط */
-  .enter-btn, .scan-trigger, .timer-controls button {
-    min-height: 45px;
+  .nebula-container { margin-right: 0; padding: 20px; padding-bottom: 100px; }
+  .side-dock {
     width: 100%;
-    font-size: 1rem;
+    height: 70px;
+    bottom: 0;
+    top: auto;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 0;
+    border-left: none;
+    border-top: 1px solid var(--glass-border);
   }
-
-  /* جعل بطاقات الوحدات تملأ الشاشة */
-  .knowledge-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .knowledge-card {
-    height: auto;
-    padding: 15px;
-  }
-
-  /* تصغير حجم عداد الوقت ليناسب شاشة الموبايل */
-  .timer-display {
-    font-size: 2.8rem;
-    margin: 15px 0;
-  }
-
-  /* تحسين شكل المودال (نافذة المكتبة) على الجوال */
-  .library-modal {
-    width: 95%;
-    height: 90vh;
-    padding: 15px;
-    border-radius: 20px;
-  }
-
-  .shelf-item {
-    flex-direction: column;
-    text-align: center;
-    gap: 10px;
-  }
-
-  /* إخفاء بعض العناصر غير الضرورية لتوفير المساحة */
-  .rank-title {
-    font-size: 0.8rem;
-  }
-
-  /* تحسين الإشعارات لتظهر في الأعلى في الجوال */
-  .neural-notif {
-    bottom: auto;
-    top: 10px;
-    left: 5%;
-    right: 5%;
-    width: 90%;
-    font-size: 0.85rem;
-    text-align: center;
-  }
-
-  /* جعل أشرطة الطاقة أعرض ليسهل رؤيتها */
-  .energy-bar {
-    width: 100%;
-    max-width: 200px;
-  }
+  .nebula-header { flex-direction: column; gap: 20px; text-align: center; }
+  .profile-hub { flex-direction: column; }
+  .nebula-tools { grid-template-columns: 1fr; }
+  .xp-counter { width: 100%; }
 }
 
-/* --- تأثيرات إضافية تجعل الموقع يبدو كتطبيق (Native Feel) --- */
-
-/* منع التحديد العرضي للنصوص عند الضغط المستمر */
-* {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
+/* --- Animations --- */
+@keyframes breathing {
+  0% { box-shadow: 0 0 0px rgba(0, 242, 255, 0); }
+  50% { box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); }
+  100% { box-shadow: 0 0 0px rgba(0, 242, 255, 0); }
 }
 
-/* السماح بتحديد النصوص فقط داخل حقول الإدخال */
-input, textarea {
-  -webkit-user-select: text;
-  user-select: text;
-}
-
-/* سكرول بار مخفي وناعم للمهمات */
-.custom-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-
-.custom-scroll::-webkit-scrollbar-thumb {
-  background: var(--neon-cyan);
-  border-radius: 10px;
-}
-
-/* إضافة تأثير الضغط على الأزرار (Haptic-like effect) */
-button:active {
-  transform: scale(0.95);
-  opacity: 0.8;
-}
-
-/* خلفية النجوم المتحركة لزيادة عمق الفضاء */
-.dash-main-root::before {
-  content: "";
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: url('https://www.transparenttextures.com/patterns/stardust.png');
-  opacity: 0.3;
-  z-index: -1;
-  pointer-events: none;
+.focus-mode .pomodoro-nebula {
+  animation: breathing 3s infinite;
+  border-color: var(--neon-cyan);
 }
