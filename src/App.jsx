@@ -21,7 +21,7 @@ import Religious from './pages/Religious';
 import About from './pages/About';
 import Library from './pages/Library';
 
-import './Global.css';
+
 
 const ProtectedRoute = ({ children, isActive, loading, redirectPath = "/highschool" }) => {
   if (loading) return null; 
@@ -118,6 +118,7 @@ function App() {
 
 
 export default App;
+
 
 
 
