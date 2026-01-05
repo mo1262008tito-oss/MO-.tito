@@ -20,14 +20,14 @@ const Login = () => {
   const [name, setName] = useState('');
   const navigate = useNavigate();
 
-  // دالة تسجيل الدخول بجوجل
+  // --- 1. دالة تسجيل الدخول بواسطة جوجل ---
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // التحقق إذا كان المستخدم جديداً لإنشاء ملف له في Firestore
+      // التحقق إذا كان المستخدم جديداً لإنشاء ملف له في قاعدة البيانات
       const userDoc = await getDoc(doc(db, "users", user.uid));
       
       if (!userDoc.exists()) {
@@ -35,29 +35,38 @@ const Login = () => {
           uid: user.uid,
           name: user.displayName,
           email: user.email,
-          role: 'student', // القيمة الافتراضية
+          role: 'student', // الرتبة الافتراضية
           createdAt: new Date(),
           photoURL: user.photoURL
         });
       }
       
-      navigate('/');
+      navigate('/'); // التوجه للصفحة الرئيسية بعد النجاح
     } catch (error) {
       console.error(error);
-      alert("حدث خطأ أثناء تسجيل الدخول بجوجل: " + error.message);
+      if (error.code === 'auth/invalid-credential') {
+        alert("خطأ في بيانات الاعتماد. تأكد من تفعيل Google Sign-in في Firebase.");
+      } else {
+        alert("حدث خطأ أثناء تسجيل الدخول بجوجل: " + error.message);
+      }
     }
   };
 
+  // --- 2. دالة تسجيل الدخول / إنشاء حساب (البريد وكلمة المرور) ---
   const handleAuth = async (e) => {
     e.preventDefault();
     try {
       if (isLogin) {
+        // تسجيل دخول
         await signInWithEmailAndPassword(auth, email, password);
         navigate('/');
       } else {
+        // إنشاء حساب جديد
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        // تحديث اسم المستخدم في الملف الشخصي
         await updateProfile(userCredential.user, { displayName: name });
         
+        // إنشاء وثيقة المستخدم في Firestore
         await setDoc(doc(db, "users", userCredential.user.uid), {
           uid: userCredential.user.uid,
           name: name,
@@ -68,12 +77,17 @@ const Login = () => {
         navigate('/');
       }
     } catch (error) {
-      alert("عذراً، حدث خطأ: " + error.message);
+      if (error.code === 'auth/invalid-credential') {
+        alert("عذراً، البريد الإلكتروني أو كلمة المرور غير صحيحة.");
+      } else {
+        alert("عذراً، حدث خطأ: " + error.message);
+      }
     }
   };
 
   return (
     <div className="login-page">
+      {/* الخلفية المتحركة */}
       <div className="floating-elements">
         <motion.div animate={{ y: [0, -50, 0] }} transition={{ duration: 6, repeat: Infinity }} className="blob blob-1"></motion.div>
         <motion.div animate={{ y: [0, 50, 0] }} transition={{ duration: 8, repeat: Infinity }} className="blob blob-2"></motion.div>
@@ -134,20 +148,20 @@ const Login = () => {
             </button>
           </form>
 
-          {/* فاصل "أو" */}
+          {/* الفاصل الزخرفي */}
           <div className="auth-divider">
-            <span>أو</span>
+            <span>أو عبر</span>
           </div>
 
-          {/* زر جوجل */}
-          <button onClick={handleGoogleSignIn} className="google-auth-btn">
+          {/* زر جوجل الجديد */}
+          <button onClick={handleGoogleSignIn} className="google-auth-btn" type="button">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/layout/google.png" alt="Google" />
-            تسجيل الدخول بواسطة جوجل
+            تسجيل الدخول بواسطة Google
           </button>
 
           <div className="auth-toggle">
             <span>{isLogin ? 'ليس لديك حساب؟' : 'لديك حساب بالفعل؟'}</span>
-            <button onClick={() => setIsLogin(!isLogin)}>
+            <button onClick={() => setIsLogin(!isLogin)} type="button">
               {isLogin ? 'سجل الآن' : 'سجل دخولك'}
             </button>
           </div>
@@ -158,3 +172,4 @@ const Login = () => {
 };
 
 export default Login;
+
