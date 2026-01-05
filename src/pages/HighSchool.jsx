@@ -152,10 +152,11 @@ const HighSchool = () => {
 
       {/* footer بسيط */}
       <footer className="hs-footer">
-        <p>© 2026 منصة تيتو التعليمية - جميع الحقوق محفوظة</p>
+        <p>© 2026 منصة Mafa التعليمية - جميع الحقوق محفوظة</p>
       </footer>
     </div>
   );
 };
 
 export default HighSchool;
+
