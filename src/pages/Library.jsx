@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { motion } from 'framer-motion';
-import { Book, Download, Eye, Search, FileText } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Download, Eye, FileText, ArrowRight, BookOpen, Clock } from 'lucide-react';
 import './library.css';
 
 const Library = () => {
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewingBook, setViewingBook] = useState(null); // الكتاب المفتوح حالياً
 
   useEffect(() => {
-    // جلب الكتب من مجموعة "library" في الفايربيس
     const q = query(collection(db, "library"), orderBy("timestamp", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setBooks(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -22,62 +22,105 @@ const Library = () => {
     book.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  return (
-    <div className="library-container">
-      <header className="library-header">
-        <motion.h1 initial={{ y: -20 }} animate={{ y: 0 }}>المكتبة الرقمية 📚</motion.h1>
-        <p>مجموعتك الشاملة من الكتب والمذكرات بصيغة PDF</p>
-        
-        <div className="search-bar-wrapper">
-          <Search className="search-icon" />
-          <input 
-            type="text" 
-            placeholder="ابحث عن اسم الكتاب أو المذكرة..." 
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+  // واجهة قارئ الكتب
+  if (viewingBook) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, x: 50 }} 
+        animate={{ opacity: 1, x: 0 }} 
+        className="reader-mode"
+      >
+        <div className="reader-header">
+          <button className="back-btn" onClick={() => setViewingBook(null)}>
+            <ArrowRight size={20} /> العودة للمكتبة
+          </button>
+          <h2>{viewingBook.title}</h2>
+          <a href={viewingBook.fileUrl} download className="minimal-download">
+             <Download size={18} />
+          </a>
         </div>
+        <div className="pdf-viewer-container">
+          <iframe 
+            src={`${viewingBook.fileUrl}#toolbar=0`} 
+            title="PDF Reader"
+            width="100%" 
+            height="100%"
+          ></iframe>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <div className="library-root rtl-support">
+      <header className="lib-hero">
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0 }} 
+          animate={{ scale: 1, opacity: 1 }}
+          className="hero-content"
+        >
+          <h1>قاعدة البيانات المعرفية 📡</h1>
+          <p>تصفح المخطوطات الرقمية والمذكرات العلمية</p>
+          
+          <div className="search-vortex-input">
+            <Search className="s-icon" />
+            <input 
+              type="text" 
+              placeholder="عن ماذا تبحث اليوم؟" 
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </motion.div>
       </header>
 
-      <div className="books-grid">
-        {filteredBooks.map((book, index) => (
-          <motion.div 
-            className="book-card"
-            key={book.id}
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <div className="book-cover">
-              <FileText size={50} color="#00f2ff" />
-              <div className="book-badge">{book.category || 'PDF'}</div>
-            </div>
-            
-            <div className="book-info">
-              <h3>{book.title}</h3>
-              <p>المؤلف: {book.author || 'إدارة المنصة'}</p>
-              
-              <div className="book-actions">
-                <a href={book.fileUrl} target="_blank" rel="noreferrer" className="view-btn">
-                  <Eye size={18} /> معاينة
-                </a>
-                <a href={book.fileUrl} download className="download-btn">
-                  <Download size={18} /> تحميل
-                </a>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+      <main className="books-shelf">
+        <div className="shelf-label">
+          <BookOpen size={20} />
+          <span>المواد المتاحة ({filteredBooks.length})</span>
+        </div>
 
-      {filteredBooks.length === 0 && (
-        <div className="no-results">لا توجد كتب تطابق بحثك حالياً..</div>
-      )}
+        <div className="modern-books-grid">
+          <AnimatePresence>
+            {filteredBooks.map((book) => (
+              <motion.div 
+                layout
+                key={book.id}
+                className="futuristic-book-card"
+                whileHover={{ y: -8 }}
+              >
+                <div className="card-top">
+                  <div className="icon-box">
+                    <FileText size={30} />
+                  </div>
+                  <span className="file-tag">{book.category || 'PDF'}</span>
+                </div>
+                
+                <div className="card-mid">
+                  <h3>{book.title}</h3>
+                  <div className="meta-info">
+                    <span><UserMini size={14}/> {book.author || 'المعلم'}</span>
+                    <span><Clock size={14}/> {new Date(book.timestamp?.seconds * 1000).toLocaleDateString('ar-EG')}</span>
+                  </div>
+                </div>
+
+                <div className="card-actions">
+                  <button className="read-now" onClick={() => setViewingBook(book)}>
+                    <Eye size={18} /> فتح الكتاب
+                  </button>
+                  <a href={book.fileUrl} download className="icon-only-download">
+                    <Download size={18} />
+                  </a>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      </main>
     </div>
   );
 };
 
+// أيقونة صغيرة مخصصة
+const UserMini = ({size}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
 
 export default Library;
-
-
-
