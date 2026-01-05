@@ -1,178 +1,117 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { auth, db } from '../firebase';
-import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signInWithPopup, 
-  GoogleAuthProvider 
-} from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-import './Login.css'; // تأكد من إضافة التنسيقات التي أرسلتها لك
+import { LogIn, UserPlus, Mail, Lock, User, Sparkles } from 'lucide-react';
+import './Login.css';
 
 const Login = () => {
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [name, setName] = useState('');
   const navigate = useNavigate();
 
-  // صلاحيات النظام
-  const ADMIN_EMAIL = "admin@mafatec.com";
-  const TEACHER_EMAIL = "teacher@mafatec.com";
-
-  /**
-   * إنشاء أو تحديث مستند المستخدم في Firestore
-   * تم إضافة حقول الواحة (XP, Tasbih, Hifz) لضمان عمل المجتمع الديني
-   */
-  const createOrUpdateUserDB = async (user) => {
-    const userDocRef = doc(db, "users", user.uid);
-    const userDoc = await getDoc(userDocRef);
-
-    if (!userDoc.exists()) {
-      let role = 'student';
-      if (user.email === ADMIN_EMAIL) role = 'admin';
-      if (user.email === TEACHER_EMAIL) role = 'teacher';
-
-      const initialData = {
-        uid: user.uid,
-        displayName: user.displayName || "مستكشف نوري",
-        email: user.email,
-        photoURL: user.photoURL || "",
-        role: role,
-        isActive: true,
-        createdAt: serverTimestamp(),
-        
-        // --- بيانات التعليم والمنصة ---
-        progress: { completedLessons: [], overallPercentage: 0 },
-        points: 0,
-
-        // --- بيانات الواحة والمجتمع (الإضافة الجديدة) ---
-        xp: 0,                // نقاط النور للوحة الشرف
-        totalTasbih: 0,        // إجمالي التسبيحات التاريخي
-        lastHifz: {            // متابعة حفظ القرآن
-          surah: "الفاتحة",
-          ayah: 1
-        },
-        dailyWorship: []       // سجل العبادات اليومية
-      };
-
-      await setDoc(userDocRef, initialData);
-      return role;
-    }
-    
-    return userDoc.data().role;
-  };
-
-  // الدخول بواسطة جوجل
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const role = await createOrUpdateUserDB(result.user);
-      
-      // التوجيه بناءً على الصلاحية
-      if (role === 'admin') navigate('/admin');
-      else if (role === 'teacher') navigate('/teacher-dash');
-      else navigate('/student-dash');
-      
-    } catch (error) { 
-      alert("خطأ في تسجيل الدخول بواسطة جوجل: " + error.message); 
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // الدخول أو التسجيل اليدوي
   const handleAuth = async (e) => {
     e.preventDefault();
-    setLoading(true);
     try {
-      let user;
-      try {
-        // محاولة تسجيل الدخول أولاً
-        const res = await signInWithEmailAndPassword(auth, email, password);
-        user = res.user;
-      } catch (signInError) {
-        // إذا فشل (مستخدم جديد)، يتم إنشاء حساب
-        if (signInError.code === 'auth/user-not-found' || signInError.code === 'auth/invalid-credential') {
-          const res = await createUserWithEmailAndPassword(auth, email, password);
-          user = res.user;
-        } else {
-          throw signInError;
-        }
+      if (isLogin) {
+        await signInWithEmailAndPassword(auth, email, password);
+        navigate('/');
+      } else {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(userCredential.user, { displayName: name });
+        
+        // إنشاء ملف الطالب في الفايرستور
+        await setDoc(doc(db, "users", userCredential.user.uid), {
+          uid: userCredential.user.uid,
+          name: name,
+          email: email,
+          role: 'student', // القيمة الافتراضية طالب
+          createdAt: new Date()
+        });
+        navigate('/');
       }
-      
-      const role = await createOrUpdateUserDB(user);
-      navigate(role === 'admin' ? '/admin' : role === 'teacher' ? '/teacher-dash' : '/student-dash');
-      
-    } catch (error) { 
-      alert("حدث خطأ: " + error.message); 
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      alert("عذراً، حدث خطأ: " + error.message);
     }
   };
 
   return (
-    <div className="future-login-wrapper">
-      {/* دوائر الطاقة المتحركة في الخلفية */}
-      <div className="energy-orb orb-1"></div>
-      <div className="energy-orb orb-2"></div>
+    <div className="login-page">
+      {/* العناصر العائمة في الخلفية */}
+      <div className="floating-elements">
+        <motion.div animate={{ y: [0, -50, 0] }} transition={{ duration: 6, repeat: Infinity }} className="blob blob-1"></motion.div>
+        <motion.div animate={{ y: [0, 50, 0] }} transition={{ duration: 8, repeat: Infinity }} className="blob blob-2"></motion.div>
+      </div>
 
-      <div className="floating-card-3d">
-        <div className="card-content">
-          <div className="brand-logo">
-            <div className="logo-icon-3d">🚀</div>
-            <h1 className="cyber-title">MAFA TEC</h1>
-            <p className="cyber-subtitle">نظام التعلم المستقبلي</p>
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="login-container"
+      >
+        <div className="login-card">
+          <div className="card-header">
+            <div className="auth-logo">
+              <Sparkles size={30} color="#00f2ff" />
+            </div>
+            <h2>{isLogin ? 'مرحباً بعودتك' : 'انضم إلينا'}</h2>
+            <p>{isLogin ? 'سجل دخولك لمواصلة رحلة التعلم' : 'ابدأ رحلتك التعليمية والروحانية اليوم'}</p>
           </div>
 
-          <button onClick={handleGoogleSignIn} className="google-futuristic-btn" disabled={loading}>
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
-            <span>Identity Sync with Google</span>
-          </button>
+          <form onSubmit={handleAuth} className="auth-form">
+            {!isLogin && (
+              <div className="input-group">
+                <User className="input-icon" size={20} />
+                <input 
+                  type="text" 
+                  placeholder="الاسم الكامل" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required 
+                />
+              </div>
+            )}
 
-          <div className="cyber-divider">
-            <span>OR MANUAL ACCESS</span>
-          </div>
-
-          <form onSubmit={handleAuth} className="futuristic-form">
-            <div className="cyber-input-wrapper">
+            <div className="input-group">
+              <Mail className="input-icon" size={20} />
               <input 
                 type="email" 
-                placeholder="Terminal Email" 
-                autoComplete="email"
-                onChange={(e) => setEmail(e.target.value)} 
+                placeholder="البريد الإلكتروني" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required 
               />
-              <div className="input-glow"></div>
-            </div>
-            
-            <div className="cyber-input-wrapper">
-              <input 
-                type="password" 
-                placeholder="Access Code" 
-                autoComplete="current-password"
-                onChange={(e) => setPassword(e.target.value)} 
-                required 
-              />
-              <div className="input-glow"></div>
             </div>
 
-            <button type="submit" className="neon-submit-btn" disabled={loading}>
-              {loading ? <div className="spinner"></div> : "INITIALIZE LOGIN"}
+            <div className="input-group">
+              <Lock className="input-icon" size={20} />
+              <input 
+                type="password" 
+                placeholder="كلمة المرور" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required 
+              />
+            </div>
+
+            <button type="submit" className="auth-submit">
+              {isLogin ? <><LogIn size={20} /> دخول</> : <><UserPlus size={20} /> إنشاء حساب</>}
             </button>
           </form>
-          
-          <p className="auth-note">
-            * سيتم إنشاء حساب جديد تلقائياً إذا لم تكن مسجلاً
-          </p>
+
+          <div className="auth-toggle">
+            <span>{isLogin ? 'ليس لديك حساب؟' : 'لديك حساب بالفعل؟'}</span>
+            <button onClick={() => setIsLogin(!isLogin)}>
+              {isLogin ? 'سجل الآن' : 'سجل دخولك'}
+            </button>
+          </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
 
 export default Login;
-
-
