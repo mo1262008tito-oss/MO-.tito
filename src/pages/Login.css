@@ -205,3 +205,53 @@
   background: rgba(255, 255, 255, 0.1);
   border-color: #00f2ff;
 }
+/* تنسيق الفاصل بين الدخول العادي وجوجل */
+.auth-divider {
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #888;
+}
+
+.auth-divider::before, .auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.auth-divider span {
+  margin: 0 10px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* تنسيق زر جوجل */
+.google-auth-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.google-auth-btn img {
+  width: 20px;
+  height: 20px;
+}
+
+.google-auth-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #00f2ff;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 242, 255, 0.1);
+}
