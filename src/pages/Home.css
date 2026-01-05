@@ -1,101 +1,201 @@
-/* src/pages/Home.css */
+/* إعدادات الخطوط والأساسيات */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Reem+Kufi:wght@400;700&display=swap');
 
-.home-container {
+.modern-home {
   min-height: 100vh;
-  background: radial-gradient(circle at top right, #0f172a, #020617);
-  color: white;
-  padding-top: 100px; /* لترك مساحة للنافبار */
+  background: #020408;
+  color: #fff;
+  font-family: 'Cairo', sans-serif;
   overflow-x: hidden;
+  position: relative;
+  direction: rtl;
 }
 
-/* Hero Section */
-.hero-section {
-  display: flex;
+/* الخلفية المتحركة (الذرات العائمة) */
+.ambient-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.f-icon {
+  position: absolute;
+  font-size: 2rem;
+  opacity: 0.15;
+  filter: blur(1px);
+  color: var(--accent, #00f2ff);
+}
+
+.tech-1 { top: 15%; left: 10%; font-family: monospace; }
+.deen-1 { top: 25%; right: 15%; font-size: 3rem; }
+.tech-2 { bottom: 20%; left: 15%; font-weight: 900; }
+.deen-2 { bottom: 30%; right: 10%; }
+
+/* تصميم المحتوى الرئيسي */
+.main-content {
+  position: relative;
+  z-index: 10;
+  padding: 80px 20px 50px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* قسم التحية الملكي */
+.hero-greeting {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.status-badge {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 60px 8%;
-  gap: 40px;
+  gap: 8px;
+  background: rgba(0, 242, 255, 0.1);
+  padding: 8px 20px;
+  border-radius: 50px;
+  border: 1px solid rgba(0, 242, 255, 0.3);
+  color: #00f2ff;
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin-bottom: 25px;
 }
 
-.hero-content h1 {
-  font-size: 4rem;
+.hero-greeting h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 900;
-  line-height: 1.2;
   margin-bottom: 20px;
-  background: linear-gradient(to left, #00f2ff, #a855f7);
+  line-height: 1.2;
+}
+
+.highlight {
+  background: linear-gradient(90deg, #00f2ff, #00ff88);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  font-family: 'Reem Kufi', sans-serif;
 }
 
-.hero-content p {
+.hero-msg {
   font-size: 1.2rem;
-  opacity: 0.8;
-  max-width: 600px;
-  margin-bottom: 30px;
+  color: #a0aec0;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.8;
+  font-style: italic;
 }
 
-/* الأزرار التفاعلية */
-.cta-buttons {
-  display: flex;
-  gap: 20px;
-}
-
-.start-btn {
-  background: #00f2ff;
-  color: #000;
-  padding: 15px 35px;
-  border-radius: 15px;
-  font-weight: 800;
-  text-decoration: none;
-  box-shadow: 0 10px 25px rgba(0, 242, 255, 0.3);
-  transition: 0.3s;
-}
-
-.start-btn:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 35px rgba(0, 242, 255, 0.5);
-}
-
-/* الجزء الخاص بالـ 3D Card */
-.hero-image-container {
-  position: relative;
+/* شبكة البوابات الـ 3D */
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
   perspective: 1000px;
 }
 
-.floating-card {
-  width: 400px;
-  height: 500px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 30px;
+.portal-card-3d {
+  position: relative;
+  cursor: pointer;
+  height: 400px;
+}
+
+.card-inner {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(15px);
+  border-radius: 40px;
+  padding: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  transform: rotateY(-15deg) rotateX(10deg);
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at top right, var(--accent), transparent 70%);
+  opacity: 0.05;
   transition: 0.5s;
 }
 
-.floating-card:hover {
-  transform: rotateY(0deg) rotateX(0deg);
+.portal-card-3d:hover .card-inner {
+  border-color: var(--accent);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent);
 }
-/* ريسبونسف الموبايل */
-@media (max-width: 992px) {
-  .hero-section {
-    flex-direction: column;
-    text-align: center;
-    padding-top: 40px;
-  }
-  
-  .hero-content h1 {
-    font-size: 2.5rem;
-  }
-  
-  .hero-image-container {
-    display: none; /* إخفاء الصورة الكبيرة في الموبايل لسهولة التصفح */
-  }
 
-  .cta-buttons {
-    justify-content: center;
-  }
+.portal-card-3d:hover .card-glow {
+  opacity: 0.2;
+}
+
+.p-badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 5px 15px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.p-icon {
+  margin-top: 20px;
+  color: var(--accent);
+  filter: drop-shadow(0 0 10px var(--accent));
+}
+
+.card-body h3 {
+  font-size: 1.8rem;
+  font-weight: 900;
+  margin-bottom: 15px;
+  color: #fff;
+}
+
+.card-body p {
+  color: #cbd5e0;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.arrow-icon {
+  transition: transform 0.3s ease;
+}
+
+.portal-card-3d:hover .arrow-icon {
+  transform: translateX(-10px);
+}
+
+/* تحسينات الجوال */
+@media (max-width: 768px) {
+  .main-content { padding-top: 40px; }
+  .portal-grid { grid-template-columns: 1fr; }
+  .hero-greeting h1 { font-size: 2.2rem; }
+  .portal-card-3d { height: 350px; }
+}
+
+/* تأثير التوهج في الخلفية */
+.modern-home::before {
+  content: '';
+  position: fixed;
+  top: -10%;
+  right: -10%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, rgba(0, 242, 255, 0.05) 0%, transparent 70%);
+  z-index: 1;
 }
