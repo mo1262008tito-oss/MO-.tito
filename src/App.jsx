@@ -4,11 +4,11 @@ import { auth, db } from './firebase';
 import { doc, onSnapshot } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
-// Components
+// المكونات الأساسية
 import Navbar from './components/Navbar';
 import ParticlesBg from './components/ParticlesBg';
 
-// Pages
+// الصفحات (تأكد من وجود كل هذه الملفات في مجلد pages)
 import Home from './pages/Home';
 import HighSchool from './pages/HighSchool';
 import AdminDash from './pages/AdminDash';
@@ -23,9 +23,9 @@ import Library from './pages/Library';
 
 import './Global.css';
 
-
-const ProtectedRoute = ({ children, isActive, loading, redirectPath = "/highschool" }) => {
-  if (loading) return null; 
+// مكون حماية المسارات الذكي
+const ProtectedRoute = ({ children, isActive, loading, redirectPath = "/login" }) => {
+  if (loading) return <div className="loading-overlay">جاري التحقق من الصلاحيات...</div>; 
   return isActive ? children : <Navigate to={redirectPath} />; 
 };
 
@@ -38,9 +38,15 @@ function App() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
+        // جلب بيانات المستخدم لحظياً (الرتبة، النقاط، الكورسات المشترك بها)
         const userDocRef = doc(db, "users", currentUser.uid);
         const unsubDoc = onSnapshot(userDocRef, (docSnap) => {
-          setUserData(docSnap.data());
+          if (docSnap.exists()) {
+            setUserData(docSnap.data());
+          }
+          setLoading(false);
+        }, (error) => {
+          console.error("Firestore Error:", error);
           setLoading(false);
         });
         return () => unsubDoc();
@@ -55,61 +61,53 @@ function App() {
   return (
     <Router>
       <ParticlesBg /> 
-      
-      {/* التعديل هنا: تمرير userData للـ Navbar ليتمكن من معرفة الصلاحيات */}
-      <Navbar userData={userData} />
+      {/* تمرير userData للـ Navbar لتغيير الأزرار حسب الرتبة (أدمن/طالب) */}
+      <Navbar user={user} userData={userData} />
       
       <main className="universal-page-container">
         <Routes>
+          {/* 1. المسارات العامة (متاحة للجميع) */}
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={!user ? <Login /> : <Navigate to="/student-dash" />} />
           <Route path="/about" element={<About />} />
           <Route path="/religious" element={<Religious />} />
-          <Route path="/highschool" element={<HighSchool />} />
           <Route path="/library" element={<Library />} />
+          <Route path="/highschool" element={<HighSchool />} />
+
+          {/* 2. مسارات الطالب (يجب تسجيل الدخول) */}
+          <Route path="/student-dash" element={
+            <ProtectedRoute isActive={!!user} loading={loading}>
+              <StudentDash />
+            </ProtectedRoute>
+          } />
 
           <Route path="/all-courses" element={
-            <ProtectedRoute isActive={userData?.isSecondaryActive} loading={loading}>
+            <ProtectedRoute isActive={!!user} loading={loading}>
               <AllCourses />
             </ProtectedRoute>
           } />
 
           <Route path="/course/:id" element={
-            <ProtectedRoute isActive={userData?.isSecondaryActive} loading={loading}>
+            <ProtectedRoute isActive={!!user} loading={loading}>
               <CoursePlayer />
             </ProtectedRoute>
           } />
 
-          <Route path="/student-dash" element={
-            <ProtectedRoute isActive={!!user} loading={loading} redirectPath="/login">
-              <StudentDash />
-            </ProtectedRoute>
-          } />
-
+          {/* 3. مسار المعلم (صلاحية teacher) */}
           <Route path="/teacher-dash" element={
-            <ProtectedRoute isActive={userData?.role === 'teacher'} loading={loading} redirectPath="/">
+            <ProtectedRoute isActive={userData?.role === 'teacher' || userData?.role === 'admin'} loading={loading} redirectPath="/">
               <TeacherDash />
             </ProtectedRoute>
           } />
           
+          {/* 4. مسار الإدارة (صلاحية admin فقط) */}
           <Route path="/admin" element={
             <ProtectedRoute isActive={userData?.role === 'admin'} loading={loading} redirectPath="/">
               <AdminDash />
             </ProtectedRoute>
           } />
-
-          <Route path="/all-courses" element={
-  <ProtectedRoute isActive={userData?.isSecondaryActive} loading={loading}>
-    <AllCourses />
-  </ProtectedRoute>
-} />
-          // تغيير الشرط ليفحص فقط هل المستخدم مسجل دخول أم لا
-<Route path="/all-courses" element={
-  <ProtectedRoute isActive={!!user} loading={loading} redirectPath="/login">
-    <AllCourses />
-  </ProtectedRoute>
-} />
           
+          {/* توجيه ذكي لأي مسار خاطئ */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
@@ -117,12 +115,6 @@ function App() {
   );
 }
 
-
 export default App;
-
-
-
-
-
 
 
