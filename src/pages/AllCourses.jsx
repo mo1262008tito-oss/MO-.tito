@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth } from '../firebase';
-import { collection, onSnapshot, doc, updateDoc, arrayUnion, getDoc, increment } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, arrayUnion, getDoc, increment, query, orderBy } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, BookOpen, User, Star, PlusCircle, LogIn, PlayCircle, ArrowRight, Layout } from 'lucide-react';
+import { Search, Filter, BookOpen, User, Star, PlusCircle, LogIn, PlayCircle, ArrowRight, Layout, Lock } from 'lucide-react';
 import './AllCourses.css';
 
 const AllCourses = () => {
@@ -12,10 +12,13 @@ const AllCourses = () => {
   const [filter, setFilter] = useState('الكل');
   const [availableCourses, setAvailableCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [userEnrolledIds, setUserEnrolledIds] = useState([]);
 
-  // 1. جلب الكورسات المجانية لحظياً
+  // 1. جلب الكورسات وبيانات الطالب اللحظية
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "courses"), (snapshot) => {
+    // جلب الكورسات من المجموعة الجديدة metadata
+    const q = query(collection(db, "courses_metadata"), orderBy("createdAt", "desc"));
+    const unsubCourses = onSnapshot(q, (snapshot) => {
       const coursesData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -23,7 +26,18 @@ const AllCourses = () => {
       setAvailableCourses(coursesData);
       setLoading(false);
     });
-    return () => unsub();
+
+    // جلب الكورسات التي يمتلكها الطالب فعلياً لمنع تكرار الاشتراك
+    if (auth.currentUser) {
+      const unsubUser = onSnapshot(doc(db, "users", auth.currentUser.uid), (doc) => {
+        if (doc.exists()) {
+          setUserEnrolledIds(doc.data().enrolledContent || []);
+        }
+      });
+      return () => { unsubCourses(); unsubUser(); };
+    }
+
+    return () => unsubCourses();
   }, []);
 
   // 2. منطق التصفية والبحث
@@ -33,32 +47,38 @@ const AllCourses = () => {
      course.instructor?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // 3. دالة الاشتراك والربط مع StudentDash
-  const handleEnroll = async (courseId, courseTitle) => {
+  // 3. دالة الاشتراك والتحقق من نوع الكورس
+  const handleEnroll = async (course) => {
     const user = auth.currentUser;
 
     if (!user) {
-      alert("⚠️ سجل دخولك أولاً لتتمكن من إضافة الكورس لمكتبتك.");
+      alert("⚠️ سجل دخولك أولاً لتتمكن من الوصول للمحتوى.");
       return navigate('/login');
     }
 
+    // إذا كان الطالب مشتركاً بالفعل، يذهب للمشاهدة مباشرة
+    if (userEnrolledIds.includes(course.id)) {
+      return navigate(`/video-player/${course.id}`);
+    }
+
+    // إذا كان الكورس "مدفوع" (أي بسعر أكبر من 0) ولم يشترك الطالب بعد
+    if (course.price > 0) {
+      alert(`هذا الكورس مدفوع (السعر: ${course.price} ج.م). يرجى استخدام كود التفعيل أو طلب الشراء من لوحة التحكم.`);
+      return navigate('/dashboard'); // توجيهه للوحة التحكم لشراء الكورس
+    }
+
+    // الاشتراك في الكورسات المجانية تلقائياً
     try {
       const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
-
-      // إضافة الكورس لقائمة المحتوى المشترك فيه (enrolledContent) ليظهر في StudentDash
-      if (userSnap.exists()) {
-        await updateDoc(userRef, {
-          enrolledContent: arrayUnion(courseId), // الربط مع الطالب
-          points: increment(5) // مكافأة بسيطة للاستكشاف
-        });
-      }
+      await updateDoc(userRef, {
+        enrolledContent: arrayUnion(course.id),
+        points: increment(10) // مكافأة أكبر للاشتراك في كورس
+      });
       
-      // التوجه لصفحة المشاهدة
-      navigate(`/video-player/${courseId}`); 
+      navigate(`/video-player/${course.id}`); 
     } catch (error) {
       console.error("Error enrolling:", error);
-      alert("حدث خطأ في الوصول للمحتوى.");
+      alert("حدث خطأ في تفعيل الكورس.");
     }
   };
 
@@ -67,14 +87,14 @@ const AllCourses = () => {
       <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}>
          <PlayCircle size={50} color="#00f2ff" />
       </motion.div>
-      <p>جاري استدعاء المكتبة المجانية...</p>
+      <p>جاري تحميل منصة MAFA التعليمية...</p>
     </div>
   );
 
   return (
     <div className="all-courses-root rtl-support">
       
-      {/* هيدر التنقل العلوي للطلاب المسجلين */}
+      {/* هيدر التنقل العلوي */}
       {auth.currentUser && (
         <motion.div initial={{ y: -50 }} animate={{ y: 0 }} className="top-nav-bar">
           <button onClick={() => navigate('/dashboard')} className="back-to-dash">
@@ -85,8 +105,8 @@ const AllCourses = () => {
 
       <section className="library-header">
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-          <h1 className="cyber-title">مكتبة MAFA المفتوحة</h1>
-          <p className="subtitle">تعلم بدون قيود.. محاضرات مجانية بجودة فائقة</p>
+          <h1 className="cyber-title">مستودع محاضرات MAFA</h1>
+          <p className="subtitle">ابدأ رحلة التفوق الآن مع أقوى نظام تعليمي تفاعلي</p>
         </motion.div>
       </section>
 
@@ -95,7 +115,7 @@ const AllCourses = () => {
           <Search size={20} className="search-icon" />
           <input 
             type="text" 
-            placeholder="ابحث عن درس أو مدرس..." 
+            placeholder="ابحث عن كورس، درس، أو مدرس..." 
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
@@ -107,7 +127,7 @@ const AllCourses = () => {
               className={filter === grade ? 'active' : ''} 
               onClick={() => setFilter(grade)}
             >
-              {grade === 'الكل' ? 'الكل' : `ثانية ${grade} ث`}
+              {grade === 'الكل' ? 'الكل' : `الصف ${grade} الثانوي`}
             </button>
           ))}
         </div>
@@ -115,46 +135,65 @@ const AllCourses = () => {
 
       <main className="courses-grid">
         <AnimatePresence>
-          {filteredCourses.map(course => (
-            <motion.div 
-              layout
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              key={course.id} 
-              className="modern-course-card glass-card"
-            >
-              <div className="card-tag">المستوى {course.grade}</div>
-              
-              <div className="card-visual" style={{ backgroundImage: `url(${course.thumbnail})` }}>
-                {!course.thumbnail && <PlayCircle size={50} color="#00f2ff" />}
-                <div className="play-hint"><PlayCircle size={40} /></div>
-              </div>
+          {filteredCourses.map(course => {
+            const isEnrolled = userEnrolledIds.includes(course.id);
+            const isLocked = course.price > 0 && !isEnrolled;
 
-              <div className="card-details">
-                <h3>{course.title}</h3>
-                <div className="instructor-info">
-                  <User size={14} /> <span>{course.instructor || 'أ. محمود فرج'}</span>
+            return (
+              <motion.div 
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                key={course.id} 
+                className={`modern-course-card glass-card ${isLocked ? 'locked-style' : ''}`}
+              >
+                <div className="card-tag">
+                  {course.grade} ثانوي {isLocked && <Lock size={12} style={{marginRight: '5px'}}/>}
                 </div>
                 
-                <div className="card-footer">
-                  <span className="free-label">دخول مجاني</span>
-                  <button className="enroll-btn" onClick={() => handleEnroll(course.id, course.title)}>
-                    {auth.currentUser ? 'شاهد الآن' : 'سجل للدخول'}
-                    <ArrowRight size={16} />
-                  </button>
+                <div className="card-visual" style={{ backgroundImage: `url(${course.thumbnail})` }}>
+                  {!course.thumbnail && <PlayCircle size={50} color={isLocked ? "#64748b" : "#00f2ff"} />}
+                  {isLocked && <div className="lock-overlay"><Lock size={40} /></div>}
+                  {!isLocked && <div className="play-hint"><PlayCircle size={40} /></div>}
                 </div>
-              </div>
-            </motion.div>
-          ))}
+
+                <div className="card-details">
+                  <h3>{course.title}</h3>
+                  <div className="instructor-info">
+                    <User size={14} /> <span>{course.instructor || 'أ. محمود فرج'}</span>
+                    <span className="lesson-count">{course.lessons?.length || 0} محاضرة</span>
+                  </div>
+                  
+                  <div className="card-footer">
+                    <div className="price-tag">
+                      {course.price > 0 ? (
+                        <span className="paid-price">{course.price} ج.م</span>
+                      ) : (
+                        <span className="free-label">مجاني</span>
+                      )}
+                    </div>
+                    
+                    <button 
+                      className={`enroll-btn ${isLocked ? 'btn-lock' : ''}`} 
+                      onClick={() => handleEnroll(course)}
+                    >
+                      {isEnrolled ? 'استمرار المشاهدة' : isLocked ? 'شراء الكورس' : 'ابدأ الآن'}
+                      <ArrowRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </AnimatePresence>
       </main>
 
       {filteredCourses.length === 0 && (
         <div className="empty-state-v2">
           <BookOpen size={60} />
-          <h3>لا توجد نتائج مطابقة</h3>
-          <p>جرب تغيير كلمات البحث أو اختيار صف دراسي آخر</p>
+          <h3>لا توجد كورسات متاحة حالياً</h3>
+          <p>سيتم إضافة المزيد من المحتوى قريباً، تابع لوحة التحكم</p>
         </div>
       )}
     </div>
