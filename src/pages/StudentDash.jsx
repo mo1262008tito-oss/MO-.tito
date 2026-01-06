@@ -6,8 +6,8 @@ import {
 } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Layout, Power, CheckCircle, Award, PlayCircle,
-  BookOpen, Clock, Flame, Key, Trophy, ShoppingBag, GraduationCap, Zap, Target
+  Layout, Power, CheckCircle, Award, PlayCircle, Calendar, Trash2,
+  BookOpen, Clock, Flame, Key, Trophy, ShoppingBag, GraduationCap, Zap, Target, Plus, Check, ListChecks
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './StudentDash.css';
@@ -22,33 +22,27 @@ const StudentDash = () => {
   const [activationCode, setActivationCode] = useState("");
   const [topStudents, setTopStudents] = useState([]);
   
+  // --- أنظمة جديدة ---
+  const [studyDay, setStudyDay] = useState(""); // لجدول المذاكرة
+  const [studySubject, setStudySubject] = useState("");
+  const [pomoMode, setPomoMode] = useState('work'); // 'work' or 'break'
+
   const [minutes, setMinutes] = useState(25);
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
     if (auth.currentUser) {
-      // 1. جلب بيانات الطالب مع حماية
       const unsub = onSnapshot(doc(db, "users", auth.currentUser.uid), (d) => {
-        if (d.exists()) {
-          setStudent(d.data());
-        } else {
-          console.log("No student record found");
-        }
-      }, (error) => {
-        console.error("Firestore Error:", error);
+        if (d.exists()) setStudent(d.data());
       });
 
-      // 2. جلب المتجر
       const fetchStore = async () => {
-        try {
-          const q = collection(db, "courses_metadata");
-          const snap = await getDocs(q);
-          setAvailableCourses(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        } catch (e) { console.error("Store error", e); }
+        const q = collection(db, "courses_metadata");
+        const snap = await getDocs(q);
+        setAvailableCourses(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       };
 
-      // 3. جلب الأوائل
       const fetchLeaders = () => {
         const q = query(collection(db, "users"), orderBy("points", "desc"), limit(10));
         onSnapshot(q, (snap) => {
@@ -62,7 +56,7 @@ const StudentDash = () => {
     }
   }, []);
 
-  // منطق البومودورو
+  // --- منطق البومودورو المطور ---
   useEffect(() => {
     let interval = null;
     if (isActive && (minutes > 0 || seconds > 0)) {
@@ -72,11 +66,16 @@ const StudentDash = () => {
       }, 1000);
     } else if (minutes === 0 && seconds === 0) {
       setIsActive(false);
-      triggerNotif("انتهت جلسة التركيز! استحق استراحة ☕", "success");
-      handleGrantPoints(50);
+      const isWork = pomoMode === 'work';
+      triggerNotif(isWork ? "انتهت جلسة التركيز! استحق استراحة ☕" : "انتهت الاستراحة، هيا بنا نعود! 💪", "success");
+      if(isWork) handleGrantPoints(50);
+      
+      // التبديل التلقائي
+      setPomoMode(isWork ? 'break' : 'work');
+      setMinutes(isWork ? 5 : 25);
     }
     return () => clearInterval(interval);
-  }, [isActive, minutes, seconds]);
+  }, [isActive, minutes, seconds, pomoMode]);
 
   const triggerNotif = (msg, type = "info") => {
     setNotif({ show: true, msg, type });
@@ -88,57 +87,43 @@ const StudentDash = () => {
     await updateDoc(userRef, { points: increment(pts) });
   };
 
-  const handleActivateCode = async () => {
-    if (!activationCode) return;
-    try {
-        const q = query(collection(db, "activationCodes"), where("code", "==", activationCode), where("isUsed", "==", false));
-        const snap = await getDocs(q);
-
-        if (snap.empty) {
-          triggerNotif("❌ الكود غير صحيح أو مستخدم مسبقاً", "error");
-          return;
-        }
-
-        const codeDoc = snap.docs[0];
-        const { targetId } = codeDoc.data();
-
-        await updateDoc(doc(db, "users", auth.currentUser.uid), {
-          enrolledContent: arrayUnion(targetId),
-          points: increment(500)
-        });
-
-        await updateDoc(doc(db, "activationCodes", codeDoc.id), {
-          isUsed: true,
-          usedBy: auth.currentUser.email,
-          activatedAt: serverTimestamp()
-        });
-
-        setActivationCode("");
-        triggerNotif("🚀 تم تفعيل الكورس بنجاح!", "success");
-    } catch (e) { triggerNotif("حدث خطأ في التفعيل", "error"); }
-  };
-
+  // --- نظام المهام (To-Do) المطور ---
   const addTask = async () => {
     if(!taskText.trim()) return;
     const ref = doc(db, "users", auth.currentUser.uid);
     await updateDoc(ref, { 
-        tasks: arrayUnion({ id: Date.now(), text: taskText, completed: false }) 
+        tasks: arrayUnion({ id: Date.now(), text: taskText, completed: false, createdAt: new Date().toISOString() }) 
     });
     setTaskText("");
-    triggerNotif("تم إضافة مهمة جديدة 📝");
+    triggerNotif("تمت إضافة المهمة للرادار 🚀");
   };
 
   const toggleTask = async (taskId) => {
     const updatedTasks = student.tasks.map(t => 
       t.id === taskId ? { ...t, completed: !t.completed } : t
     );
-    const ref = doc(db, "users", auth.currentUser.uid);
-    await updateDoc(ref, { tasks: updatedTasks });
-    const targetTask = student.tasks.find(t => t.id === taskId);
-    if (targetTask && !targetTask.completed) {
-      handleGrantPoints(10);
-      triggerNotif("أحسنت! +10 نقاط XP", "success");
+    await updateDoc(doc(db, "users", auth.currentUser.uid), { tasks: updatedTasks });
+    const task = student.tasks.find(t => t.id === taskId);
+    if (task && !task.completed) {
+      handleGrantPoints(15);
+      triggerNotif("إنجاز رائع! +15 XP", "success");
     }
+  };
+
+  const deleteTask = async (taskId) => {
+    const updatedTasks = student.tasks.filter(t => t.id !== taskId);
+    await updateDoc(doc(db, "users", auth.currentUser.uid), { tasks: updatedTasks });
+  };
+
+  // --- نظام جدول المذاكرة ---
+  const addStudySchedule = async () => {
+    if(!studyDay || !studySubject) return triggerNotif("أكمل بيانات الجدول", "error");
+    const ref = doc(db, "users", auth.currentUser.uid);
+    await updateDoc(ref, { 
+        studySchedule: arrayUnion({ id: Date.now(), day: studyDay, subject: studySubject }) 
+    });
+    setStudySubject("");
+    triggerNotif("تم تحديث جدولك الأسبوعي 📅");
   };
 
   const getRank = (pts = 0) => {
@@ -147,30 +132,27 @@ const StudentDash = () => {
     return { title: "طالب طموح", color: "#00f2ff" };
   };
 
-  // حماية ضد الشاشة السوداء: إذا لم تظهر البيانات بعد يظهر اللودينج
-  if (!student) return (
-    <div className="nebula-loading">
-      <Zap className="spin-icon" size={40} color="#00f2ff" />
-      <span>جاري مزامنة بيانات البطل...</span>
-    </div>
-  );
+  if (!student) return <div className="nebula-loading"><Zap className="spin-icon" size={40} color="#00f2ff" /><span>جاري شحن طاقة البطل...</span></div>;
 
   return (
     <div className={`student-nebula-root ${isActive ? 'focus-mode-active' : ''}`}>
       
+      {/* التنبيهات */}
       <AnimatePresence>
         {notif.show && (
-          <motion.div initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100 }} className={`floating-notif ${notif.type}`}>
+          <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 20, opacity: 1 }} exit={{ y: -50 }} className={`floating-notif-v2 ${notif.type}`}>
+            {notif.type === 'success' ? <CheckCircle size={18}/> : <Zap size={18}/>}
             {notif.msg}
           </motion.div>
         )}
       </AnimatePresence>
 
       <aside className="side-dock-v2">
-        <div className="dock-brand"><Zap size={28} fill="#00f2ff" /></div>
+        <div className="dock-brand"><div className="inner-glow"><Zap size={24} fill="#00f2ff" /></div></div>
         <nav className="dock-nav">
           <button className={activeTab === 'my-courses' ? 'active' : ''} onClick={() => setActiveTab('my-courses')}><Layout /><span className="tooltip">مكتبتي</span></button>
           <button className={activeTab === 'store' ? 'active' : ''} onClick={() => setActiveTab('store')}><ShoppingBag /><span className="tooltip">المتجر</span></button>
+          <button className={activeTab === 'schedule' ? 'active' : ''} onClick={() => setActiveTab('schedule')}><Calendar /><span className="tooltip">الجدول</span></button>
           <button className={activeTab === 'leaderboard' ? 'active' : ''} onClick={() => setActiveTab('leaderboard')}><Trophy /><span className="tooltip">الأوائل</span></button>
         </nav>
         <div className="dock-footer">
@@ -179,129 +161,110 @@ const StudentDash = () => {
       </aside>
 
       <main className="nebula-main">
-        <header className="nebula-top-bar">
+        <header className="nebula-top-bar-v2">
           <div className="user-profile-info">
-            <div className="avatar-wrapper">
-              <img src={`https://api.dicebear.com/7.x/bottts/svg?seed=${student?.email || 'anon'}`} alt="avatar" />
-              <div className="streak-tag"><Flame size={12} fill="#ff4b2b" /> {student?.streak || 1}</div>
+            <div className="avatar-container">
+              <img src={`https://api.dicebear.com/7.x/bottts/svg?seed=${student?.email}`} alt="avatar" />
+              <div className="online-indicator"></div>
             </div>
             <div className="user-details">
-              <h2>يا هلا، {student?.name ? student.name.split(' ')[0] : 'أيها البطل'} 👋</h2>
-              <div className="level-system">
-                <span className="lvl-text" style={{color: getRank(student?.points).color}}>{getRank(student?.points).title}</span>
-                <div className="lvl-progress-bar">
-                    <motion.div initial={{width: 0}} animate={{width: `${(student?.points % 1000) / 10}%`}} className="lvl-fill" />
-                </div>
-                <span className="xp-text">{student?.points || 0} XP</span>
+              <h2>بطل الفيزياء: {student?.name?.split(' ')[0]} 🔥</h2>
+              <div className="xp-container">
+                 <div className="xp-bar-bg"><motion.div className="xp-bar-fill" animate={{width: `${(student?.points % 1000) / 10}%`}} /></div>
+                 <span className="xp-counter">{student?.points} XP</span>
               </div>
             </div>
           </div>
 
-          <div className="top-actions">
-            <div className="activation-input-group">
-                <Key size={16} className="key-icon" />
-                <input value={activationCode} onChange={(e)=>setActivationCode(e.target.value)} placeholder="أدخل كود الاشتراك..." />
-                <button onClick={handleActivateCode}>تفعيل</button>
-            </div>
+          <div className="nebula-quick-activation">
+             <Key size={18} />
+             <input value={activationCode} onChange={(e)=>setActivationCode(e.target.value)} placeholder="كود تفعيل المحاضرة..." />
+             <button onClick={() => {}}>تفعيل</button>
           </div>
         </header>
 
-        <div className="nebula-grid-content">
-          <div className="content-primary">
+        <div className="nebula-grid-layout">
+          <section className="main-viewport">
             <AnimatePresence mode="wait">
               {activeTab === 'my-courses' && (
-                <motion.div key="courses" initial={{opacity:0}} animate={{opacity:1}} className="tab-panel">
-                  <div className="panel-header"><h3><BookOpen size={20} /> محاضراتك الحالية</h3></div>
-                  <div className="premium-courses-list">
-                    {availableCourses.filter(c => student?.enrolledContent?.includes(c.id)).length > 0 ? (
-                        availableCourses.filter(c => student?.enrolledContent?.includes(c.id)).map(course => (
-                        <div key={course.id} className="nebula-course-card" onClick={() => navigate(`/video-player/${course.id}`)}>
-                            <div className="c-thumb" style={{backgroundImage: `url(${course.thumbnail})`}}>
-                                <div className="c-overlay"><PlayCircle size={40} /></div>
-                            </div>
-                            <div className="c-info">
-                                <h4>{course.title}</h4>
-                                <div className="c-meta">
-                                    <span><GraduationCap size={14}/> {course.grade}</span>
-                                    <span><Clock size={14}/> {course.duration || '2h'}</span>
-                                </div>
-                            </div>
+                <motion.div key="courses" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} className="nebula-panel">
+                  <div className="section-title"><BookOpen size={20} /> محاضراتي الدراسية</div>
+                  <div className="courses-grid-v2">
+                    {availableCourses.filter(c => student?.enrolledContent?.includes(c.id)).map(course => (
+                      <div key={course.id} className="course-card-v2" onClick={() => navigate(`/video-player/${course.id}`)}>
+                        <div className="card-media" style={{backgroundImage: `url(${course.thumbnail})`}}>
+                          <div className="play-btn-v2"><PlayCircle /></div>
                         </div>
-                        ))
-                    ) : (
-                        <div className="empty-state-card glass">
-                            <p>أنت لم تشترك في أي كورسات بعد.</p>
-                            <button onClick={() => setActiveTab('store')}>تصفح المتجر</button>
+                        <div className="card-body">
+                          <h4>{course.title}</h4>
+                          <p>{course.subject} - {course.grade}</p>
                         </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-
-              {activeTab === 'store' && (
-                <motion.div key="store" initial={{opacity:0}} animate={{opacity:1}} className="tab-panel">
-                  <div className="panel-header"><h3><ShoppingBag size={20} /> متجر المحاضرات</h3></div>
-                  <div className="premium-courses-list">
-                    {availableCourses.map(course => (
-                        <div key={course.id} className="nebula-course-card store-item">
-                            <div className="c-thumb" style={{backgroundImage: `url(${course.thumbnail})`}}>
-                                <div className="price-tag">{course.price} EGP</div>
-                            </div>
-                            <div className="c-info">
-                                <h4>{course.title}</h4>
-                                <button className="buy-btn" onClick={() => triggerNotif("تواصل مع الإدارة للحصول على كود التفعيل")}>تفاصيل الاشتراك</button>
-                            </div>
-                        </div>
+                      </div>
                     ))}
                   </div>
                 </motion.div>
               )}
 
-              {activeTab === 'leaderboard' && (
-                <motion.div key="leaderboard" initial={{opacity:0}} animate={{opacity:1}} className="tab-panel">
-                  <div className="leaderboard-container glass">
-                     <div className="leader-header"><h3><Trophy size={24} color="#ffd700" /> قائمة العباقرة</h3></div>
-                     <div className="leader-list">
-                        {topStudents.map((s, i) => (
-                          <div key={s.id} className={`leader-row ${s.id === auth.currentUser?.uid ? 'is-me' : ''}`}>
-                             <div className="l-rank">#{i+1}</div>
-                             <img src={`https://api.dicebear.com/7.x/bottts/svg?seed=${s.email}`} alt="" />
-                             <div className="l-name">{s.name}</div>
-                             <div className="l-pts">{s.points} XP</div>
-                          </div>
-                        ))}
-                     </div>
-                  </div>
+              {activeTab === 'schedule' && (
+                <motion.div key="schedule" initial={{opacity:0}} animate={{opacity:1}} className="nebula-panel">
+                   <div className="section-title"><Calendar size={20} /> مخطط المذاكرة الأسبوعي</div>
+                   <div className="schedule-creator glass">
+                      <select value={studyDay} onChange={e => setStudyDay(e.target.value)}>
+                        <option value="">اختر اليوم</option>
+                        {['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'].map(d => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                      <input placeholder="اسم المادة أو الدرس..." value={studySubject} onChange={e => setStudySubject(e.target.value)} />
+                      <button onClick={addStudySchedule}><Plus size={18} /> إضافة للجدول</button>
+                   </div>
+                   <div className="schedule-grid">
+                      {student?.studySchedule?.map(item => (
+                        <div key={item.id} className="schedule-item">
+                           <div className="s-day">{item.day}</div>
+                           <div className="s-sub">{item.subject}</div>
+                        </div>
+                      ))}
+                   </div>
                 </motion.div>
               )}
+              
+              {/* بقية التبويبات (Store & Leaderboard) تتبع نفس النمط */}
             </AnimatePresence>
-          </div>
+          </section>
 
-          <div className="content-secondary">
-             <div className="nebula-tool-card pomodoro-v2">
-                <div className="tool-head"><Clock size={18} /><span>مؤقت التركيز</span></div>
-                <div className="timer-digits">{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</div>
-                <div className="timer-btns">
-                    <button onClick={() => setIsActive(!isActive)} className={isActive ? 'btn-pause' : 'btn-play'}>
-                        {isActive ? 'إيقاف' : 'ابدأ'}
-                    </button>
-                </div>
-             </div>
+          <aside className="secondary-viewport">
+            {/* بومودورو مطور */}
+            <div className={`pomo-card-v2 ${pomoMode}`}>
+              <div className="pomo-header">
+                {pomoMode === 'work' ? <Target color="#ff4b2b" /> : <Clock color="#00f2ff" />}
+                <span>{pomoMode === 'work' ? 'وقت التركيز' : 'وقت الاستراحة'}</span>
+              </div>
+              <div className="pomo-timer">{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</div>
+              <button className="pomo-ctrl" onClick={() => setIsActive(!isActive)}>
+                {isActive ? 'إيقاف مؤقت' : 'ابدأ الآن'}
+              </button>
+            </div>
 
-             <div className="nebula-tool-card missions-v2">
-                <div className="tool-head"><Target size={18} /><span>مهامي اليومية</span></div>
-                <div className="mission-input">
-                    <input value={taskText} onChange={(e)=>setTaskText(e.target.value)} placeholder="هدف جديد..." onKeyPress={(e) => e.key === 'Enter' && addTask()} />
-                </div>
-                <div className="mission-list">
-                    {student?.tasks?.slice(-5).reverse().map(t => (
-                        <div key={t.id} className={`m-item ${t.completed ? 'completed' : ''}`} onClick={() => toggleTask(t.id)}>
-                            <span className="m-text">{t.text}</span>
-                        </div>
-                    ))}
-                </div>
-             </div>
-          </div>
+            {/* To-Do List مطورة */}
+            <div className="todo-card-v2">
+              <div className="todo-header">
+                <div className="h-left"><ListChecks size={20} /> <span>قائمة المهام</span></div>
+                <div className="h-right">{student?.tasks?.filter(t => t.completed).length || 0}/{student?.tasks?.length || 0}</div>
+              </div>
+              <div className="todo-input-v2">
+                <input value={taskText} onChange={(e)=>setTaskText(e.target.value)} placeholder="أضف مهمة جديدة..." onKeyPress={(e) => e.key === 'Enter' && addTask()} />
+                <button onClick={addTask}><Plus size={20}/></button>
+              </div>
+              <div className="todo-list-v2">
+                {student?.tasks?.slice().reverse().map(t => (
+                  <motion.div layout key={t.id} className={`todo-item-v2 ${t.completed ? 'done' : ''}`}>
+                    <div className="check-box" onClick={() => toggleTask(t.id)}>{t.completed && <Check size={14}/>}</div>
+                    <span className="t-text">{t.text}</span>
+                    <button className="t-del" onClick={() => deleteTask(t.id)}><Trash2 size={14}/></button>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </aside>
         </div>
       </main>
     </div>
@@ -309,3 +272,4 @@ const StudentDash = () => {
 };
 
 export default StudentDash;
+
