@@ -1,248 +1,339 @@
-/* --- إعدادات الخط والألوان المتطورة --- */
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+/* استيراد الخطوط */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
 
 :root {
-  --neon-cyan: #00f2ff;
-  --neon-purple: #7000ff;
+  --primary: #00f2ff;
+  --primary-dark: #0066ff;
   --bg-dark: #020617;
-  --glass: rgba(255, 255, 255, 0.03);
+  --card-bg: rgba(15, 23, 42, 0.7);
   --glass-border: rgba(255, 255, 255, 0.08);
-  --success: #00ff88;
-  --gold: #ffcc00;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
 }
 
-.secondary-page-root {
-  min-height: 100vh;
+.hs-viewport {
   background: var(--bg-dark);
-  background-image: 
-    radial-gradient(circle at 0% 0%, rgba(112, 0, 255, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 100% 100%, rgba(0, 242, 255, 0.08) 0%, transparent 40%);
+  min-height: 100vh;
+  color: var(--text-main);
   font-family: 'Cairo', sans-serif;
-  direction: rtl;
-  color: #fff;
-  padding: 100px 20px 50px;
+  overflow-x: hidden;
+  position: relative;
 }
 
-/* --- الهيدر والتبديلات --- */
-.page-header h1 {
-  text-align: center;
-  font-weight: 900;
-  font-size: 2.2rem;
-  margin-bottom: 30px;
-  letter-spacing: -1px;
-}
-
-.grade-tabs {
+/* 🔒 العلامة المائية للحماية */
+.digital-watermark {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
   display: flex;
-  max-width: 500px;
-  margin: 0 auto 50px;
-  background: rgba(255, 255, 255, 0.02);
-  padding: 6px;
-  border-radius: 100px;
-  border: 1px solid var(--glass-border);
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-content: space-around;
+  opacity: 0.04; /* شفافة جداً تظهر فقط عند تصوير الشاشة */
+  transform: rotate(-25deg) scale(1.5);
+  font-size: 14px;
+  user-select: none;
 }
 
-.grade-tabs button {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  background: transparent;
-  color: #94a3b8;
+/* 🚀 هيرو سيكشن (Hero Section) */
+.hs-hero-v3 {
+  padding: 60px 20px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.hero-grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(var(--glass-border) 1px, transparent 1px);
+  background-size: 30px 30px;
+  mask-image: radial-gradient(circle at center, black, transparent 80%);
+  opacity: 0.3;
+}
+
+.hero-main-card {
+  width: 100%;
+  max-width: 1000px;
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 40px;
+  padding: 50px;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.live-badge {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  padding: 6px 15px;
   border-radius: 100px;
+  font-size: 13px;
   font-weight: 700;
-  cursor: pointer;
-  transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.grade-tabs button.active {
-  background: var(--neon-cyan);
-  color: #020617;
-  box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
-}
-
-/* --- شبكة الكورسات المحدثة --- */
-.grid-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 25px;
-}
-
-.secondary-course-card {
-  background: var(--glass);
-  border-radius: 24px;
-  overflow: hidden;
-  border: 1px solid var(--glass-border);
-  transition: 0.3s ease;
-  position: relative;
-}
-
-.secondary-course-card:hover {
-  border-color: var(--neon-cyan);
-  transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.card-banner {
-  height: 180px;
-  background-position: center;
-  background-size: cover;
-  position: relative;
-}
-
-.lock-badge {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(5px);
-  padding: 8px;
-  border-radius: 12px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
 }
 
-.card-info { padding: 20px; }
-.card-info h3 { font-size: 1.25rem; font-weight: 800; margin-bottom: 5px; color: #fff; }
-.card-info p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 20px; }
-
-/* --- قائمة الدروس داخل الكارت --- */
-.lessons-list-mini {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 15px;
-  overflow: hidden;
+.text-gradient {
+  background: linear-gradient(90deg, var(--primary), #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.lesson-item-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  transition: 0.2s;
-}
-
-.lesson-item-row:last-child { border-bottom: none; }
-.lesson-item-row span { font-size: 0.9rem; color: #cbd5e1; }
-
-.play-mini-btn {
-  background: transparent;
-  border: none;
-  color: var(--neon-cyan);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  transition: 0.2s;
-}
-
-.play-mini-btn:hover { transform: scale(1.2); color: #fff; }
-
-/* --- نافذة التفعيل (Activation Modal) --- */
-.activation-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(10px);
-  z-index: 10001;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.modal-card {
-  width: 100%;
-  max-width: 400px;
-  background: #0f172a;
-  border: 1px solid var(--neon-cyan);
-  border-radius: 30px;
-  padding: 40px 30px;
-  text-align: center;
-  position: relative;
-}
-
-.close-icon {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  cursor: pointer;
-  color: #64748b;
-}
-
-.code-input-group {
-  margin: 25px 0;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid #334155;
-  border-radius: 15px;
-  display: flex;
-  align-items: center;
-  padding: 0 15px;
-}
-
-.code-input-group input {
-  background: transparent;
-  border: none;
-  color: #fff;
-  padding: 15px;
-  width: 100%;
-  font-weight: bold;
-  text-align: center;
-  letter-spacing: 2px;
-  outline: none;
-}
-
-.btn-confirm {
-  width: 100%;
-  padding: 15px;
-  background: var(--neon-cyan);
-  color: #020617;
-  border: none;
-  border-radius: 15px;
+.hero-info h1 {
+  font-size: clamp(32px, 5vw, 48px);
   font-weight: 900;
-  cursor: pointer;
-  box-shadow: 0 10px 20px rgba(0, 242, 255, 0.2);
+  margin-bottom: 15px;
 }
 
-/* --- مشغل الفيديو --- */
-.video-player-overlay {
-  position: fixed;
-  inset: 0;
-  background: #000;
-  z-index: 20000;
+.hero-stats {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 25px;
+  color: var(--text-muted);
+  font-size: 15px;
 }
 
-.video-nav {
-  padding: 20px;
-  background: #0f172a;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  border-bottom: 1px solid #1e293b;
-}
-
-.back-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
-  padding: 8px 15px;
-  border-radius: 10px;
-  cursor: pointer;
+.h-stat {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.video-player-overlay iframe {
-  flex: 1;
-  width: 100%;
-  border: none;
+/* 🔍 شريط البحث المطور */
+.search-bar-premium {
+  margin-top: 35px;
+  display: flex;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px;
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  gap: 10px;
 }
 
-/* التجاوب مع الجوال */
-@media (max-width: 600px) {
-  .page-header h1 { font-size: 1.6rem; }
-  .grid-grid { grid-template-columns: 1fr; }
-  .modal-card { padding: 30px 20px; }
+.s-icon { margin: 0 15px; color: var(--text-muted); }
+
+.search-bar-premium input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 16px;
+  padding: 10px;
+}
+
+.filter-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px;
+  border-right: 1px solid var(--glass-border);
+}
+
+.filter-dropdown select {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+}
+
+/* 💠 التبويبات (Tabs) */
+.hs-navigation-bar {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 40px;
+}
+
+.nav-item {
+  position: relative;
+  padding: 12px 30px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 16px;
+  transition: 0.3s;
+}
+
+.nav-item.active { color: #fff; }
+
+.nav-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  border-radius: 12px;
+  z-index: -1;
+  box-shadow: 0 10px 20px rgba(0, 242, 255, 0.2);
+}
+
+/* 📚 شبكة الكورسات (Courses Grid) */
+.hs-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.grid-header { margin-bottom: 25px; }
+
+.premium-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.course-card-v3 {
+  background: var(--card-bg);
+  border-radius: 30px;
+  border: 1px solid var(--glass-border);
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card-top {
+  position: relative;
+  height: 200px;
+}
+
+.card-top img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+
+.card-badge {
+  position: absolute;
+  top: 15px; right: 15px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  padding: 5px 15px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.play-btn-circle {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  opacity: 0;
+  transition: 0.3s;
+}
+
+.course-card-v3:hover .play-btn-circle {
+  opacity: 1; transform: translate(-50%, -50%) scale(1);
+}
+
+.card-body { padding: 25px; }
+
+.course-title {
+  font-size: 19px;
+  font-weight: 800;
+  margin-bottom: 15px;
+  line-height: 1.4;
+}
+
+.instructor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.avatar {
+  width: 30px; height: 30px;
+  background: var(--primary);
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 12px;
+}
+
+/* 📊 شريط التقدم */
+.progress-container { margin-bottom: 20px; }
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+}
+
+.progress-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 15px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.footer-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.enter-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  color: #fff;
+  padding: 8px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-weight: 700;
+}
+
+.enter-btn:hover {
+  background: var(--primary);
+  color: #000;
+}
+
+/* 🌀 شاشة التحميل (Loader) */
+.hs-loader-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.loader-content { text-align: center; }
+.loading-text { margin-top: 20px; font-weight: 800; color: var(--primary); }
+
+/* 📱 الشاشات الصغيرة */
+@media (max-width: 768px) {
+  .hero-main-card { padding: 30px 20px; }
+  .hero-stats { flex-direction: column; gap: 10px; }
+  .search-bar-premium { flex-direction: column; border-radius: 20px; }
+  .filter-dropdown { border-right: none; border-top: 1px solid var(--glass-border); padding: 15px; }
+  .hs-navigation-bar { overflow-x: auto; padding: 10px; justify-content: flex-start; }
+  .nav-item { white-space: nowrap; }
 }
