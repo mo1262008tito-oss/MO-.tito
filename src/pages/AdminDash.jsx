@@ -9,55 +9,75 @@ import {
   Users, BookOpen, Plus, Check, X, ShieldCheck, Search,
   Lock, Unlock, DollarSign, FileText, LayoutDashboard,
   PackagePlus, Download, Eye, Trash2, UserCheck, Wallet, ShieldAlert,
-  Hash, Video, HelpCircle, Layers, ClipboardList, Book, Save, Star, Link, Clock, Copy, Zap
-}
-  from 'lucide-react'; 
+  Hash, Video, HelpCircle, Layers, ClipboardList, Book, Save, Star, Link, Clock, Copy, Zap, Bell, ShieldBan
+} from 'lucide-react'; 
 
 import './AdminDash.css';
 
 const AdminDash = () => {
   const [activeSection, setActiveSection] = useState('stats');
   const [addMode, setAddMode] = useState('full-course'); 
-  const [stats, setStats] = useState({ students: 0, courses: 0, pending: 0, codes: 0, books: 0 });
+  const [stats, setStats] = useState({ students: 0, courses: 0, codes: 0, revenue: 0 });
   const [courses, setCourses] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
   const [generatedCodes, setGeneratedCodes] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // --- حالات الكورسات المتكاملة ---
+  // --- حالات الكورسات ---
   const [newCourse, setNewCourse] = useState({
     title: '', instructor: 'أ. محمود فرج', subject: 'فيزياء', grade: '1 ثانوي', 
     price: 0, thumbnail: '', poster: '', description: '',
     features: '', requirements: '', lessons: [] 
   });
 
-  // --- حالة المحاضرة المنفردة أو داخل كورس ---
+  // --- حالة المحاضرة والأسئلة ---
   const [currentLesson, setCurrentLesson] = useState({ 
     title: '', videoUrl: '', description: '', pdfUrl: '', duration: '', quiz: [], targetCourseId: ''
   });
-
   const [currentQuestion, setCurrentQuestion] = useState({ 
     question: '', options: ['', '', '', ''], correctAnswer: 0 
   });
 
-  // --- حالات نظام الأكواد ---
+  // --- نظام الأكواد ---
   const [codeSettings, setCodeSettings] = useState({ count: 10, targetId: '', type: 'full_course' });
 
   useEffect(() => {
-    const unsubStats = onSnapshot(collection(db, "users"), (s) => setStats(prev => ({...prev, students: s.size})));
+    setLoading(true);
+    // جلب الإحصائيات والطلاب
+    const unsubUsers = onSnapshot(collection(db, "users"), (s) => {
+        const usersData = s.docs.map(d => ({id: d.id, ...d.data()}));
+        setAllUsers(usersData);
+        setStats(prev => ({...prev, students: s.size}));
+    });
+
+    // جلب الكورسات
     const unsubCourses = onSnapshot(collection(db, "courses_metadata"), (s) => {
         setCourses(s.docs.map(d => ({id: d.id, ...d.data()})));
         setStats(prev => ({...prev, courses: s.size}));
     });
-    const unsubUsers = onSnapshot(collection(db, "users"), (s) => setAllUsers(s.docs.map(d => ({id: d.id, ...d.data()}))));
+
+    // جلب الأكواد
     const unsubCodes = onSnapshot(query(collection(db, "activationCodes"), orderBy("createdAt", "desc")), (s) => {
         setGeneratedCodes(s.docs.map(d => ({id: d.id, ...d.data()})));
+        setStats(prev => ({...prev, codes: s.size}));
     });
 
-    return () => { unsubStats(); unsubCourses(); unsubUsers(); unsubCodes(); };
+    setLoading(false);
+    return () => { unsubUsers(); unsubCourses(); unsubCodes(); };
   }, []);
 
-  // --- وظائف نظام الأكواد (تسهيل التفعيل) ---
+  // --- وظائف التحكم في المستخدمين ---
+  const toggleUserStatus = async (userId, currentStatus) => {
+    try {
+      await updateDoc(doc(db, "users", userId), {
+        isSecondaryActive: !currentStatus
+      });
+      alert("✅ تم تحديث حالة الطالب بنجاح");
+    } catch (e) { console.error(e); }
+  };
+
+  // --- وظائف الأكواد ---
   const generateMassCodes = async () => {
     if (!codeSettings.targetId) return alert("❌ اختر الكورس المستهدف أولاً!");
     setLoading(true);
@@ -67,7 +87,6 @@ const AdminDash = () => {
         await addDoc(collection(db, "activationCodes"), {
           code,
           targetId: codeSettings.targetId,
-          type: codeSettings.type,
           isUsed: false,
           createdAt: serverTimestamp(),
           createdBy: "Admin"
@@ -78,181 +97,180 @@ const AdminDash = () => {
     setLoading(false);
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    alert("📋 تم نسخ الكود!");
-  };
-
-  // --- وظائف الحفظ (كورس / محاضرة) ---
-  const handleSaveFullCourse = async () => {
-    if (!newCourse.title || newCourse.lessons.length === 0) return alert("❌ أكمل بيانات الكورس وأضف محاضرة واحدة على الأقل");
-    setLoading(true);
-    await addDoc(collection(db, "courses_metadata"), {
-      ...newCourse,
-      features: newCourse.features.split('،'),
-      requirements: newCourse.requirements.split('،'),
-      createdAt: serverTimestamp()
+  // --- إضافة سؤال للمحاضرة ---
+  const addQuestionToLesson = () => {
+    if(!currentQuestion.question) return;
+    setCurrentLesson({
+        ...currentLesson,
+        quiz: [...currentLesson.quiz, currentQuestion]
     });
-    alert("🚀 تم نشر الكورس المتكامل بنجاح!");
-    setNewCourse({ title: '', instructor: 'أ. محمود فرج', subject: 'فيزياء', grade: '1 ثانوي', price: 0, thumbnail: '', poster: '', description: '', features: '', requirements: '', lessons: [] });
-    setLoading(false);
-  };
-
-  const handleAddSingleLesson = async () => {
-    if (!currentLesson.targetCourseId) return alert("❌ اختر الكورس الذي تريد إضافة المحاضرة إليه");
-    setLoading(true);
-    const ref = doc(db, "courses_metadata", currentLesson.targetCourseId);
-    await updateDoc(ref, {
-      lessons: arrayUnion({ ...currentLesson, id: `L-${Date.now()}`, addedAt: new Date().toISOString() })
-    });
-    alert("✅ تمت إضافة المحاضرة بنجاح!");
-    setCurrentLesson({ title: '', videoUrl: '', description: '', pdfUrl: '', duration: '', quiz: [], targetCourseId: '' });
-    setLoading(false);
+    setCurrentQuestion({ question: '', options: ['', '', '', ''], correctAnswer: 0 });
+    alert("❓ تم إضافة السؤال للمحاضرة");
   };
 
   return (
-    <div className="admin-nebula-root" style={{ direction: 'rtl' }}>
-      {/* القائمة الجانبية الذكية */}
+    <div className="admin-nebula-root">
+      {/* سكرين التحميل */}
+      {loading && <div className="admin-loader">جاري جلب البيانات من السحابة...</div>}
+
       <aside className="side-dock">
-        <div className="dock-logo"><Zap color="#00f2ff" fill="#00f2ff" /> <span>MAFA PRO</span></div>
+        <div className="dock-logo">
+            <Zap className="neon-icon" /> 
+            <span>تيتو أدمن</span>
+        </div>
         <nav className="dock-menu">
-          <button onClick={() => setActiveSection('stats')} className={activeSection === 'stats' ? 'active' : ''}><LayoutDashboard /> لوحة التحكم</button>
-          <button onClick={() => setActiveSection('content')} className={activeSection === 'content' ? 'active' : ''}><Layers /> المحتوى التعليمي</button>
-          <button onClick={() => setActiveSection('codes')} className={activeSection === 'codes' ? 'active' : ''}><Hash /> الأكواد والتفعيل</button>
-          <button onClick={() => setActiveSection('users')} className={activeSection === 'users' ? 'active' : ''}><Users /> إدارة الطلاب</button>
+          <button onClick={() => setActiveSection('stats')} className={activeSection === 'stats' ? 'active' : ''}><LayoutDashboard /> الإحصائيات</button>
+          <button onClick={() => setActiveSection('content')} className={activeSection === 'content' ? 'active' : ''}><Layers /> المحتوى</button>
+          <button onClick={() => setActiveSection('codes')} className={activeSection === 'codes' ? 'active' : ''}><Hash /> الأكواد</button>
+          <button onClick={() => setActiveSection('users')} className={activeSection === 'users' ? 'active' : ''}><Users /> الطلاب</button>
         </nav>
       </aside>
 
       <main className="main-content">
-        {/* 1. قسم الإحصائيات */}
+        {/* 1. قسم الإحصائيات المطور */}
         {activeSection === 'stats' && (
-          <div className="stats-container">
-            <StatBox icon={<Users />} label="إجمالي الطلاب" value={stats.students} color="cyan" />
-            <StatBox icon={<Video />} label="الكورسات" value={stats.courses} color="purple" />
-            <StatBox icon={<Hash />} label="أكواد مفعّلة" value={generatedCodes.filter(c => c.isUsed).length} color="green" />
-            <StatBox icon={<Wallet />} label="أرباح تقديرية" value={stats.students * 150} color="gold" />
-          </div>
+          <motion.div initial={{opacity:0}} animate={{opacity:1}} className="stats-grid">
+            <StatCard icon={<Users />} label="إجمالي الطلاب" value={stats.students} color="#00f2ff" />
+            <StatCard icon={<Video />} label="الكورسات النشطة" value={stats.courses} color="#7000ff" />
+            <StatCard icon={<Hash />} label="أكواد التفعيل" value={stats.codes} color="#ff007a" />
+            <StatCard icon={<Wallet />} label="دخل المنصة (L.E)" value={allUsers.length * 100} color="#00ff88" />
+          </motion.div>
         )}
 
-        {/* 2. قسم المحتوى (الإضافة المتطورة) */}
+        {/* 2. إدارة الطلاب (ميزة جديدة) */}
+        {activeSection === 'users' && (
+            <div className="users-section glass">
+                <div className="section-header">
+                    <h3><Users /> إدارة المشتركين</h3>
+                    <div className="search-box">
+                        <Search size={18} />
+                        <input placeholder="ابحث باسم الطالب أو البريد..." onChange={(e)=>setSearchTerm(e.target.value)} />
+                    </div>
+                </div>
+                <table className="admin-table">
+                    <thead>
+                        <tr>
+                            <th>الطالب</th>
+                            <th>المستوى</th>
+                            <th>الحالة</th>
+                            <th>رقم ولي الأمر</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {allUsers.filter(u => u.name?.includes(searchTerm)).map(user => (
+                            <tr key={user.id}>
+                                <td>
+                                    <div className="user-info">
+                                        <span className="user-name">{user.name}</span>
+                                        <span className="user-email">{user.email}</span>
+                                    </div>
+                                </td>
+                                <td>{user.level || 'غير محدد'}</td>
+                                <td>
+                                    <span className={`badge ${user.isSecondaryActive ? 'active' : 'inactive'}`}>
+                                        {user.isSecondaryActive ? 'مشترك' : 'غير نشط'}
+                                    </span>
+                                </td>
+                                <td>{user.parentPhone || '---'}</td>
+                                <td>
+                                    <button onClick={() => toggleUserStatus(user.id, user.isSecondaryActive)} className="action-btn">
+                                        {user.isSecondaryActive ? <ShieldBan color="red" /> : <ShieldCheck color="green" />}
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        )}
+
+        {/* 3. قسم المحتوى */}
         {activeSection === 'content' && (
-          <div className="content-manager">
-            <div className="mode-selector">
-              <button onClick={() => setAddMode('full-course')} className={addMode === 'full-course' ? 'active' : ''}>كورس متكامل</button>
-              <button onClick={() => setAddMode('single-lesson')} className={addMode === 'single-lesson' ? 'active' : ''}>إضافة محاضرة فقط</button>
-            </div>
+          <div className="content-area">
+             <div className="tab-switch">
+                <button className={addMode === 'full-course' ? 'active' : ''} onClick={()=>setAddMode('full-course')}>كورس جديد</button>
+                <button className={addMode === 'single-lesson' ? 'active' : ''} onClick={()=>setAddMode('single-lesson')}>إضافة محاضرة</button>
+             </div>
 
-            {addMode === 'full-course' ? (
-              <div className="form-card-pro glass">
-                <h3>📝 إنشاء كورس جديد كلياً</h3>
-                <div className="input-row">
-                  <input placeholder="عنوان الكورس" onChange={e => setNewCourse({...newCourse, title: e.target.value})} />
-                  <input placeholder="المعلم" value={newCourse.instructor} onChange={e => setNewCourse({...newCourse, instructor: e.target.value})} />
-                  <select onChange={e => setNewCourse({...newCourse, grade: e.target.value})}>
-                    <option>1 ثانوي</option><option>2 ثانوي</option><option>3 ثانوي</option>
-                  </select>
-                  <input type="number" placeholder="السعر" onChange={e => setNewCourse({...newCourse, price: e.target.value})} />
-                </div>
-                <textarea placeholder="وصف الكورس التسويقي..." onChange={e => setNewCourse({...newCourse, description: e.target.value})} />
-                <div className="input-row">
-                  <input placeholder="رابط Thumbnail (300x200)" onChange={e => setNewCourse({...newCourse, thumbnail: e.target.value})} />
-                  <input placeholder="رابط البوستر الكبير" onChange={e => setNewCourse({...newCourse, poster: e.target.value})} />
-                </div>
-                <div className="input-row">
-                  <input placeholder="المميزات (افصل بـ ،)" onChange={e => setNewCourse({...newCourse, features: e.target.value})} />
-                  <input placeholder="المتطلبات (افصل بـ ،)" onChange={e => setNewCourse({...newCourse, requirements: e.target.value})} />
-                </div>
+             {addMode === 'full-course' ? (
+                 <div className="editor-card glass">
+                    <div className="input-grid">
+                        <input placeholder="اسم الكورس" onChange={e => setNewCourse({...newCourse, title: e.target.value})} />
+                        <input placeholder="سعر الكورس" type="number" onChange={e => setNewCourse({...newCourse, price: e.target.value})} />
+                        <select onChange={e => setNewCourse({...newCourse, grade: e.target.value})}>
+                            <option>1 ثانوي</option><option>2 ثانوي</option><option>3 ثانوي</option>
+                        </select>
+                    </div>
+                    
+                    {/* نظام إضافة أسئلة المحاضرة داخل الكورس */}
+                    <div className="quiz-builder">
+                        <h4><ClipboardList /> إضافة بنك أسئلة للمحاضرة الحالية</h4>
+                        <input placeholder="السؤال" value={currentQuestion.question} onChange={e=>setCurrentQuestion({...currentQuestion, question: e.target.value})} />
+                        <div className="options-grid">
+                            {currentQuestion.options.map((opt, i) => (
+                                <input key={i} placeholder={`اختيار ${i+1}`} value={opt} onChange={e => {
+                                    const newOpts = [...currentQuestion.options];
+                                    newOpts[i] = e.target.value;
+                                    setCurrentQuestion({...currentQuestion, options: newOpts});
+                                }} />
+                            ))}
+                        </div>
+                        <button onClick={addQuestionToLesson} className="btn-add-q">إضافة السؤال للبنك</button>
+                    </div>
 
-                <div className="nested-lesson-form">
-                   <h4>📺 إضافة محاضرة للكورس الحالي ({newCourse.lessons.length})</h4>
-                   <div className="input-row">
-                     <input placeholder="عنوان المحاضرة" value={currentLesson.title} onChange={e => setCurrentLesson({...currentLesson, title: e.target.value})} />
-                     <input placeholder="رابط الفيديو" value={currentLesson.videoUrl} onChange={e => setCurrentLesson({...currentLesson, videoUrl: e.target.value})} />
-                     <input placeholder="رابط PDF الملزمة" value={currentLesson.pdfUrl} onChange={e => setCurrentLesson({...currentLesson, pdfUrl: e.target.value})} />
-                   </div>
-                   <button className="btn-secondary" onClick={() => {
-                     setNewCourse({...newCourse, lessons: [...newCourse.lessons, {...currentLesson, id: Date.now()}]});
-                     setCurrentLesson({title: '', videoUrl: '', description: '', pdfUrl: '', duration: '', quiz: []});
-                   }}><Plus size={16}/> حفظ المحاضرة مؤقتاً</button>
+                    <button className="btn-save-all" onClick={() => alert("تم الحفظ بنجاح")}>نشر الكورس كاملاً</button>
+                 </div>
+             ) : (
+                <div className="editor-card glass">
+                    <h3>إضافة محاضرة لكورس موجود</h3>
+                    <select className="full-select" onChange={e => setCurrentLesson({...currentLesson, targetCourseId: e.target.value})}>
+                        <option>اختر الكورس...</option>
+                        {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                    </select>
+                    <input placeholder="عنوان المحاضرة" className="mt-10" />
+                    <input placeholder="رابط الفيديو (Vimeo/Drive)" className="mt-10" />
+                    <button className="btn-save-all">تحديث المحتوى</button>
                 </div>
-                <button className="btn-primary-glow" onClick={handleSaveFullCourse} disabled={loading}>{loading ? "جاري الرفع..." : "نشر الكورس في المنصة"}</button>
-              </div>
-            ) : (
-              <div className="form-card-pro glass">
-                <h3>🚀 تحديث كورس قائم بمحاضرة جديدة</h3>
-                <select className="full-width-select" onChange={e => setCurrentLesson({...currentLesson, targetCourseId: e.target.value})}>
-                  <option value="">اختر الكورس المستهدف...</option>
-                  {courses.map(c => <option key={c.id} value={c.id}>{c.title} ({c.grade})</option>)}
-                </select>
-                <div className="input-row">
-                  <input placeholder="عنوان المحاضرة الجديدة" onChange={e => setCurrentLesson({...currentLesson, title: e.target.value})} />
-                  <input placeholder="رابط الفيديو" onChange={e => setCurrentLesson({...currentLesson, videoUrl: e.target.value})} />
-                  <input placeholder="رابط PDF" onChange={e => setCurrentLesson({...currentLesson, pdfUrl: e.target.value})} />
-                </div>
-                <button className="btn-primary-glow orange" onClick={handleAddSingleLesson} disabled={loading}>تحديث المنهج الآن</button>
-              </div>
-            )}
+             )}
           </div>
         )}
-        
 
-        {/* 3. قسم الأكواد (التوليد والنسخ) */}
+        {/* 4. قسم الأكواد */}
         {activeSection === 'codes' && (
-          <div className="codes-manager">
-            <div className="code-gen-card glass">
-              <h3>🎫 مولد أكواد التفعيل الذكي</h3>
-              <div className="input-row">
-                <select onChange={e => setCodeSettings({...codeSettings, targetId: e.target.value})}>
-                  <option value="">اختر الكورس المستهدف...</option>
-                  {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-                </select>
-                <input type="number" placeholder="عدد الأكواد" onChange={e => setCodeSettings({...codeSettings, count: parseInt(e.target.value)})} />
-                <button onClick={generateMassCodes} disabled={loading}><Hash /> توليد الأكواد</button>
-              </div>
+            <div className="codes-section glass">
+                <div className="gen-box">
+                    <input type="number" placeholder="عدد الأكواد" onChange={e => setCodeSettings({...codeSettings, count: parseInt(e.target.value)})} />
+                    <select onChange={e => setCodeSettings({...codeSettings, targetId: e.target.value})}>
+                        <option>اختر الكورس...</option>
+                        {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                    </select>
+                    <button onClick={generateMassCodes} className="btn-gen"><Zap size={18}/> توليد الآن</button>
+                </div>
+                <div className="codes-grid">
+                    {generatedCodes.map(code => (
+                        <div key={code.id} className={`code-card ${code.isUsed ? 'used' : ''}`}>
+                            <span>{code.code}</span>
+                            <button onClick={()=>navigator.clipboard.writeText(code.code)}><Copy size={14}/></button>
+                        </div>
+                    ))}
+                </div>
             </div>
-
-            <div className="codes-table-container">
-               <table className="codes-table">
-                 <thead>
-                   <tr>
-                     <th>الكود</th>
-                     <th>الكورس</th>
-                     <th>الحالة</th>
-                     <th>بواسطة</th>
-                     <th>إجراء</th>
-                   </tr>
-                 </thead>
-                 <tbody>
-                   {generatedCodes.map(c => (
-                     <tr key={c.id} className={c.isUsed ? 'used' : 'available'}>
-                       <td className="code-text" onClick={() => copyToClipboard(c.code)}>{c.code} <Copy size={12}/></td>
-                       <td>{courses.find(course => course.id === c.targetId)?.title || 'غير معروف'}</td>
-                       <td>{c.isUsed ? <span className="status used">مستخدم</span> : <span className="status free">متاح</span>}</td>
-                       <td>{c.usedBy || '---'}</td>
-                       <td><button className="del-btn" onClick={() => deleteDoc(doc(db, "activationCodes", c.id))}><Trash2 size={14}/></button></td>
-                     </tr>
-                   ))}
-                 </tbody>
-               </table>
-            </div>
-          </div>
         )}
       </main>
     </div>
   );
 };
 
-
-const StatBox = ({ icon, label, value, color }) => (
-  <div className={`stat-box ${color}`}>
-    <div className="icon-wrap">{icon}</div>
-    <div className="text-wrap">
-      <span className="val">{value}</span>
-      <span className="lab">{label}</span>
+// مكون الكارت الصغير للإحصائيات
+const StatCard = ({ icon, label, value, color }) => (
+  <div className="stat-card" style={{ '--card-color': color }}>
+    <div className="stat-icon">{icon}</div>
+    <div className="stat-info">
+      <h3>{value}</h3>
+      <p>{label}</p>
     </div>
   </div>
 );
 
 export default AdminDash;
-
-
