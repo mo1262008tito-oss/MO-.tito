@@ -1,257 +1,284 @@
-/* Login.css */
+/* استيراد خط القاهرة للتصميم */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+
 .login-page {
-  min-height: 100vh;
-  background: #05070a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  direction: rtl;
-  font-family: 'Cairo', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #020617; /* خلفية داكنة جداً */
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Cairo', sans-serif;
+    direction: rtl; /* دعم الكتابة من اليمين لليسار */
 }
 
-/* فقاعات النيون في الخلفية */
-.floating-elements {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
+/* توهج خلفي جمالي */
+.bg-glow {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(0, 242, 255, 0.12) 0%, transparent 70%);
+    filter: blur(60px);
+    z-index: 0;
+    pointer-events: none;
 }
 
+/* عناصر كروية عائمة في الخلفية */
 .blob {
-  position: absolute;
-  width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.15;
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    z-index: 0;
+    opacity: 0.5;
 }
 
 .blob-1 {
-  background: #00f2ff;
-  top: -10%;
-  left: -5%;
+    width: 300px;
+    height: 300px;
+    background: #00f2ff33;
+    top: -100px;
+    right: -100px;
 }
 
 .blob-2 {
-  background: #7000ff;
-  bottom: -10%;
-  right: -5%;
+    width: 250px;
+    height: 250px;
+    background: #7000ff22;
+    bottom: -50px;
+    left: -50px;
 }
 
-/* الكارت العائم */
 .login-container {
-  position: relative;
-  z-index: 10;
-  width: 100%;
-  max-width: 450px;
-  padding: 20px;
+    width: 100%;
+    max-width: 480px;
+    z-index: 10;
 }
 
 .login-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 35px;
-  padding: 40px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-  text-align: center;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 45px 35px;
+    border-radius: 28px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+}
+
+/* الهيدر واللوجو */
+.card-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.logo-box {
+    width: 64px;
+    height: 64px;
+    background: rgba(0, 242, 255, 0.1);
+    border: 1px solid rgba(0, 242, 255, 0.2);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.icon-neon {
+    color: #00f2ff;
+    filter: drop-shadow(0 0 8px rgba(0, 242, 255, 0.6));
 }
 
 .card-header h2 {
-  font-size: 2rem;
-  font-weight: 900;
-  color: #fff;
-  margin: 15px 0 5px;
+    color: #fff;
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 8px;
 }
 
 .card-header p {
-  color: #8b949e;
-  font-size: 0.9rem;
-  margin-bottom: 30px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
 }
 
-/* الحقول */
+/* حقول الإدخال */
 .auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .input-group {
-  position: relative;
-  display: flex;
-  align-items: center;
+    position: relative;
 }
 
 .input-icon {
-  position: absolute;
-  right: 15px;
-  color: #00f2ff;
-  opacity: 0.7;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.3);
+    transition: 0.3s;
+    pointer-events: none;
 }
 
-.input-group input {
-  width: 100%;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 15px 45px 15px 15px;
-  border-radius: 15px;
-  color: #fff;
-  font-family: 'Cairo';
-  transition: 0.3s;
-  outline: none;
+.auth-form input, 
+.auth-form select {
+    width: 100%;
+    padding: 14px 48px 14px 15px; /* مساحة للأيقونة يمين */
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    color: #fff;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    outline: none;
 }
 
-.input-group input:focus {
-  border-color: #00f2ff;
-  box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
-  background: rgba(0, 0, 0, 0.5);
+/* تنسيق خاص للقائمة المنسدلة */
+.auth-form select {
+    appearance: none;
+    cursor: pointer;
 }
 
-/* زر الدخول */
-.auth-submit {
-  background: linear-gradient(135deg, #00f2ff, #7000ff);
-  color: #fff;
-  border: none;
-  padding: 15px;
-  border-radius: 15px;
-  font-size: 1.1rem;
-  font-weight: 800;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
-  transition: 0.3s;
+.auth-form select option {
+    background: #0f172a;
+    color: #fff;
 }
 
-.auth-submit:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(0, 242, 255, 0.3);
+.auth-form input:focus, 
+.auth-form select:focus {
+    border-color: #00f2ff;
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
+}
+
+.auth-form input:focus + .input-icon {
+    color: #00f2ff;
+}
+
+/* الأزرار */
+.btn-primary {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #00f2ff 0%, #00d4ff 100%);
+    color: #020617;
+    border: none;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+    transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 242, 255, 0.3);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* الفاصل */
+.divider {
+    text-align: center;
+    margin: 25px 0;
+    color: rgba(255, 255, 255, 0.2);
+    position: relative;
+    font-size: 13px;
+}
+
+.divider::before, 
+.divider::after {
+    content: "";
+    position: absolute;
+    width: 38%;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    top: 50%;
+}
+
+.divider::before { left: 0; }
+.divider::after { right: 0; }
+
+/* زر جوجل */
+.btn-google {
+    width: 100%;
+    padding: 13px;
+    background: #ffffff;
+    color: #1f2937;
+    border: none;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-google img {
+    width: 20px;
+}
+
+.btn-google:hover {
+    background: #f3f4f6;
+    transform: scale(0.98);
 }
 
 /* التبديل بين الدخول والتسجيل */
-.auth-toggle {
-  margin-top: 25px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+.toggle-auth {
+    text-align: center;
+    margin-top: 25px;
 }
 
-.auth-toggle span {
-  color: #8b949e;
-  font-size: 0.85rem;
+.toggle-auth button {
+    background: none;
+    border: none;
+    color: #00f2ff;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    transition: 0.2s;
 }
 
-.auth-toggle button {
-  background: none;
-  border: none;
-  color: #00f2ff;
-  font-weight: 700;
-  cursor: pointer;
-  text-decoration: underline;
+.toggle-auth button:hover {
+    background: rgba(0, 242, 255, 0.1);
 }
 
-/* أنيميشن الدخول في الموبايل */
+/* واجهة إكمال الملف الشخصي */
+.profile-complete {
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.icon-success {
+    color: #22c55e;
+    filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.4));
+    margin-bottom: 20px;
+}
+
+/* استجابة الشاشات الصغيرة */
 @media (max-width: 480px) {
-  .login-card {
-    padding: 30px 20px;
-  }
-}
-
-.auth-divider {
-  margin: 20px 0;
-  display: flex;
-  align-items: center;
-  text-align: center;
-  color: #888;
-}
-
-.auth-divider::before, .auth-divider::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid #444;
-}
-
-.auth-divider span {
-  margin: 0 10px;
-  font-size: 0.9rem;
-}
-
-.google-auth-btn {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid #444;
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: 0.3s;
-  font-weight: 500;
-}
-
-.google-auth-btn img {
-  width: 20px;
-  height: 20px;
-}
-
-.google-auth-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #00f2ff;
-}
-/* تنسيق الفاصل بين الدخول العادي وجوجل */
-.auth-divider {
-  margin: 20px 0;
-  display: flex;
-  align-items: center;
-  text-align: center;
-  color: #888;
-}
-
-.auth-divider::before, .auth-divider::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.auth-divider span {
-  margin: 0 10px;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* تنسيق زر جوجل */
-.google-auth-btn {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 0.95rem;
-}
-
-.google-auth-btn img {
-  width: 20px;
-  height: 20px;
-}
-
-.google-auth-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #00f2ff;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 242, 255, 0.1);
+    .login-card {
+        padding: 30px 20px;
+    }
+    
+    .card-header h2 {
+        font-size: 22px;
+    }
 }
