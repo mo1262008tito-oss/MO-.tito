@@ -6,9 +6,8 @@ import {
 } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Layout, Book, Target, Zap, Power, Search, X, 
-  CheckCircle, Award, Database, MessageSquare, PlayCircle,
-  BookOpen, Star, Clock, Flame, ChevronLeft, Trash2, Key, Trophy, Bell, Settings, Coffee, ShoppingBag, GraduationCap
+  Layout, Power, CheckCircle, Award, PlayCircle,
+  BookOpen, Clock, Flame, Key, Trophy, ShoppingBag, GraduationCap, Zap, Target
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './StudentDash.css';
@@ -23,26 +22,33 @@ const StudentDash = () => {
   const [activationCode, setActivationCode] = useState("");
   const [topStudents, setTopStudents] = useState([]);
   
-  // مؤقت البومودورو المحسن
   const [minutes, setMinutes] = useState(25);
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
     if (auth.currentUser) {
-      // 1. بيانات الطالب اللحظية
+      // 1. جلب بيانات الطالب مع حماية
       const unsub = onSnapshot(doc(db, "users", auth.currentUser.uid), (d) => {
-        if (d.exists()) setStudent(d.data());
+        if (d.exists()) {
+          setStudent(d.data());
+        } else {
+          console.log("No student record found");
+        }
+      }, (error) => {
+        console.error("Firestore Error:", error);
       });
 
-      // 2. جلب كل الكورسات المتوفرة (المتجر)
+      // 2. جلب المتجر
       const fetchStore = async () => {
-        const q = collection(db, "courses_metadata");
-        const snap = await getDocs(q);
-        setAvailableCourses(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        try {
+          const q = collection(db, "courses_metadata");
+          const snap = await getDocs(q);
+          setAvailableCourses(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        } catch (e) { console.error("Store error", e); }
       };
 
-      // 3. جلب أوائل الطلبة (Leaderboard)
+      // 3. جلب الأوائل
       const fetchLeaders = () => {
         const q = query(collection(db, "users"), orderBy("points", "desc"), limit(10));
         onSnapshot(q, (snap) => {
@@ -56,7 +62,7 @@ const StudentDash = () => {
     }
   }, []);
 
-  // منطق المؤقت (Pomodoro)
+  // منطق البومودورو
   useEffect(() => {
     let interval = null;
     if (isActive && (minutes > 0 || seconds > 0)) {
@@ -109,7 +115,7 @@ const StudentDash = () => {
 
         setActivationCode("");
         triggerNotif("🚀 تم تفعيل الكورس بنجاح!", "success");
-    } catch (e) { triggerNotif("حدث خطأ في الاتصال", "error"); }
+    } catch (e) { triggerNotif("حدث خطأ في التفعيل", "error"); }
   };
 
   const addTask = async () => {
@@ -128,20 +134,26 @@ const StudentDash = () => {
     );
     const ref = doc(db, "users", auth.currentUser.uid);
     await updateDoc(ref, { tasks: updatedTasks });
-    if (!student.tasks.find(t => t.id === taskId).completed) {
+    const targetTask = student.tasks.find(t => t.id === taskId);
+    if (targetTask && !targetTask.completed) {
       handleGrantPoints(10);
       triggerNotif("أحسنت! +10 نقاط XP", "success");
     }
   };
 
-  // تحديد الرتبة بناءً على النقاط
-  const getRank = (pts) => {
+  const getRank = (pts = 0) => {
     if (pts > 5000) return { title: "أسطورة فيزيائية", color: "#ff007a" };
     if (pts > 2000) return { title: "محارب متقدم", color: "#7000ff" };
     return { title: "طالب طموح", color: "#00f2ff" };
   };
 
-  if (!student) return <div className="nebula-loading"><span>جاري مزامنة بيانات البطل...</span></div>;
+  // حماية ضد الشاشة السوداء: إذا لم تظهر البيانات بعد يظهر اللودينج
+  if (!student) return (
+    <div className="nebula-loading">
+      <Zap className="spin-icon" size={40} color="#00f2ff" />
+      <span>جاري مزامنة بيانات البطل...</span>
+    </div>
+  );
 
   return (
     <div className={`student-nebula-root ${isActive ? 'focus-mode-active' : ''}`}>
@@ -149,7 +161,6 @@ const StudentDash = () => {
       <AnimatePresence>
         {notif.show && (
           <motion.div initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100 }} className={`floating-notif ${notif.type}`}>
-            {notif.type === 'success' ? <CheckCircle size={18}/> : <Zap size={18} />}
             {notif.msg}
           </motion.div>
         )}
@@ -171,17 +182,17 @@ const StudentDash = () => {
         <header className="nebula-top-bar">
           <div className="user-profile-info">
             <div className="avatar-wrapper">
-              <img src={`https://api.dicebear.com/7.x/bottts/svg?seed=${student.email}`} alt="avatar" />
-              <div className="streak-tag"><Flame size={12} fill="#ff4b2b" /> {student.streak || 1}</div>
+              <img src={`https://api.dicebear.com/7.x/bottts/svg?seed=${student?.email || 'anon'}`} alt="avatar" />
+              <div className="streak-tag"><Flame size={12} fill="#ff4b2b" /> {student?.streak || 1}</div>
             </div>
             <div className="user-details">
-              <h2>يا هلا، {student.name.split(' ')[0]} 👋</h2>
+              <h2>يا هلا، {student?.name ? student.name.split(' ')[0] : 'أيها البطل'} 👋</h2>
               <div className="level-system">
-                <span className="lvl-text" style={{color: getRank(student.points).color}}>{getRank(student.points).title}</span>
+                <span className="lvl-text" style={{color: getRank(student?.points).color}}>{getRank(student?.points).title}</span>
                 <div className="lvl-progress-bar">
-                   <motion.div initial={{width: 0}} animate={{width: `${(student.points % 1000) / 10}%`}} className="lvl-fill" />
+                    <motion.div initial={{width: 0}} animate={{width: `${(student?.points % 1000) / 10}%`}} className="lvl-fill" />
                 </div>
-                <span className="xp-text">{student.points || 0} XP</span>
+                <span className="xp-text">{student?.points || 0} XP</span>
               </div>
             </div>
           </div>
@@ -199,13 +210,11 @@ const StudentDash = () => {
           <div className="content-primary">
             <AnimatePresence mode="wait">
               {activeTab === 'my-courses' && (
-                <motion.div key="courses" initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} className="tab-panel">
-                  <div className="panel-header">
-                    <h3><BookOpen size={20} /> محاضراتك الحالية</h3>
-                  </div>
+                <motion.div key="courses" initial={{opacity:0}} animate={{opacity:1}} className="tab-panel">
+                  <div className="panel-header"><h3><BookOpen size={20} /> محاضراتك الحالية</h3></div>
                   <div className="premium-courses-list">
-                    {availableCourses.filter(c => student.enrolledContent?.includes(c.id)).length > 0 ? (
-                        availableCourses.filter(c => student.enrolledContent?.includes(c.id)).map(course => (
+                    {availableCourses.filter(c => student?.enrolledContent?.includes(c.id)).length > 0 ? (
+                        availableCourses.filter(c => student?.enrolledContent?.includes(c.id)).map(course => (
                         <div key={course.id} className="nebula-course-card" onClick={() => navigate(`/video-player/${course.id}`)}>
                             <div className="c-thumb" style={{backgroundImage: `url(${course.thumbnail})`}}>
                                 <div className="c-overlay"><PlayCircle size={40} /></div>
@@ -214,14 +223,14 @@ const StudentDash = () => {
                                 <h4>{course.title}</h4>
                                 <div className="c-meta">
                                     <span><GraduationCap size={14}/> {course.grade}</span>
-                                    <span><Clock size={14}/> {course.duration || 'ساعتان'}</span>
+                                    <span><Clock size={14}/> {course.duration || '2h'}</span>
                                 </div>
                             </div>
                         </div>
                         ))
                     ) : (
                         <div className="empty-state-card glass">
-                            <p>أنت لم تشترك في أي كورسات بعد. ابدأ رحلتك الآن!</p>
+                            <p>أنت لم تشترك في أي كورسات بعد.</p>
                             <button onClick={() => setActiveTab('store')}>تصفح المتجر</button>
                         </div>
                     )}
@@ -240,8 +249,7 @@ const StudentDash = () => {
                             </div>
                             <div className="c-info">
                                 <h4>{course.title}</h4>
-                                <p className="c-desc">{course.description?.substring(0, 60)}...</p>
-                                <button className="buy-btn" onClick={() => triggerNotif("استخدم كود التفعيل للاشتراك", "info")}>تفاصيل الاشتراك</button>
+                                <button className="buy-btn" onClick={() => triggerNotif("تواصل مع الإدارة للحصول على كود التفعيل")}>تفاصيل الاشتراك</button>
                             </div>
                         </div>
                     ))}
@@ -252,11 +260,11 @@ const StudentDash = () => {
               {activeTab === 'leaderboard' && (
                 <motion.div key="leaderboard" initial={{opacity:0}} animate={{opacity:1}} className="tab-panel">
                   <div className="leaderboard-container glass">
-                     <div className="leader-header"><h3><Trophy size={24} color="#ffd700" /> قائمة عباقرة الفيزياء</h3></div>
+                     <div className="leader-header"><h3><Trophy size={24} color="#ffd700" /> قائمة العباقرة</h3></div>
                      <div className="leader-list">
                         {topStudents.map((s, i) => (
-                          <div key={s.id} className={`leader-row ${i < 3 ? `top-${i+1}` : ''} ${s.id === auth.currentUser.uid ? 'is-me' : ''}`}>
-                             <div className="l-rank">{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`}</div>
+                          <div key={s.id} className={`leader-row ${s.id === auth.currentUser?.uid ? 'is-me' : ''}`}>
+                             <div className="l-rank">#{i+1}</div>
                              <img src={`https://api.dicebear.com/7.x/bottts/svg?seed=${s.email}`} alt="" />
                              <div className="l-name">{s.name}</div>
                              <div className="l-pts">{s.points} XP</div>
@@ -271,35 +279,23 @@ const StudentDash = () => {
 
           <div className="content-secondary">
              <div className="nebula-tool-card pomodoro-v2">
-                <div className="tool-head"><Clock size={18} /><span>مؤقت التركيز (بومودورو)</span></div>
-                <div className="timer-main">
-                    <svg className="timer-svg" viewBox="0 0 100 100">
-                        <circle className="timer-bg" cx="50" cy="50" r="45" />
-                        <motion.circle 
-                            className="timer-progress" cx="50" cy="50" r="45" 
-                            style={{ pathLength: (minutes * 60 + seconds) / (25 * 60) }}
-                        />
-                    </svg>
-                    <div className="timer-digits">{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</div>
-                </div>
+                <div className="tool-head"><Clock size={18} /><span>مؤقت التركيز</span></div>
+                <div className="timer-digits">{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}</div>
                 <div className="timer-btns">
                     <button onClick={() => setIsActive(!isActive)} className={isActive ? 'btn-pause' : 'btn-play'}>
-                        {isActive ? 'إيقاف' : 'ابدأ الآن'}
+                        {isActive ? 'إيقاف' : 'ابدأ'}
                     </button>
-                    <button onClick={() => {setIsActive(false); setMinutes(25); setSeconds(0);}} className="btn-reset">إعادة</button>
                 </div>
              </div>
 
              <div className="nebula-tool-card missions-v2">
-                <div className="tool-head"><Target size={18} /><span>قائمة مهامي</span></div>
+                <div className="tool-head"><Target size={18} /><span>مهامي اليومية</span></div>
                 <div className="mission-input">
-                    <input value={taskText} onChange={(e)=>setTaskText(e.target.value)} placeholder="إضافة هدف جديد..." onKeyPress={(e) => e.key === 'Enter' && addTask()} />
-                    <button onClick={addTask}><Plus size={18}/></button>
+                    <input value={taskText} onChange={(e)=>setTaskText(e.target.value)} placeholder="هدف جديد..." onKeyPress={(e) => e.key === 'Enter' && addTask()} />
                 </div>
                 <div className="mission-list">
-                    {student.tasks?.slice(-5).reverse().map(t => (
+                    {student?.tasks?.slice(-5).reverse().map(t => (
                         <div key={t.id} className={`m-item ${t.completed ? 'completed' : ''}`} onClick={() => toggleTask(t.id)}>
-                            <div className="m-check">{t.completed ? <CheckCircle size={16} fill="#00ff80" color="#000"/> : <div className="circle-skeleton"></div>}</div>
                             <span className="m-text">{t.text}</span>
                         </div>
                     ))}
@@ -311,7 +307,5 @@ const StudentDash = () => {
     </div>
   );
 };
-
-const Plus = ({size}) => <svg width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" strokeLinecap="round"/></svg>;
 
 export default StudentDash;
