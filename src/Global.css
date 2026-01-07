@@ -622,3 +622,39 @@ body, html {
 .course-card-v3:active {
   transform: scale(0.98);
 }
+
+/* هذا الكود يطبق على كل الصفحات لمنع الخلفية من حجز مساحة */
+
+/* استهداف حاويات الخلفية الشائعة التي استخدمناها */
+.bg-animation, 
+.hero-grid-bg, 
+.stars-container,
+.about-ultra-page .bg-animation {
+  position: fixed !important; /* ثابتة في مكانها بالنسبة للشاشة */
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important; /* عرض الشاشة بالكامل */
+  height: 100vh !important; /* طول الشاشة بالكامل */
+  z-index: -999 !important; /* تحت كل شيء بلا استثناء */
+  margin: 0 !important;
+  padding: 0 !important;
+  pointer-events: none !important; /* لا تعيق الضغط على الأزرار */
+  overflow: hidden !important;
+}
+
+/* تأكد أن الصفحة نفسها تبدأ من الأعلى */
+.hs-viewport, 
+.about-ultra-page, 
+.admin-nebula-root {
+  position: relative;
+  z-index: 1; /* فوق الخلفية */
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* جعل التصميم مرن (Responsive) كالتطبيق */
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden; /* منع المسطرة العرضية في الموبايل */
+  }
+}
