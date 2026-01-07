@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
@@ -9,15 +10,14 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-
 import './HighSchool.css';
 
-
+// تم تعديل الاسم هنا ليطابق التصدير في الأسفل واسم الملف
 const HighSchool = () => {
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('الكل'); // الكل، ابتدائي، اعدادي، ثانوي
+  const [activeTab, setActiveTab] = useState('الكل'); 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('latest'); 
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ const HighSchool = () => {
         const data = querySnapshot.docs.map(doc => ({ 
           id: doc.id, 
           ...doc.data(),
-          progress: Math.floor(Math.random() * 60) + 10 // قيمة تجريبية تفاعلية
+          progress: Math.floor(Math.random() * 60) + 10 
         }));
         
         setCourses(data);
@@ -45,11 +45,10 @@ const HighSchool = () => {
     fetchCourses();
   }, []);
 
-  // محرك البحث والفلترة الذكي لجميع المراحل
+  // محرك البحث والفلترة
   useEffect(() => {
     let result = [...courses];
 
-    // الفلترة حسب المرحلة الدراسية
     if (activeTab !== 'الكل') {
       result = result.filter(c => 
         c.grade?.includes(activeTab) || 
@@ -57,7 +56,6 @@ const HighSchool = () => {
       );
     }
 
-    // البحث بالاسم أو المستر
     if (searchTerm) {
       result = result.filter(c => 
         c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -65,7 +63,6 @@ const HighSchool = () => {
       );
     }
 
-    // نظام الترتيب (حسب عدد الدروس أو الأحدث)
     if (sortBy === 'lessons') {
       result.sort((a, b) => (b.lessons?.length || 0) - (a.lessons?.length || 0));
     }
@@ -90,13 +87,11 @@ const HighSchool = () => {
   return (
     <div className="edu-viewport rtl" onContextMenu={e => e.preventDefault()}>
       
-      {/* 🔒 نظام حماية المحتوى والخصوصية */}
       <div className="digital-watermark">
         <span>{auth.currentUser?.email || 'Guest User'}</span>
         <span>{new Date().toLocaleDateString()} - MAFA TEC</span>
       </div>
 
-      {/* 🚀 Hero Section - قسم الواجهة الرئيسي */}
       <section className="edu-hero-v3">
         <div className="hero-grid-bg"></div>
         <motion.div 
@@ -134,7 +129,6 @@ const HighSchool = () => {
         </motion.div>
       </section>
 
-      {/* 💠 Navigation Tabs - التنقل بين المراحل */}
       <nav className="edu-navigation-bar">
         {['الكل', 'ابتدائي', 'اعدادي', 'ثانوي'].map((tab) => (
           <button 
@@ -148,7 +142,6 @@ const HighSchool = () => {
         ))}
       </nav>
 
-      {/* 📚 Course Grid - عرض الكورسات */}
       <main className="edu-container">
         <div className="grid-header">
           <h3><BookOpen size={22} color="#00f2ff"/> المناهج الدراسية ({filteredCourses.length})</h3>
@@ -156,7 +149,7 @@ const HighSchool = () => {
 
         <div className="premium-grid">
           <AnimatePresence mode='popLayout'>
-            {filteredCourses.map((course, index) => (
+            {filteredCourses.map((course) => (
               <motion.div 
                 key={course.id}
                 layout
@@ -181,7 +174,6 @@ const HighSchool = () => {
                     <span>{course.instructor || "أ. محمود فرج"}</span>
                   </div>
 
-                  {/* شريط التقدم التعليمي */}
                   <div className="progress-container">
                     <div className="progress-labels">
                       <span>الإنجاز</span>
@@ -207,7 +199,6 @@ const HighSchool = () => {
           </AnimatePresence>
         </div>
 
-        {/* حالة عدم وجود نتائج */}
         {filteredCourses.length === 0 && (
           <div className="empty-state">
             <div className="empty-icon"><Search size={80} opacity={0.2}/></div>
@@ -231,6 +222,7 @@ const HighSchool = () => {
 };
 
 export default HighSchool;
+﻿
 
 
 
