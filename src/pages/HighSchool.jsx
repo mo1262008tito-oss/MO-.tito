@@ -9,7 +9,9 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+
 import './HighSchool.css';
+
 
 const EducationHub = () => {
   const [courses, setCourses] = useState([]);
@@ -229,4 +231,5 @@ const EducationHub = () => {
 };
 
 export default HighSchool;
+
 
