@@ -14,6 +14,8 @@ const AllCourses = () => {
   const [loading, setLoading] = useState(true);
   const [userEnrolledIds, setUserEnrolledIds] = useState([]);
 
+
+  
   useEffect(() => {
     const q = query(collection(db, "courses_metadata"), orderBy("createdAt", "desc"));
     const unsubCourses = onSnapshot(q, (snapshot) => {
@@ -199,3 +201,4 @@ const AllCourses = () => {
 };
 
 export default AllCourses;
+
