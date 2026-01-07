@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import './HighSchool.css';
 
 
-const EducationHub = () => {
+const HighSchool = () => {
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -231,5 +231,6 @@ const EducationHub = () => {
 };
 
 export default HighSchool;
+
 
 
