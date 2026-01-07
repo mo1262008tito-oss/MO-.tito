@@ -509,3 +509,116 @@ body, #root {
   min-height: 100vh;
   background-color: #0a0b1e; /* لون الصفحة الأساسي في حال اختفت النجوم */
 }
+
+/* --- 1. إعدادات الصفحة الأساسية (App Shell) --- */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent; /* منع اللون الأزرق عند اللمس في الموبايل */
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #0a0b1e; /* لون ثابت في الخلفية لمنع الوميض الأبيض */
+  color: #fff;
+  font-family: 'Cairo', sans-serif;
+  overflow-x: hidden; /* منع التمرير العرضي نهائياً */
+}
+
+/* --- 2. الحل النهائي للخلفية (تظهر خلف الكلام دائماً) --- */
+.hero-grid-bg {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1; /* يضمن بقاءها تحت أي نص أو زر */
+  pointer-events: none;
+  background-image: 
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle at 50% 50%, black, transparent);
+  opacity: 0.4;
+}
+
+/* --- 3. حاوية المحتوى الرئيسي --- */
+.hs-viewport, .admin-nebula-root {
+  position: relative;
+  z-index: 1; /* يضمن ظهور المحتوى فوق الـ z-index -1 الخاص بالخلفية */
+  width: 100%;
+  padding-bottom: 80px; /* مساحة احتياطية للقوائم السفلية في الموبايل */
+}
+
+/* --- 4. جعل الشبكة (Grid) ريسبونسف كالتطبيق --- */
+.premium-grid {
+  display: grid;
+  gap: 15px; /* تقليل الفجوة في الموبايل */
+  padding: 15px;
+  /* موبايل: كارت واحد ، تابلت: 2 ، لابتوب: 3 ، شاشة كبيرة: 4 */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+/* --- 5. ميديا كويري للموبايل (أقل من 768px) --- */
+@media (max-width: 767px) {
+  .premium-grid {
+    grid-template-columns: 1fr; /* كارت واحد بعرض الشاشة */
+    padding: 10px;
+  }
+
+  .text-gradient {
+    font-size: 1.4rem; /* تصغير العناوين لتناسب الشاشة */
+  }
+
+  /* جعل الأزرار تأخذ مساحة مريحة للمس */
+  .action-btn, .level-tabs button, .view-mode-toggle button {
+    padding: 12px 10px;
+    font-size: 0.9rem;
+  }
+
+  /* تحويل أشرطة التنقل لتكون قابلة للتمرير عرضياً إذا كثرت */
+  .level-tabs, .hs-navigation-bar {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    justify-content: flex-start;
+    padding-bottom: 10px;
+    gap: 8px;
+    scrollbar-width: none; /* إخفاء السكرول في فيرفوكس */
+  }
+
+  .level-tabs::-webkit-scrollbar {
+    display: none; /* إخفاء السكرول في كروم */
+  }
+
+  .nav-item {
+    flex: 0 0 auto; /* منع انكماش العناصر */
+  }
+
+  /* تحسين شكل الهيدر */
+  .header-content {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 10px;
+  }
+
+  .glass-nav-btn span {
+    display: none; /* إخفاء النص في الموبايل وإبقاء الأيقونة فقط لتوفير مساحة */
+  }
+}
+
+/* --- 6. تحسينات البطاقات (Cards) لتظهر كالتطبيق --- */
+.course-card-v3 {
+  border-radius: 16px; /* حواف أنعم */
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.2s;
+}
+
+/* عند الضغط بالإصبع يعطي إحساس الضغط */
+.course-card-v3:active {
+  transform: scale(0.98);
+}
