@@ -475,3 +475,37 @@ img {
   mask-image: radial-gradient(circle at 50% 50%, black, transparent);
   opacity: 0.2;
 }
+
+/* الحل النهائي لمشكلة نزول الكلام بسبب الخلفية */
+
+.hero-grid-bg {
+  /* 1. اجعلها خارج تدفق الصفحة تماماً */
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  
+  /* 2. اجعلها تغطي الشاشة بالكامل */
+  width: 100vw !important;
+  height: 100vh !important;
+  
+  /* 3. ارسلها خلف كل شيء (تحت المحتوى) */
+  z-index: -1 !important; 
+  
+  /* 4. امنعها من أخذ أي مساحة أو هوامش */
+  margin: 0 !important;
+  padding: 0 !important;
+  
+  /* 5. تأكد أنها لا تعيق الضغط على الأزرار */
+  pointer-events: none !important;
+  
+  /* 6. منع التكرار أو التمدد الخاطئ */
+  overflow: hidden !important;
+}
+
+/* تأكد أن الحاوية الأساسية لا تمنع الظهور */
+body, #root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: #0a0b1e; /* لون الصفحة الأساسي في حال اختفت النجوم */
+}
