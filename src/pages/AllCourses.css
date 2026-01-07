@@ -246,3 +246,321 @@
   .header-content { flex-direction: column; gap: 15px; }
   .premium-grid { grid-template-columns: 1fr; }
 }
+
+/* AllCourses.css - Futuristic Educational UI */
+:root {
+  --bg-dark: #0a0b1e;
+  --neon-cyan: #00f2ff;
+  --neon-purple: #7000ff;
+  --neon-pink: #ff007a;
+  --neon-green: #00ff88;
+  --glass: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --text-main: #ffffff;
+  --text-dim: #b0b0cc;
+}
+
+.hs-viewport {
+  min-height: 100vh;
+  background: var(--bg-dark);
+  color: var(--text-main);
+  font-family: 'Cairo', sans-serif;
+  padding-bottom: 50px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.rtl { direction: rtl; }
+
+/* الخلفية المتحركة */
+.hero-grid-bg {
+  position: fixed;
+  inset: 0;
+  background-image: 
+    linear-gradient(var(--glass-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--glass-border) 1px, transparent 1px);
+  background-size: 50px 50px;
+  mask-image: radial-gradient(circle at 50% 50%, black, transparent);
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+/* الهيدر */
+.lib-header {
+  padding: 20px 5%;
+  background: rgba(10, 11, 30, 0.8);
+  backdrop-filter: blur(15px);
+  border-bottom: 1px solid var(--glass-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  font-size: 1.8rem;
+}
+
+/* أزرار اختيار المرحلة (ابتدائي - اعدادي - ثانوي) */
+.level-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 25px 0;
+}
+
+.level-tabs button {
+  padding: 10px 25px;
+  border-radius: 15px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: 0.3s;
+  font-weight: bold;
+}
+
+.level-tabs button.active {
+  background: var(--neon-purple);
+  color: white;
+  border-color: var(--neon-purple);
+  box-shadow: 0 0 20px rgba(112, 0, 255, 0.4);
+}
+
+/* تبديل الكورسات والمكتبة */
+.view-mode-toggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.03);
+  width: fit-content;
+  margin: 0 auto 20px;
+  padding: 5px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+}
+
+.view-mode-toggle button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: 0.3s;
+}
+
+.view-mode-toggle button.active {
+  background: var(--neon-cyan);
+  color: #000;
+  font-weight: bold;
+}
+
+/* شريط البحث */
+.search-bar-premium {
+  max-width: 600px;
+  margin: 0 auto 30px;
+  position: relative;
+}
+
+.search-bar-premium input {
+  width: 100%;
+  padding: 15px 50px 15px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 50px;
+  color: white;
+  outline: none;
+  transition: 0.3s;
+}
+
+.search-bar-premium input:focus {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+}
+
+.s-icon {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--neon-cyan);
+}
+
+/* شريط الصفوف الدراسية */
+.hs-navigation-bar {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.nav-item {
+  position: relative;
+  padding: 8px 20px;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.nav-item.active { color: var(--neon-cyan); }
+
+.nav-bg {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 242, 255, 0.1);
+  border-radius: 8px;
+  z-index: -1;
+}
+
+/* شبكة الكورسات */
+.premium-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+  padding: 0 5%;
+}
+
+.course-card-v3 {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  backdrop-filter: blur(10px);
+}
+
+.card-top {
+  position: relative;
+  height: 180px;
+}
+
+.card-top img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 5px 12px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--glass-border);
+}
+
+.play-btn-circle {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: 0.3s;
+}
+
+.course-card-v3:hover .play-btn-circle { opacity: 1; }
+
+.card-body { padding: 20px; }
+
+.course-title {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  height: 2.4em;
+  overflow: hidden;
+}
+
+.instructor-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.mini-avatar {
+  width: 30px;
+  height: 30px;
+  background: var(--neon-purple);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--glass-border);
+  padding-top: 15px;
+}
+
+.price-val {
+  color: var(--neon-pink);
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.free-badge {
+  color: var(--neon-green);
+  font-weight: bold;
+}
+
+.action-btn {
+  background: var(--neon-cyan);
+  color: #000;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.action-btn.btn-enrolled {
+  background: var(--neon-green);
+}
+
+/* حالة التحميل */
+.hs-loader-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-dark);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 100px 20px;
+  color: var(--text-dim);
+}
