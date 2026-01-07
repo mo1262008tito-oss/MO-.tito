@@ -1,4 +1,4 @@
-/* --- AllCourses Seamless Pro Edition --- */
+/* --- AllCourses Seamless Pro Edition (Compatible Version) --- */
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
 
 :root {
@@ -9,22 +9,20 @@
   --text-muted: #94a3b8;
 }
 
-/* 1. الحاوية الأساسية المدمجة */
-.all-courses-root {
+/* 1. الحاوية الأساسية (hs-viewport) */
+.hs-viewport {
   min-height: 100vh;
   background-color: var(--bg-dark);
-  /* إضاءة نيون خلفية خفيفة جداً لتعزيز الانسيابية */
-  background-image: 
-    radial-gradient(circle at 50% -20%, rgba(0, 242, 255, 0.05), transparent 50%);
+  background-image: radial-gradient(circle at 50% -20%, rgba(0, 242, 255, 0.05), transparent 50%);
   color: var(--text-main);
   direction: rtl;
+  font-family: 'Cairo', sans-serif;
+  overflow-x: hidden;
 }
 
-/* 2. هيدر التنقل العلوي */
-.top-nav-bar {
+/* 2. هيدر التنقل العلوي (lib-header) */
+.lib-header {
   padding: 25px 5%;
-  display: flex;
-  justify-content: flex-end;
   backdrop-filter: blur(10px);
   position: sticky;
   top: 0;
@@ -32,294 +30,219 @@
   border-bottom: 1px solid var(--glass-border);
 }
 
-.back-to-dash {
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.glass-nav-btn {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--glass-border);
   color: #fff;
-  padding: 12px 24px;
-  border-radius: 16px;
+  padding: 10px 20px;
+  border-radius: 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-weight: 700;
-  transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.back-to-dash:hover {
-  border-color: var(--primary);
-  background: rgba(0, 242, 255, 0.08);
-  transform: translateX(-5px);
-  box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
-}
-
-/* 3. الهيدر الرئيسي للمكتبة */
-.library-header {
-  text-align: center;
-  padding: 80px 20px 40px;
-}
-
-.cyber-title {
-  font-size: clamp(40px, 7vw, 70px);
-  font-weight: 900;
-  letter-spacing: -2px;
-  background: linear-gradient(180deg, #fff 40%, rgba(255,255,255,0.4));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 15px;
-}
-
-.subtitle {
-  color: var(--text-muted);
-  font-size: 1.1rem;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-/* 4. لوحة التحكم (البحث والفلتر) */
-.control-panel {
-  max-width: 850px;
-  margin: 0 auto 80px;
-  padding: 0 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-}
-
-.search-box {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--glass-border);
-  border-radius: 24px;
-  display: flex;
-  align-items: center;
-  padding: 5px 25px;
-  transition: 0.4s;
-}
-
-.search-box:focus-within {
-  border-color: var(--primary);
-  background: rgba(0, 242, 255, 0.02);
-  box-shadow: 0 0 40px rgba(0, 242, 255, 0.1);
-}
-
-.search-box input {
-  background: transparent;
-  border: none;
-  color: #fff;
-  padding: 18px;
-  width: 100%;
-  outline: none;
-  font-size: 1.1rem;
-}
-
-.filter-group {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.filter-group button {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--glass-border);
-  color: var(--text-muted);
-  padding: 12px 28px;
-  border-radius: 18px;
-  cursor: pointer;
+  gap: 10px;
   font-weight: 700;
   transition: 0.3s;
 }
 
-.filter-group button:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
-}
-
-.filter-group button.active {
-  background: var(--primary);
-  color: #020617;
+.glass-nav-btn:hover {
   border-color: var(--primary);
-  box-shadow: 0 8px 25px rgba(0, 242, 255, 0.3);
+  background: rgba(0, 242, 255, 0.08);
 }
 
-/* 5. شبكة الكورسات المذهلة */
-.courses-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 40px;
-  max-width: 1300px;
-  margin: 0 auto;
-  padding: 0 30px;
+.text-gradient {
+  font-size: 1.8rem;
+  font-weight: 900;
+  background: linear-gradient(to left, #fff, var(--primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.modern-course-card {
-  background: rgba(15, 23, 42, 0.3);
-  backdrop-filter: blur(10px);
+/* 3. لوحة التحكم والبحث (lib-controls-container) */
+.lib-controls-container {
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.search-bar-premium {
+  background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--glass-border);
-  border-radius: 35px;
-  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-  cursor: pointer;
-}
-
-.modern-course-card:hover {
-  transform: translateY(-15px);
-  border-color: var(--primary);
-  background: rgba(15, 23, 42, 0.6);
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
-}
-
-/* صورة الكورس والحالة البصرية */
-.card-visual {
-  height: 210px;
-  margin: 12px;
-  border-radius: 28px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  overflow: hidden;
+  border-radius: 20px;
   display: flex;
   align-items: center;
+  padding: 5px 20px;
+}
+
+.search-bar-premium input {
+  background: transparent;
+  border: none;
+  color: #fff;
+  padding: 15px;
+  width: 100%;
+  outline: none;
+  font-family: 'Cairo';
+}
+
+.hs-navigation-bar {
+  display: flex;
+  gap: 10px;
   justify-content: center;
 }
 
-.card-visual::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent, rgba(2, 6, 23, 0.4));
+.nav-item {
+  position: relative;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 10px 25px;
+  cursor: pointer;
+  font-weight: 700;
 }
 
-.card-tag {
+.nav-item.active { color: var(--primary); }
+.nav-bg {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 242, 255, 0.1);
+  border-radius: 12px;
+  z-index: -1;
+}
+
+/* 4. شبكة الكورسات (premium-grid) */
+.hs-container { padding: 0 5% 80px; }
+.premium-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 30px;
+}
+
+.course-card-v3 {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid var(--glass-border);
+  border-radius: 30px;
+  overflow: hidden;
+  transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-top {
+  position: relative;
+  height: 200px;
+}
+
+.card-top img { width: 100%; height: 100%; object-fit: cover; }
+
+.card-badge {
   position: absolute;
   top: 15px;
   right: 15px;
-  background: rgba(0, 242, 255, 0.1);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 242, 255, 0.2);
+  background: rgba(2, 6, 23, 0.8);
+  padding: 5px 12px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
   color: var(--primary);
-  padding: 8px 16px;
-  border-radius: 14px;
-  font-size: 13px;
-  font-weight: 800;
-  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
-/* حالة القفل (البريميوم) */
-.lock-overlay {
+.play-btn-circle {
   position: absolute;
   inset: 0;
-  background: rgba(2, 6, 23, 0.7);
-  backdrop-filter: blur(6px);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  z-index: 20;
+  background: rgba(0,0,0,0.3);
+  opacity: 0;
+  transition: 0.3s;
 }
 
-.locked-style { filter: grayscale(0.6); }
+.course-card-v3:hover .play-btn-circle { opacity: 1; }
 
-/* تفاصيل البطاقة */
-.card-details {
-  padding: 15px 30px 30px;
-}
+/* 5. تفاصيل البطاقة والأسعار */
+.card-body { padding: 25px; }
+.course-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; }
 
-.card-details h3 {
-  font-size: 1.4rem;
-  font-weight: 800;
-  margin-bottom: 15px;
-  line-height: 1.3;
-  height: 2.6em;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.instructor-info {
+.instructor-meta {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.mini-avatar {
+  width: 30px; height: 30px;
+  background: var(--primary);
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+
+.course-stats-row {
+  display: flex;
+  gap: 15px;
+  font-size: 0.85rem;
   color: var(--text-muted);
-  font-size: 0.95rem;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
-.lesson-count {
-  margin-right: auto;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 4px 10px;
-  border-radius: 8px;
-}
-
-/* الفوتر وزر الاشتراك */
 .card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 20px;
+  border-top: 1px solid var(--glass-border);
+  padding-top: 15px;
+}
+
+.price-val { font-size: 1.2rem; font-weight: 900; }
+.free-badge { color: var(--primary); font-weight: 900; }
+
+.action-btn {
+  background: var(--primary);
+  color: #000;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-btn.btn-enrolled { background: #fff; }
+
+/* 6. الفوتر */
+.modern-footer {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
   border-top: 1px solid var(--glass-border);
 }
 
-.price-tag {
-  font-size: 1.3rem;
-  font-weight: 900;
-}
-
-.free-label { color: var(--primary); text-shadow: 0 0 15px rgba(0, 242, 255, 0.4); }
-
-.enroll-btn {
-  background: #fff;
-  color: #000;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 16px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: 0.3s ease;
-}
-
-.enroll-btn:hover {
-  background: var(--primary);
-  transform: scale(1.05);
-  box-shadow: 0 0 30px rgba(0, 242, 255, 0.4);
-}
-
-.btn-lock {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* 6. اللودر والشاشات الفارغة */
-.loader-vortex {
+/* 7. اللودر */
+.hs-loader-overlay {
   height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  background: var(--bg-dark);
 }
 
-.loader-vortex p {
-  margin-top: 20px;
-  font-weight: 900;
-  color: var(--primary);
-  text-transform: uppercase;
-}
-
-.empty-state-v2 {
-  padding: 150px 20px;
-  text-align: center;
-  opacity: 0.5;
-}
-
-/* استجابة الشاشات */
 @media (max-width: 768px) {
-  .courses-grid { grid-template-columns: 1fr; }
-  .cyber-title { font-size: 35px; }
-  .top-nav-bar { justify-content: center; }
+  .header-content { flex-direction: column; gap: 15px; }
+  .premium-grid { grid-template-columns: 1fr; }
 }
