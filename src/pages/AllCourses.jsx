@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth } from '../firebase';
-import { collection, onSnapshot, doc, updateDoc, arrayUnion, getDoc, increment, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, arrayUnion, increment, query, orderBy } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, BookOpen, User, Star, PlusCircle, LogIn, PlayCircle, ArrowRight, Layout, Lock } from 'lucide-react';
+import { Search, BookOpen, User, PlayCircle, ArrowRight, Layout, Lock, Zap, Clock } from 'lucide-react';
 import './AllCourses.css';
 
 const AllCourses = () => {
@@ -14,9 +14,7 @@ const AllCourses = () => {
   const [loading, setLoading] = useState(true);
   const [userEnrolledIds, setUserEnrolledIds] = useState([]);
 
-  // 1. جلب الكورسات وبيانات الطالب اللحظية
   useEffect(() => {
-    // جلب الكورسات من المجموعة الجديدة metadata
     const q = query(collection(db, "courses_metadata"), orderBy("createdAt", "desc"));
     const unsubCourses = onSnapshot(q, (snapshot) => {
       const coursesData = snapshot.docs.map(doc => ({
@@ -27,7 +25,6 @@ const AllCourses = () => {
       setLoading(false);
     });
 
-    // جلب الكورسات التي يمتلكها الطالب فعلياً لمنع تكرار الاشتراك
     if (auth.currentUser) {
       const unsubUser = onSnapshot(doc(db, "users", auth.currentUser.uid), (doc) => {
         if (doc.exists()) {
@@ -36,166 +33,167 @@ const AllCourses = () => {
       });
       return () => { unsubCourses(); unsubUser(); };
     }
-
     return () => unsubCourses();
   }, []);
 
-  // 2. منطق التصفية والبحث
   const filteredCourses = availableCourses.filter(course => 
     (filter === 'الكل' || course.grade === filter) && 
     (course.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
      course.instructor?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // 3. دالة الاشتراك والتحقق من نوع الكورس
   const handleEnroll = async (course) => {
     const user = auth.currentUser;
-
     if (!user) {
       alert("⚠️ سجل دخولك أولاً لتتمكن من الوصول للمحتوى.");
       return navigate('/login');
     }
 
-    // إذا كان الطالب مشتركاً بالفعل، يذهب للمشاهدة مباشرة
     if (userEnrolledIds.includes(course.id)) {
       return navigate(`/video-player/${course.id}`);
     }
 
-    // إذا كان الكورس "مدفوع" (أي بسعر أكبر من 0) ولم يشترك الطالب بعد
     if (course.price > 0) {
-      alert(`هذا الكورس مدفوع (السعر: ${course.price} ج.م). يرجى استخدام كود التفعيل أو طلب الشراء من لوحة التحكم.`);
-      return navigate('/dashboard'); // توجيهه للوحة التحكم لشراء الكورس
+      alert(`هذا الكورس مدفوع (السعر: ${course.price} ج.م). يرجى تفعيله من لوحة التحكم.`);
+      return navigate('/dashboard');
     }
 
-    // الاشتراك في الكورسات المجانية تلقائياً
     try {
       const userRef = doc(db, "users", user.uid);
       await updateDoc(userRef, {
         enrolledContent: arrayUnion(course.id),
-        points: increment(10) // مكافأة أكبر للاشتراك في كورس
+        points: increment(10)
       });
-      
       navigate(`/video-player/${course.id}`); 
     } catch (error) {
       console.error("Error enrolling:", error);
-      alert("حدث خطأ في تفعيل الكورس.");
     }
   };
 
   if (loading) return (
-    <div className="loader-vortex">
+    <div className="hs-loader-overlay">
       <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}>
-         <PlayCircle size={50} color="#00f2ff" />
+         <Zap size={60} color="#00f2ff" fill="#00f2ff" />
       </motion.div>
-      <p>جاري تحميل منصة MAFA التعليمية...</p>
+      <h2 className="loading-text">جاري فتح مكتبة المستقبل...</h2>
     </div>
   );
 
   return (
-    <div className="all-courses-root rtl-support">
-      
-      {/* هيدر التنقل العلوي */}
-      {auth.currentUser && (
-        <motion.div initial={{ y: -50 }} animate={{ y: 0 }} className="top-nav-bar">
-          <button onClick={() => navigate('/dashboard')} className="back-to-dash">
-            <Layout size={18} /> العودة للوحة التحكم الشخصية
+    <div className="hs-viewport">
+      {/* خلفية نيون خفيفة مدمجة */}
+      <div className="hero-grid-bg"></div>
+
+      {/* شريط التنقل العلوي المدمج */}
+      <header className="lib-header">
+        <motion.div initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="header-content">
+          <button onClick={() => navigate('/dashboard')} className="glass-nav-btn">
+            <Layout size={18} /> لوحة التحكم
           </button>
+          <h1 className="text-gradient">مكتبة المحاضرات</h1>
         </motion.div>
-      )}
+      </header>
 
-      <section className="library-header">
-        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-          <h1 className="cyber-title">مستودع محاضرات MAFA</h1>
-          <p className="subtitle">ابدأ رحلة التفوق الآن مع أقوى نظام تعليمي تفاعلي</p>
-        </motion.div>
-      </section>
-
-      <div className="control-panel glass-card">
-        <div className="search-box">
-          <Search size={20} className="search-icon" />
+      {/* منطقة البحث والفلترة */}
+      <div className="lib-controls-container">
+        <div className="search-bar-premium">
+          <Search size={20} className="s-icon" />
           <input 
             type="text" 
-            placeholder="ابحث عن كورس، درس، أو مدرس..." 
+            placeholder="عن ماذا تبحث اليوم؟ (فيزياء، الباب الأول...)" 
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        
-        <div className="filter-group">
+
+        <nav className="hs-navigation-bar">
           {['الكل', '1', '2', '3'].map(grade => (
             <button 
               key={grade} 
-              className={filter === grade ? 'active' : ''} 
+              className={`nav-item ${filter === grade ? 'active' : ''}`} 
               onClick={() => setFilter(grade)}
             >
-              {grade === 'الكل' ? 'الكل' : `الصف ${grade} الثانوي`}
+              {filter === grade && <motion.div layoutId="nav-bg" className="nav-bg" />}
+              <span className="nav-text">{grade === 'الكل' ? 'جميع الصفوف' : `الصف ${grade} ثانوي`}</span>
             </button>
           ))}
-        </div>
+        </nav>
       </div>
 
-      <main className="courses-grid">
-        <AnimatePresence>
-          {filteredCourses.map(course => {
-            const isEnrolled = userEnrolledIds.includes(course.id);
-            const isLocked = course.price > 0 && !isEnrolled;
+      {/* شبكة الكورسات بتصميم مبهر */}
+      <main className="hs-container">
+        <div className="premium-grid">
+          <AnimatePresence>
+            {filteredCourses.map((course, index) => {
+              const isEnrolled = userEnrolledIds.includes(course.id);
+              const isLocked = course.price > 0 && !isEnrolled;
 
-            return (
-              <motion.div 
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                key={course.id} 
-                className={`modern-course-card glass-card ${isLocked ? 'locked-style' : ''}`}
-              >
-                <div className="card-tag">
-                  {course.grade} ثانوي {isLocked && <Lock size={12} style={{marginRight: '5px'}}/>}
-                </div>
-                
-                <div className="card-visual" style={{ backgroundImage: `url(${course.thumbnail})` }}>
-                  {!course.thumbnail && <PlayCircle size={50} color={isLocked ? "#64748b" : "#00f2ff"} />}
-                  {isLocked && <div className="lock-overlay"><Lock size={40} /></div>}
-                  {!isLocked && <div className="play-hint"><PlayCircle size={40} /></div>}
-                </div>
-
-                <div className="card-details">
-                  <h3>{course.title}</h3>
-                  <div className="instructor-info">
-                    <User size={14} /> <span>{course.instructor || 'أ. محمود فرج'}</span>
-                    <span className="lesson-count">{course.lessons?.length || 0} محاضرة</span>
-                  </div>
-                  
-                  <div className="card-footer">
-                    <div className="price-tag">
-                      {course.price > 0 ? (
-                        <span className="paid-price">{course.price} ج.م</span>
-                      ) : (
-                        <span className="free-label">مجاني</span>
-                      )}
+              return (
+                <motion.div 
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ delay: index * 0.05 }}
+                  whileHover={{ y: -10 }}
+                  key={course.id} 
+                  className={`course-card-v3 ${isLocked ? 'card-locked' : ''}`}
+                  onClick={() => handleEnroll(course)}
+                >
+                  <div className="card-top">
+                    <img src={course.thumbnail || 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=400'} alt="" />
+                    <div className="card-badge">
+                      {course.grade} ثانوي {isLocked && <Lock size={12} />}
                     </div>
-                    
-                    <button 
-                      className={`enroll-btn ${isLocked ? 'btn-lock' : ''}`} 
-                      onClick={() => handleEnroll(course)}
-                    >
-                      {isEnrolled ? 'استمرار المشاهدة' : isLocked ? 'شراء الكورس' : 'ابدأ الآن'}
-                      <ArrowRight size={16} />
-                    </button>
+                    <div className="play-btn-circle">
+                      {isLocked ? <Lock size={40} color="#fff" /> : <PlayCircle size={45} fill="#00f2ff" color="#000" />}
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
+
+                  <div className="card-body">
+                    <h3 className="course-title">{course.title}</h3>
+                    
+                    <div className="instructor-meta">
+                      <div className="mini-avatar">{course.instructor ? course.instructor[0] : 'M'}</div>
+                      <span>{course.instructor || 'أ. محمود فرج'}</span>
+                    </div>
+
+                    <div className="course-stats-row">
+                      <div className="stat-item"><Clock size={14}/> 120 دقيقة</div>
+                      <div className="stat-item"><Zap size={14}/> {course.lessons?.length || 0} درس</div>
+                    </div>
+
+                    <div className="card-footer">
+                      <div className="price-info">
+                        {course.price > 0 ? (
+                          <span className="price-val">{course.price} <small>ج.م</small></span>
+                        ) : (
+                          <span className="free-badge">مجاني</span>
+                        )}
+                      </div>
+                      <button className={`action-btn ${isEnrolled ? 'btn-enrolled' : ''}`}>
+                        {isEnrolled ? 'مشاهدة' : isLocked ? 'شراء' : 'ابدأ'} <ArrowRight size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+
+        {filteredCourses.length === 0 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="empty-state">
+            <BookOpen size={80} opacity={0.2} />
+            <h3>لم نجد أي محاضرات بهذا الاسم</h3>
+            <p>جرب تغيير كلمات البحث أو اختر صفاً دراسياً آخر</p>
+          </motion.div>
+        )}
       </main>
 
-      {filteredCourses.length === 0 && (
-        <div className="empty-state-v2">
-          <BookOpen size={60} />
-          <h3>لا توجد كورسات متاحة حالياً</h3>
-          <p>سيتم إضافة المزيد من المحتوى قريباً، تابع لوحة التحكم</p>
-        </div>
-      )}
+      <footer className="modern-footer">
+          <div className="footer-blur"></div>
+          <p>أكاديمية MAFA التعليمية &copy; 2026 - تجربة تعلم ذكية</p>
+      </footer>
     </div>
   );
 };
