@@ -4,6 +4,7 @@
 :root {
   --primary: #00f2ff;
   --primary-dark: #0066ff;
+  --secondary: #a855f7; /* لون الأرجواني للمسة جمالية */
   --bg-dark: #020617;
   --card-bg: rgba(15, 23, 42, 0.7);
   --glass-border: rgba(255, 255, 255, 0.08);
@@ -18,6 +19,7 @@
   font-family: 'Cairo', sans-serif;
   overflow-x: hidden;
   position: relative;
+  direction: rtl; /* التأكد من أن الاتجاه من اليمين لليسان */
 }
 
 /* 🔒 العلامة المائية للحماية */
@@ -30,13 +32,13 @@
   flex-wrap: wrap;
   justify-content: space-around;
   align-content: space-around;
-  opacity: 0.04; /* شفافة جداً تظهر فقط عند تصوير الشاشة */
+  opacity: 0.03; 
   transform: rotate(-25deg) scale(1.5);
   font-size: 14px;
   user-select: none;
 }
 
-/* 🚀 هيرو سيكشن (Hero Section) */
+/* 🚀 هيرو سيكشن (Hero Section) المطور */
 .hs-hero-v3 {
   padding: 60px 20px;
   position: relative;
@@ -57,18 +59,19 @@
   width: 100%;
   max-width: 1000px;
   background: var(--card-bg);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(25px);
   border: 1px solid var(--glass-border);
   border-radius: 40px;
   padding: 50px;
   text-align: center;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  z-index: 10;
 }
 
 .live-badge {
-  background: rgba(239, 68, 68, 0.1);
-  color: #f87171;
-  padding: 6px 15px;
+  background: rgba(0, 242, 255, 0.1);
+  color: var(--primary);
+  padding: 6px 18px;
   border-radius: 100px;
   font-size: 13px;
   font-weight: 700;
@@ -76,44 +79,56 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 20px;
+  border: 1px solid rgba(0, 242, 255, 0.2);
 }
 
 .text-gradient {
-  background: linear-gradient(90deg, var(--primary), #a855f7);
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .hero-info h1 {
-  font-size: clamp(32px, 5vw, 48px);
+  font-size: clamp(28px, 5vw, 45px);
   font-weight: 900;
   margin-bottom: 15px;
+  line-height: 1.3;
 }
 
 .hero-stats {
   display: flex;
   justify-content: center;
-  gap: 30px;
+  gap: 25px;
   margin-top: 25px;
   color: var(--text-muted);
   font-size: 15px;
+  flex-wrap: wrap;
 }
 
 .h-stat {
   display: flex;
   align-items: center;
   gap: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 5px 15px;
+  border-radius: 12px;
 }
 
 /* 🔍 شريط البحث المطور */
 .search-bar-premium {
   margin-top: 35px;
   display: flex;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.4);
   padding: 8px;
   border-radius: 20px;
   border: 1px solid var(--glass-border);
   gap: 10px;
+  transition: 0.3s;
+}
+
+.search-bar-premium:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.15);
 }
 
 .s-icon { margin: 0 15px; color: var(--text-muted); }
@@ -145,33 +160,38 @@
   outline: none;
 }
 
-/* 💠 التبويبات (Tabs) */
+/* 💠 التبويبات (Tabs) للمراحل الدراسية */
 .hs-navigation-bar {
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 40px;
+  padding: 0 20px;
 }
 
 .nav-item {
   position: relative;
-  padding: 12px 30px;
-  background: transparent;
-  border: none;
+  padding: 12px 25px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
   cursor: pointer;
   color: var(--text-muted);
   font-weight: 700;
-  font-size: 16px;
-  transition: 0.3s;
+  font-size: 15px;
+  border-radius: 15px;
+  transition: 0.4s;
+  overflow: hidden;
 }
 
-.nav-item.active { color: #fff; }
+.nav-item.active {
+  color: #fff;
+  border-color: var(--primary);
+}
 
 .nav-bg {
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-  border-radius: 12px;
   z-index: -1;
   box-shadow: 0 10px 20px rgba(0, 242, 255, 0.2);
 }
@@ -183,7 +203,11 @@
   padding: 0 20px;
 }
 
-.grid-header { margin-bottom: 25px; }
+.grid-header { 
+  margin-bottom: 30px;
+  border-right: 4px solid var(--primary);
+  padding-right: 15px;
+}
 
 .premium-grid {
   display: grid;
@@ -197,6 +221,13 @@
   border: 1px solid var(--glass-border);
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+}
+
+.course-card-v3:hover {
+  transform: translateY(-10px);
+  border-color: var(--primary);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
 .card-top {
@@ -206,18 +237,24 @@
 
 .card-top img {
   width: 100%; height: 100%; object-fit: cover;
+  transition: 0.5s;
+}
+
+.course-card-v3:hover .card-top img {
+  transform: scale(1.1);
 }
 
 .card-badge {
   position: absolute;
   top: 15px; right: 15px;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(10px);
-  padding: 5px 15px;
-  border-radius: 10px;
+  padding: 6px 16px;
+  border-radius: 12px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--primary);
+  border: 1px solid rgba(0, 242, 255, 0.2);
 }
 
 .play-btn-circle {
@@ -226,6 +263,7 @@
   transform: translate(-50%, -50%) scale(0.8);
   opacity: 0;
   transition: 0.3s;
+  z-index: 2;
 }
 
 .course-card-v3:hover .play-btn-circle {
@@ -235,29 +273,32 @@
 .card-body { padding: 25px; }
 
 .course-title {
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 800;
   margin-bottom: 15px;
-  line-height: 1.4;
+  line-height: 1.5;
+  color: #fff;
+  height: 54px; /* لتوحيد ارتفاع العناوين */
+  overflow: hidden;
 }
 
 .instructor {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
 .avatar {
-  width: 30px; height: 30px;
-  background: var(--primary);
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: #000;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 900;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 /* 📊 شريط التقدم */
@@ -272,14 +313,15 @@
 
 .progress-bar {
   height: 6px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  box-shadow: 0 0 10px var(--primary);
 }
 
 .card-footer {
@@ -293,25 +335,26 @@
 .footer-item {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   font-size: 13px;
   color: var(--text-muted);
 }
 
 .enter-btn {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 242, 255, 0.05);
   border: 1px solid var(--glass-border);
-  color: #fff;
-  padding: 8px 15px;
-  border-radius: 10px;
+  color: var(--primary);
+  padding: 8px 18px;
+  border-radius: 12px;
   cursor: pointer;
   transition: 0.3s;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .enter-btn:hover {
   background: var(--primary);
   color: #000;
+  box-shadow: 0 0 15px var(--primary);
 }
 
 /* 🌀 شاشة التحميل (Loader) */
@@ -325,15 +368,41 @@
   z-index: 10000;
 }
 
-.loader-content { text-align: center; }
-.loading-text { margin-top: 20px; font-weight: 800; color: var(--primary); }
+.loading-text { margin-top: 20px; font-weight: 800; color: var(--primary); font-size: 1.2rem; }
 
 /* 📱 الشاشات الصغيرة */
 @media (max-width: 768px) {
-  .hero-main-card { padding: 30px 20px; }
-  .hero-stats { flex-direction: column; gap: 10px; }
-  .search-bar-premium { flex-direction: column; border-radius: 20px; }
-  .filter-dropdown { border-right: none; border-top: 1px solid var(--glass-border); padding: 15px; }
-  .hs-navigation-bar { overflow-x: auto; padding: 10px; justify-content: flex-start; }
-  .nav-item { white-space: nowrap; }
+  .hero-main-card { padding: 35px 20px; border-radius: 30px; }
+  .hero-info h1 { font-size: 26px; }
+  .hero-stats { gap: 10px; }
+  .search-bar-premium { flex-direction: column; padding: 15px; }
+  .filter-dropdown { border-right: none; border-top: 1px solid var(--glass-border); padding-top: 15px; width: 100%; justify-content: center; }
+  .hs-navigation-bar { 
+    overflow-x: auto; 
+    padding: 10px; 
+    justify-content: flex-start; 
+    gap: 8px;
+    scrollbar-width: none; /* إخفاء شريط التمرير في فايرفوكس */
+  }
+  .hs-navigation-bar::-webkit-scrollbar { display: none; } /* إخفاء شريط التمرير في كروم */
+  .nav-item { white-space: nowrap; padding: 10px 20px; font-size: 14px; }
+}
+
+/* 💠 فوتر (Footer) */
+.modern-footer {
+  margin-top: 80px;
+  padding: 40px 20px;
+  text-align: center;
+  border-top: 1px solid var(--glass-border);
+  position: relative;
+}
+
+.footer-blur {
+  position: absolute;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 200px; height: 100px;
+  background: var(--primary);
+  filter: blur(100px);
+  opacity: 0.1;
+  z-index: -1;
 }
