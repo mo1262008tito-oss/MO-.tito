@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db, auth } from '../firebase'; // هنا
+import { db, auth } from '../firebase'; // ✅ تم إضافة auth هنا لإصلاح صلاحيات النشر
 import { 
   collection, query, getDocs, updateDoc, doc, addDoc, 
   onSnapshot, serverTimestamp, where, deleteDoc, orderBy, arrayUnion, increment 
@@ -29,7 +29,7 @@ const AdminDash = () => {
   // --- حالات الكورسات المحدثة ---
   const [newCourse, setNewCourse] = useState({
     title: '', instructor: 'أ. محمود فرج', subject: 'فيزياء', 
-    level: 'ثانوي', // ابتدائي، اعدادي، ثانوي
+    level: 'ثانوي', 
     grade: '1 ثانوي', 
     price: '', thumbnail: '', description: '', lessons: [] 
   });
@@ -72,13 +72,16 @@ const AdminDash = () => {
     return () => { unsubUsers(); unsubCourses(); unsubCodes(); unsubBooks(); };
   }, []);
 
-  // --- وظائف النشر ---
+  // --- وظائف النشر المحدثة ---
   const handlePublishCourse = async () => {
     if(!newCourse.title || !newCourse.price) return alert("❌ أكمل بيانات الكورس الأساسية");
+    if(!auth.currentUser) return alert("❌ خطأ: لم يتم التعرف على هويتك كأدمن. سجل دخولك أولاً.");
+    
     setLoading(true);
     try {
       await addDoc(collection(db, "courses_metadata"), {
         ...newCourse,
+        adminId: auth.currentUser.uid, // ربط الطلب بـ UID الأدمن لتخطي الـ Rules
         createdAt: serverTimestamp(),
         studentsCount: 0
       });
@@ -90,10 +93,13 @@ const AdminDash = () => {
 
   const handleAddBook = async () => {
     if(!newBook.title || !newBook.pdfUrl) return alert("❌ أكمل بيانات الكتاب");
+    if(!auth.currentUser) return alert("❌ سجل دخولك أولاً");
+
     setLoading(true);
     try {
       await addDoc(collection(db, "library_books"), {
         ...newBook,
+        adminId: auth.currentUser.uid,
         createdAt: serverTimestamp()
       });
       alert("📚 تم إضافة الكتاب للمكتبة بنجاح");
@@ -124,29 +130,29 @@ const AdminDash = () => {
     if (!codeSettings.targetId) return alert("❌ اختر الكورس المستهدف أولاً!");
     setLoading(true);
     try {
-      const batch = [];
       for (let i = 0; i < codeSettings.count; i++) {
         const code = "MAFA-" + Math.random().toString(36).substring(2, 9).toUpperCase();
-        batch.push(addDoc(collection(db, "activationCodes"), {
+        await addDoc(collection(db, "activationCodes"), {
           code,
           targetId: codeSettings.targetId,
           isUsed: false,
+          adminId: auth.currentUser?.uid,
           createdAt: serverTimestamp()
-        }));
+        });
       }
-      await Promise.all(batch);
       alert(`✅ تم توليد ${codeSettings.count} كود`);
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error(e); alert("خطأ في توليد الأكواد: " + e.message); }
     setLoading(false);
   };
 
   const deleteItem = async (coll, id) => {
     if(window.confirm("هل أنت متأكد من الحذف نهائياً؟")) {
-        await deleteDoc(doc(db, coll, id));
+        try {
+            await deleteDoc(doc(db, coll, id));
+        } catch (e) { alert("خطأ في الحذف: " + e.message); }
     }
   };
 
-  // خيارات المراحل الدراسية
   const gradeOptions = {
     'ابتدائي': ['1 ابتدائي', '2 ابتدائي', '3 ابتدائي', '4 ابتدائي', '5 ابتدائي', '6 ابتدائي'],
     'اعدادي': ['1 اعدادي', '2 اعدادي', '3 اعدادي'],
@@ -172,7 +178,6 @@ const AdminDash = () => {
       </aside>
 
       <main className="main-content">
-        {/* --- الإحصائيات --- */}
         {activeSection === 'stats' && (
           <motion.div initial={{y: 20, opacity:0}} animate={{y:0, opacity:1}} className="stats-wrapper">
             <div className="stats-grid">
@@ -198,7 +203,6 @@ const AdminDash = () => {
           </motion.div>
         )}
 
-        {/* --- إدارة الطلاب المتميزة --- */}
         {activeSection === 'users' && (
             <div className="users-section glass">
                 <div className="section-header">
@@ -257,7 +261,6 @@ const AdminDash = () => {
             </div>
         )}
 
-        {/* --- إدارة الكورسات --- */}
         {activeSection === 'content' && (
           <div className="content-manager">
              <div className="mode-tabs">
@@ -308,7 +311,6 @@ const AdminDash = () => {
           </div>
         )}
 
-        {/* --- إدارة المكتبة --- */}
         {activeSection === 'library' && (
             <div className="content-manager">
                 <div className="editor-container">
@@ -348,7 +350,6 @@ const AdminDash = () => {
             </div>
         )}
 
-        {/* --- الأكواد --- */}
         {activeSection === 'codes' && (
             <div className="codes-manager">
                 <div className="control-card glass">
@@ -391,4 +392,3 @@ const StatCard = ({ icon, label, value, color }) => (
 );
 
 export default AdminDash;
-
