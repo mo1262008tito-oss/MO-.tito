@@ -409,4 +409,51 @@ img {
 }
 
 
+/* 🚀 هيرو سيكشن (Hero Section) المطور ليكون متصلاً بالصفحة */
+.hs-hero-v3 {
+  padding: 100px 20px 60px 20px; /* زيادة التباعد العلوي */
+  position: relative;
+  display: flex;
+  justify-content: center;
+  /* إضافة خلفية متدرجة تبدأ من فوق وتختفي تحت */
+  background: linear-gradient(to bottom, 
+              rgba(0, 242, 255, 0.05) 0%, 
+              var(--bg-dark) 100%);
+}
+
+.hero-main-card {
+  width: 100%;
+  max-width: 1100px;
+  background: transparent; /* إزالة الخلفية الصلبة للبطاقة */
+  backdrop-filter: none; /* إزالة البلور القوي لدمجها مع الخلفية */
+  border: none; /* إزالة الحدود القاسية */
+  border-radius: 0;
+  padding: 0; /* إزالة الحشو الداخلي */
+  text-align: center;
+  box-shadow: none; /* إزالة الظل الذي يفصلها عن الصفحة */
+  z-index: 10;
+}
+
+/* تحسين شكل شريط البحث ليكون هو العنصر البارز فقط */
+.search-bar-premium {
+  margin: 40px auto 0 auto;
+  max-width: 700px; /* تحديد عرض البحث ليكون أكثر أناقة */
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 10px 20px;
+  border-radius: 25px;
+  border: 1px solid var(--glass-border);
+}
+
+/* 💠 التبويبات (Tabs) - جعلها تطفو بشكل طبيعي فوق المحتوى */
+.hs-navigation-bar {
+  position: sticky; /* جعلها تلتصق بالأعلى عند التمرير */
+  top: 20px;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: -30px 0 50px 0; /* رفعها قليلاً لتتداخل مع الهيرو */
+  padding: 0 20px;
+}
 
