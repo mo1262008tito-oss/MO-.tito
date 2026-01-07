@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../firebase';
+import { db, auth } from '../firebase'; // هنا
 import { 
   collection, query, getDocs, updateDoc, doc, addDoc, 
   onSnapshot, serverTimestamp, where, deleteDoc, orderBy, arrayUnion, increment 
@@ -391,3 +391,4 @@ const StatCard = ({ icon, label, value, color }) => (
 );
 
 export default AdminDash;
+
