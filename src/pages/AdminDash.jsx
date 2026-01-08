@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db, auth } from '../firebase'; // ✅ تم إضافة auth هنا لإصلاح صلاحيات النشر
+import { db, auth } from '../firebase'; 
 import { 
   collection, query, getDocs, updateDoc, doc, addDoc, 
   onSnapshot, serverTimestamp, where, deleteDoc, orderBy, arrayUnion, increment 
@@ -10,7 +10,7 @@ import {
   Lock, Unlock, DollarSign, FileText, LayoutDashboard,
   PackagePlus, Download, Eye, Trash2, UserCheck, Wallet, ShieldAlert,
   Hash, Video, HelpCircle, Layers, ClipboardList, Book, Save, Star, Link, Clock, Copy, Zap, Bell, ShieldBan, MonitorPlay, Trash,
-  BookMarked, Library
+  BookMarked, Library, UserCircle
 } from 'lucide-react'; 
 
 import './AdminDash.css';
@@ -26,12 +26,18 @@ const AdminDash = () => {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // --- حالات الكورسات المحدثة ---
+  // --- حالات الكورسات المحدثة (إضافة بيانات المدرس) ---
   const [newCourse, setNewCourse] = useState({
-    title: '', instructor: 'أ. محمود فرج', subject: 'فيزياء', 
+    title: '', 
+    instructor: 'أ. محمود فرج', // اسم المدرس
+    instructorImage: '',     // رابط صورة المدرس
+    subject: 'فيزياء', 
     level: 'ثانوي', 
     grade: '1 ثانوي', 
-    price: '', thumbnail: '', description: '', lessons: [] 
+    price: '', 
+    thumbnail: '', 
+    description: '', 
+    lessons: [] 
   });
 
   // --- حالة المكتبة (الكتب) ---
@@ -75,18 +81,23 @@ const AdminDash = () => {
   // --- وظائف النشر المحدثة ---
   const handlePublishCourse = async () => {
     if(!newCourse.title || !newCourse.price) return alert("❌ أكمل بيانات الكورس الأساسية");
-    if(!auth.currentUser) return alert("❌ خطأ: لم يتم التعرف على هويتك كأدمن. سجل دخولك أولاً.");
+    if(!auth.currentUser) return alert("❌ خطأ: سجل دخولك أولاً.");
     
     setLoading(true);
     try {
       await addDoc(collection(db, "courses_metadata"), {
         ...newCourse,
-        adminId: auth.currentUser.uid, // ربط الطلب بـ UID الأدمن لتخطي الـ Rules
+        adminId: auth.currentUser.uid, 
         createdAt: serverTimestamp(),
         studentsCount: 0
       });
-      alert("🚀 تم نشر الكورس بنجاح لطلاب " + newCourse.level);
-      setNewCourse({ title: '', instructor: 'أ. محمود فرج', subject: 'فيزياء', level: 'ثانوي', grade: '1 ثانوي', price: '', thumbnail: '', description: '', lessons: [] });
+      alert("🚀 تم نشر الكورس بنجاح مع بيانات المدرس");
+      // إعادة تعيين النموذج
+      setNewCourse({ 
+        title: '', instructor: 'أ. محمود فرج', instructorImage: '', 
+        subject: 'فيزياء', level: 'ثانوي', grade: '1 ثانوي', 
+        price: '', thumbnail: '', description: '', lessons: [] 
+      });
     } catch (e) { alert("خطأ في النشر: " + e.message); }
     setLoading(false);
   };
@@ -186,79 +197,7 @@ const AdminDash = () => {
                 <StatCard icon={<BookMarked />} label="كتاب بالمكتبة" value={stats.books} color="#00ff88" />
                 <StatCard icon={<Hash />} label="كود مولّد" value={stats.codes} color="#ff007a" />
             </div>
-            
-            <div className="quick-view-section">
-                <div className="glass-card">
-                    <h3><MonitorPlay size={20}/> نظرة سريعة</h3>
-                    <div className="mini-list">
-                        {courses.slice(0, 5).map(c => (
-                            <div key={c.id} className="mini-item">
-                                <span>{c.title} <small>({c.level})</small></span>
-                                <button onClick={() => deleteItem("courses_metadata", c.id)} className="text-red"><Trash size={16}/></button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
           </motion.div>
-        )}
-
-        {activeSection === 'users' && (
-            <div className="users-section glass">
-                <div className="section-header">
-                    <h3><Users /> تصنيف المشتركين</h3>
-                    <div className="search-box">
-                        <Search size={18} />
-                        <input placeholder="ابحث عن طالب..." onChange={(e)=>setSearchTerm(e.target.value)} />
-                    </div>
-                </div>
-                <div className="table-responsive">
-                    <table className="admin-table">
-                        <thead>
-                            <tr>
-                                <th>الطالب</th>
-                                <th>المرحلة الدراسية</th>
-                                <th>النقاط</th>
-                                <th>الحالة</th>
-                                <th>إجراء</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {allUsers.filter(u => u.name?.toLowerCase().includes(searchTerm.toLowerCase())).map(user => (
-                                <tr key={user.id}>
-                                    <td>
-                                        <div className="u-cell">
-                                            <img src={`https://api.dicebear.com/7.x/bottts/svg?seed=${user.email}`} alt="" />
-                                            <div>
-                                                <p>{user.name}</p>
-                                                <small>{user.email}</small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span className={`badge ${user.grade?.includes('ثانوي') ? 'sec' : 'prim'}`}>
-                                            {user.grade || 'غير محدد'}
-                                        </span>
-                                    </td>
-                                    <td><Star size={14} color="gold"/> {user.points || 0}</td>
-                                    <td>
-                                        <span className={`status-dot ${user.isSecondaryActive ? 'online' : 'offline'}`}></span>
-                                        {user.isSecondaryActive ? 'نشط' : 'محظور'}
-                                    </td>
-                                    <td>
-                                        <button className="icon-btn" onClick={async () => {
-                                            const userRef = doc(db, "users", user.id);
-                                            await updateDoc(userRef, { isSecondaryActive: !user.isSecondaryActive });
-                                        }}>
-                                            {user.isSecondaryActive ? <Lock size={16} color="#ff4b2b"/> : <Unlock size={16} color="#00ff88"/>}
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         )}
 
         {activeSection === 'content' && (
@@ -271,11 +210,24 @@ const AdminDash = () => {
              {addMode === 'full-course' ? (
                  <div className="editor-container">
                     <div className="form-group">
-                        <label>إعدادات الكورس لجميع المراحل</label>
+                        <label>إعدادات الكورس والبيانات التعريفية</label>
                         <div className="input-row">
                             <input placeholder="عنوان الكورس" value={newCourse.title} onChange={e => setNewCourse({...newCourse, title: e.target.value})} />
                             <input placeholder="السعر (EGP)" type="number" value={newCourse.price} onChange={e => setNewCourse({...newCourse, price: e.target.value})} />
                         </div>
+
+                        {/* --- قسم المدرس الجديد --- */}
+                        <div className="input-row">
+                            <div className="input-with-icon">
+                                <UserCircle size={18} />
+                                <input placeholder="اسم المدرس" value={newCourse.instructor} onChange={e => setNewCourse({...newCourse, instructor: e.target.value})} />
+                            </div>
+                            <div className="input-with-icon">
+                                <Link size={18} />
+                                <input placeholder="رابط صورة المدرس" value={newCourse.instructorImage} onChange={e => setNewCourse({...newCourse, instructorImage: e.target.value})} />
+                            </div>
+                        </div>
+
                         <div className="input-row">
                             <select value={newCourse.level} onChange={e => setNewCourse({...newCourse, level: e.target.value, grade: gradeOptions[e.target.value][0]})}>
                                 <option value="ابتدائي">ابتدائي</option>
@@ -286,7 +238,7 @@ const AdminDash = () => {
                                 {gradeOptions[newCourse.level].map(g => <option key={g} value={g}>{g}</option>)}
                             </select>
                         </div>
-                        <input placeholder="رابط صورة الغلاف" value={newCourse.thumbnail} onChange={e => setNewCourse({...newCourse, thumbnail: e.target.value})} />
+                        <input placeholder="رابط صورة غلاف الكورس" value={newCourse.thumbnail} onChange={e => setNewCourse({...newCourse, thumbnail: e.target.value})} />
                         <textarea placeholder="وصف الكورس..." value={newCourse.description} onChange={e => setNewCourse({...newCourse, description: e.target.value})}></textarea>
                     </div>
                     <button className="publish-btn" onClick={handlePublishCourse}><PackagePlus /> نشر الكورس الآن</button>
@@ -335,18 +287,6 @@ const AdminDash = () => {
                     </div>
                     <button className="publish-btn" style={{background: '#00ff88', color: '#000'}} onClick={handleAddBook}><BookOpen /> إضافة للمكتبة</button>
                 </div>
-
-                <div className="glass-card" style={{marginTop: '20px'}}>
-                    <h3>المكتبة الحالية ({books.length})</h3>
-                    <div className="mini-list">
-                        {books.map(b => (
-                            <div key={b.id} className="mini-item">
-                                <span>{b.title} <small>({b.grade})</small></span>
-                                <button onClick={() => deleteItem("library_books", b.id)} className="text-red"><Trash size={16}/></button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
             </div>
         )}
 
@@ -363,7 +303,6 @@ const AdminDash = () => {
                         <button onClick={generateMassCodes} className="btn-gen">إنشاء الأكواد</button>
                     </div>
                 </div>
-
                 <div className="codes-display">
                     <div className="codes-grid">
                         {generatedCodes.slice(0, 24).map(code => (
@@ -373,6 +312,55 @@ const AdminDash = () => {
                             </div>
                         ))}
                     </div>
+                </div>
+            </div>
+        )}
+
+        {activeSection === 'users' && (
+            <div className="users-section glass">
+                <div className="section-header">
+                    <h3><Users /> إدارة الطلاب</h3>
+                    <div className="search-box">
+                        <Search size={18} />
+                        <input placeholder="ابحث عن طالب..." onChange={(e)=>setSearchTerm(e.target.value)} />
+                    </div>
+                </div>
+                <div className="table-responsive">
+                    <table className="admin-table">
+                        <thead>
+                            <tr>
+                                <th>الطالب</th>
+                                <th>المرحلة</th>
+                                <th>الحالة</th>
+                                <th>إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {allUsers.filter(u => u.name?.toLowerCase().includes(searchTerm.toLowerCase())).map(user => (
+                                <tr key={user.id}>
+                                    <td>
+                                        <div className="u-cell">
+                                            <img src={`https://api.dicebear.com/7.x/bottts/svg?seed=${user.email}`} alt="" />
+                                            <div>
+                                                <p>{user.name}</p>
+                                                <small>{user.email}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{user.grade}</td>
+                                    <td>{user.isSecondaryActive ? 'نشط' : 'محظور'}</td>
+                                    <td>
+                                        <button className="icon-btn" onClick={async () => {
+                                            const userRef = doc(db, "users", user.id);
+                                            await updateDoc(userRef, { isSecondaryActive: !user.isSecondaryActive });
+                                        }}>
+                                            {user.isSecondaryActive ? <Lock size={16} color="#ff4b2b"/> : <Unlock size={16} color="#00ff88"/>}
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         )}
