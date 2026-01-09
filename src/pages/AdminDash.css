@@ -291,3 +291,12 @@ input:focus, select:focus { border-color: var(--nebula-blue); background: rgba(2
 
 .text-red { background: none; border: none; color: var(--nebula-pink); cursor: pointer; transition: 0.2s; }
 .text-red:hover { color: #fff; filter: drop-shadow(0 0 5px var(--nebula-pink)); }
+
+.row-banned { opacity: 0.6; background: rgba(255, 0, 0, 0.05) !important; }
+.ban-btn-small { padding: 5px 10px; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 12px; }
+.ban { background: #ff4444; color: white; }
+.unban { background: #00c851; color: white; }
+.log-item-nebula { display: grid; grid-template-columns: 100px 150px 150px 1fr; gap: 10px; padding: 10px; border-bottom: 1px solid #222; font-size: 13px; }
+.log-time { color: #888; }
+.log-admin { color: #00f2ff; }
+.log-action { font-weight: bold; color: #ff007a; }
