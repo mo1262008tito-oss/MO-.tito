@@ -1,162 +1,152 @@
-/* المتغيرات العامة للألوان */
+/* StudentDash.css - النسخة الاحترافية الشاملة 2026 */
+
 :root {
-  --nebula-bg: #080a12;
-  --nebula-blue: #00f2ff;
-  --nebula-purple: #7000ff;
-  --nebula-pink: #ff007a;
-  --nebula-green: #00ff88;
-  --glass: rgba(255, 255, 255, 0.03);
+  --neon-cyan: #00f2ff;
+  --neon-purple: #7000ff;
+  --neon-pink: #ff007a;
+  --dark-space: #05070a;
+  --glass-bg: rgba(255, 255, 255, 0.03);
   --glass-border: rgba(255, 255, 255, 0.08);
-  --text-main: #e0e0e0;
-  --text-dim: #a0a0a0;
+  --xp-gradient: linear-gradient(90deg, #00f2ff, #7000ff);
 }
 
-/* التنسيق الأساسي للجسم */
+/* الهيكل العام */
 .student-nebula-root {
   display: flex;
   min-height: 100vh;
-  background: radial-gradient(circle at 0% 0%, #120a2e 0%, var(--nebula-bg) 50%);
-  color: var(--text-main);
-  font-family: 'Segoe UI', Roboto, sans-serif;
+  background: radial-gradient(circle at top right, #100a1d, var(--dark-space));
+  color: #fff;
+  font-family: 'Tajawal', sans-serif;
   direction: rtl;
-  overflow: hidden;
-  transition: all 0.5s ease;
 }
 
-/* --- وضع التركيز (Focus Mode) --- */
-.focus-mode-active .side-dock-v2, 
-.focus-mode-active .nebula-top-bar-v2,
-.focus-mode-active .main-viewport {
-  filter: blur(25px) grayscale(0.5);
-  pointer-events: none;
-  opacity: 0.15;
+/* وضع التركيز (عند تفعيل البومودورو) */
+.focus-mode-active {
+  background: radial-gradient(circle at center, #0a111a, #000);
+  transition: 1s ease;
 }
 
-/* --- القائمة الجانبية (Side Dock) --- */
+/* القائمة الجانبية المطورة */
 .side-dock-v2 {
   width: 85px;
-  background: var(--glass);
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(20px);
   border-left: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 30px 0;
+  padding: 25px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
   z-index: 100;
 }
 
-.dock-brand {
-  margin-bottom: 50px;
-}
-
-.inner-glow {
-  filter: drop-shadow(0 0 8px var(--nebula-blue));
+.dock-brand .inner-glow {
+  width: 45px;
+  height: 45px;
+  background: var(--glass-bg);
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+  margin-bottom: 40px;
 }
 
 .dock-nav {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 20px;
   flex: 1;
 }
 
 .dock-nav button {
-  background: transparent;
-  border: none;
-  color: var(--text-dim);
   width: 50px;
   height: 50px;
   border-radius: 15px;
+  border: none;
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+  transition: 0.3s;
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
   position: relative;
-  transition: 0.3s;
 }
 
 .dock-nav button.active {
-  background: var(--nebula-purple);
+  background: var(--neon-purple);
   color: #fff;
-  box-shadow: 0 0 20px rgba(112, 0, 255, 0.4);
+  box-shadow: 0 0 15px var(--neon-purple);
 }
 
-.tooltip {
-  position: absolute;
-  right: 70px;
-  background: var(--nebula-purple);
-  padding: 5px 12px;
-  border-radius: 5px;
-  font-size: 0.8rem;
-  opacity: 0;
-  pointer-events: none;
-  transition: 0.3s;
-  white-space: nowrap;
+.dock-nav button:hover:not(.active) {
+  background: var(--glass-bg);
+  color: var(--neon-cyan);
 }
 
-.dock-nav button:hover .tooltip {
-  opacity: 1;
-  right: 60px;
-}
-
-/* --- المحتوى الرئيسي --- */
+/* المحتوى الرئيسي */
 .nebula-main {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 25px 40px;
-  overflow-y: auto;
+  padding: 30px;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
-/* --- الهيدر (Top Bar) --- */
+/* البار العلوي */
 .nebula-top-bar-v2 {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 35px;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .user-profile-info {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 15px;
 }
 
 .avatar-container {
   position: relative;
-  width: 65px;
-  height: 65px;
-  background: #111;
-  border-radius: 20px;
-  padding: 5px;
-  border: 2px solid var(--glass-border);
+  width: 60px;
+  height: 60px;
 }
 
-.avatar-container img { width: 100%; height: 100%; }
+.avatar-container img {
+  width: 100%;
+  border-radius: 18px;
+  border: 2px solid var(--glass-border);
+}
 
 .online-indicator {
   position: absolute;
   bottom: -2px;
-  left: -2px;
-  width: 15px;
-  height: 15px;
-  background: var(--nebula-green);
-  border: 3px solid var(--nebula-bg);
+  right: -2px;
+  width: 14px;
+  height: 14px;
+  background: var(--neon-green, #00ff88);
+  border: 3px solid #05070a;
   border-radius: 50%;
 }
 
-.user-details h2 { font-size: 1.4rem; margin: 0 0 8px 0; }
+.user-details h2 { font-size: 1.2rem; margin: 0 0 8px 0; }
 
-/* شريط الخبرة (XP Bar) */
+/* شريط الـ XP */
 .xp-container {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  width: 200px;
 }
 
 .xp-bar-bg {
-  width: 200px;
-  height: 8px;
+  flex: 1;
+  height: 6px;
   background: rgba(255,255,255,0.05);
   border-radius: 10px;
   overflow: hidden;
@@ -164,61 +154,91 @@
 
 .xp-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--nebula-blue), var(--nebula-purple));
-  box-shadow: 0 0 10px var(--nebula-blue);
+  background: var(--xp-gradient);
+  box-shadow: 0 0 10px var(--neon-cyan);
 }
 
-.xp-counter { font-size: 0.85rem; color: var(--nebula-blue); font-weight: bold; }
+.xp-counter { font-size: 10px; color: #888; font-weight: bold; }
 
-/* --- تخطيط الشبكة (Grid Layout) --- */
-.nebula-grid-layout {
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 30px;
-}
-
-/* --- الكورسات (Course Cards) --- */
-.section-title {
+/* المحفظة والتفعيل */
+.wallet-quick-view {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 1.1rem;
-  margin-bottom: 20px;
-  color: var(--nebula-blue);
+  padding: 10px 20px;
+  border-radius: 14px;
+  background: rgba(255, 215, 0, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  color: gold;
+  font-weight: bold;
 }
 
+.nebula-quick-activation {
+  display: flex;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: 6px;
+  border-radius: 14px;
+  gap: 10px;
+}
+
+.nebula-quick-activation input {
+  background: transparent;
+  border: none;
+  color: #fff;
+  padding: 8px;
+  outline: none;
+  width: 180px;
+}
+
+.nebula-quick-activation button {
+  background: var(--neon-cyan);
+  color: #000;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* كروت الكورسات */
 .courses-grid-v2 {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
 }
 
 .course-card-v2 {
-  background: var(--glass);
+  background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  border-radius: 22px;
+  border-radius: 24px;
   overflow: hidden;
+  transition: 0.3s;
   cursor: pointer;
-  transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .course-card-v2:hover {
   transform: translateY(-10px);
-  border-color: var(--nebula-blue);
-  box-shadow: 0 15px 35px rgba(0, 242, 255, 0.1);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 15px 30px rgba(0, 242, 255, 0.1);
 }
 
 .card-media {
-  height: 150px;
+  height: 160px;
   background-size: cover;
   background-position: center;
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .play-btn-v2 {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
+  width: 50px;
+  height: 50px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(5px);
+  border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -226,210 +246,251 @@
   transition: 0.3s;
 }
 
-.course-card-v2:hover .play-btn-v2 { opacity: 1; }
+.course-card-v2:hover .play-btn-v2 { opacity: 1; transform: scale(1.1); }
 
-.card-body { padding: 15px; }
-.card-body h4 { margin: 0 0 5px 0; font-size: 1rem; }
-.card-body p { color: var(--text-dim); font-size: 0.85rem; margin: 0; }
+.card-body { padding: 20px; }
+.card-body h4 { margin: 0 0 10px 0; font-size: 1rem; }
+.card-body p { font-size: 0.8rem; color: #888; }
 
-/* --- بومودورو (Pomodoro) --- */
-.pomo-card-v2 {
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  border-radius: 25px;
-  padding: 25px;
-  text-align: center;
-  margin-bottom: 25px;
-}
-
-.pomo-card-v2.work { border-top: 4px solid var(--nebula-pink); }
-.pomo-card-v2.break { border-top: 4px solid var(--nebula-blue); }
-
-.pomo-header {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.9rem;
+/* المتجر والمحفظة */
+.price-tag {
+  color: var(--neon-green, #00ff88);
+  font-weight: bold;
   margin-bottom: 15px;
 }
 
-.pomo-timer {
-  font-size: 3.5rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  margin-bottom: 20px;
-  text-shadow: 0 0 15px rgba(255,255,255,0.2);
-}
-
-.pomo-ctrl {
+.buy-btn {
   width: 100%;
   padding: 12px;
   border-radius: 12px;
-  border: none;
-  background: #fff;
-  color: #000;
+  border: 1px solid var(--neon-cyan);
+  background: transparent;
+  color: var(--neon-cyan);
   font-weight: bold;
   cursor: pointer;
   transition: 0.3s;
 }
 
-.pomo-ctrl:hover { transform: scale(1.05); }
+.buy-btn:hover {
+  background: var(--neon-cyan);
+  color: #000;
+}
 
-/* --- قائمة المهام (To-Do List) --- */
-.todo-card-v2 {
-  background: var(--glass);
+.wallet-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.balance-big {
+  text-align: center;
+  padding: 40px;
+  background: linear-gradient(135deg, rgba(112,0,255,0.1), rgba(0,242,255,0.1));
+  border-radius: 30px;
+}
+
+.balance-big h1 { font-size: 3.5rem; margin: 10px 0; color: var(--neon-cyan); }
+
+.t-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  background: rgba(255,255,255,0.02);
+  margin-bottom: 10px;
+  border-radius: 12px;
+}
+
+.t-row .plus { color: #00ff88; }
+.t-row .minus { color: #ff007a; }
+
+/* قسم المهام والبومودورو */
+.secondary-viewport {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.pomo-card-v2 {
+  background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  border-radius: 25px;
+  padding: 25px;
+  border-radius: 28px;
+  text-align: center;
+}
+
+.pomo-card-v2.work { border-color: var(--neon-pink); }
+.pomo-card-v2.break { border-color: var(--neon-cyan); }
+
+.pomo-timer {
+  font-size: 3rem;
+  font-weight: 800;
+  margin: 15px 0;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.todo-card-v2 {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 28px;
   padding: 20px;
 }
 
-.todo-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
-}
-
-.todo-input-v2 {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.todo-input-v2 input {
-  flex: 1;
-  background: rgba(255,255,255,0.05);
+.notes-area {
+  width: 100%;
+  height: 150px;
+  background: rgba(0,0,0,0.2);
   border: 1px solid var(--glass-border);
-  padding: 10px 15px;
-  border-radius: 12px;
-  color: #fff;
-}
-
-.todo-input-v2 button {
-  background: var(--nebula-purple);
-  border: none;
-  color: #fff;
-  padding: 10px;
-  border-radius: 12px;
-  cursor: pointer;
-}
-
-.todo-list-v2 {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.todo-item-v2 {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: rgba(255,255,255,0.02);
   border-radius: 15px;
-  transition: 0.3s;
+  padding: 15px;
+  color: #ccc;
+  resize: none;
+  margin-top: 15px;
 }
 
-.todo-item-v2.done { opacity: 0.5; }
-
-.check-box {
-  width: 22px;
-  height: 22px;
-  border: 2px solid var(--nebula-blue);
-  border-radius: 7px;
-  cursor: pointer;
+/* الأوائل */
+.leader-item {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 15px;
+  padding: 15px;
+  margin-bottom: 10px;
+  background: var(--glass-bg);
+  border-radius: 18px;
 }
 
-.todo-item-v2.done .check-box {
-  background: var(--nebula-green);
-  border-color: var(--nebula-green);
+.leader-item.top-three {
+  border: 1px solid var(--neon-cyan);
+  background: rgba(0, 242, 255, 0.05);
 }
 
-.t-text { flex: 1; font-size: 0.9rem; }
-.todo-item-v2.done .t-text { text-decoration: line-through; }
+.leader-item img { width: 40px; border-radius: 50%; }
+.leader-item .rank { font-weight: bold; color: var(--neon-cyan); width: 30px; }
+.leader-item .pts { margin-right: auto; color: gold; }
 
-.t-del {
-  background: none;
-  border: none;
-  color: #ff4b2b;
-  cursor: pointer;
-  opacity: 0;
-}
-
-.todo-item-v2:hover .t-del { opacity: 1; }
-
-/* --- الإشعارات العائمة --- */
+/* التنبيهات الطائرة */
 .floating-notif-v2 {
   position: fixed;
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(15px);
-  border: 1px solid var(--glass-border);
-  padding: 12px 25px;
-  border-radius: 50px;
+  padding: 15px 30px;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
-  gap: 10px;
-  z-index: 2000;
+  gap: 12px;
+  z-index: 1000;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-.floating-notif-v2.success { border-bottom: 3px solid var(--nebula-green); }
+.floating-notif-v2.success { background: rgba(0, 255, 136, 0.2); border: 1px solid #00ff88; color: #00ff88; }
+.floating-notif-v2.error { background: rgba(255, 0, 122, 0.2); border: 1px solid #ff007a; color: #ff007a; }
 
-/* --- جدول المذاكرة (Study Planner) --- */
-.schedule-creator {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 25px;
-  padding: 20px;
+
+/* --- Mobile App Experience (Responsive Design) --- */
+
+@media (max-width: 768px) {
+  /* 1. تحويل القائمة الجانبية لشريط سفلي */
+  .side-dock-v2 {
+    width: 100%;
+    height: 70px;
+    flex-direction: row;
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    padding: 0 15px;
+    border-left: none;
+    border-top: 1px solid var(--glass-border);
+    justify-content: space-around;
+    background: rgba(5, 7, 10, 0.95);
+  }
+
+  .dock-brand { display: none; } /* إخفاء اللوجو في الموبايل لتوفير مساحة */
+
+  .dock-nav {
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-around;
+    gap: 0;
+  }
+
+  .dock-nav button {
+    width: 60px;
+    height: 100%;
+  }
+
+  /* 2. تعديل المحتوى الرئيسي */
+  .nebula-main {
+    padding: 15px;
+    padding-bottom: 90px; /* مساحة للشريط السفلي */
+  }
+
+  .nebula-top-bar-v2 {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  /* 3. جعل الهيدر (التفعيل والمحفظة) عرض كامل */
+  .nebula-quick-activation, 
+  .wallet-quick-view {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .nebula-quick-activation input {
+    flex: 1;
+  }
+
+  /* 4. ترتيب الجريد (Layout) ليصبح عمود واحد */
+  .nebula-grid-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .secondary-viewport {
+    width: 100%; /* الجانب الأيمن (بومودورو والمهام) يصبح تحت المحتوى */
+  }
+
+  /* 5. تصغير حجم الخطوط وعناصر الواجهة */
+  .user-details h2 { font-size: 1rem; }
+  
+  .courses-grid-v2 {
+    grid-template-columns: 1fr; /* كورس واحد في كل صف للموبايل */
+  }
+
+  .course-card-v2 .card-media {
+    height: 200px; /* تكبير صورة الكورس لتملأ الشاشة */
+  }
+
+  /* 6. تحسين شكل المودال والتنبيهات */
+  .floating-notif-v2 {
+    width: 90%;
+    font-size: 0.9rem;
+    top: 10px;
+  }
+
+  /* 7. إخفاء التولتيب (Tooltip) في الموبايل */
+  .tooltip { display: none; }
+
+  /* 8. لمسة جمالية: جعل الأزرار أسهل في الضغط باللمس */
+  .buy-btn, .pomo-ctrl {
+    padding: 15px;
+    font-size: 1.1rem;
+  }
+
+  /* 9. لوحة الشرف في الموبايل */
+  .leader-item {
+    padding: 10px;
+  }
 }
 
-.schedule-creator select, .schedule-creator input {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--glass-border);
-  color: #fff;
-  padding: 10px;
-  border-radius: 10px;
-}
-
-.schedule-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
-}
-
-.schedule-item {
-  background: var(--glass);
-  padding: 20px;
-  border-radius: 18px;
-  border-right: 5px solid var(--nebula-purple);
-  position: relative;
-}
-
-.s-day { color: var(--nebula-purple); font-weight: bold; margin-bottom: 5px; }
-.s-sub { font-size: 1.1rem; }
-
-/* --- شاشة التحميل --- */
-.nebula-loading {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  background: var(--nebula-bg);
-}
-
-.spin-icon { animation: rotate 2s linear infinite; }
-@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-/* التوافق مع الشاشات الصغيرة */
-@media (max-width: 1000px) {
-  .nebula-grid-layout { grid-template-columns: 1fr; }
-  .secondary-viewport { order: -1; }
+/* تحسينات إضافية للشاشات الصغيرة جداً (iPhone SE مثلاً) */
+@media (max-width: 400px) {
+  .xp-container { width: 120px; }
+  .pomo-timer { font-size: 2.2rem; }
+  .balance-big h1 { font-size: 2.5rem; }
 }
