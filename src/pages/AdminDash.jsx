@@ -16,6 +16,7 @@ import {
   Search, Activity, FileText
 } from 'lucide-react';
 
+'import 'AdminDash./.css';
 const AdminDash = () => {
   // ... (نفس الـ States الموجودة في كودك) ...
 
@@ -599,4 +600,5 @@ const AdminDash = () => {
 };
 
 export default AdminDash;
+
 
