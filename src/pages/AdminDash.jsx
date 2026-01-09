@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase'; 
-import * as XLSX from 'xlsx'; // تأكد من تثبيته عبر npm install xlsx
+import * as XLSX from 'xlsx';
 import { 
   collection, query, getDocs, updateDoc, doc, addDoc, 
   onSnapshot, serverTimestamp, where, deleteDoc, orderBy, arrayUnion, increment, writeBatch 
@@ -14,21 +14,19 @@ import {
   Lock, Unlock, DollarSign, FileText, LayoutDashboard,
   PackagePlus, Download, Eye, Trash2, UserCheck, Wallet, ShieldAlert,
   Hash, Video, HelpCircle, Layers, ClipboardList, Book, Save, Star, Link, Clock, Copy, Zap, Bell, ShieldBan, MonitorPlay, Trash,
-  BookMarked, Library, UserCircle, GraduationCap, Percent, TrendingUp, Settings, Smartphone, Image as ImageIcon, CheckCircle, Database
+  BookMarked, Library, UserCircle, GraduationCap, Percent, TrendingUp, Settings, Smartphone, ImageIcon, CheckCircle, Database
 } from 'lucide-react'; 
 
 import './AdminDash.css';
 
 const AdminDash = () => {
-  // --- حالات التحكم الأساسية ---
   const [activeSection, setActiveSection] = useState('stats');
-  const [addMode, setAddMode] = useState('full-course'); 
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState(null); 
 
-  // --- حالات البيانات ---
-  const [stats, setStats] = useState({ students: 0, courses: 0, codes: 0, books: 0, revenue: 0 });
+  // --- البيانات ---
+  const [stats, setStats] = useState({ students: 0, courses: 0, codes: 0, books: 0 });
   const [courses, setCourses] = useState([]);
   const [books, setBooks] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
@@ -37,94 +35,92 @@ const AdminDash = () => {
   const [paymentRequests, setPaymentRequests] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
 
-  // --- نماذج الإدخال ---
+  // --- النماذج ---
   const [newCourse, setNewCourse] = useState({
-    title: '', instructor: 'أ. محمود فرج', instructorImage: '', subject: 'فيزياء', level: 'ثانوي', grade: '1 ثانوي', 
-    price: '', thumbnail: '', description: '', lessons: [], schedule: '' 
+    title: '', instructor: 'أ. محمود فرج', subject: 'فيزياء', grade: '1 ثانوي', 
+    price: '', thumbnail: '', description: '', lessons: [] 
   });
-  const [newBook, setNewBook] = useState({ title: '', level: 'ثانوي', grade: '1 ثانوي', pdfUrl: '', thumbnail: '', price: '0', category: 'عامة' });
-  const [lessonForm, setLessonForm] = useState({ title: '', videoUrl: '', pdfUrl: '', duration: '', targetCourseId: '', isLocked: true, quizUrl: '' });
-  const [teacherForm, setTeacherForm] = useState({ name: '', subject: '', commission: 10, totalEarnings: 0 });
+  const [newBook, setNewBook] = useState({ title: '', grade: '1 ثانوي', pdfUrl: '', thumbnail: '', price: '0' });
+  const [teacherForm, setTeacherForm] = useState({ name: '', subject: '', commission: 10 });
   const [codeSettings, setCodeSettings] = useState({ count: 10, targetId: '', type: 'course', amount: 0 });
 
-  // --- نظام جلب البيانات (Real-time Engine) ---
+  // --- المحرك الفوري (Real-time Engine) ---
   useEffect(() => {
-    setLoading(true);
-    const unsubUsers = onSnapshot(collection(db, "users"), (s) => {
+    const unsubscribers = [
+      onSnapshot(collection(db, "users"), (s) => {
         setAllUsers(s.docs.map(d => ({id: d.id, ...d.data()})));
-        setStats(prev => ({...prev, students: s.size}));
-    });
-    const unsubCourses = onSnapshot(collection(db, "courses_metadata"), (s) => {
+        setStats(p => ({...p, students: s.size}));
+      }),
+      onSnapshot(collection(db, "courses_metadata"), (s) => {
         setCourses(s.docs.map(d => ({id: d.id, ...d.data()})));
-        setStats(prev => ({...prev, courses: s.size}));
-    });
-    const unsubBooks = onSnapshot(collection(db, "library_books"), (s) => {
+        setStats(p => ({...p, courses: s.size}));
+      }),
+      onSnapshot(collection(db, "library_books"), (s) => {
         setBooks(s.docs.map(d => ({id: d.id, ...d.data()})));
-        setStats(prev => ({...prev, books: s.size}));
-    });
-    const unsubCodes = onSnapshot(query(collection(db, "activationCodes"), orderBy("createdAt", "desc")), (s) => {
+        setStats(p => ({...p, books: s.size}));
+      }),
+      onSnapshot(query(collection(db, "activationCodes"), orderBy("createdAt", "desc")), (s) => {
         setGeneratedCodes(s.docs.map(d => ({id: d.id, ...d.data()})));
-        setStats(prev => ({...prev, codes: s.size}));
-    });
-    const unsubTeachers = onSnapshot(collection(db, "teachers"), (s) => {
+        setStats(p => ({...p, codes: s.size}));
+      }),
+      onSnapshot(collection(db, "teachers"), (s) => {
         setTeachers(s.docs.map(d => ({id: d.id, ...d.data()})));
-    });
-    const unsubPayments = onSnapshot(query(collection(db, "payment_requests"), where("status", "==", "pending")), (s) => {
+      }),
+      onSnapshot(query(collection(db, "payment_requests"), where("status", "==", "pending")), (s) => {
         setPaymentRequests(s.docs.map(d => ({id: d.id, ...d.data()})));
-    });
-    const unsubLogs = onSnapshot(query(collection(db, "audit_logs"), orderBy("timestamp", "desc")), (s) => {
-        setAuditLogs(s.docs.slice(0, 50).map(d => ({id: d.id, ...d.data()})));
-    });
-
-    setLoading(false);
-    return () => { 
-      unsubUsers(); unsubCourses(); unsubCodes(); unsubBooks(); unsubTeachers(); unsubPayments(); unsubLogs();
-    };
+      }),
+      onSnapshot(query(collection(db, "audit_logs"), orderBy("timestamp", "desc")), (s) => {
+        setAuditLogs(s.docs.slice(0, 20).map(d => ({id: d.id, ...d.data()})));
+      })
+    ];
+    return () => unsubscribers.forEach(unsub => unsub());
   }, []);
 
-  // --- وظائف الحماية والرقابة المتقدمة ---
+  // --- الوظائف الإدارية ---
   const logAction = async (action, details) => {
     await addDoc(collection(db, "audit_logs"), {
-      adminEmail: auth.currentUser?.email,
+      adminEmail: auth.currentUser?.email || "Admin",
       action, details, timestamp: serverTimestamp()
     });
   };
 
-  const handleToggleBan = async (userId, userName, currentStatus) => {
-    if(window.confirm(`${currentStatus ? 'إلغاء حظر' : 'حظر'} الطالب ${userName}؟`)) {
-        await updateDoc(doc(db, "users", userId), { isBanned: !currentStatus });
-        logAction(currentStatus ? "إلغاء حظر" : "حظر طالب", `الطالب: ${userName}`);
-    }
-  };
-
-  const resetDevices = async (userId, userName) => {
-    if(window.confirm(`تصفير أجهزة الطالب ${userName}؟`)) {
-      await updateDoc(doc(db, "users", userId), { deviceId: null, secondDeviceId: null, allowedDevices: [] });
-      logAction("تصفير أجهزة", `الطالب: ${userName}`);
-      alert("✅ تم التصفير بنجاح");
-    }
-  };
-
-  // --- وظائف الإدارة المالية والمحتوى ---
-  const handleApprovePayment = async (request) => {
-    if(!window.confirm("تأكيد استلام المبلغ وتفعيل الطلب؟")) return;
+  const handlePublishCourse = async () => {
+    if(!newCourse.title || !newCourse.price) return alert("❌ أكمل البيانات");
     setLoading(true);
     try {
-      const userRef = doc(db, "users", request.userId);
-      if(request.type === 'wallet' || !request.courseId) {
-        await updateDoc(userRef, { walletBalance: increment(Number(request.amount)) });
-      } else {
-        await updateDoc(userRef, { enrolledContent: arrayUnion(request.courseId) });
-      }
-      await updateDoc(doc(db, "payment_requests", request.id), { status: 'approved' });
-      logAction("قبول دفع", `للطالب ${request.userName} بمبلغ ${request.amount}`);
-      alert("✅ تم التفعيل بنجاح");
+      await addDoc(collection(db, "courses_metadata"), {
+        ...newCourse, createdAt: serverTimestamp(), studentsCount: 0
+      });
+      logAction("نشر كورس", newCourse.title);
+      alert("✅ تم النشر");
+      setNewCourse({ title: '', instructor: 'أ. محمود فرج', subject: 'فيزياء', grade: '1 ثانوي', price: '', thumbnail: '', description: '', lessons: [] });
     } catch (e) { alert(e.message); }
     setLoading(false);
   };
 
+  const handleAddBook = async () => {
+    if(!newBook.title || !newBook.pdfUrl) return alert("❌ أكمل بيانات الكتاب");
+    setLoading(true);
+    try {
+      await addDoc(collection(db, "library_books"), { ...newBook, createdAt: serverTimestamp() });
+      logAction("إضافة كتاب", newBook.title);
+      alert("✅ تمت الإضافة للمكتبة");
+      setNewBook({ title: '', grade: '1 ثانوي', pdfUrl: '', thumbnail: '', price: '0' });
+    } catch (e) { alert(e.message); }
+    setLoading(false);
+  };
+
+  const handleAddTeacher = async () => {
+    if(!teacherForm.name) return alert("❌ ادخل اسم المدرس");
+    try {
+      await addDoc(collection(db, "teachers"), { ...teacherForm, totalEarnings: 0 });
+      logAction("إضافة مدرس", teacherForm.name);
+      setTeacherForm({ name: '', subject: '', commission: 10 });
+    } catch (e) { alert(e.message); }
+  };
+
   const generateMassCodes = async () => {
-    if (!codeSettings.targetId && codeSettings.type === 'course') return alert("❌ اختر الكورس المستهدف!");
+    if (!codeSettings.targetId && codeSettings.type === 'course') return alert("❌ اختر الكورس!");
     setLoading(true);
     try {
       const batch = writeBatch(db);
@@ -143,227 +139,173 @@ const AdminDash = () => {
       }
       await batch.commit();
       
-      // تصدير إكسيل
       const ws = XLSX.utils.json_to_sheet(codesToExport);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Generated Codes");
-      XLSX.writeFile(wb, `Tito_Codes_${targetName}.xlsx`);
-
-      logAction("توليد أكواد", `تم إنشاء ${codeSettings.count} كود لـ ${targetName}`);
-      alert(`✅ تم توليد الأكواد وتصدير ملف Excel`);
-    } catch (e) { alert(e.message); }
-    setLoading(false);
-  };
-
-  const handlePublishCourse = async () => {
-    if(!newCourse.title || !newCourse.price) return alert("❌ أكمل بيانات الكورس الأساسية");
-    setLoading(true);
-    try {
-      await addDoc(collection(db, "courses_metadata"), {
-        ...newCourse, adminId: auth.currentUser?.uid, createdAt: serverTimestamp(), studentsCount: 0
-      });
-      logAction("نشر كورس", `عنوان: ${newCourse.title}`);
-      alert("🚀 تم نشر الكورس بنجاح");
-      setNewCourse({ title: '', instructor: 'أ. محمود فرج', instructorImage: '', subject: 'فيزياء', level: 'ثانوي', grade: '1 ثانوي', price: '', thumbnail: '', description: '', lessons: [] });
+      XLSX.utils.book_append_sheet(wb, ws, "Codes");
+      XLSX.writeFile(wb, `Tito_Codes_${Date.now()}.xlsx`);
+      logAction("توليد أكواد", `عدد ${codeSettings.count}`);
     } catch (e) { alert(e.message); }
     setLoading(false);
   };
 
   const deleteItem = async (coll, id, name) => {
-    if(window.confirm(`حذف ${name} نهائياً؟`)) {
+    if(window.confirm(`حذف ${name}؟`)) {
       await deleteDoc(doc(db, coll, id));
-      logAction("حذف", `من ${coll}: ${name}`);
+      logAction("حذف", `${coll}: ${name}`);
     }
   };
-
-  const chartData = [
-    { name: 'السبت', students: 400 }, { name: 'الأحد', students: 700 },
-    { name: 'الاثنين', students: 1200 }, { name: 'الثلاثاء', students: 900 },
-    { name: 'الأربعاء', students: 1500 }, { name: 'الخميس', students: 2100 },
-    { name: 'الجمعة', students: 2400 },
-  ];
 
   return (
     <div className="admin-nebula-root">
       {loading && <div className="admin-loader-overlay"><div className="spinner"></div></div>}
 
       <aside className="side-dock">
-        <div className="dock-logo"><Zap className="neon-icon" fill="#00f2ff" /> <span>TITO PANEL PRO</span></div>
+        <div className="dock-logo"><Zap fill="#00f2ff" /> <span>TITO PANEL</span></div>
         <nav className="dock-menu">
           <button onClick={() => setActiveSection('stats')} className={activeSection === 'stats' ? 'active' : ''}><LayoutDashboard /> الإحصائيات</button>
-          <button onClick={() => setActiveSection('payments')} className={activeSection === 'payments' ? 'active' : ''}>
-            <DollarSign /> طلبات الدفع 
-            {paymentRequests.length > 0 && <span className="notif-badge">{paymentRequests.length}</span>}
-          </button>
-          <button onClick={() => setActiveSection('teachers')} className={activeSection === 'teachers' ? 'active' : ''}><GraduationCap /> المعلمين</button>
           <button onClick={() => setActiveSection('content')} className={activeSection === 'content' ? 'active' : ''}><Layers /> الكورسات</button>
           <button onClick={() => setActiveSection('library')} className={activeSection === 'library' ? 'active' : ''}><Library /> المكتبة</button>
-          <button onClick={() => setActiveSection('codes')} className={activeSection === 'codes' ? 'active' : ''}><Hash /> الأكواد والمحفظة</button>
-          <button onClick={() => setActiveSection('users')} className={activeSection === 'users' ? 'active' : ''}><Users /> شؤون الطلاب</button>
-          <button onClick={() => setActiveSection('logs')} className={activeSection === 'logs' ? 'active' : ''}><Database /> سجل النشاط</button>
+          <button onClick={() => setActiveSection('users')} className={activeSection === 'users' ? 'active' : ''}><Users /> الطلاب</button>
+          <button onClick={() => setActiveSection('payments')} className={activeSection === 'payments' ? 'active' : ''}><DollarSign /> الدفع {paymentRequests.length > 0 && <span className="notif-badge">{paymentRequests.length}</span>}</button>
+          <button onClick={() => setActiveSection('codes')} className={activeSection === 'codes' ? 'active' : ''}><Hash /> الأكواد</button>
+          <button onClick={() => setActiveSection('teachers')} className={activeSection === 'teachers' ? 'active' : ''}><GraduationCap /> المدرسين</button>
+          <button onClick={() => setActiveSection('logs')} className={activeSection === 'logs' ? 'active' : ''}><Database /> السجلات</button>
         </nav>
       </aside>
 
       <main className="main-content">
+        {/* قسم الإحصائيات */}
         {activeSection === 'stats' && (
-          <motion.div initial={{opacity:0}} animate={{opacity:1}} className="stats-wrapper">
+          <div className="stats-wrapper">
             <div className="stats-grid">
-                <StatCard icon={<Users />} label="طالب مسجل" value={stats.students} color="#00f2ff" />
-                <StatCard icon={<TrendingUp />} label="أرباح الشهر" value={`${allUsers.reduce((a,b)=>a+(b.totalSpent||0),0).toLocaleString()} EGP`} color="#00ff88" />
-                <StatCard icon={<Video />} label="كورس متاح" value={stats.courses} color="#7000ff" />
-                <StatCard icon={<Hash />} label="كود فعال" value={stats.codes} color="#ff007a" />
+              <StatCard icon={<Users />} label="طالب" value={stats.students} color="#00f2ff" />
+              <StatCard icon={<Video />} label="كورس" value={stats.courses} color="#7000ff" />
+              <StatCard icon={<BookOpen />} label="كتاب" value={stats.books} color="#ff007a" />
+              <StatCard icon={<Hash />} label="كود" value={stats.codes} color="#00ff88" />
             </div>
             <div className="chart-container glass">
-              <h3>نمو المنصة (طلاب جدد)</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="colorStudents" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#00f2ff" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#00f2ff" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-                  <XAxis dataKey="name" stroke="#888" />
-                  <YAxis stroke="#888" />
-                  <Tooltip contentStyle={{backgroundColor: '#111', border: '1px solid #333'}} />
-                  <Area type="monotone" dataKey="students" stroke="#00f2ff" fillOpacity={1} fill="url(#colorStudents)" />
-                </AreaChart>
-              </ResponsiveContainer>
+               <h3>نشاط المنصة</h3>
+               <ResponsiveContainer width="100%" height={250}>
+                  <AreaChart data={[{n:'S', v:400}, {n:'M', v:700}, {n:'T', v:1000}]}>
+                    <Area type="monotone" dataKey="v" stroke="#00f2ff" fill="rgba(0,242,255,0.1)" />
+                  </AreaChart>
+               </ResponsiveContainer>
             </div>
-          </motion.div>
+          </div>
         )}
 
+        {/* قسم الكورسات */}
+        {activeSection === 'content' && (
+          <div className="content-manager glass">
+            <div className="admin-form-grid">
+              <input placeholder="عنوان الكورس" onChange={e => setNewCourse({...newCourse, title: e.target.value})} />
+              <input placeholder="السعر" type="number" onChange={e => setNewCourse({...newCourse, price: e.target.value})} />
+              <input placeholder="رابط الصورة (Thumbnail)" onChange={e => setNewCourse({...newCourse, thumbnail: e.target.value})} />
+              <select onChange={e => setNewCourse({...newCourse, grade: e.target.value})}>
+                <option>1 ثانوي</option><option>2 ثانوي</option><option>3 ثانوي</option>
+              </select>
+              <button className="btn-primary" onClick={handlePublishCourse}><PackagePlus /> نشر الكورس</button>
+            </div>
+            <div className="items-list mt-4">
+              {courses.map(c => (
+                <div key={c.id} className="item-card glass">
+                  <span>{c.title} ({c.price} ج.م)</span>
+                  <button onClick={() => deleteItem('courses_metadata', c.id, c.title)}><Trash2 size={16}/></button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* قسم المكتبة */}
+        {activeSection === 'library' && (
+          <div className="library-manager glass">
+            <div className="admin-form-grid">
+              <input placeholder="اسم الكتاب" onChange={e => setNewBook({...newBook, title: e.target.value})} />
+              <input placeholder="رابط PDF" onChange={e => setNewBook({...newBook, pdfUrl: e.target.value})} />
+              <button className="btn-primary" onClick={handleAddBook}><Plus /> إضافة للكتاب</button>
+            </div>
+            <div className="items-list mt-4">
+              {books.map(b => (
+                <div key={b.id} className="item-card glass">
+                  <span>{b.title} - {b.grade}</span>
+                  <button onClick={() => deleteItem('library_books', b.id, b.title)}><Trash2 size={16}/></button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* قسم شؤون الطلاب (الموجود سابقاً مع التحسين) */}
         {activeSection === 'users' && (
-            <div className="users-section glass">
-                <div className="section-header">
-                    <h3><Users /> الطلاب والرقابة</h3>
-                    <div className="search-box">
-                        <Search size={18} /><input placeholder="بحث..." onChange={(e)=>setSearchTerm(e.target.value)} />
-                    </div>
-                </div>
-                <div className="table-responsive">
-                    <table className="admin-table">
-                        <thead>
-                            <tr><th>الطالب</th><th>المحفظة</th><th>الأجهزة</th><th>الحماية</th><th>إجراء</th></tr>
-                        </thead>
-                        <tbody>
-                            {allUsers.filter(u => u.name?.includes(searchTerm)).map(user => (
-                                <tr key={user.id} className={user.isBanned ? 'row-banned' : ''}>
-                                    <td>
-                                        <div className="u-cell" onClick={() => setSelectedUser(user)}>
-                                            <img src={`https://api.dicebear.com/7.x/bottts/svg?seed=${user.email}`} alt="" />
-                                            <div><p>{user.name}</p><small>{user.email}</small></div>
-                                        </div>
-                                    </td>
-                                    <td><span className="wallet-badge">{user.walletBalance || 0} EGP</span></td>
-                                    <td><button className="reset-btn" onClick={() => resetDevices(user.id, user.name)}><Smartphone size={14}/> Reset</button></td>
-                                    <td>
-                                        <button className={`ban-btn-small ${user.isBanned ? 'unban' : 'ban'}`} onClick={() => handleToggleBan(user.id, user.name, user.isBanned)}>
-                                            {user.isBanned ? <Unlock size={14}/> : <ShieldBan size={14}/>}
-                                            {user.isBanned ? "فك الحظر" : "حظر"}
-                                        </button>
-                                    </td>
-                                    <td><button className="icon-btn red" onClick={() => deleteItem('users', user.id, user.name)}><Trash size={16}/></button></td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+           <div className="users-section glass">
+              <div className="section-header">
+                <input className="search-input" placeholder="بحث باسم الطالب..." onChange={e => setSearchTerm(e.target.value)} />
+              </div>
+              <table className="admin-table">
+                <thead><tr><th>الطالب</th><th>المحفظة</th><th>الأجهزة</th><th>الإجراء</th></tr></thead>
+                <tbody>
+                  {allUsers.filter(u => u.name?.includes(searchTerm)).map(user => (
+                    <tr key={user.id}>
+                      <td onClick={() => setSelectedUser(user)} className="pointer">{user.name}</td>
+                      <td>{user.walletBalance || 0} ج.م</td>
+                      <td><button onClick={() => updateDoc(doc(db,"users",user.id), {deviceId:null})} className="btn-reset">تصفير</button></td>
+                      <td>
+                        <button className="btn-ban" onClick={() => updateDoc(doc(db,"users",user.id), {isBanned: !user.isBanned})}>
+                          {user.isBanned ? <Unlock size={14}/> : <ShieldBan size={14}/>}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+           </div>
         )}
 
-        {activeSection === 'logs' && (
-            <div className="logs-section glass">
-                <h3><Database size={20}/> سجل نشاط النظام</h3>
-                <div className="logs-list">
-                    {auditLogs.map(log => (
-                        <div key={log.id} className="log-item-nebula">
-                            <span className="log-time">{log.timestamp?.toDate().toLocaleTimeString()}</span>
-                            <span className="log-admin">{log.adminEmail}</span>
-                            <span className="log-action">{log.action}</span>
-                            <span className="log-details">{log.details}</span>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )}
-
-        {/* ... بقية الأقسام (Payments, Teachers, Content, Library, Codes) كما هي في كودك الأصلي مع دمج وظائف الحذف والـ Log ... */}
-        {activeSection === 'payments' && (
-          <motion.div initial={{opacity:0}} animate={{opacity:1}} className="payments-manager">
-             <div className="section-header"><h3><ShieldCheck color="#00ff88"/> مراجعة تحويلات فودافون كاش</h3></div>
-             <div className="requests-grid">
-                {paymentRequests.map(req => (
-                  <div key={req.id} className="payment-request-card glass">
-                    <div className="req-header">
-                       <span className={`type-tag ${req.courseId ? 'course' : 'wallet'}`}>{req.courseId ? 'تفعيل كورس' : 'شحن محفظة'}</span>
-                       <small>{new Date(req.date).toLocaleString('ar-EG')}</small>
-                    </div>
-                    <div className="req-body">
-                       <strong>{req.userName}</strong>
-                       <p>{req.courseName || `شحن: ${req.amount} ج.م`}</p>
-                       <div className="receipt-preview" onClick={() => window.open(req.receiptUrl, '_blank')}>
-                          <img src={req.receiptUrl} alt="إيصال" /><div className="overlay-zoom"><Eye size={20}/></div>
-                       </div>
-                    </div>
-                    <div className="req-footer">
-                       <button className="approve-btn" onClick={() => handleApprovePayment(req)}><CheckCircle size={16}/> موافقة</button>
-                       <button className="reject-btn" onClick={() => deleteItem('payment_requests', req.id, 'طلب دفع')}><Trash size={16}/> رفض</button>
-                    </div>
-                  </div>
-                ))}
-             </div>
-          </motion.div>
-        )}
-
+        {/* قسم الأكواد */}
         {activeSection === 'codes' && (
-            <div className="codes-manager">
-                <div className="control-card glass">
-                    <h3><Wallet size={20} color="gold"/> توليد أكواد وتصدير Excel</h3>
-                    <div className="gen-form">
-                        <input type="number" placeholder="العدد" onChange={e => setCodeSettings({...codeSettings, count: parseInt(e.target.value)})} />
-                        <select onChange={e => setCodeSettings({...codeSettings, type: e.target.value})}>
-                            <option value="course">تفعيل كورس</option><option value="wallet">شحن محفظة</option>
-                        </select>
-                        {codeSettings.type === 'course' ? (
-                          <select onChange={e => setCodeSettings({...codeSettings, targetId: e.target.value})}>
-                              <option value="">اختر الكورس...</option>
-                              {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-                          </select>
-                        ) : (
-                          <input type="number" placeholder="المبلغ" onChange={e => setCodeSettings({...codeSettings, amount: parseInt(e.target.value)})} />
-                        )}
-                        <button onClick={generateMassCodes} className="btn-gen"><Download size={16}/> إنشاء وتحميل</button>
-                    </div>
-                </div>
-                <div className="codes-display mt-4">
-                    <div className="codes-grid">
-                        {generatedCodes.slice(0, 30).map(code => (
-                            <div key={code.id} className={`code-pill ${code.isUsed ? 'used' : ''}`}>
-                                <code>{code.code}</code>
-                                <small>{code.type === 'wallet' ? `${code.amount}EGP` : 'Course'}</small>
-                                <button onClick={()=>navigator.clipboard.writeText(code.code)}><Copy size={12}/></button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+          <div className="codes-manager glass">
+            <div className="gen-form">
+              <input type="number" placeholder="العدد" onChange={e => setCodeSettings({...codeSettings, count: parseInt(e.target.value)})} />
+              <select onChange={e => setCodeSettings({...codeSettings, type: e.target.value})}>
+                <option value="course">كورس</option><option value="wallet">محفظة</option>
+              </select>
+              {codeSettings.type === 'course' && (
+                <select onChange={e => setCodeSettings({...codeSettings, targetId: e.target.value})}>
+                  <option>اختر الكورس</option>
+                  {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                </select>
+              )}
+              <button onClick={generateMassCodes} className="btn-primary">إنشاء Excel</button>
             </div>
+          </div>
+        )}
+
+        {/* سجل النشاط */}
+        {activeSection === 'logs' && (
+          <div className="logs-view glass">
+            {auditLogs.map(log => (
+              <div key={log.id} className="log-row">
+                <span className="time">{log.timestamp?.toDate().toLocaleTimeString()}</span>
+                <span className="action">{log.action}</span>
+                <span className="details">{log.details}</span>
+              </div>
+            ))}
+          </div>
         )}
       </main>
 
-      {/* مودال نشاط الطالب */}
+      {/* مودال تفاصيل الطالب */}
       <AnimatePresence>
         {selectedUser && (
-          <motion.div className="modal-overlay" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
-            <div className="activity-modal glass">
-                <div className="modal-header"><h3>نشاط: {selectedUser.name}</h3><button onClick={()=>setSelectedUser(null)}><X /></button></div>
-                <div className="modal-body">
-                    <div className="log-item"><Clock size={16}/> آخر ظهور: {selectedUser.lastLogin || 'غير متاح'}</div>
-                    <div className="log-item"><Smartphone size={16}/> كود الجهاز الأساسي: {selectedUser.deviceId || 'لا يوجد'}</div>
-                    <div className="log-item"><ShieldAlert size={16}/> حالة الحساب: {selectedUser.isBanned ? 'محظور' : 'نشط'}</div>
-                </div>
-            </div>
+          <motion.div className="modal-overlay" onClick={()=>setSelectedUser(null)}>
+            <motion.div className="activity-modal glass" onClick={e=>e.stopPropagation()}>
+              <h3>تفاصيل: {selectedUser.name}</h3>
+              <p>الإيميل: {selectedUser.email}</p>
+              <p>رقم الهاتف: {selectedUser.phone || 'غير مسجل'}</p>
+              <p>المحفظة: {selectedUser.walletBalance || 0} ج.م</p>
+              <button onClick={()=>setSelectedUser(null)} className="btn-close">إغلاق</button>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
