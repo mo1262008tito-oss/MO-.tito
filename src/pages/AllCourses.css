@@ -564,3 +564,366 @@
   padding: 100px 20px;
   color: var(--text-dim);
 }
+
+/* AllCourses.css - الإصدار المتجاوب الكامل 2026 */
+
+:root {
+  --primary-neon: #00f2ff;
+  --secondary-neon: #7000ff;
+  --bg-dark: #05070a;
+  --card-glass: rgba(255, 255, 255, 0.03);
+  --border-glass: rgba(255, 255, 255, 0.1);
+  --text-main: #ffffff;
+  --text-dim: #b0b0b0;
+}
+
+/* الأساسيات */
+.hs-viewport {
+  background-color: var(--bg-dark);
+  min-height: 100vh;
+  color: var(--text-main);
+  padding-bottom: 50px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.hero-grid-bg {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: 
+    radial-gradient(circle at 20% 30%, rgba(112, 0, 255, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(0, 242, 255, 0.05) 0%, transparent 50%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* الهيدر العلوي */
+.lib-header {
+  padding: 20px 5%;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-glass);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.wallet-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 215, 0, 0.1);
+  padding: 8px 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  font-weight: bold;
+  color: #ffd700;
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #fff, var(--primary-neon));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 1.5rem;
+}
+
+/* أدوات التحكم (Tabs & Search) */
+.lib-controls-container {
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.level-tabs, .view-mode-toggle {
+  display: flex;
+  gap: 10px;
+  background: var(--card-glass);
+  padding: 5px;
+  border-radius: 15px;
+  width: fit-content;
+  border: 1px solid var(--border-glass);
+}
+
+.level-tabs button, .view-mode-toggle button {
+  padding: 10px 25px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: 0.3s;
+  font-weight: 600;
+}
+
+.level-tabs button.active, .view-mode-toggle button.active {
+  background: var(--secondary-neon);
+  color: white;
+  box-shadow: 0 0 15px rgba(112, 0, 255, 0.4);
+}
+
+/* شريط البحث */
+.search-bar-premium {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+}
+
+.search-bar-premium input {
+  width: 100%;
+  padding: 15px 45px 15px 20px;
+  background: var(--card-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: 15px;
+  color: white;
+  outline: none;
+  transition: 0.3s;
+}
+
+.search-bar-premium input:focus {
+  border-color: var(--primary-neon);
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
+}
+
+.s-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-dim);
+}
+
+/* شريط الصفوف الدراسية */
+.hs-navigation-bar {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  scrollbar-width: none; /* Firefox */
+}
+
+.hs-navigation-bar::-webkit-scrollbar { display: none; }
+
+.nav-item {
+  padding: 8px 20px;
+  background: var(--card-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+  color: var(--text-dim);
+}
+
+.nav-item.active {
+  border-color: var(--primary-neon);
+  color: var(--primary-neon);
+  background: rgba(0, 242, 255, 0.05);
+}
+
+/* شبكة الكورسات */
+.hs-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.premium-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+/* الكرت الذكي */
+.course-card-v3 {
+  background: var(--card-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+  transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.course-card-v3:hover {
+  border-color: var(--primary-neon);
+  transform: translateY(-10px);
+}
+
+.card-top {
+  position: relative;
+  height: 180px;
+}
+
+.card-top img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+
+.card-badge {
+  position: absolute;
+  top: 15px; right: 15px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  padding: 5px 12px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.play-btn-circle {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  opacity: 0;
+  transition: 0.3s;
+}
+
+.course-card-v3:hover .play-btn-circle {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.card-body { padding: 20px; }
+
+.course-title {
+  margin: 0 0 15px 0;
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+
+.instructor-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.mini-avatar {
+  width: 30px; height: 30px;
+  background: var(--secondary-neon);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-glass);
+  padding-top: 15px;
+}
+
+.price-val {
+  color: var(--primary-neon);
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.free-badge {
+  color: #00ff88;
+  font-weight: bold;
+}
+
+.action-btn {
+  background: var(--primary-neon);
+  color: #000;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.3s;
+}
+
+.btn-enrolled {
+  background: transparent;
+  border: 1px solid var(--primary-neon);
+  color: var(--primary-neon);
+}
+
+/* --- Responsive (Mobile App Mode) --- */
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .text-gradient { font-size: 1.2rem; }
+
+  .lib-controls-container {
+    margin: 15px auto;
+  }
+
+  .level-tabs, .view-mode-toggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .level-tabs button, .view-mode-toggle button {
+    flex: 1;
+    padding: 10px 5px;
+    font-size: 0.85rem;
+  }
+
+  .premium-grid {
+    grid-template-columns: 1fr; /* كورس واحد في الصف */
+    gap: 20px;
+  }
+
+  .course-card-v3 {
+    border-radius: 18px;
+  }
+
+  .card-top { height: 200px; }
+
+  /* تثبيت شريط الرصيد في الموبايل بشكل مميز */
+  .wallet-status {
+    width: 100%;
+    justify-content: center;
+    order: 2;
+  }
+
+  /* تحسين شريط التنقل السفلي للهواتف */
+  .hs-navigation-bar {
+    padding: 5px 0;
+  }
+}
+
+/* لودر التحميل */
+.hs-loader-overlay {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: var(--bg-dark);
+}
+
+.spin {
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
