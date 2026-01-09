@@ -8,7 +8,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import Navbar from './components/Navbar';
 import ParticlesBg from './components/ParticlesBg';
 
-// الصفحات (تأكد من وجود كل هذه الملفات في مجلد pages)
+// الصفحات
 import Home from './pages/Home';
 import HighSchool from './pages/HighSchool';
 import AdminDash from './pages/AdminDash';
@@ -20,6 +20,8 @@ import CoursePlayer from './pages/CoursePlayer';
 import Religious from './pages/Religious';
 import About from './pages/About';
 import Library from './pages/Library';
+// --- إضافة صفحة التفعيل الجديدة هنا ---
+import ActivationPage from './pages/ActivationPage'; 
 
 import './Global.css';
 
@@ -38,7 +40,6 @@ function App() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        // جلب بيانات المستخدم لحظياً (الرتبة، النقاط، الكورسات المشترك بها)
         const userDocRef = doc(db, "users", currentUser.uid);
         const unsubDoc = onSnapshot(userDocRef, (docSnap) => {
           if (docSnap.exists()) {
@@ -61,12 +62,11 @@ function App() {
   return (
     <Router>
       <ParticlesBg /> 
-      {/* تمرير userData للـ Navbar لتغيير الأزرار حسب الرتبة (أدمن/طالب) */}
       <Navbar user={user} userData={userData} />
       
       <main className="universal-page-container">
         <Routes>
-          {/* 1. المسارات العامة (متاحة للجميع) */}
+          {/* 1. المسارات العامة */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={!user ? <Login /> : <Navigate to="/student-dash" />} />
           <Route path="/about" element={<About />} />
@@ -87,27 +87,33 @@ function App() {
             </ProtectedRoute>
           } />
 
+          {/* --- مسار تفعيل الكورس (فودافون كاش / كود) --- */}
+          <Route path="/activate/:courseId" element={
+            <ProtectedRoute isActive={!!user} loading={loading}>
+              <ActivationPage />
+            </ProtectedRoute>
+          } />
+
           <Route path="/course/:id" element={
             <ProtectedRoute isActive={!!user} loading={loading}>
               <CoursePlayer />
             </ProtectedRoute>
           } />
 
-          {/* 3. مسار المعلم (صلاحية teacher) */}
+          {/* 3. مسار المعلم */}
           <Route path="/teacher-dash" element={
             <ProtectedRoute isActive={userData?.role === 'teacher' || userData?.role === 'admin'} loading={loading} redirectPath="/">
               <TeacherDash />
             </ProtectedRoute>
           } />
           
-          {/* 4. مسار الإدارة (صلاحية admin فقط) */}
+          {/* 4. مسار الإدارة */}
           <Route path="/admin" element={
             <ProtectedRoute isActive={userData?.role === 'admin'} loading={loading} redirectPath="/">
               <AdminDash />
             </ProtectedRoute>
           } />
           
-          {/* توجيه ذكي لأي مسار خاطئ */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>
@@ -116,5 +122,4 @@ function App() {
 }
 
 export default App;
-
 
