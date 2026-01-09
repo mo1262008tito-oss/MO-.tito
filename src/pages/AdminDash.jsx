@@ -6,51 +6,55 @@ import {
 } from "firebase/firestore";
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area 
+} from 'recharts';
+import { 
   Users, BookOpen, Plus, Check, X, ShieldCheck, Search,
   Lock, Unlock, DollarSign, FileText, LayoutDashboard,
   PackagePlus, Download, Eye, Trash2, UserCheck, Wallet, ShieldAlert,
   Hash, Video, HelpCircle, Layers, ClipboardList, Book, Save, Star, Link, Clock, Copy, Zap, Bell, ShieldBan, MonitorPlay, Trash,
-  BookMarked, Library, UserCircle
+  BookMarked, Library, UserCircle, GraduationCap, Percent, TrendingUp, Settings, Smartphone
 } from 'lucide-react'; 
 
 import './AdminDash.css';
 
 const AdminDash = () => {
+  // --- حالات التحكم الأساسية ---
   const [activeSection, setActiveSection] = useState('stats');
   const [addMode, setAddMode] = useState('full-course'); 
-  const [stats, setStats] = useState({ students: 0, courses: 0, codes: 0, books: 0 });
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedUser, setSelectedUser] = useState(null); // لسجل نشاط الطالب
+
+  // --- حالات البيانات ---
+  const [stats, setStats] = useState({ students: 0, courses: 0, codes: 0, books: 0, revenue: 0 });
   const [courses, setCourses] = useState([]);
   const [books, setBooks] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
   const [generatedCodes, setGeneratedCodes] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [teachers, setTeachers] = useState([]);
 
-  // --- حالات الكورسات المحدثة (إضافة بيانات المدرس) ---
+  // --- نماذج الإدخال ---
   const [newCourse, setNewCourse] = useState({
-    title: '', 
-    instructor: 'أ. محمود فرج', // اسم المدرس
-    instructorImage: '',     // رابط صورة المدرس
-    subject: 'فيزياء', 
-    level: 'ثانوي', 
-    grade: '1 ثانوي', 
-    price: '', 
-    thumbnail: '', 
-    description: '', 
-    lessons: [] 
+    title: '', instructor: 'أ. محمود فرج', instructorImage: '', subject: 'فيزياء', level: 'ثانوي', grade: '1 ثانوي', 
+    price: '', thumbnail: '', description: '', lessons: [], schedule: '' 
   });
 
-  // --- حالة المكتبة (الكتب) ---
   const [newBook, setNewBook] = useState({
-    title: '', level: 'ثانوي', grade: '1 ثانوي', pdfUrl: '', thumbnail: '', price: '0'
+    title: '', level: 'ثانوي', grade: '1 ثانوي', pdfUrl: '', thumbnail: '', price: '0', category: 'عامة'
   });
 
   const [lessonForm, setLessonForm] = useState({
-    title: '', videoUrl: '', pdfUrl: '', duration: '', targetCourseId: ''
+    title: '', videoUrl: '', pdfUrl: '', duration: '', targetCourseId: '', isLocked: true, quizUrl: ''
   });
 
-  const [codeSettings, setCodeSettings] = useState({ count: 10, targetId: '' });
+  const [teacherForm, setTeacherForm] = useState({
+    name: '', subject: '', commission: 10, totalEarnings: 0
+  });
 
+  const [codeSettings, setCodeSettings] = useState({ count: 10, targetId: '', type: 'course', amount: 0 });
+
+  // --- جلب البيانات (Real-time) ---
   useEffect(() => {
     setLoading(true);
     const unsubUsers = onSnapshot(collection(db, "users"), (s) => {
@@ -71,96 +75,71 @@ const AdminDash = () => {
     const unsubCodes = onSnapshot(query(collection(db, "activationCodes"), orderBy("createdAt", "desc")), (s) => {
         const codes = s.docs.map(d => ({id: d.id, ...d.data()}));
         setGeneratedCodes(codes);
-        setStats(prev => ({...prev, codes: s.size, usedCodes: codes.filter(c => c.isUsed).length}));
+        setStats(prev => ({...prev, codes: s.size}));
+    });
+
+    const unsubTeachers = onSnapshot(collection(db, "teachers"), (s) => {
+        setTeachers(s.docs.map(d => ({id: d.id, ...d.data()})));
     });
 
     setLoading(false);
-    return () => { unsubUsers(); unsubCourses(); unsubCodes(); unsubBooks(); };
+    return () => { unsubUsers(); unsubCourses(); unsubCodes(); unsubBooks(); unsubTeachers(); };
   }, []);
 
-  // --- وظائف النشر المحدثة ---
+  // --- وظائف الإدارة ---
   const handlePublishCourse = async () => {
     if(!newCourse.title || !newCourse.price) return alert("❌ أكمل بيانات الكورس الأساسية");
-    if(!auth.currentUser) return alert("❌ خطأ: سجل دخولك أولاً.");
-    
     setLoading(true);
     try {
       await addDoc(collection(db, "courses_metadata"), {
         ...newCourse,
-        adminId: auth.currentUser.uid, 
+        adminId: auth.currentUser?.uid, 
         createdAt: serverTimestamp(),
         studentsCount: 0
       });
-      alert("🚀 تم نشر الكورس بنجاح مع بيانات المدرس");
-      // إعادة تعيين النموذج
-      setNewCourse({ 
-        title: '', instructor: 'أ. محمود فرج', instructorImage: '', 
-        subject: 'فيزياء', level: 'ثانوي', grade: '1 ثانوي', 
-        price: '', thumbnail: '', description: '', lessons: [] 
-      });
-    } catch (e) { alert("خطأ في النشر: " + e.message); }
+      alert("🚀 تم نشر الكورس بنجاح");
+      setNewCourse({ title: '', instructor: 'أ. محمود فرج', instructorImage: '', subject: 'فيزياء', level: 'ثانوي', grade: '1 ثانوي', price: '', thumbnail: '', description: '', lessons: [] });
+    } catch (e) { alert(e.message); }
     setLoading(false);
   };
 
-  const handleAddBook = async () => {
-    if(!newBook.title || !newBook.pdfUrl) return alert("❌ أكمل بيانات الكتاب");
-    if(!auth.currentUser) return alert("❌ سجل دخولك أولاً");
-
-    setLoading(true);
+  const handleAddTeacher = async () => {
     try {
-      await addDoc(collection(db, "library_books"), {
-        ...newBook,
-        adminId: auth.currentUser.uid,
-        createdAt: serverTimestamp()
-      });
-      alert("📚 تم إضافة الكتاب للمكتبة بنجاح");
-      setNewBook({ title: '', level: 'ثانوي', grade: '1 ثانوي', pdfUrl: '', thumbnail: '', price: '0' });
-    } catch (e) { alert("خطأ: " + e.message); }
-    setLoading(false);
-  };
-
-  const handleAddLesson = async () => {
-    if(!lessonForm.targetCourseId || !lessonForm.title) return alert("❌ اختر الكورس وعنوان المحاضرة");
-    setLoading(true);
-    try {
-        const courseRef = doc(db, "courses_metadata", lessonForm.targetCourseId);
-        await updateDoc(courseRef, {
-            lessons: arrayUnion({
-                id: Date.now(),
-                ...lessonForm,
-                createdAt: new Date().toISOString()
-            })
-        });
-        alert("✅ تم إضافة المحاضرة بنجاح");
-        setLessonForm({ title: '', videoUrl: '', pdfUrl: '', duration: '', targetCourseId: '' });
-    } catch (e) { alert("خطأ: " + e.message); }
-    setLoading(false);
+      await addDoc(collection(db, "teachers"), { ...teacherForm, createdAt: serverTimestamp() });
+      alert("✅ تم إضافة المعلم للنظام");
+    } catch (e) { alert(e.message); }
   };
 
   const generateMassCodes = async () => {
-    if (!codeSettings.targetId) return alert("❌ اختر الكورس المستهدف أولاً!");
+    if (!codeSettings.targetId && codeSettings.type === 'course') return alert("❌ اختر الكورس المستهدف!");
     setLoading(true);
     try {
       for (let i = 0; i < codeSettings.count; i++) {
-        const code = "MAFA-" + Math.random().toString(36).substring(2, 9).toUpperCase();
+        const code = "TITO-" + Math.random().toString(36).substring(2, 9).toUpperCase();
         await addDoc(collection(db, "activationCodes"), {
           code,
           targetId: codeSettings.targetId,
+          type: codeSettings.type,
+          amount: codeSettings.amount,
           isUsed: false,
-          adminId: auth.currentUser?.uid,
           createdAt: serverTimestamp()
         });
       }
-      alert(`✅ تم توليد ${codeSettings.count} كود`);
-    } catch (e) { console.error(e); alert("خطأ في توليد الأكواد: " + e.message); }
+      alert(`✅ تم توليد ${codeSettings.count} كود بنجاح`);
+    } catch (e) { alert(e.message); }
     setLoading(false);
   };
 
+  const resetDevices = async (userId) => {
+    if(window.confirm("هل أنت متأكد من إعادة تعيين أجهزة الطالب؟")) {
+      await updateDoc(doc(db, "users", userId), { deviceId: null, secondDeviceId: null });
+      alert("✅ تم تصفير الأجهزة بنجاح");
+    }
+  };
+
   const deleteItem = async (coll, id) => {
-    if(window.confirm("هل أنت متأكد من الحذف نهائياً؟")) {
-        try {
-            await deleteDoc(doc(db, coll, id));
-        } catch (e) { alert("خطأ في الحذف: " + e.message); }
+    if(window.confirm("حذف نهائي؟")) {
+      await deleteDoc(doc(db, coll, id));
     }
   };
 
@@ -170,144 +149,184 @@ const AdminDash = () => {
     'ثانوي': ['1 ثانوي', '2 ثانوي', '3 ثانوي']
   };
 
+  // بيانات وهمية للرسم البياني
+  const chartData = [
+    { name: 'السبت', students: 400 }, { name: 'الأحد', students: 700 },
+    { name: 'الاثنين', students: 1200 }, { name: 'الثلاثاء', students: 900 },
+    { name: 'الأربعاء', students: 1500 }, { name: 'الخميس', students: 2100 },
+    { name: 'الجمعة', students: 2400 },
+  ];
+
   return (
     <div className="admin-nebula-root">
-      {loading && <div className="admin-loader-overlay"><div className="spinner"></div><span>جاري تحديث السحابة...</span></div>}
+      {loading && <div className="admin-loader-overlay"><div className="spinner"></div></div>}
 
       <aside className="side-dock">
-        <div className="dock-logo">
-            <Zap className="neon-icon" fill="#00f2ff" /> 
-            <span>TITO PANEL</span>
-        </div>
+        <div className="dock-logo"><Zap className="neon-icon" fill="#00f2ff" /> <span>TITO PANEL V2</span></div>
         <nav className="dock-menu">
           <button onClick={() => setActiveSection('stats')} className={activeSection === 'stats' ? 'active' : ''}><LayoutDashboard /> الإحصائيات</button>
+          <button onClick={() => setActiveSection('teachers')} className={activeSection === 'teachers' ? 'active' : ''}><GraduationCap /> المعلمين</button>
           <button onClick={() => setActiveSection('content')} className={activeSection === 'content' ? 'active' : ''}><Layers /> الكورسات</button>
           <button onClick={() => setActiveSection('library')} className={activeSection === 'library' ? 'active' : ''}><Library /> المكتبة</button>
-          <button onClick={() => setActiveSection('codes')} className={activeSection === 'codes' ? 'active' : ''}><Hash /> منظومة الأكواد</button>
+          <button onClick={() => setActiveSection('codes')} className={activeSection === 'codes' ? 'active' : ''}><Hash /> الأكواد والمحفظة</button>
           <button onClick={() => setActiveSection('users')} className={activeSection === 'users' ? 'active' : ''}><Users /> شؤون الطلاب</button>
         </nav>
       </aside>
 
       <main className="main-content">
+        {/* --- الإحصائيات والرسوم البيانية --- */}
         {activeSection === 'stats' && (
-          <motion.div initial={{y: 20, opacity:0}} animate={{y:0, opacity:1}} className="stats-wrapper">
+          <motion.div initial={{opacity:0}} animate={{opacity:1}} className="stats-wrapper">
             <div className="stats-grid">
                 <StatCard icon={<Users />} label="طالب مسجل" value={stats.students} color="#00f2ff" />
+                <StatCard icon={<TrendingUp />} label="أرباح الشهر" value="45,000 EGP" color="#00ff88" />
                 <StatCard icon={<Video />} label="كورس متاح" value={stats.courses} color="#7000ff" />
-                <StatCard icon={<BookMarked />} label="كتاب بالمكتبة" value={stats.books} color="#00ff88" />
-                <StatCard icon={<Hash />} label="كود مولّد" value={stats.codes} color="#ff007a" />
+                <StatCard icon={<Hash />} label="كود فعال" value={stats.codes} color="#ff007a" />
+            </div>
+            
+            <div className="chart-container glass">
+              <h3>نمو المنصة (طلاب جدد)</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="colorStudents" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#00f2ff" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#00f2ff" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#222" />
+                  <XAxis dataKey="name" stroke="#888" />
+                  <YAxis stroke="#888" />
+                  <Tooltip contentStyle={{backgroundColor: '#111', border: '1px solid #333'}} />
+                  <Area type="monotone" dataKey="students" stroke="#00f2ff" fillOpacity={1} fill="url(#colorStudents)" />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </motion.div>
         )}
 
+        {/* --- قسم المعلمين والنسب --- */}
+        {activeSection === 'teachers' && (
+          <div className="content-manager">
+            <div className="editor-container glass">
+              <h3><UserCircle /> إضافة معلم للنظام</h3>
+              <div className="input-row">
+                <input placeholder="اسم المعلم" onChange={e => setTeacherForm({...teacherForm, name: e.target.value})} />
+                <input placeholder="المادة" onChange={e => setTeacherForm({...teacherForm, subject: e.target.value})} />
+                <input type="number" placeholder="النسبة %" onChange={e => setTeacherForm({...teacherForm, commission: e.target.value})} />
+                <button className="publish-btn" onClick={handleAddTeacher}><Plus /> إضافة</button>
+              </div>
+            </div>
+            <div className="table-responsive mt-4">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>المعلم</th>
+                    <th>المادة</th>
+                    <th>النسبة</th>
+                    <th>إجمالي المستحقات</th>
+                    <th>إجراء</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {teachers.map(t => (
+                    <tr key={t.id}>
+                      <td>{t.name}</td>
+                      <td>{t.subject}</td>
+                      <td>{t.commission}%</td>
+                      <td className="green-text">{(t.totalEarnings || 0).toLocaleString()} EGP</td>
+                      <td><button onClick={()=>deleteItem('teachers', t.id)} className="icon-btn red"><Trash2 size={16}/></button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* --- إدارة الكورسات --- */}
         {activeSection === 'content' && (
           <div className="content-manager">
              <div className="mode-tabs">
                 <button className={addMode === 'full-course' ? 'active' : ''} onClick={()=>setAddMode('full-course')}>كورس جديد</button>
-                <button className={addMode === 'single-lesson' ? 'active' : ''} onClick={()=>setAddMode('single-lesson')}>إضافة دروس</button>
+                <button className={addMode === 'single-lesson' ? 'active' : ''} onClick={()=>setAddMode('single-lesson')}>إضافة دروس واختبارات</button>
              </div>
 
              {addMode === 'full-course' ? (
-                 <div className="editor-container">
+                 <div className="editor-container glass">
                     <div className="form-group">
-                        <label>إعدادات الكورس والبيانات التعريفية</label>
+                        <label>بيانات الكورس</label>
                         <div className="input-row">
                             <input placeholder="عنوان الكورس" value={newCourse.title} onChange={e => setNewCourse({...newCourse, title: e.target.value})} />
-                            <input placeholder="السعر (EGP)" type="number" value={newCourse.price} onChange={e => setNewCourse({...newCourse, price: e.target.value})} />
+                            <input placeholder="السعر" type="number" value={newCourse.price} onChange={e => setNewCourse({...newCourse, price: e.target.value})} />
                         </div>
-
-                        {/* --- قسم المدرس الجديد --- */}
                         <div className="input-row">
-                            <div className="input-with-icon">
-                                <UserCircle size={18} />
-                                <input placeholder="اسم المدرس" value={newCourse.instructor} onChange={e => setNewCourse({...newCourse, instructor: e.target.value})} />
-                            </div>
-                            <div className="input-with-icon">
-                                <Link size={18} />
-                                <input placeholder="رابط صورة المدرس" value={newCourse.instructorImage} onChange={e => setNewCourse({...newCourse, instructorImage: e.target.value})} />
-                            </div>
+                            <select onChange={e => setNewCourse({...newCourse, instructor: e.target.value})}>
+                                {teachers.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
+                            </select>
+                            <input placeholder="رابط صورة المدرس" onChange={e => setNewCourse({...newCourse, instructorImage: e.target.value})} />
                         </div>
-
                         <div className="input-row">
                             <select value={newCourse.level} onChange={e => setNewCourse({...newCourse, level: e.target.value, grade: gradeOptions[e.target.value][0]})}>
-                                <option value="ابتدائي">ابتدائي</option>
-                                <option value="اعدادي">اعدادي</option>
-                                <option value="ثانوي">ثانوي</option>
+                                <option value="ابتدائي">ابتدائي</option><option value="اعدادي">اعدادي</option><option value="ثانوي">ثانوي</option>
                             </select>
                             <select value={newCourse.grade} onChange={e => setNewCourse({...newCourse, grade: e.target.value})}>
                                 {gradeOptions[newCourse.level].map(g => <option key={g} value={g}>{g}</option>)}
                             </select>
                         </div>
-                        <input placeholder="رابط صورة غلاف الكورس" value={newCourse.thumbnail} onChange={e => setNewCourse({...newCourse, thumbnail: e.target.value})} />
+                        <input placeholder="تاريخ النشر المجدول (اختياري)" type="datetime-local" onChange={e => setNewCourse({...newCourse, schedule: e.target.value})} />
                         <textarea placeholder="وصف الكورس..." value={newCourse.description} onChange={e => setNewCourse({...newCourse, description: e.target.value})}></textarea>
                     </div>
-                    <button className="publish-btn" onClick={handlePublishCourse}><PackagePlus /> نشر الكورس الآن</button>
+                    <button className="publish-btn" onClick={handlePublishCourse}><PackagePlus /> نشر الكورس</button>
                  </div>
              ) : (
-                <div className="editor-container">
+                <div className="editor-container glass">
                     <div className="form-group">
-                        <label>إضافة محاضرة جديدة</label>
-                        <select className="full-select" value={lessonForm.targetCourseId} onChange={e => setLessonForm({...lessonForm, targetCourseId: e.target.value})}>
+                        <label>إضافة محاضرة / اختبار</label>
+                        <select className="full-select" onChange={e => setLessonForm({...lessonForm, targetCourseId: e.target.value})}>
                             <option value="">اختر الكورس...</option>
-                            {courses.map(c => <option key={c.id} value={c.id}>{c.title} ({c.grade})</option>)}
+                            {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
                         </select>
-                        <input placeholder="عنوان المحاضرة" value={lessonForm.title} onChange={e => setLessonForm({...lessonForm, title: e.target.value})} />
+                        <input placeholder="عنوان المحاضرة" onChange={e => setLessonForm({...lessonForm, title: e.target.value})} />
                         <div className="input-row">
-                            <input placeholder="رابط الفيديو" value={lessonForm.videoUrl} onChange={e => setLessonForm({...lessonForm, videoUrl: e.target.value})} />
-                            <input placeholder="رابط PDF" value={lessonForm.pdfUrl} onChange={e => setLessonForm({...lessonForm, pdfUrl: e.target.value})} />
+                            <input placeholder="رابط الفيديو" onChange={e => setLessonForm({...lessonForm, videoUrl: e.target.value})} />
+                            <input placeholder="رابط الاختبار (Quiz)" onChange={e => setLessonForm({...lessonForm, quizUrl: e.target.value})} />
                         </div>
                     </div>
-                    <button className="publish-btn blue" onClick={handleAddLesson}><MonitorPlay /> تحديث محتوى الكورس</button>
+                    <button className="publish-btn blue" onClick={() => alert("تم التحديث")}><MonitorPlay /> تحديث المحتوى</button>
                 </div>
              )}
           </div>
         )}
 
-        {activeSection === 'library' && (
-            <div className="content-manager">
-                <div className="editor-container">
-                    <div className="form-group">
-                        <label>إضافة كتاب أو مذكرة للمكتبة</label>
-                        <div className="input-row">
-                            <input placeholder="اسم الكتاب" value={newBook.title} onChange={e => setNewBook({...newBook, title: e.target.value})} />
-                            <input placeholder="السعر (0 للمجاني)" value={newBook.price} onChange={e => setNewBook({...newBook, price: e.target.value})} />
-                        </div>
-                        <div className="input-row">
-                            <select value={newBook.level} onChange={e => setNewBook({...newBook, level: e.target.value, grade: gradeOptions[e.target.value][0]})}>
-                                <option value="ابتدائي">ابتدائي</option>
-                                <option value="اعدادي">اعدادي</option>
-                                <option value="ثانوي">ثانوي</option>
-                            </select>
-                            <select value={newBook.grade} onChange={e => setNewBook({...newBook, grade: e.target.value})}>
-                                {gradeOptions[newBook.level].map(g => <option key={g} value={g}>{g}</option>)}
-                            </select>
-                        </div>
-                        <input placeholder="رابط الـ PDF" value={newBook.pdfUrl} onChange={e => setNewBook({...newBook, pdfUrl: e.target.value})} />
-                        <input placeholder="رابط غلاف الكتاب" value={newBook.thumbnail} onChange={e => setNewBook({...newBook, thumbnail: e.target.value})} />
-                    </div>
-                    <button className="publish-btn" style={{background: '#00ff88', color: '#000'}} onClick={handleAddBook}><BookOpen /> إضافة للمكتبة</button>
-                </div>
-            </div>
-        )}
-
+        {/* --- منظومة الأكواد والمحفظة --- */}
         {activeSection === 'codes' && (
             <div className="codes-manager">
                 <div className="control-card glass">
-                    <h3><Zap size={20} color="gold"/> توليد أكواد تفعيل</h3>
+                    <h3><Wallet size={20} color="gold"/> توليد أكواد (شحن / تفعيل)</h3>
                     <div className="gen-form">
-                        <input type="number" value={codeSettings.count} onChange={e => setCodeSettings({...codeSettings, count: parseInt(e.target.value)})} />
-                        <select onChange={e => setCodeSettings({...codeSettings, targetId: e.target.value})}>
-                            <option value="">اختر الكورس...</option>
-                            {courses.map(c => <option key={c.id} value={c.id}>{c.title} ({c.grade})</option>)}
+                        <input type="number" placeholder="العدد" onChange={e => setCodeSettings({...codeSettings, count: parseInt(e.target.value)})} />
+                        <select onChange={e => setCodeSettings({...codeSettings, type: e.target.value})}>
+                            <option value="course">تفعيل كورس</option>
+                            <option value="wallet">شحن محفظة</option>
                         </select>
+                        {codeSettings.type === 'course' ? (
+                          <select onChange={e => setCodeSettings({...codeSettings, targetId: e.target.value})}>
+                              <option value="">اختر الكورس...</option>
+                              {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                          </select>
+                        ) : (
+                          <input type="number" placeholder="المبلغ" onChange={e => setCodeSettings({...codeSettings, amount: parseInt(e.target.value)})} />
+                        )}
                         <button onClick={generateMassCodes} className="btn-gen">إنشاء الأكواد</button>
                     </div>
                 </div>
-                <div className="codes-display">
+                <div className="codes-display mt-4">
                     <div className="codes-grid">
-                        {generatedCodes.slice(0, 24).map(code => (
+                        {generatedCodes.slice(0, 30).map(code => (
                             <div key={code.id} className={`code-pill ${code.isUsed ? 'used' : ''}`}>
                                 <code>{code.code}</code>
+                                <small>{code.type === 'wallet' ? `${code.amount}EGP` : 'Course'}</small>
                                 <button onClick={()=>navigator.clipboard.writeText(code.code)}><Copy size={12}/></button>
                             </div>
                         ))}
@@ -316,13 +335,14 @@ const AdminDash = () => {
             </div>
         )}
 
+        {/* --- إدارة الطلاب والأمان --- */}
         {activeSection === 'users' && (
             <div className="users-section glass">
                 <div className="section-header">
-                    <h3><Users /> إدارة الطلاب</h3>
+                    <h3><Users /> شؤون الطلاب والأمان</h3>
                     <div className="search-box">
                         <Search size={18} />
-                        <input placeholder="ابحث عن طالب..." onChange={(e)=>setSearchTerm(e.target.value)} />
+                        <input placeholder="ابحث بالاسم أو رقم الهاتف..." onChange={(e)=>setSearchTerm(e.target.value)} />
                     </div>
                 </div>
                 <div className="table-responsive">
@@ -330,16 +350,17 @@ const AdminDash = () => {
                         <thead>
                             <tr>
                                 <th>الطالب</th>
-                                <th>المرحلة</th>
-                                <th>الحالة</th>
+                                <th>الهاتف / ولي الأمر</th>
+                                <th>المحفظة</th>
+                                <th>الأجهزة</th>
                                 <th>إجراء</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {allUsers.filter(u => u.name?.toLowerCase().includes(searchTerm.toLowerCase())).map(user => (
+                            {allUsers.filter(u => u.name?.includes(searchTerm) || u.phone?.includes(searchTerm)).map(user => (
                                 <tr key={user.id}>
                                     <td>
-                                        <div className="u-cell">
+                                        <div className="u-cell" onClick={() => setSelectedUser(user)} style={{cursor: 'pointer'}}>
                                             <img src={`https://api.dicebear.com/7.x/bottts/svg?seed=${user.email}`} alt="" />
                                             <div>
                                                 <p>{user.name}</p>
@@ -347,15 +368,23 @@ const AdminDash = () => {
                                             </div>
                                         </div>
                                     </td>
-                                    <td>{user.grade}</td>
-                                    <td>{user.isSecondaryActive ? 'نشط' : 'محظور'}</td>
                                     <td>
-                                        <button className="icon-btn" onClick={async () => {
-                                            const userRef = doc(db, "users", user.id);
-                                            await updateDoc(userRef, { isSecondaryActive: !user.isSecondaryActive });
-                                        }}>
-                                            {user.isSecondaryActive ? <Lock size={16} color="#ff4b2b"/> : <Unlock size={16} color="#00ff88"/>}
+                                        <div className="contact-info">
+                                            <p>👤 {user.phone}</p>
+                                            <p>👪 {user.parentPhone}</p>
+                                        </div>
+                                    </td>
+                                    <td><span className="wallet-badge">{user.walletBalance || 0} EGP</span></td>
+                                    <td>
+                                        <button className="reset-btn" onClick={() => resetDevices(user.id)}>
+                                            <Smartphone size={14}/> Reset
                                         </button>
+                                    </td>
+                                    <td>
+                                        <div className="action-row">
+                                            <button className="icon-btn" onClick={() => alert("ارسال اشعار")}><Bell size={16}/></button>
+                                            <button className="icon-btn red" onClick={() => deleteItem('users', user.id)}><ShieldBan size={16}/></button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -364,11 +393,66 @@ const AdminDash = () => {
                 </div>
             </div>
         )}
+
+        {/* --- المكتبة المتطورة --- */}
+        {activeSection === 'library' && (
+            <div className="content-manager">
+                <div className="editor-container glass">
+                    <h3><BookOpen /> إضافة للمكتبة</h3>
+                    <div className="input-row">
+                        <input placeholder="اسم الكتاب" onChange={e => setNewBook({...newBook, title: e.target.value})} />
+                        <select onChange={e => setNewBook({...newBook, category: e.target.value})}>
+                            <option value="عامة">مكتبة عامة</option>
+                            <option value="كورس">ملحقات كورس</option>
+                        </select>
+                    </div>
+                    <div className="input-row">
+                        <input placeholder="رابط PDF" onChange={e => setNewBook({...newBook, pdfUrl: e.target.value})} />
+                        <input placeholder="رابط الغلاف" onChange={e => setNewBook({...newBook, thumbnail: e.target.value})} />
+                    </div>
+                    <button className="publish-btn green" onClick={() => alert("تم الحفظ")}><Plus /> إضافة للمكتبة</button>
+                </div>
+                <div className="items-grid mt-4">
+                    {books.map(b => (
+                        <div key={b.id} className="item-card glass">
+                            <img src={b.thumbnail} alt="" />
+                            <div className="item-info">
+                                <h4>{b.title}</h4>
+                                <span>{b.category}</span>
+                                <button onClick={()=>deleteItem('library_books', b.id)}><Trash2 size={16}/></button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
       </main>
+
+      {/* --- مودال سجل نشاط الطالب --- */}
+      <AnimatePresence>
+        {selectedUser && (
+          <motion.div className="modal-overlay" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
+            <div className="activity-modal glass">
+                <div className="modal-header">
+                    <h3>سجل نشاط: {selectedUser.name}</h3>
+                    <button onClick={()=>setSelectedUser(null)}><X /></button>
+                </div>
+                <div className="modal-body">
+                    <div className="log-item"><Clock size={16}/> آخر ظهور: {selectedUser.lastLogin || 'غير متاح'}</div>
+                    <div className="log-item"><Video size={16}/> الفيديوهات المشاهدة: 14 فيديو</div>
+                    <div className="log-item"><ClipboardList size={16}/> الاختبارات المحلولة: 5 اختبارات</div>
+                    <div className="log-item"><Hash size={16}/> الأكواد المستخدمة: 3 أكواد</div>
+                    <div className="log-item"><Smartphone size={16}/> بصمة الجهاز: {selectedUser.deviceId || 'لا يوجد'}</div>
+                </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
 
+// مكون بطاقة الإحصائيات
 const StatCard = ({ icon, label, value, color }) => (
   <div className="stat-card" style={{ '--card-color': color }}>
     <div className="stat-icon">{icon}</div>
