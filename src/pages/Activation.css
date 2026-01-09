@@ -1,0 +1,88 @@
+.activation-root {
+  min-height: 100vh;
+  background: #05070a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.activation-card {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 25px;
+  width: 100%;
+  max-width: 450px;
+  padding: 30px;
+  text-align: center;
+}
+
+.tab-switcher {
+  display: flex;
+  gap: 10px;
+  margin: 25px 0;
+  background: rgba(0,0,0,0.3);
+  padding: 5px;
+  border-radius: 15px;
+}
+
+.tab-switcher button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: 0.3s;
+}
+
+.tab-switcher button.active {
+  background: #00f2ff;
+  color: #000;
+  font-weight: bold;
+}
+
+.instruction-box {
+  background: rgba(0, 242, 255, 0.05);
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px dashed #00f2ff;
+  margin-bottom: 20px;
+}
+
+.phone-number {
+  color: #00f2ff;
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+  margin: 10px 0;
+}
+
+.upload-zone label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+  border: 2px dashed rgba(255,255,255,0.1);
+  border-radius: 20px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  color: #aaa;
+}
+
+.btn-main, .btn-wa {
+  width: 100%;
+  padding: 15px;
+  border-radius: 15px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-main { background: #00f2ff; color: #000; }
+.btn-wa { background: #25d366; color: #fff; margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; }
