@@ -300,3 +300,314 @@ input:focus, select:focus { border-color: var(--nebula-blue); background: rgba(2
 .log-time { color: #888; }
 .log-admin { color: #00f2ff; }
 .log-action { font-weight: bold; color: #ff007a; }
+
+/* ==========================================
+   AdminDash - Cyber-Dark Theme
+   ========================================== */
+
+:root {
+  --primary: #00f2ff;
+  --secondary: #7000ff;
+  --accent: #ff007a;
+  --bg-dark: #0a0b10;
+  --glass: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --success: #25D366;
+  --warning: #ffcc00;
+}
+
+.admin-nebula-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-dark);
+  color: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow-x: hidden;
+}
+
+/* --- شريط التحميل العلوي --- */
+.loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  width: 100%;
+  z-index: 1000;
+  animation: loading-shimmer 2s infinite linear;
+}
+
+@keyframes loading-shimmer {
+  0% { opacity: 0.5; transform: translateX(-100%); }
+  100% { opacity: 1; transform: translateX(100%); }
+}
+
+/* --- القائمة الجانبية (Sidebar) --- */
+.admin-sidebar {
+  width: 280px;
+  background: rgba(15, 15, 25, 0.8);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  padding: 30px 15px;
+  position: fixed;
+  height: 100vh;
+  z-index: 100;
+}
+
+.admin-logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 50px;
+  padding: 0 10px;
+}
+
+.nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-links button {
+  background: none;
+  border: none;
+  color: #888;
+  padding: 14px 18px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-weight: 500;
+  text-align: right;
+}
+
+.nav-links button:hover {
+  background: var(--glass);
+  color: #fff;
+}
+
+.nav-links button.active {
+  background: linear-gradient(135deg, rgba(0, 242, 255, 0.1), rgba(112, 0, 255, 0.1));
+  color: var(--primary);
+  border-right: 3px solid var(--primary);
+}
+
+.badge {
+  background: var(--accent);
+  color: white;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-right: auto;
+  box-shadow: 0 0 10px var(--accent);
+}
+
+/* --- المحتوى الرئيسي --- */
+.admin-viewport {
+  flex: 1;
+  margin-right: 280px; /* للي بيدعم الـ RTL */
+  margin-left: 280px; /* للـ LTR */
+  padding: 40px;
+  background: radial-gradient(circle at top left, rgba(112, 0, 255, 0.05), transparent);
+}
+
+.section-title {
+  font-size: 28px;
+  margin-bottom: 30px;
+  background: linear-gradient(90deg, #fff, #888);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* --- كروت الإحصائيات --- */
+.stats-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.s-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  padding: 25px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.s-card:hover {
+  transform: translateY(-10px);
+  border-color: var(--primary);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.s-card h4 { font-size: 24px; margin: 0; }
+.s-card p { font-size: 14px; color: #888; margin: 0; }
+
+/* --- الجداول (Tables) --- */
+.admin-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--glass);
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+}
+
+.admin-data-table th {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 18px;
+  text-align: right;
+  color: #888;
+  font-weight: 600;
+}
+
+.admin-data-table td {
+  padding: 18px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.admin-data-table tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* --- أزرار التحكم --- */
+.ban-btn {
+  background: none;
+  border: 1px solid #444;
+  color: #888;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ban-btn.active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.approve-btn {
+  background: var(--success);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reject-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+/* --- مودال الإشعارات (مركز البث) --- */
+.notif-form-container {
+  max-width: 700px;
+  padding: 30px;
+  border-radius: 25px;
+  border: 1px solid var(--glass-border);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #888;
+}
+
+.form-group input, .form-group textarea, .form-group select {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--glass-border);
+  padding: 12px;
+  border-radius: 12px;
+  color: white;
+  outline: none;
+}
+
+.form-group input:focus {
+  border-color: var(--primary);
+}
+
+.type-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.type-buttons button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: none;
+  color: #888;
+  cursor: pointer;
+}
+
+.type-buttons button.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(0, 242, 255, 0.05);
+}
+
+.send-btn {
+  width: 100%;
+  padding: 15px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  color: white;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* --- سجل النشاط --- */
+.log-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  border-bottom: 1px solid var(--glass-border);
+  font-size: 13px;
+}
+
+.log-time { color: var(--primary); width: 100px; }
+.log-action { font-weight: bold; width: 150px; }
+.log-details { color: #888; flex: 1; }
+
+/* --- Responsive --- */
+@media (max-width: 1024px) {
+  .admin-sidebar { width: 80px; padding: 20px 10px; }
+  .admin-sidebar span, .admin-logo span { display: none; }
+  .admin-viewport { margin-left: 80px; }
+}
+
+/* Glassmorphism Effect */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
