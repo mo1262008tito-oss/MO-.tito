@@ -1,24 +1,41 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase'; 
 import * as XLSX from 'xlsx';
+// 1. إضافة استيراد مكتبة الأنميشن
+import { motion, AnimatePresence } from 'framer-motion'; 
 import { 
-  collection, query, getDocs, updateDoc, doc, addDoc, 
+  collection, query, updateDoc, doc, addDoc, 
   onSnapshot, serverTimestamp, where, deleteDoc, orderBy, 
-  arrayUnion, increment, writeBatch, limit, getDoc, arrayRemove 
+  arrayUnion, increment, writeBatch, limit 
 } from "firebase/firestore";
+// 2. إضافة أيقونة Eye الناقصة
 import { 
-  Users, BookOpen, Plus, Check, X, Bell, Lock, Unlock, 
-  DollarSign, LayoutDashboard, PackagePlus, Trash2, Hash, 
-  Video, Layers, GraduationCap, Zap, ShieldBan, Send, 
-  Settings, Search, RefreshCw, FileText, Activity, Mail, 
-  Smartphone, UserPlus, Clipboard, PieChart, ShieldCheck
+  Users, Plus, Check, X, Bell, Unlock, Eye,
+  DollarSign, LayoutDashboard, Trash2, Hash, 
+  Video, Layers, Zap, ShieldBan, Send, 
+  Search, Activity, FileText
 } from 'lucide-react';
 
-/**
- * AdminDash - الإصدار العملاق (550+ سطر منطقي)
- * يضم إدارة الطلاب، الكورسات، المكتبة، الأكواد، الدفع اليدوي، الإشعارات، وسجلات النظام.
- */
+const AdminDash = () => {
+  // ... (نفس الـ States الموجودة في كودك) ...
 
+  // 3. إضافة الوظيفة التي كانت تسبب خطأ (handlePublishCourse)
+  const handlePublishCourse = async () => {
+    if(!courseForm.title || !courseForm.price) return alert("❌ أكمل بيانات الكورس");
+    setLoading(true);
+    try {
+      await addDoc(collection(db, "courses_metadata"), {
+        ...courseForm,
+        createdAt: serverTimestamp(),
+        studentsCount: 0
+      });
+      alert("✅ تم نشر الكورس بنجاح");
+      setCourseForm({ title: '', price: '', thumbnail: '', grade: '1 ثانوي', subject: 'فيزياء', instructor: 'أ. محمود فرج' });
+    } catch (e) { alert(e.message); }
+    setLoading(false);
+  };
+
+  // ... (بقية الوظائف: resetUserDevices, toggleUserBan, إلخ) ...
 const AdminDash = () => {
   // ==========================================
   // [1] حالات التحكم في الواجهة (Interface States)
@@ -582,3 +599,4 @@ const AdminDash = () => {
 };
 
 export default AdminDash;
+
