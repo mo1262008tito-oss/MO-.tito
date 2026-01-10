@@ -1,723 +1,918 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { db, auth, storage } from '../firebase'; 
 import * as XLSX from 'xlsx';
 import { motion, AnimatePresence } from 'framer-motion'; 
 import { 
   collection, query, updateDoc, doc, addDoc, 
   onSnapshot, serverTimestamp, where, deleteDoc, orderBy, 
-  arrayUnion, increment, writeBatch, limit, getDocs, getDoc, arrayRemove,
-  setDoc
+  arrayUnion, increment, writeBatch, limit, getDocs, getDoc,
+  setDoc, runTransaction
 } from "firebase/firestore";
 import { 
-  Users, Plus, Check, X, Bell, Unlock, Eye,
-  DollarSign, LayoutDashboard, Trash2, Hash, 
-  Video, Layers, Zap, ShieldBan, Send, 
-  Search, Activity, FileText, Ticket, Heart, 
-  TrendingUp, UserPlus, Mail, Smartphone, Filter, Save, AlertTriangle,
-  ChevronRight, ChevronLeft, Download, ShieldCheck, Settings, Database
+  Users, Plus, Check, X, Bell, Unlock, Eye, BookOpen,
+  DollarSign, LayoutDashboard, Trash2, Hash, Video, Layers, 
+  Zap, ShieldBan, Send, Search, Activity, Smartphone, Heart, 
+  TrendingUp, Download, ShieldCheck, Settings, Star, Clock,
+  FileText, ShieldAlert, BarChart3, UserCheck, Percent, Gift,
+  LogOut, ClipboardList, MonitorSmartphone, HelpCircle
 } from 'lucide-react';
 
 import './AdminDash.css';
 
 const AdminDash = () => {
   // ==========================================
-  // [1] الحالات الرئيسية (Main States)
+  // [1] حالات النظام الأساسية (System States)
   // ==========================================
   const [activeSection, setActiveSection] = useState('stats');
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState('all'); // للمبيعات والطلاب
 
   // ==========================================
-  // [2] تخزين البيانات (Data States)
+  // [2] مستودعات البيانات (Data Repositories)
   // ==========================================
-  const [stats, setStats] = useState({ 
-    totalStudents: 0, 
-    totalCourses: 0, 
-    totalCodes: 0, 
-    totalRevenue: 0,
-    netProfit: 0, 
-    charityFund: 0, 
-    opsFund: 0,
-    activeSubscribers: 0
-  });
-  
   const [users, setUsers] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [books, setBooks] = useState([]);
   const [paymentRequests, setPaymentRequests] = useState([]);
   const [activationCodes, setActivationCodes] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
   const [coupons, setCoupons] = useState([]);
-  const [systemSettings, setSystemSettings] = useState({});
+  const [financialStats, setFinancialStats] = useState({
+    totalRevenue: 0,
+    netProfit: 0,
+    charityFund: 0,
+    opsFund: 0,
+    totalSalesCount: 0
+  });
 
   // ==========================================
-  // [3] حالات النماذج (Form States)
+  // [3] كائنات النماذج (Complex Form Objects)
   // ==========================================
   const [courseForm, setCourseForm] = useState({ 
-    title: '', price: '', thumbnail: '', grade: '1 ثانوي', 
-    subject: 'فيزياء', videoUrl: '', description: '', 
-    instructor: 'أ. محمود فرج', isActive: true 
+    title: '', price: '', thumbnail: '', grade: '1 ثانوي', subject: 'فيزياء', 
+    videoUrl: '', description: '', instructor: 'أ. محمود فرج', 
+    isFree: false, folderName: '', tags: [] 
+  });
+
+  const [bookForm, setBookForm] = useState({ 
+    title: '', price: 0, link: '', cover: '', grade: '1 ثانوي', 
+    pages: '', description: '', isDownloadable: true 
   });
 
   const [notifForm, setNotifForm] = useState({ 
-    title: '', message: '', targetUserId: 'all', type: 'broadcast', 
-    actionUrl: '', importance: 'normal' 
+    title: '', message: '', type: 'broadcast', importance: 'normal', 
+    targetGrade: 'all', actionLink: '' 
   });
 
   const [codeForm, setCodeForm] = useState({ 
     count: 10, amount: 0, type: 'wallet', targetCourseId: '', 
-    prefix: 'TITO' 
+    prefix: 'TITO', expirationDays: 30 
   });
 
-  const [couponForm, setCouponForm] = useState({ 
-    code: '', discount: 10, expiry: '', limit: 50, minAmount: 0 
+  const [couponForm, setCouponForm] = useState({
+    code: '', discountPercent: 10, limit: 100, minPurchase: 0, expiryDate: ''
   });
 
   // ==========================================
-  // [4] المحرك الفوري (Real-time Core Engine)
+  // [4] المحرك التشغيلي (Real-time Core Engine)
   // ==========================================
   useEffect(() => {
     setLoading(true);
-    const unsubscribers = [
-      // مراقبة المستخدمين
-      onSnapshot(collection(db, "users"), (snapshot) => {
-        const usersList = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        setUsers(usersList);
-        setStats(prev => ({ ...prev, totalStudents: snapshot.size }));
-      }),
+    const syncDatabase = () => {
+      const queries = [
+        onSnapshot(collection(db, "users"), (snapshot) => {
+          setUsers(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+        }),
+        onSnapshot(collection(db, "courses_metadata"), (snapshot) => {
+          setCourses(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+        }),
+        onSnapshot(collection(db, "books"), (snapshot) => {
+          setBooks(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+        }),
+        onSnapshot(query(collection(db, "payment_requests"), orderBy("createdAt", "desc")), (snapshot) => {
+          setPaymentRequests(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+        }),
+        onSnapshot(query(collection(db, "activationCodes"), orderBy("createdAt", "desc"), limit(150)), (snapshot) => {
+          setActivationCodes(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+        }),
+        onSnapshot(query(collection(db, "audit_logs"), orderBy("timestamp", "desc"), limit(40)), (snapshot) => {
+          setAuditLogs(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+        }),
+        onSnapshot(doc(db, "system_info", "totals"), (snapshot) => {
+          if (snapshot.exists()) setFinancialStats(snapshot.data());
+        }),
+        onSnapshot(collection(db, "coupons"), (snapshot) => {
+          setCoupons(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+        })
+      ];
+      return queries;
+    };
 
-      // مراقبة الكورسات
-      onSnapshot(collection(db, "courses_metadata"), (snapshot) => {
-        setCourses(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-        setStats(prev => ({ ...prev, totalCourses: snapshot.size }));
-      }),
-
-      // مراقبة طلبات الدفع المعلقة
-      onSnapshot(query(collection(db, "payment_requests"), where("status", "==", "pending")), (snapshot) => {
-        setPaymentRequests(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-      }),
-
-      // مراقبة الأكواد (آخر 200 كود)
-      onSnapshot(query(collection(db, "activationCodes"), orderBy("createdAt", "desc"), limit(200)), (snapshot) => {
-        setActivationCodes(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-        setStats(prev => ({ ...prev, totalCodes: snapshot.size }));
-      }),
-
-      // مراقبة الكوبونات
-      onSnapshot(collection(db, "coupons"), (snapshot) => {
-        setCoupons(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-      }),
-
-      // مراقبة سجل العمليات
-      onSnapshot(query(collection(db, "audit_logs"), orderBy("timestamp", "desc"), limit(50)), (snapshot) => {
-        setAuditLogs(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
-      }),
-
-      // مراقبة النظام المالي العام
-      onSnapshot(doc(db, "system_info", "totals"), (docSnap) => {
-        if (docSnap.exists()) {
-          setStats(prev => ({ ...prev, ...docSnap.data() }));
-        }
-      })
-    ];
-
+    const listeners = syncDatabase();
     setLoading(false);
-    return () => unsubscribers.forEach(unsub => unsub());
+    return () => listeners.forEach(unsub => unsub());
   }, []);
 
   // ==========================================
-  // [5] الوظائف المالية الاحترافية (Financial Logic)
+  // [5] نظام إدارة العمليات (Operations Logic)
   // ==========================================
-  const handlePaymentDecision = async (request, status) => {
+  
+  const logSystemAction = async (action, details) => {
+    try {
+      await addDoc(collection(db, "audit_logs"), {
+        admin: auth.currentUser?.email || "System",
+        action,
+        details,
+        timestamp: serverTimestamp(),
+        ip: "Internal"
+      });
+    } catch (e) { console.error("Logging failed", e); }
+  };
+
+  const handleCreateCourse = async (e) => {
+    e.preventDefault();
+    if (!courseForm.title || !courseForm.price) return alert("❌ البيانات الأساسية ناقصة!");
+    setLoading(true);
+    try {
+      const courseRef = await addDoc(collection(db, "courses_metadata"), {
+        ...courseForm,
+        price: Number(courseForm.price),
+        createdAt: serverTimestamp(),
+        studentsCount: 0,
+        rating: 5,
+        reviews: []
+      });
+      await logSystemAction("إضافة كورس", `تم إنشاء كورس جديد: ${courseForm.title}`);
+      alert("✅ تم نشر الكورس بنجاح واصبح متاحاً للطلاب");
+      setCourseForm({ title: '', price: '', thumbnail: '', grade: '1 ثانوي', subject: 'فيزياء', videoUrl: '', description: '', instructor: 'أ. محمود فرج' });
+    } catch (err) { alert(err.message); }
+    setLoading(false);
+  };
+
+  const handleAddBook = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await addDoc(collection(db, "books"), {
+        ...bookForm,
+        price: Number(bookForm.price),
+        createdAt: serverTimestamp()
+      });
+      await logSystemAction("إضافة كتاب", `تم إضافة كتاب: ${bookForm.title}`);
+      setBookForm({ title: '', price: 0, link: '', cover: '', grade: '1 ثانوي' });
+      alert("✅ تمت إضافة الكتاب للمتجر");
+    } catch (err) { alert(err.message); }
+    setLoading(false);
+  };
+
+  // ==========================================
+  // [6] المحرك المالي الذكي (Advanced Finance)
+  // ==========================================
+  
+  const handlePaymentDecision = async (req, status, reason = "") => {
     const confirmation = window.confirm(`هل أنت متأكد من ${status === 'approved' ? 'قبول' : 'رفض'} هذا الطلب؟`);
     if (!confirmation) return;
 
     setLoading(true);
     try {
-      const batch = writeBatch(db);
-      const requestRef = doc(db, "payment_requests", request.id);
-      const userRef = doc(db, "users", request.userId);
-      const financeRef = doc(db, "system_info", "totals");
-
-      if (status === 'approved') {
-        // حساب التوزيع المالي (معدل لزيادة ربحك)
-        const totalAmount = Number(request.amount);
-        const profit = 60;    // ربحك الصافي
-        const charity = 10;   // صندوق الخير
-        const ops = 55;       // تشغيل (مساعدين + تقني)
-        const teacher = 125;  // نصيب المدرس
-
-        // 1. تفعيل الكورس للطالب
-        batch.update(userRef, {
-          enrolledContent: arrayUnion(request.courseId),
-          totalSpent: increment(totalAmount)
-        });
-
-        // 2. تحديث الخزنة المركزية
-        batch.set(financeRef, {
-          totalRevenue: increment(totalAmount),
-          netProfit: increment(profit),
-          charityFund: increment(charity),
-          opsFund: increment(ops)
-        }, { merge: true });
-
-        // 3. تحديث حالة الطلب
-        batch.update(requestRef, { 
-          status: 'approved', 
-          processedBy: auth.currentUser.email,
-          processedAt: serverTimestamp() 
-        });
-
-        // 4. إرسال إشعار فوري بنجاح التفعيل
-        const notifRef = doc(collection(db, "users", request.userId, "notifications"));
-        batch.set(notifRef, {
-          title: "✅ تم تفعيل الكورس",
-          message: `تمت الموافقة على تحويلك بنجاح. كورس ${request.courseName} متاح لك الآن.`,
-          timestamp: serverTimestamp(),
-          type: 'success',
-          read: false
-        });
-
-        await logActivity("دفع مقبول", `تم تفعيل ${request.courseName} لـ ${request.userName}`);
-      } else {
-        const reason = prompt("اذكر سبب الرفض للطالب:");
-        batch.update(requestRef, { status: 'rejected', rejectReason: reason });
+      await runTransaction(db, async (transaction) => {
+        const userRef = doc(db, "users", req.userId);
+        const reqRef = doc(db, "payment_requests", req.id);
+        const financeRef = doc(db, "system_info", "totals");
         
-        // إشعار الرفض
-        const notifRef = doc(collection(db, "users", request.userId, "notifications"));
-        batch.set(notifRef, {
-          title: "❌ تعذر تفعيل الكورس",
-          message: `تم رفض طلب الدفع للسبب التالي: ${reason}`,
-          timestamp: serverTimestamp(),
-          type: 'error',
-          read: false
-        });
-      }
+        const userSnap = await transaction.get(userRef);
+        if (!userSnap.exists()) throw "المستخدم غير موجود!";
 
-      await batch.commit();
-      alert("تمت معالجة الطلب بنجاح");
-    } catch (error) {
-      alert("خطأ في المعالجة: " + error.message);
-    }
-    setLoading(false);
-  };
-
-  // ==========================================
-  // [6] إدارة الطلاب المتطورة (User Management)
-  // ==========================================
-  const toggleUserBan = async (user) => {
-    const action = user.isBanned ? "فك حظر" : "حظر";
-    if (!window.confirm(`هل تريد ${action} الطالب ${user.name}؟`)) return;
-    
-    try {
-      await updateDoc(doc(db, "users", user.id), { isBanned: !user.isBanned });
-      await logActivity(action, `تم ${action} الطالب ${user.email}`);
-    } catch (e) { alert(e.message); }
-  };
-
-  const resetUserDevices = async (user) => {
-    if (!window.confirm("سيتم تسجيل خروج الطالب من جميع الأجهزة، استمرار؟")) return;
-    try {
-      await updateDoc(doc(db, "users", user.id), { 
-        deviceId: null, 
-        secondDeviceId: null,
-        lastReset: serverTimestamp()
-      });
-      alert("✅ تم تصفير الأجهزة بنجاح");
-    } catch (e) { alert(e.message); }
-  };
-
-  // ==========================================
-  // [7] إدارة المحتوى (Course Management)
-  // ==========================================
-  const saveCourse = async () => {
-    if (!courseForm.title || !courseForm.price) return alert("أكمل البيانات الأساسية");
-    setLoading(true);
-    try {
-      const courseData = {
-        ...courseForm,
-        price: Number(courseForm.price),
-        updatedAt: serverTimestamp()
-      };
-
-      if (courseForm.id) {
-        await updateDoc(doc(db, "courses_metadata", courseForm.id), courseData);
-        alert("تم تحديث الكورس");
-      } else {
-        courseData.createdAt = serverTimestamp();
-        courseData.studentsCount = 0;
-        await addDoc(collection(db, "courses_metadata"), courseData);
-        alert("تم إضافة الكورس بنجاح");
-      }
-      setCourseForm({ title: '', price: '', thumbnail: '', grade: '1 ثانوي', subject: 'فيزياء', videoUrl: '', description: '', instructor: 'أ. محمود فرج' });
-    } catch (e) { alert(e.message); }
-    setLoading(false);
-  };
-
-  const deleteCourse = async (id) => {
-    if (!window.confirm("حذف الكورس سيؤدي لفقدان الطلاب للمحتوى. هل أنت متأكد؟")) return;
-    try {
-      await deleteDoc(doc(db, "courses_metadata", id));
-      alert("تم الحذف");
-    } catch (e) { alert(e.message); }
-  };
-
-  // ==========================================
-  // [8] نظام توليد الأكواد (Code Generator)
-  // ==========================================
-  const generateCodes = async () => {
-    setLoading(true);
-    try {
-      const batch = writeBatch(db);
-      const exportData = [];
-      
-      for (let i = 0; i < codeForm.count; i++) {
-        const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const finalCode = `${codeForm.prefix}-${randomStr}`;
-        const codeRef = doc(collection(db, "activationCodes"));
-        
-        const data = {
-          code: finalCode,
-          type: codeForm.type,
-          amount: Number(codeForm.amount),
-          targetCourseId: codeForm.targetCourseId || null,
-          isUsed: false,
-          createdAt: serverTimestamp(),
-          createdBy: auth.currentUser.email
-        };
-
-        batch.set(codeRef, data);
-        exportData.push({
-          "الكود": finalCode,
-          "النوع": codeForm.type === 'wallet' ? 'شحن محفظة' : 'تفعيل كورس',
-          "القيمة/الكورس": codeForm.type === 'wallet' ? codeForm.amount : codeForm.targetCourseId,
-          "تاريخ التوليد": new Date().toLocaleString()
-        });
-      }
-
-      await batch.commit();
-      
-      // تصدير إكسيل
-      const ws = XLSX.utils.json_to_sheet(exportData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "TitoCodes");
-      XLSX.writeFile(wb, `Codes_${codeForm.prefix}_${Date.now()}.xlsx`);
-
-      alert(`تم توليد ${codeForm.count} كود وتصديرهم لملف Excel`);
-    } catch (e) { alert(e.message); }
-    setLoading(false);
-  };
-
-  // ==========================================
-  // [9] نظام الإشعارات (Notification Center)
-  // ==========================================
-  const broadcastNotification = async () => {
-    if (!notifForm.title || !notifForm.message) return alert("أكمل محتوى الإشعار");
-    setLoading(true);
-    try {
-      if (notifForm.targetUserId === 'all') {
-        const batch = writeBatch(db);
-        users.forEach(u => {
-          const ref = doc(collection(db, "users", u.id, "notifications"));
-          batch.set(ref, {
-            title: notifForm.title,
-            message: notifForm.message,
+        if (status === 'approved') {
+          transaction.update(userRef, {
+            enrolledContent: arrayUnion(req.courseId),
+            totalSpent: increment(Number(req.amount))
+          });
+          transaction.update(financeRef, {
+            totalRevenue: increment(Number(req.amount)),
+            netProfit: increment(Number(req.amount) * 0.7), // نسبة الربح 70%
+            totalSalesCount: increment(1)
+          });
+          transaction.update(reqRef, { 
+            status: 'approved', 
+            processedAt: serverTimestamp(),
+            admin: auth.currentUser.email
+          });
+          
+          // إشعار الطالب
+          const notifRef = doc(collection(db, "users", req.userId, "notifications"));
+          transaction.set(notifRef, {
+            title: "✅ تمت الموافقة على طلبك",
+            message: `كورس ${req.courseName} أصبح متاحاً لك الآن. مشاهدة ممتعة!`,
+            type: "success",
             timestamp: serverTimestamp(),
-            type: notifForm.type,
-            importance: notifForm.importance,
             read: false
           });
-        });
-        await batch.commit();
-        alert("تم إرسال إشعار جماعي لجميع الطلاب");
-      } else {
-        await addDoc(collection(db, "users", notifForm.targetUserId, "notifications"), {
-          title: notifForm.title,
-          message: notifForm.message,
+        } else {
+          transaction.update(reqRef, { 
+            status: 'rejected', 
+            rejectReason: reason,
+            processedAt: serverTimestamp() 
+          });
+          const notifRef = doc(collection(db, "users", req.userId, "notifications"));
+          transaction.set(notifRef, {
+            title: "❌ تعذر تفعيل الكورس",
+            message: `تم رفض طلبك للسبب: ${reason}. يرجى مراجعة الدعم الفني.`,
+            type: "error",
+            timestamp: serverTimestamp(),
+            read: false
+          });
+        }
+      });
+      await logSystemAction(`معالجة دفع`, `${status}: ${req.userName}`);
+      alert("✅ تمت العملية بنجاح وتحديث بيانات الطالب");
+    } catch (e) { alert("❌ خطأ مالي: " + e.message); }
+    setLoading(false);
+  };
+
+  // ==========================================
+  // [7] نظام الإشعارات الجماعي (Mass Broadcast)
+  // ==========================================
+  
+  const handleMassNotify = async () => {
+    if (!notifForm.title || !notifForm.message) return alert("❌ المحتوى فارغ!");
+    const confirmSend = window.confirm(`هل تريد إرسال الإشعار لـ ${users.length} طالب؟`);
+    if (!confirmSend) return;
+
+    setLoading(true);
+    try {
+      const batchSize = 400; // Firebase limit
+      const batches = [];
+      let currentBatch = writeBatch(db);
+      let count = 0;
+
+      for (const user of users) {
+        if (notifForm.targetGrade !== 'all' && user.grade !== notifForm.targetGrade) continue;
+        
+        const nRef = doc(collection(db, "users", user.id, "notifications"));
+        currentBatch.set(nRef, {
+          ...notifForm,
+          sender: "الإدارة",
           timestamp: serverTimestamp(),
-          type: 'private',
           read: false
         });
-        alert("تم إرسال الإشعار الخاص");
+
+        count++;
+        if (count === batchSize) {
+          batches.push(currentBatch.commit());
+          currentBatch = writeBatch(db);
+          count = 0;
+        }
       }
-      setNotifForm({ ...notifForm, title: '', message: '' });
+      
+      if (count > 0) batches.push(currentBatch.commit());
+      await Promise.all(batches);
+      
+      await logSystemAction("إشعار جماعي", `إرسال: ${notifForm.title}`);
+      alert("🚀 انطلق الإشعار بنجاح لجميع الهواتف!");
+      setNotifForm({ title: '', message: '', type: 'broadcast', importance: 'normal', targetGrade: 'all' });
     } catch (e) { alert(e.message); }
     setLoading(false);
   };
 
   // ==========================================
-  // [10] وظائف مساعدة (Helpers)
+  // [8] نظام توليد الأكواد (Code Factory)
   // ==========================================
-  const logActivity = async (action, details) => {
-    await addDoc(collection(db, "audit_logs"), {
-      admin: auth.currentUser.email,
-      action,
-      details,
-      timestamp: serverTimestamp()
-    });
+  
+  const generateCodesXLSX = async () => {
+    if (!codeForm.amount || codeForm.count < 1) return alert("أدخل بيانات صحيحة");
+    setLoading(true);
+    try {
+      const batch = writeBatch(db);
+      const generatedData = [];
+      
+      for (let i = 0; i < codeForm.count; i++) {
+        const uniqueID = Math.random().toString(36).substring(2, 9).toUpperCase();
+        const finalCode = `${codeForm.prefix}-${uniqueID}`;
+        const ref = doc(collection(db, "activationCodes"));
+        
+        const payload = {
+          code: finalCode,
+          amount: Number(codeForm.amount),
+          type: codeForm.type,
+          isUsed: false,
+          createdAt: serverTimestamp(),
+          createdBy: auth.currentUser.email,
+          targetCourseId: codeForm.targetCourseId || 'all'
+        };
+        
+        batch.set(ref, payload);
+        generatedData.push({ "الكود": finalCode, "القيمة": codeForm.amount, "النوع": codeForm.type });
+      }
+      
+      await batch.commit();
+      
+      const ws = XLSX.utils.json_to_sheet(generatedData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Codes");
+      XLSX.writeFile(wb, `TITO_CODES_${Date.now()}.xlsx`);
+      
+      await logSystemAction("توليد أكواد", `تم إنشاء ${codeForm.count} كود`);
+      alert("✅ تم التوليد وتصدير ملف Excel بنجاح");
+    } catch (e) { alert(e.message); }
+    setLoading(false);
   };
 
-  const filteredUsers = users.filter(u => 
-    u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    u.phone?.includes(searchTerm) ||
-    u.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // ==========================================
+  // [9] أدوات الطالب (Student Toolkit)
+  // ==========================================
+  
+  const toggleUserLock = async (user) => {
+    const newState = !user.isBanned;
+    try {
+      await updateDoc(doc(db, "users", user.id), { isBanned: newState });
+      await logSystemAction(newState ? "حظر مستخدم" : "فك حظر", user.email);
+    } catch (e) { alert(e.message); }
+  };
+
+  const clearDeviceAuth = async (userId) => {
+    if (!window.confirm("هل أنت متأكد من تصفير الأجهزة؟")) return;
+    try {
+      await updateDoc(doc(db, "users", userId), {
+        deviceId: null,
+        secondDeviceId: null,
+        lastDeviceReset: serverTimestamp()
+      });
+      alert("✅ الطالب يستطيع الآن الدخول من جهاز جديد");
+    } catch (e) { alert(e.message); }
+  };
 
   // ==========================================
-  // [11] واجهة العرض (Master UI Render)
+  // [10] واجهة العرض الرئيسية (Master View)
   // ==========================================
+  
   return (
-    <div className={`admin-nebula-container ${!isSidebarOpen ? 'sidebar-closed' : ''}`}>
-      {loading && <div className="master-loader"><div className="neon-spinner"></div></div>}
+    <div className={`admin-nebula-container ${!isSidebarOpen ? 'collapsed' : ''}`}>
+      {loading && <div className="master-loader"><div className="neon-spinner"></div><p>جاري مزامنة السحابة...</p></div>}
 
-      {/* Side Navigation */}
+      {/* Sidebar - القائمة الجانبية الضخمة */}
       <aside className="master-sidebar">
         <div className="sidebar-brand">
-          <div className="brand-logo"><Zap size={24} fill="#00f2ff"/></div>
-          <span className="brand-name">TITO ADMIN <small>PRO v3</small></span>
+          <div className="brand-icon"><Zap fill="#00f2ff" /></div>
+          <div className="brand-text">
+            <h2>TITO CORE</h2>
+            <span>SYSTEM V4.0.1</span>
+          </div>
         </div>
 
-        <nav className="sidebar-nav">
+        <div className="nav-wrapper">
           <div className="nav-group">
-            <label>الرئيسية</label>
+            <span className="group-title">لوحة التحليل</span>
             <button className={activeSection === 'stats' ? 'active' : ''} onClick={() => setActiveSection('stats')}>
-              <LayoutDashboard size={20}/> <span>لوحة التحكم</span>
+              <BarChart3 size={20}/> <span>الإحصائيات العامة</span>
+            </button>
+            <button className={activeSection === 'audit' ? 'active' : ''} onClick={() => setActiveSection('audit')}>
+              <ClipboardList size={20}/> <span>سجل الرقابة</span>
+            </button>
+          </div>
+
+          <div className="nav-group">
+            <span className="group-title">إدارة الأفراد</span>
+            <button className={activeSection === 'users' ? 'active' : ''} onClick={() => setActiveSection('users')}>
+              <Users size={20}/> <span>قاعدة الطلاب</span>
             </button>
             <button className={activeSection === 'payments' ? 'active' : ''} onClick={() => setActiveSection('payments')}>
-              <DollarSign size={20}/> <span>المبيعات</span>
-              {paymentRequests.length > 0 && <span className="sidebar-badge">{paymentRequests.length}</span>}
+              <DollarSign size={20}/> <span>طلبات المبيعات</span>
+              {paymentRequests.filter(r=>r.status==='pending').length > 0 && <span className="badge-pulse">!</span>}
             </button>
           </div>
 
           <div className="nav-group">
-            <label>الإدارة</label>
-            <button className={activeSection === 'users' ? 'active' : ''} onClick={() => setActiveSection('users')}>
-              <Users size={20}/> <span>الطلاب</span>
-            </button>
+            <span className="group-title">المحتوى التعليمي</span>
             <button className={activeSection === 'content' ? 'active' : ''} onClick={() => setActiveSection('content')}>
-              <Layers size={20}/> <span>الكورسات</span>
+              <Video size={20}/> <span>الكورسات والدروس</span>
+            </button>
+            <button className={activeSection === 'books' ? 'active' : ''} onClick={() => setActiveSection('books')}>
+              <BookOpen size={20}/> <span>المكتبة والمتجر</span>
             </button>
           </div>
 
           <div className="nav-group">
-            <label>الأدوات</label>
+            <span className="group-title">التسويق والأدوات</span>
             <button className={activeSection === 'codes' ? 'active' : ''} onClick={() => setActiveSection('codes')}>
-              <Hash size={20}/> <span>الأكواد</span>
+              <Hash size={20}/> <span>مولد الأكواد</span>
+            </button>
+            <button className={activeSection === 'coupons' ? 'active' : ''} onClick={() => setActiveSection('coupons')}>
+              <Percent size={20}/> <span>كوبونات الخصم</span>
             </button>
             <button className={activeSection === 'notifs' ? 'active' : ''} onClick={() => setActiveSection('notifs')}>
-              <Bell size={20}/> <span>الإشعارات</span>
-            </button>
-            <button className={activeSection === 'marketing' ? 'active' : ''} onClick={() => setActiveSection('marketing')}>
-              <Ticket size={20}/> <span>الكوبونات</span>
+              <Bell size={20}/> <span>مركز الإشعارات</span>
             </button>
           </div>
-        </nav>
+        </div>
 
-        <div className="sidebar-profile">
-          <div className="admin-avatar">{auth.currentUser?.email[0].toUpperCase()}</div>
-          <div className="admin-meta">
-            <span>{auth.currentUser?.email.split('@')[0]}</span>
-            <button onClick={() => auth.signOut()}>تسجيل الخروج</button>
+        <div className="sidebar-footer">
+          <div className="admin-card">
+            <div className="admin-avatar">{auth.currentUser?.email[0].toUpperCase()}</div>
+            <div className="admin-info">
+              <p>{auth.currentUser?.email.split('@')[0]}</p>
+              <small>سوبر أدمن</small>
+            </div>
+            <button onClick={() => auth.signOut()} className="logout-btn"><LogOut size={16}/></button>
           </div>
         </div>
       </aside>
 
-      {/* Main Viewport */}
+      {/* Content Area - مساحة المحتوى */}
       <main className="master-viewport">
-        
-        {/* SECTION: STATISTICS */}
-        {activeSection === 'stats' && (
-          <motion.div initial={{opacity:0}} animate={{opacity:1}} className="stats-view">
-            <div className="welcome-bar">
-              <h1>مرحباً بك، تيتو 👋</h1>
-              <p>إليك ملخص أداء المنصة اليوم</p>
+        <header className="main-header">
+          <div className="header-left">
+            <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="toggle-btn">
+              <Layers size={20}/>
+            </button>
+            <h1>{activeSection.toUpperCase()} DASHBOARD</h1>
+          </div>
+          <div className="header-right">
+            <div className="server-status">
+              <div className="status-dot"></div>
+              <span>خادم Firebase: مستقر</span>
             </div>
+            <button className="icon-btn-circle"><Settings size={20}/></button>
+            <button className="icon-btn-circle"><HelpCircle size={20}/></button>
+          </div>
+        </header>
 
-            <div className="stats-grid">
-              <div className="stat-box revenue">
-                <div className="stat-icon"><TrendingUp/></div>
-                <div className="stat-info">
-                  <h3>{stats.totalRevenue?.toLocaleString()} ج.م</h3>
-                  <p>إجمالي المبيعات</p>
+        <div className="view-container">
+          
+          {/* SECTION: STATISTICS (The Engine) */}
+          {activeSection === 'stats' && (
+            <div className="stats-view fade-in">
+              <div className="stats-top-row">
+                <div className="glass-card stat-main">
+                  <div className="card-icon blue"><TrendingUp/></div>
+                  <div className="card-data">
+                    <p>إجمالي المبيعات (الخزنة)</p>
+                    <h2>{financialStats.totalRevenue?.toLocaleString()} <small>ج.م</small></h2>
+                    <span className="growth">+12.5% هذا الشهر</span>
+                  </div>
+                </div>
+                <div className="glass-card stat-main">
+                  <div className="card-icon green"><ShieldCheck/></div>
+                  <div className="card-data">
+                    <p>صافي الربح التقديري</p>
+                    <h2>{financialStats.netProfit?.toLocaleString()} <small>ج.م</small></h2>
+                    <span className="growth">+8.2% عن أمس</span>
+                  </div>
+                </div>
+                <div className="glass-card stat-main">
+                  <div className="card-icon purple"><Users/></div>
+                  <div className="card-data">
+                    <p>الطلاب المسجلين</p>
+                    <h2>{users.length}</h2>
+                    <span className="growth">+{users.filter(u => u.createdAt > Date.now() - 86400000).length} جديد</span>
+                  </div>
+                </div>
+                <div className="glass-card stat-main">
+                  <div className="card-icon gold"><MonitorSmartphone/></div>
+                  <div className="card-data">
+                    <p>الجلسات النشطة</p>
+                    <h2>{Math.floor(users.length * 0.4)}</h2>
+                    <span className="status">أونلاين الآن</span>
+                  </div>
                 </div>
               </div>
-              <div className="stat-box profit">
-                <div className="stat-icon"><ShieldCheck/></div>
-                <div className="stat-info">
-                  <h3>{stats.netProfit?.toLocaleString()} ج.م</h3>
-                  <p>صافي ربحك</p>
-                </div>
-              </div>
-              <div className="stat-box students">
-                <div className="stat-icon"><Users/></div>
-                <div className="stat-info">
-                  <h3>{stats.totalStudents}</h3>
-                  <p>طالب مسجل</p>
-                </div>
-              </div>
-              <div className="stat-box charity">
-                <div className="stat-icon"><Heart/></div>
-                <div className="stat-info">
-                  <h3>{stats.charityFund} ج.م</h3>
-                  <p>بند الخير</p>
-                </div>
-              </div>
-            </div>
 
-            <div className="dashboard-columns">
-              <div className="recent-activity-card glass">
-                <h3><Activity size={18}/> آخر العمليات</h3>
-                <div className="activity-list">
-                  {auditLogs.map(log => (
-                    <div key={log.id} className="activity-item">
-                      <div className="act-dot"></div>
-                      <div className="act-content">
-                        <strong>{log.action}</strong>
-                        <p>{log.details}</p>
-                        <small>{log.timestamp?.toDate()?.toLocaleString('ar-EG')}</small>
+              <div className="stats-middle-grid">
+                <div className="glass-card chart-placeholder">
+                  <h3><BarChart3 size={18}/> توزيع الطلاب حسب الصف الدراسي</h3>
+                  <div className="grade-dist">
+                    {['1 ثانوي', '2 ثانوي', '3 ثانوي'].map(g => (
+                      <div key={g} className="grade-bar-item">
+                        <span>{g}</span>
+                        <div className="bar-bg">
+                          <div 
+                            className="bar-fill" 
+                            style={{width: `${(users.filter(u=>u.grade===g).length / users.length) * 100}%`}}
+                          ></div>
+                        </div>
+                        <span>{users.filter(u=>u.grade===g).length} طالباً</span>
                       </div>
-                    </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="glass-card logs-mini">
+                  <h3><Activity size={18}/> آخر الأنشطة البرمجية</h3>
+                  <div className="mini-log-list">
+                    {auditLogs.slice(0, 8).map(log => (
+                      <div key={log.id} className="mini-log-item">
+                        <Clock size={12}/>
+                        <p><strong>{log.admin}</strong> {log.action}: {log.details}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION: USERS (The Core) */}
+          {activeSection === 'users' && (
+            <div className="users-manager fade-in">
+              <div className="manager-header">
+                <div className="search-wrapper">
+                  <Search size={20}/>
+                  <input 
+                    placeholder="ابحث عن طالب بالاسم، الهاتف، أو الإيميل الكودي..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div className="filter-tabs">
+                  <button className={activeTab === 'all' ? 'active' : ''} onClick={()=>setActiveTab('all')}>الكل</button>
+                  <button className={activeTab === 'active' ? 'active' : ''} onClick={()=>setActiveTab('active')}>نشطين</button>
+                  <button className={activeTab === 'banned' ? 'active' : ''} onClick={()=>setActiveTab('banned')}>محظورين</button>
+                </div>
+              </div>
+
+              <div className="table-container glass">
+                <table className="master-table">
+                  <thead>
+                    <tr>
+                      <th><UserCheck size={16}/> الطالب</th>
+                      <th><Smartphone size={16}/> الاتصال</th>
+                      <th><Layers size={16}/> المرحلة</th>
+                      <th><DollarSign size={16}/> المحفظة</th>
+                      <th><ShieldAlert size={16}/> الحالة</th>
+                      <th><Settings size={16}/> العمليات</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users
+                      .filter(u => u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.phone?.includes(searchTerm))
+                      .map(user => (
+                      <tr key={user.id} className={user.isBanned ? 'banned-row' : ''}>
+                        <td>
+                          <div className="user-info-cell">
+                            <div className="u-avatar">{user.name?.[0].toUpperCase()}</div>
+                            <div className="u-text">
+                              <strong>{user.name}</strong>
+                              <small>{user.email}</small>
+                            </div>
+                          </div>
+                        </td>
+                        <td>{user.phone || '01xxxxxxxxx'}</td>
+                        <td><span className="grade-tag">{user.grade || 'غير محدد'}</span></td>
+                        <td><span className="wallet-amount">{(user.walletBalance || 0).toFixed(2)} ج.م</span></td>
+                        <td>
+                          <div className={`status-pill ${user.isBanned ? 'red' : 'green'}`}>
+                            {user.isBanned ? 'محظور' : 'نشط'}
+                          </div>
+                        </td>
+                        <td className="table-actions">
+                          <button onClick={() => setSelectedUser(user)} className="act-btn blue" title="عرض الملف"><Eye size={18}/></button>
+                          <button onClick={() => clearDeviceAuth(user.id)} className="act-btn purple" title="تصفير الأجهزة"><Unlock size={18}/></button>
+                          <button onClick={() => toggleUserLock(user)} className={`act-btn ${user.isBanned ? 'green' : 'red'}`} title={user.isBanned ? 'فك الحظر' : 'حظر'}>
+                            <ShieldBan size={18}/>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION: PAYMENTS (The Revenue) */}
+          {activeSection === 'payments' && (
+            <div className="payments-view fade-in">
+              <div className="view-header">
+                <h2>إدارة الفواتير والاشتراكات</h2>
+                <div className="stats-mini">
+                  <span>معلق: {paymentRequests.filter(r=>r.status==='pending').length}</span>
+                  <span>مقبول: {paymentRequests.filter(r=>r.status==='approved').length}</span>
+                </div>
+              </div>
+
+              <div className="payment-grid">
+                <AnimatePresence>
+                  {paymentRequests.map(req => (
+                    <motion.div 
+                      key={req.id} 
+                      className={`payment-card glass ${req.status}`}
+                      initial={{opacity: 0, scale: 0.9}}
+                      animate={{opacity: 1, scale: 1}}
+                    >
+                      <div className="card-head">
+                        <span className="course-name">{req.courseName}</span>
+                        <span className="status-label">{req.status === 'pending' ? 'انتظار' : 'تمت'}</span>
+                      </div>
+                      <div className="card-body">
+                        <div className="user-min">
+                          <p>{req.userName}</p>
+                          <small>{req.phone}</small>
+                        </div>
+                        <div className="amount-box">
+                          <label>المبلغ</label>
+                          <strong>{req.amount} ج.م</strong>
+                        </div>
+                        <div className="receipt-container" onClick={() => window.open(req.receiptUrl)}>
+                          <img src={req.receiptUrl} alt="وصل الدفع" />
+                          <div className="zoom-hint"><Search size={16}/> تكبير الوصل</div>
+                        </div>
+                      </div>
+                      {req.status === 'pending' && (
+                        <div className="card-actions">
+                          <button className="approve" onClick={() => handlePaymentDecision(req, 'approved')}>
+                            <Check size={18}/> تفعيل المشترك
+                          </button>
+                          <button className="reject" onClick={() => {
+                            const r = prompt("سبب الرفض:");
+                            if(r) handlePaymentDecision(req, 'rejected', r);
+                          }}>
+                            <X size={18}/> رفض
+                          </button>
+                        </div>
+                      )}
+                    </motion.div>
                   ))}
-                </div>
-              </div>
-              
-              <div className="fast-actions-card glass">
-                <h3><Zap size={18}/> إجراءات سريعة</h3>
-                <div className="action-btns">
-                  <button onClick={() => setActiveSection('codes')}>توليد 50 كود</button>
-                  <button onClick={() => setActiveSection('notifs')}>تنبيه هام للجميع</button>
-                  <button onClick={() => window.open('/reports')}>تحميل تقرير مالي</button>
-                </div>
+                </AnimatePresence>
               </div>
             </div>
-          </motion.div>
-        )}
+          )}
 
-        {/* SECTION: USERS MANAGEMENT */}
-        {activeSection === 'users' && (
-          <div className="users-view fade-in">
-            <div className="view-header">
-              <h2>إدارة الطلاب والأمان</h2>
-              <div className="search-bar">
-                <Search size={18}/>
-                <input 
-                  placeholder="ابحث بالاسم، الهاتف، أو الإيميل..." 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
+          {/* SECTION: CONTENT (The Product) */}
+          {activeSection === 'content' && (
+            <div className="content-view fade-in">
+              <div className="split-layout">
+                <div className="form-column">
+                  <div className="glass-card form-box">
+                    <h3><Plus/> إضافة كورس جديد</h3>
+                    <form onSubmit={handleCreateCourse} className="pro-form">
+                      <div className="form-group">
+                        <label>عنوان الكورس التجاري</label>
+                        <input value={courseForm.title} onChange={e=>setCourseForm({...courseForm, title: e.target.value})} placeholder="مثال: مراجعة شهر أكتوبر - فيزياء" />
+                      </div>
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label>سعر التفعيل (ج.م)</label>
+                          <input type="number" value={courseForm.price} onChange={e=>setCourseForm({...courseForm, price: e.target.value})} />
+                        </div>
+                        <div className="form-group">
+                          <label>الصف الدراسي</label>
+                          <select value={courseForm.grade} onChange={e=>setCourseForm({...courseForm, grade: e.target.value})}>
+                            <option>1 ثانوي</option>
+                            <option>2 ثانوي</option>
+                            <option>3 ثانوي</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="form-group">
+                        <label>رابط الصورة المصغرة (Thumbnail URL)</label>
+                        <input value={courseForm.thumbnail} onChange={e=>setCourseForm({...courseForm, thumbnail: e.target.value})} placeholder="https://..." />
+                      </div>
+                      <div className="form-group">
+                        <label>رابط فيديو البرومو</label>
+                        <input value={courseForm.videoUrl} onChange={e=>setCourseForm({...courseForm, videoUrl: e.target.value})} placeholder="YouTube or Vimeo link" />
+                      </div>
+                      <div className="form-group">
+                        <label>وصف المحتوى</label>
+                        <textarea value={courseForm.description} onChange={e=>setCourseForm({...courseForm, description: e.target.value})} rows="4"></textarea>
+                      </div>
+                      <button type="submit" className="main-submit-btn">
+                        <Save size={20}/> حفظ ونشر الكورس
+                      </button>
+                    </form>
+                  </div>
+                </div>
 
-            <div className="master-table-container glass">
-              <table className="master-table">
-                <thead>
-                  <tr>
-                    <th>الطالب</th>
-                    <th>بيانات الاتصال</th>
-                    <th>المحفظة</th>
-                    <th>الحالة</th>
-                    <th>الأجهزة</th>
-                    <th>الإجراءات</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.map(user => (
-                    <tr key={user.id} className={user.isBanned ? 'row-banned' : ''}>
-                      <td>
-                        <div className="user-cell">
-                          <div className="user-avatar">{user.name[0]}</div>
-                          <div className="user-info">
-                            <strong>{user.name}</strong>
-                            <span>{user.grade || 'غير محدد'}</span>
+                <div className="list-column">
+                  <h3>الكورسات الحالية في المنصة ({courses.length})</h3>
+                  <div className="course-list-grid">
+                    {courses.map(c => (
+                      <div key={c.id} className="course-mini-card glass">
+                        <img src={c.thumbnail} alt="" />
+                        <div className="c-info">
+                          <h4>{c.title}</h4>
+                          <p>{c.price} ج.م | {c.grade}</p>
+                          <div className="c-stats">
+                            <span><Users size={12}/> {c.studentsCount || 0}</span>
+                            <span><Star size={12}/> {c.rating}</span>
                           </div>
                         </div>
-                      </td>
-                      <td>
-                        <div className="contact-cell">
-                          <p><Smartphone size={14}/> {user.phone}</p>
-                          <small>{user.email}</small>
+                        <div className="c-actions">
+                          <button className="edit-btn"><Settings size={14}/></button>
+                          <button className="del-btn" onClick={() => deleteDoc(doc(db, "courses_metadata", c.id))}><Trash2 size={14}/></button>
                         </div>
-                      </td>
-                      <td><span className="wallet-txt">{user.walletBalance || 0} ج.م</span></td>
-                      <td>
-                        <span className={`status-badge ${user.isBanned ? 'banned' : 'active'}`}>
-                          {user.isBanned ? 'محظور' : 'نشط'}
-                        </span>
-                      </td>
-                      <td>
-                        <button className="reset-btn" onClick={() => resetUserDevices(user)}>
-                          <Unlock size={14}/> {user.deviceId ? 'مرتبط' : 'مفتوح'}
-                        </button>
-                      </td>
-                      <td className="actions-cell">
-                        <button title="تفاصيل" onClick={() => setSelectedUser(user)}><Eye size={18}/></button>
-                        <button title="حظر" className="ban-btn" onClick={() => toggleUserBan(user)}><ShieldBan size={18}/></button>
-                        <button title="حذف" className="del-btn" onClick={() => manageUser(user, 'delete')}><Trash2 size={18}/></button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* SECTION: PAYMENTS */}
-        {activeSection === 'payments' && (
-          <div className="payments-view fade-in">
-            <h2>طلبات الدفع ({paymentRequests.length})</h2>
-            <div className="payment-cards-grid">
-              {paymentRequests.map(req => (
-                <div key={req.id} className="payment-card glass">
-                  <div className="pay-tag">{req.courseName}</div>
-                  <div className="pay-body">
-                    <div className="pay-user">
-                      <strong>{req.userName}</strong>
-                      <span>المبلغ: {req.amount} ج.م</span>
-                    </div>
-                    <div className="receipt-preview" onClick={() => window.open(req.receiptUrl)}>
-                      <img src={req.receiptUrl} alt="وصل الدفع" />
-                      <div className="zoom-overlay"><Eye/> تكبير</div>
-                    </div>
-                    <p className="pay-date">{req.createdAt?.toDate()?.toLocaleString()}</p>
-                  </div>
-                  <div className="pay-actions">
-                    <button className="approve-btn" onClick={() => handlePaymentDecision(req, 'approved')}>
-                      <Check size={18}/> قبول التفعيل
-                    </button>
-                    <button className="reject-btn" onClick={() => handlePaymentDecision(req, 'rejected')}>
-                      <X size={18}/> رفض
-                    </button>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-              {paymentRequests.length === 0 && (
-                <div className="empty-state">لا توجد طلبات معلقة حالياً ✅</div>
-              )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* SECTION: CODES GENERATOR */}
-        {activeSection === 'codes' && (
-          <div className="codes-view fade-in">
-            <div className="codes-container glass">
-              <div className="codes-form">
-                <h3><Hash/> توليد أكواد جديدة</h3>
-                <div className="form-row">
-                  <div className="input-group">
-                    <label>عدد الأكواد</label>
-                    <input type="number" value={codeForm.count} onChange={e => setCodeForm({...codeForm, count: e.target.value})} />
-                  </div>
-                  <div className="input-group">
-                    <label>البادئة (Prefix)</label>
-                    <input type="text" value={codeForm.prefix} onChange={e => setCodeForm({...codeForm, prefix: e.target.value.toUpperCase()})} />
-                  </div>
+          {/* SECTION: CODES (The Generator) */}
+          {activeSection === 'codes' && (
+            <div className="codes-manager fade-in">
+              <div className="codes-config-card glass">
+                <div className="card-header">
+                  <h3><Gift size={22}/> محرك توليد أكواد الشحن والتفعيل</h3>
+                  <p>الأكواد المولدة يتم تصديرها فوراً لملف Excel لسهولة الطباعة والتوزيع</p>
                 </div>
-                <div className="form-row">
-                  <div className="input-group">
+                
+                <div className="config-grid">
+                  <div className="config-item">
+                    <label>كمية الأكواد</label>
+                    <input type="number" value={codeForm.count} onChange={e=>setCodeForm({...codeForm, count: e.target.value})} />
+                  </div>
+                  <div className="config-item">
+                    <label>قيمة الكود (ج.م)</label>
+                    <input type="number" value={codeForm.amount} onChange={e=>setCodeForm({...codeForm, amount: e.target.value})} />
+                  </div>
+                  <div className="config-item">
+                    <label>بادئة الكود (Prefix)</label>
+                    <input value={codeForm.prefix} onChange={e=>setCodeForm({...codeForm, prefix: e.target.value.toUpperCase()})} />
+                  </div>
+                  <div className="config-item">
                     <label>نوع الكود</label>
-                    <select value={codeForm.type} onChange={e => setCodeForm({...codeForm, type: e.target.value})}>
-                      <option value="wallet">شحن محفظة</option>
-                      <option value="course">تفعيل كورس مباشر</option>
+                    <select value={codeForm.type} onChange={e=>setCodeForm({...codeForm, type: e.target.value})}>
+                      <option value="wallet">شحن رصيد محفظة</option>
+                      <option value="course">تفعيل كورس معين</option>
                     </select>
                   </div>
-                  {codeForm.type === 'wallet' ? (
-                    <div className="input-group">
-                      <label>المبلغ</label>
-                      <input type="number" value={codeForm.amount} onChange={e => setCodeForm({...codeForm, amount: e.target.value})} />
-                    </div>
-                  ) : (
-                    <div className="input-group">
-                      <label>اختر الكورس</label>
-                      <select onChange={e => setCodeForm({...codeForm, targetCourseId: e.target.value})}>
-                        <option value="">-- اختر --</option>
-                        {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-                      </select>
-                    </div>
-                  )}
                 </div>
-                <button className="main-btn" onClick={generateCodes}><Download/> توليد وتصدير Excel</button>
+                
+                {codeForm.type === 'course' && (
+                  <div className="config-item full-width">
+                    <label>اختر الكورس المستهدف</label>
+                    <select onChange={e=>setCodeForm({...codeForm, targetCourseId: e.target.value})}>
+                      <option value="">-- اختر من الكورسات المتاحة --</option>
+                      {courses.map(c => <option key={c.id} value={c.id}>{c.title} ({c.grade})</option>)}
+                    </select>
+                  </div>
+                )}
+
+                <button className="generate-trigger-btn" onClick={generateCodesXLSX}>
+                  <Download size={20}/> بدء عملية التوليد والتصدير (Excel)
+                </button>
               </div>
 
-              <div className="codes-list-preview">
-                <h3>آخر الأكواد المولدة</h3>
-                <div className="mini-table-container">
-                  <table className="mini-table">
-                    <thead>
-                      <tr>
-                        <th>الكود</th>
-                        <th>النوع</th>
-                        <th>الحالة</th>
-                        <th>حذف</th>
+              <div className="recent-codes-table glass">
+                <h4>آخر 100 كود تم إنشاؤه</h4>
+                <table className="mini-table">
+                  <thead>
+                    <tr>
+                      <th>الكود</th>
+                      <th>القيمة</th>
+                      <th>الحالة</th>
+                      <th>بواسطة</th>
+                      <th>تاريخ العمل</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activationCodes.map(code => (
+                      <tr key={code.id}>
+                        <td><code>{code.code}</code></td>
+                        <td>{code.amount} ج.م</td>
+                        <td>
+                          <span className={`status-tag ${code.isUsed ? 'used' : 'available'}`}>
+                            {code.isUsed ? 'مستخدم' : 'متاح'}
+                          </span>
+                        </td>
+                        <td>{code.createdBy?.split('@')[0]}</td>
+                        <td>{code.createdAt?.toDate()?.toLocaleDateString()}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {activationCodes.map(c => (
-                        <tr key={c.id}>
-                          <td><code>{c.code}</code></td>
-                          <td>{c.type === 'wallet' ? `${c.amount}ج` : 'كورس'}</td>
-                          <td>
-                            <span className={`mini-badge ${c.isUsed ? 'used' : 'new'}`}>
-                              {c.isUsed ? 'مستخدم' : 'متاح'}
-                            </span>
-                          </td>
-                          <td><button onClick={() => deleteDoc(doc(db, "activationCodes", c.id))}><X size={14}/></button></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION: NOTIFICATIONS (The Messenger) */}
+          {activeSection === 'notifs' && (
+            <div className="notifs-manager fade-in">
+              <div className="broadcast-card glass">
+                <div className="b-header">
+                  <Bell size={30} color="#00f2ff"/>
+                  <div className="b-title">
+                    <h3>مركز البث المباشر (Broadcast)</h3>
+                    <p>إرسال إشعارات فورية تظهر كـ Pop-up في تطبيق الطلاب</p>
+                  </div>
+                </div>
+
+                <div className="b-form">
+                  <div className="form-group">
+                    <label>عنوان التنبيه</label>
+                    <input 
+                      value={notifForm.title} 
+                      onChange={e=>setNotifForm({...notifForm, title: e.target.value})} 
+                      placeholder="مثال: تنبيه بخصوص الحصة القادمة"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>نص الرسالة</label>
+                    <textarea 
+                      value={notifForm.message} 
+                      onChange={e=>setNotifForm({...notifForm, message: e.target.value})} 
+                      rows="6"
+                      placeholder="اكتب تفاصيل الإشعار هنا..."
+                    ></textarea>
+                  </div>
+                  
+                  <div className="b-row">
+                    <div className="form-group">
+                      <label>الجمهور المستهدف</label>
+                      <select value={notifForm.targetGrade} onChange={e=>setNotifForm({...notifForm, targetGrade: e.target.value})}>
+                        <option value="all">كل الطلاب</option>
+                        <option value="1 ثانوي">طلاب أولى ثانوي</option>
+                        <option value="2 ثانوي">طلاب تانية ثانوي</option>
+                        <option value="3 ثانوي">طلاب تالته ثانوي</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>الأهمية</label>
+                      <select value={notifForm.importance} onChange={e=>setNotifForm({...notifForm, importance: e.target.value})}>
+                        <option value="normal">عادية (رمادي)</option>
+                        <option value="high">عالية (أصفر)</option>
+                        <option value="urgent">قصوى (أحمر)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <button className="send-notif-btn" onClick={handleMassNotify}>
+                    <Send size={20}/> إرسال الإشعار لـ {notifForm.targetGrade === 'all' ? users.length : users.filter(u=>u.grade===notifForm.targetGrade).length} طالب الآن
+                  </button>
+                </div>
+              </div>
+
+              <div className="notif-history glass">
+                <h3>سجل الإشعارات المرسلة</h3>
+                <div className="history-list">
+                   {/* سيتم جلب سجل الإشعارات العامة هنا لاحقاً */}
+                   <div className="empty-notif">لا يوجد إشعارات سابقة في الذاكرة المؤقتة</div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
+        </div>
       </main>
 
-      {/* USER DETAIL MODAL */}
+      {/* MODAL: STUDENT PROFILE (The 360 View) */}
       <AnimatePresence>
         {selectedUser && (
-          <motion.div 
-            className="modal-backdrop"
-            initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
-          >
-            <motion.div 
-              className="user-modal glass"
-              initial={{y: 50}} animate={{y: 0}}
-            >
+          <motion.div className="modal-backdrop" initial={{opacity:0}} animate={{opacity:1}}>
+            <motion.div className="user-modal-detailed glass" initial={{y: 50}} animate={{y:0}}>
               <div className="modal-header">
-                <h2>تفاصيل الطالب</h2>
-                <button onClick={() => setSelectedUser(null)}><X/></button>
-              </div>
-              <div className="modal-body">
-                <div className="user-profile-header">
-                  <div className="big-avatar">{selectedUser.name[0]}</div>
-                  <div className="user-main-info">
+                <div className="u-main">
+                  <div className="u-avatar-big">{selectedUser.name?.[0]}</div>
+                  <div className="u-text">
                     <h3>{selectedUser.name}</h3>
                     <p>{selectedUser.email}</p>
                   </div>
                 </div>
-                <div className="user-stats-row">
-                  <div className="u-stat"><span>رصيد المحفظة</span><strong>{selectedUser.walletBalance || 0} ج.م</strong></div>
-                  <div className="u-stat"><span>الكورسات</span><strong>{selectedUser.enrolledContent?.length || 0}</strong></div>
-                  <div className="u-stat"><span>تاريخ التسجيل</span><strong>{selectedUser.createdAt?.toDate()?.toLocaleDateString()}</strong></div>
-                </div>
-                <div className="user-courses-list">
-                  <h4>الكورسات المشترك بها:</h4>
-                  {selectedUser.enrolledContent?.map(cid => (
-                    <div key={cid} className="enrolled-item">
-                      <Check size={14} color="#00f2ff"/> {courses.find(c => c.id === cid)?.title || 'كورس مجهول'}
-                    </div>
-                  ))}
-                </div>
+                <button className="close-modal" onClick={()=>setSelectedUser(null)}><X/></button>
               </div>
-              <div className="modal-footer">
-                <button className="secondary-btn" onClick={() => resetUserDevices(selectedUser)}>تصفير الأجهزة</button>
-                <button className="danger-btn" onClick={() => toggleUserBan(selectedUser)}>
-                  {selectedUser.isBanned ? 'فك الحظر' : 'حظر الطالب'}
-                </button>
+
+              <div className="modal-content-tabs">
+                <div className="info-grid">
+                  <div className="info-item">
+                    <label>المحفظة</label>
+                    <strong>{selectedUser.walletBalance || 0} ج.م</strong>
+                  </div>
+                  <div className="info-item">
+                    <label>رقم الهاتف</label>
+                    <strong>{selectedUser.phone}</strong>
+                  </div>
+                  <div className="info-item">
+                    <label>تاريخ الانضمام</label>
+                    <strong>{selectedUser.createdAt?.toDate()?.toLocaleDateString()}</strong>
+                  </div>
+                  <div className="info-item">
+                    <label>الأجهزة</label>
+                    <strong>{selectedUser.deviceId ? 'جهاز مسجل' : 'لا يوجد'}</strong>
+                  </div>
+                </div>
+
+                <div className="courses-enrolled">
+                  <h4>الكورسات المشترك بها:</h4>
+                  <div className="enrolled-list">
+                    {selectedUser.enrolledContent?.map(cid => (
+                      <div key={cid} className="enrolled-tag">
+                        <Check size={14}/> {courses.find(c=>c.id===cid)?.title || 'كورس مفعّل'}
+                      </div>
+                    ))}
+                    {(!selectedUser.enrolledContent || selectedUser.enrolledContent.length === 0) && <p>لا يوجد كورسات مفعلة حالياً</p>}
+                  </div>
+                </div>
+
+                <div className="modal-actions-footer">
+                   <button className="action-btn purple-bg" onClick={() => clearDeviceAuth(selectedUser.id)}>تصفير الأجهزة</button>
+                   <button className="action-btn red-bg" onClick={() => toggleUserLock(selectedUser)}>
+                     {selectedUser.isBanned ? 'فك حظر الطالب' : 'حظر من المنصة'}
+                   </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
