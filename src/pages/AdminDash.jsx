@@ -24,7 +24,7 @@ import {
   Briefcase, GraduationCap, Trophy, BarChart, Paperclip, MousePointer2
 } from 'lucide-react';
 
-import './AdminSystem.css';
+import './AdminDash..css';
 
 /**
  * TITO ACADEMY - FULL ADMINISTRATIVE ERP SYSTEM v5.0
@@ -912,3 +912,4 @@ const AdminDash = () => {
 };
 
 export default AdminDash;
+
