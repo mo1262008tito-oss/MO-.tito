@@ -874,3 +874,308 @@ body {
     .brand-text, .nav-wrapper span, .admin-info { display: none; }
     .master-viewport { max-width: calc(100% - 80px); }
 }
+/* TITO ACADEMY - ADMINISTRATIVE ERP SYSTEM STYLES
+  Theme: Deep Dark & Neon Blue
+*/
+
+:root {
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --bg-dark: #0f172a;
+  --panel-bg: rgba(30, 41, 59, 0.7);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  direction: rtl; /* لضمان التوافق مع اللغة العربية */
+}
+
+/* Container Layout */
+.admin-full-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: radial-gradient(circle at top right, #1e293b, #0f172a);
+}
+
+/* Sidebar Styling */
+.tito-sidebar {
+  width: 280px;
+  background: rgba(15, 23, 42, 0.95);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+}
+
+.sidebar-minified {
+  width: 80px;
+}
+
+.sidebar-logo-container {
+  padding: 30px 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--primary);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 22px;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+}
+
+.sidebar-links ul {
+  list-style: none;
+  padding: 10px;
+}
+
+.sidebar-links li {
+  padding: 14px 18px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  color: var(--text-muted);
+  transition: all 0.3s;
+}
+
+.sidebar-links li:hover, .sidebar-links li.active {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--primary);
+}
+
+.sidebar-links li.active {
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.3);
+}
+
+.sidebar-sep {
+  padding: 20px 18px 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #475569;
+  letter-spacing: 1px;
+}
+
+/* Main Viewport */
+.tito-main-viewport {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.viewport-top-bar {
+  height: 80px;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+}
+
+.header-search-area {
+  position: relative;
+  width: 400px;
+}
+
+.header-search-area input {
+  width: 100%;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid var(--border-color);
+  padding: 12px 45px 12px 20px;
+  border-radius: 30px;
+  color: white;
+  outline: none;
+}
+
+.header-search-area svg {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+/* Summary Cards */
+.summary-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 25px;
+  padding: 30px 40px;
+}
+
+.summary-card {
+  background: var(--panel-bg);
+  padding: 25px;
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-card h3 {
+  font-size: 28px;
+  margin-top: 10px;
+}
+
+.summary-card span {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.c-blue { border-bottom: 4px solid var(--primary); }
+.c-green { border-bottom: 4px solid var(--success); }
+.c-orange { border-bottom: 4px solid var(--warning); }
+.c-purple { border-bottom: 4px solid #a855f7; }
+
+/* Panels & Glassmorphism */
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  padding: 30px;
+  margin: 0 40px 30px;
+}
+
+/* Forms */
+.tito-standard-form {
+  display: grid;
+  gap: 20px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-field label {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.form-field input, .form-field select, .form-field textarea {
+  background: #0f172a;
+  border: 1px solid var(--border-color);
+  padding: 12px;
+  border-radius: 12px;
+  color: white;
+  transition: 0.3s;
+}
+
+.form-field input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+}
+
+/* Course Cards */
+.courses-display-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 0 40px 40px;
+}
+
+.modern-course-card {
+  background: var(--panel-bg);
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  transition: transform 0.3s;
+}
+
+.modern-course-card:hover {
+  transform: translateY(-10px);
+}
+
+.c-card-img img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.c-card-body {
+  padding: 20px;
+}
+
+/* Buttons */
+.form-submit-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.form-submit-btn:hover {
+  background: var(--primary-hover);
+}
+
+/* Scrollbar */
+.viewport-scroller::-webkit-scrollbar {
+  width: 6px;
+}
+
+.viewport-scroller::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 10px;
+}
+
+/* Pulse Badge */
+.pulse-badge {
+  background: var(--danger);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .tito-sidebar { width: 80px; }
+  .sidebar-logo-container h2, .sidebar-links span, .sidebar-sep { display: none; }
+}
