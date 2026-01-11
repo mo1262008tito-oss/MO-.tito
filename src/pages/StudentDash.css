@@ -654,3 +654,165 @@ svg {
 .active svg {
     filter: drop-shadow(0 0 5px var(--accent-blue));
 }
+
+/* --- 1. الخلفية الكونية (Cosmic Background) --- */
+.student-dash {
+  background: radial-gradient(circle at center, #1a1a2e 0%, #020205 100%);
+  color: #ffffff;
+  min-height: 100vh;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow-x: hidden;
+}
+
+/* --- 2. الهيدر الزجاجي (Glassmorphism Header) --- */
+.sd-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  margin-bottom: 30px;
+  position: sticky;
+  top: 10px;
+  z-index: 100;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.sd-header .avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #00d2ff;
+  box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+}
+
+/* --- 3. توزيع الشبكة (The 3-Column Grid) --- */
+.sd-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr 300px; /* ثلاث أعمدة */
+  gap: 20px;
+}
+
+/* تصميم متجاوب للموبايل */
+@media (max-width: 1024px) {
+  .sd-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- 4. الكروت العائمة (Floating 3D Panels) --- */
+.panel {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 25px;
+  padding: 20px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+}
+
+.panel:hover {
+  transform: translateY(-10px) rotateX(2deg);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: #00d2ff;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 210, 255, 0.1);
+}
+
+.panel-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #00d2ff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* --- 5. شريط التقدم المتوهج (Glowing XP Bar) --- */
+.power-meter {
+  height: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.meter {
+  height: 100%;
+  background: linear-gradient(90deg, #00d2ff, #9d50bb);
+  box-shadow: 0 0 15px #00d2ff;
+  transition: width 1s ease-in-out;
+}
+
+/* --- 6. لوحة المتصدرين (Leaderboard) --- */
+.leader-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 15px;
+  margin-bottom: 10px;
+  transition: 0.3s;
+}
+
+.leader-item:hover {
+  background: rgba(0, 210, 255, 0.1);
+}
+
+.rank {
+  font-weight: 800;
+  margin-right: 15px;
+  color: #ffd700; /* ذهبي */
+}
+
+/* --- 7. الأزرار (Neon Buttons) --- */
+.btn, .cta {
+  background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  filter: brightness(1.2);
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
+}
+
+/* --- 8. مؤقت التركيز (Deep Focus Timer) --- */
+.timer {
+  font-size: 2.5rem;
+  font-weight: 800;
+  text-align: center;
+  color: #ff4b2b;
+  text-shadow: 0 0 15px rgba(255, 75, 43, 0.5);
+  margin: 15px 0;
+}
+
+/* --- 9. التنبيهات (Toasts) --- */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #00d2ff;
+  color: black;
+  padding: 15px 25px;
+  border-radius: 15px;
+  font-weight: bold;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* --- 10. المفكرة (Notes) --- */
+.note-item {
+  background: rgba(0,0,0,0.2);
+  border-left: 3px solid #00d2ff;
+  padding: 10px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
