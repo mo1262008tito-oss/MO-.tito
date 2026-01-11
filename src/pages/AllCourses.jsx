@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { db, auth } from '../firebase';
 import { 
   collection, onSnapshot, doc, updateDoc, arrayUnion, 
-  increment, query, orderBy, getDoc 
+  increment, query, orderBy, getDoc, serverTimestamp 
 } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
 import {  
-  Search, BookOpen, User, PlayCircle, ArrowRight, Layout,  
-  Lock, Zap, Clock, BookMarked, MonitorPlay, Library, ChevronLeft, Unlock, Wallet 
+  Search, BookOpen, User, PlayCircle, Layout, Heart,
+  Lock, Zap, Clock, Library, ChevronLeft, Unlock, Wallet,
+  Eye, Star, FileText, Share2, Info, CheckCircle2
 } from 'lucide-react';
 import './AllCourses.css';
 
@@ -22,8 +23,9 @@ const AllCourses = () => {
   const [courses, setCourses] = useState([]);
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [userEnrolledIds, setUserEnrolledIds] = useState([]);
-  const [walletBalance, setWalletBalance] = useState(0); // رصيد المحفظة
+  const [user, setUser] = useState(null);
+  const [wishlist, setWishlist] = useState([]);
+  const [showPreview, setShowPreview] = useState({ show: false, url: '', title: '' });
 
   const gradeOptions = {
     'ابتدائي': ['1 ابتدائي', '2 ابتدائي', '3 ابتدائي', '4 ابتدائي', '5 ابتدائي', '6 ابتدائي'],
@@ -32,219 +34,157 @@ const AllCourses = () => {
   };
 
   useEffect(() => {
-    setLoading(true);
-    
-    // 1. جلب الكورسات
-    const qCourses = query(collection(db, "courses_metadata"), orderBy("createdAt", "desc"));
-    const unsubCourses = onSnapshot(qCourses, (snapshot) => {
-      setCourses(snapshot.docs.map(d => ({ id: d.id, type: 'course', ...d.data() })));
+    const unsubCourses = onSnapshot(query(collection(db, "courses_metadata"), orderBy("createdAt", "desc")), (snap) => {
+      setCourses(snap.docs.map(d => ({ id: d.id, type: 'course', ...d.data() })));
     });
 
-    // 2. جلب المكتبة
-    const qBooks = query(collection(db, "library_books"), orderBy("createdAt", "desc"));
-    const unsubBooks = onSnapshot(qBooks, (snapshot) => {
-      setBooks(snapshot.docs.map(d => ({ id: d.id, type: 'book', ...d.data() })));
+    const unsubBooks = onSnapshot(query(collection(db, "library_books"), orderBy("createdAt", "desc")), (snap) => {
+      setBooks(snap.docs.map(d => ({ id: d.id, type: 'book', ...d.data() })));
     });
 
-    // 3. جلب بيانات المستخدم (المحفظة والاشتراكات)
     if (auth.currentUser) {
-      const unsubUser = onSnapshot(doc(db, "users", auth.currentUser.uid), (snapshot) => {
-        if (snapshot.exists()) {
-          const userData = snapshot.data();
-          setUserEnrolledIds(userData.enrolledContent || []);
-          setWalletBalance(userData.walletBalance || 0);
+      const unsubUser = onSnapshot(doc(db, "users", auth.currentUser.uid), (snap) => {
+        if (snap.exists()) {
+          setUser(snap.data());
+          setWishlist(snap.data().wishlist || []);
         }
       });
       setLoading(false);
       return () => { unsubCourses(); unsubBooks(); unsubUser(); };
     }
-
     setLoading(false);
-    return () => { unsubCourses(); unsubBooks(); };
   }, []);
 
-  // دالة الشراء السريع من المحفظة
-  const handleQuickPurchase = async (item) => {
+  // 1. إضافة للمفضلة
+  const toggleWishlist = async (e, itemId) => {
+    e.stopPropagation();
+    const isAdded = wishlist.includes(itemId);
+    await updateDoc(doc(db, "users", auth.currentUser.uid), {
+      wishlist: isAdded ? wishlist.filter(id => id !== itemId) : arrayUnion(itemId)
+    });
+  };
+
+  // 2. شراء سريع مطور (مع تسجيل عملية الشراء للأدمن)
+  const handlePurchase = async (item) => {
     const price = parseInt(item.price);
-    
-    if (walletBalance < price) {
-      alert(`❌ عذراً، رصيدك (${walletBalance} ج.م) غير كافٍ. يرجى شحن المحفظة أولاً.`);
-      return;
+    if ((user?.walletBalance || 0) < price) {
+      return alert("رصيدك غير كافٍ، توجه لصفحة الشحن.");
     }
 
-    const confirmPurchase = window.confirm(`هل تريد شراء "${item.title}" مقابل ${price} ج.م من رصيدك؟`);
-    
-    if (confirmPurchase) {
+    if (window.confirm(`تأكيد شراء "${item.title}" بمبلغ ${price} ج.م؟`)) {
       try {
-        const userRef = doc(db, "users", auth.currentUser.uid);
-        await updateDoc(userRef, {
+        await updateDoc(doc(db, "users", auth.currentUser.uid), {
           walletBalance: increment(-price),
           enrolledContent: arrayUnion(item.id),
           transactions: arrayUnion({
-            type: 'course_purchase',
-            amount: price,
-            itemTitle: item.title,
+            id: Date.now(),
+            title: `شراء كورس: ${item.title}`,
+            amount: -price,
             date: new Date().toISOString()
           })
         });
-        alert("🎉 مبروك! تم فتح الكورس بنجاح.");
-      } catch (error) {
-        alert("حدث خطأ أثناء إتمام العملية. حاول مرة أخرى.");
-      }
-    }
-  };
-
-  const handleItemClick = async (item) => {
-    if (!auth.currentUser) {
-      alert("⚠️ يرجى تسجيل الدخول أولاً");
-      return navigate('/login');
-    }
-
-    if (item.type === 'book') {
-      window.open(item.pdfUrl, '_blank');
-      return;
-    }
-
-    const isEnrolled = userEnrolledIds.includes(item.id);
-    const isFree = !item.price || parseInt(item.price) === 0;
-
-    if (isEnrolled || isFree) {
-      // اشتراك تلقائي للمجاني
-      if (isFree && !isEnrolled) {
-        await updateDoc(doc(db, "users", auth.currentUser.uid), {
-          enrolledContent: arrayUnion(item.id)
-        });
-      }
-      // التوجيه لصفحة الفيديو مع تمرير بيانات المرحلة
-      navigate(`/video-player/${item.id}`, { state: { level: currentLevel, grade: item.grade } });
-    } else {
-      // إذا كان مدفوعاً وغير مشترك: خيارين (محفظة أو كود تفعيل)
-      if (walletBalance >= parseInt(item.price)) {
-        handleQuickPurchase(item);
-      } else {
-        navigate(`/activate/${item.id}`);
-      }
+        alert("تم تفعيل الكورس! ابدأ المذاكرة الآن.");
+      } catch (err) { alert("خطأ في العملية"); }
     }
   };
 
   const getFilteredItems = () => {
-    const baseList = viewMode === 'courses' ? courses : books;
-    return baseList.filter(item => {
-      const matchLevel = item.level === currentLevel;
-      const matchGrade = activeGrade === 'الكل' || item.grade === activeGrade;
-      const matchSearch = item.title?.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchLevel && matchGrade && matchSearch;
-    });
+    const list = viewMode === 'courses' ? courses : books;
+    return list.filter(item => 
+      item.level === currentLevel && 
+      (activeGrade === 'الكل' || item.grade === activeGrade) &&
+      item.title?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   };
 
-  if (loading) return <div className="hs-loader-overlay"><Zap className="spin" size={50} color="#00f2ff" /></div>;
-
   return (
-    <div className="hs-viewport rtl">
-      <div className="hero-grid-bg"></div>
-
-      <header className="lib-header">
-        <div className="header-content">
-          <div className="wallet-status glass-effect">
-            <Wallet size={18} color="#ffd700" />
-            <span>رصيدي: {walletBalance} ج.م</span>
+    <div className="all-courses-nebula">
+      
+      {/* هيدر المتجر المتطور */}
+      <header className="store-header glass">
+        <div className="header-main">
+          <div className="user-stats">
+            <div className="stat-item"><Wallet color="#fbbf24"/> {user?.walletBalance || 0} ج.م</div>
+            <div className="stat-item"><Zap color="#f59e0b"/> {user?.points || 0} XP</div>
           </div>
-          <h1 className="text-gradient">أكاديمية الفيزياء الحديثة</h1>
-          <button onClick={() => navigate('/dashboard')} className="glass-nav-btn">
-            لوحة التحكم <Layout size={18} />
+          <h1>مكتبة المعرفة الحديثة</h1>
+          <button className="back-dash" onClick={() => navigate('/dashboard')}>
+            لوحتي <Layout size={18}/>
           </button>
+        </div>
+        
+        {/* نظام الفرز الذكي */}
+        <div className="filter-system">
+           <div className="level-pills">
+             {['ابتدائي', 'اعدادي', 'ثانوي'].map(l => (
+               <button key={l} className={currentLevel === l ? 'active' : ''} onClick={() => setCurrentLevel(l)}>{l}</button>
+             ))}
+           </div>
+           <div className="search-box">
+             <Search size={18}/>
+             <input placeholder="ابحث عن درس، مذكرة، مراجعة..." onChange={(e) => setSearchTerm(e.target.value)} />
+           </div>
         </div>
       </header>
 
-      <div className="lib-controls-container">
-        {/* المرحلة الدراسية */}
-        <div className="level-tabs">
-          {['ابتدائي', 'اعدادي', 'ثانوي'].map(level => (
-            <button 
-              key={level}
-              className={currentLevel === level ? 'active' : ''}
-              onClick={() => { setCurrentLevel(level); setActiveGrade('الكل'); }}
-            >
-              {level}
-            </button>
-          ))}
-        </div>
-
-        {/* نوع المحتوى */}
-        <div className="view-mode-toggle">
+      <main className="store-grid-container">
+        <div className="view-selector">
           <button className={viewMode === 'courses' ? 'active' : ''} onClick={() => setViewMode('courses')}>
-            <MonitorPlay size={18}/> الكورسات
+            <PlayCircle size={18}/> الكورسات التعليمية
           </button>
           <button className={viewMode === 'library' ? 'active' : ''} onClick={() => setViewMode('library')}>
-            <Library size={18}/> المكتبة
+            <FileText size={18}/> بنك المذكرات (PDF)
           </button>
         </div>
 
-        <div className="search-bar-premium">
-          <Search size={20} className="s-icon" />
-          <input 
-            placeholder={`ابحث في ${viewMode === 'courses' ? 'الكורسات' : 'المكتبة'}...`}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-
-        <nav className="hs-navigation-bar">
-          <button className={`nav-item ${activeGrade === 'الكل' ? 'active' : ''}`} onClick={() => setActiveGrade('الكل')}>
-            <span className="nav-text">الكل</span>
-          </button>
-          {gradeOptions[currentLevel].map(grade => (
-            <button 
-              key={grade} 
-              className={`nav-item ${activeGrade === grade ? 'active' : ''}`} 
-              onClick={() => setActiveGrade(grade)}
-            >
-              <span className="nav-text">{grade}</span>
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      <main className="hs-container">
-        <div className="premium-grid">
-          <AnimatePresence mode='popLayout'>
+        <div className="items-grid">
+          <AnimatePresence>
             {getFilteredItems().map((item) => {
-              const isEnrolled = userEnrolledIds.includes(item.id);
-              const isLocked = item.type === 'course' && parseInt(item.price) > 0 && !isEnrolled;
-              const canAfford = walletBalance >= parseInt(item.price);
+              const isEnrolled = user?.enrolledContent?.includes(item.id);
+              const isFree = !item.price || item.price === "0";
+              const inWishlist = wishlist.includes(item.id);
 
               return (
                 <motion.div 
-                  layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-                  whileHover={{ y: -10 }} key={item.id} className={`course-card-v3 ${isEnrolled ? 'enrolled' : ''}`}
-                  onClick={() => handleItemClick(item)}
+                  layout initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                  key={item.id} className={`item-card ${isEnrolled ? 'owned' : ''}`}
                 >
-                  <div className="card-top">
-                    <img src={item.thumbnail || 'https://via.placeholder.com/400x220'} alt="" />
-                    <div className="card-badge">
-                      {isLocked ? <Lock size={12} /> : <Unlock size={12} />} {item.grade}
-                    </div>
-                    <div className="play-btn-circle">
-                      {isLocked ? (canAfford ? <Wallet size={30} color="#00f2ff" /> : <Lock size={30} />) : <PlayCircle size={45} fill="#00f2ff" color="#000" />}
-                    </div>
+                  <div className="card-media">
+                    <img src={item.thumbnail} alt={item.title} />
+                    <button className={`wish-btn ${inWishlist ? 'active' : ''}`} onClick={(e) => toggleWishlist(e, item.id)}>
+                      <Heart fill={inWishlist ? "#ff4757" : "none"} />
+                    </button>
+                    {item.isBestSeller && <div className="hot-tag">الأكثر طلباً 🔥</div>}
                   </div>
 
-                  <div className="card-body">
-                    <h3 className="course-title">{item.title}</h3>
-                    <div className="instructor-meta">
-                      <div className="mini-avatar">M</div>
-                      <span>أ. محمود فرج</span>
+                  <div className="card-content">
+                    <div className="item-meta">
+                      <span className="grade-tag">{item.grade}</span>
+                      <div className="rating"><Star size={12} fill="#ffb800"/> 4.9</div>
                     </div>
-
+                    <h3>{item.title}</h3>
+                    
                     <div className="card-footer">
-                      <div className="price-tag">
-                        {parseInt(item.price) > 0 ? (
-                          <span className="price-val">{item.price} <small>EGP</small></span>
-                        ) : <span className="free-badge">مجاني</span>}
+                      <div className="price-info">
+                        {isFree ? <span className="free">مجاني</span> : <span className="price">{item.price} ج.م</span>}
                       </div>
-                      <button className={`action-btn ${isEnrolled ? 'btn-enrolled' : ''}`}>
-                        {isEnrolled ? 'استكمال' : isLocked ? (canAfford ? 'شراء' : 'تفعيل') : 'ابدأ'} 
-                        <ChevronLeft size={16} />
-                      </button>
+                      
+                      {isEnrolled ? (
+                        <button className="go-btn" onClick={() => navigate(`/video-player/${item.id}`)}>
+                          استمرار <ChevronLeft size={16}/>
+                        </button>
+                      ) : (
+                        <div className="action-btns">
+                           {!isFree && (
+                             <button className="preview-btn" title="معاينة" onClick={() => setShowPreview({show: true, url: item.previewUrl, title: item.title})}>
+                               <Eye size={18}/>
+                             </button>
+                           )}
+                           <button className="buy-btn" onClick={() => handlePurchase(item)}>
+                             {isFree ? 'إضافة' : 'شراء'}
+                           </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -253,9 +193,23 @@ const AllCourses = () => {
           </AnimatePresence>
         </div>
       </main>
+
+      {/* مودال المعاينة (Preview Modal) */}
+      {showPreview.show && (
+        <div className="preview-overlay" onClick={() => setShowPreview({show:false})}>
+          <motion.div className="preview-modal" initial={{scale:0.9}} animate={{scale:1}} onClick={e => e.stopPropagation()}>
+            <div className="modal-head">
+              <h4>معاينة: {showPreview.title}</h4>
+              <button onClick={() => setShowPreview({show:false})}><X/></button>
+            </div>
+            <iframe src={showPreview.url} width="100%" height="400px" allowFullScreen></iframe>
+            <p className="hint">هذا الفيديو للمعاينة فقط، اشترك لمشاهدة الكورس كاملاً.</p>
+          </motion.div>
+        </div>
+      )}
+
     </div>
   );
 };
 
 export default AllCourses;
-
