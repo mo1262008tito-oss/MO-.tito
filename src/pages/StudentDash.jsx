@@ -1,5 +1,4 @@
 
-
 // StudentDash.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { 
@@ -11,13 +10,13 @@ import {
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-
+import "./StudentDash.css";
 // تأسيس Firebase عند الاستدعاء
 // افترض أن لديك firebaseConfig وتقوم بتهيئة Firebase خارج هذا الملف.
 // إذا لم يكن هناك، استخدم import { firebaseApp } from "./firebase"; ثم استخدم:
 // const db = getFirestore(firebaseApp);
 import { firebaseApp } from "./firebase"; // تأكد من وجود هذا الملف في مشروعك ويصدر firebaseApp
-import "./StudentDash.css";
+
 const StudentDash = () => {
   // التهيئة العامة
   const navigate = useNavigate();
@@ -1024,5 +1023,6 @@ const QuickNotesStorage = () => {
 export default StudentDash;
 
         
+
 
 
