@@ -1,433 +1,595 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { auth, db, storage } from '../firebase';
+
+
+// StudentDash.jsx
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { 
-  doc, onSnapshot, updateDoc, arrayUnion, arrayRemove, increment, 
-  getDocs, collection, query, where, orderBy, limit, serverTimestamp, setDoc 
-} from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { motion, AnimatePresence } from 'framer-motion';
+  getAuth, onAuthStateChanged 
+} from "firebase/auth";
 import { 
-  Layout, Power, CheckCircle, Award, PlayCircle, Clock, Flame, Key, Trophy, 
-  ShoppingBag, BookOpen, Zap, Target, Plus, ListChecks, Wallet, ShieldCheck, 
-  Image as ImageIcon, X, Monitor, Moon, Sun, Coffee, Brain, Sparkles, Trash2,
-  Bell, Settings, ChevronRight, Star, Heart, MessageSquare, Briefcase, Camera
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import './StudentDash.css';
+  getFirestore, collection, doc, getDocs, query, where, orderBy, onSnapshot, updateDoc, addDoc, deleteDoc, setDoc, increment
+} from "firebase/firestore";
+import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+
+// تأسيس Firebase عند الاستدعاء
+// افترض أن لديك firebaseConfig وتقوم بتهيئة Firebase خارج هذا الملف.
+// إذا لم يكن هناك، استخدم import { firebaseApp } from "./firebase"; ثم استخدم:
+// const db = getFirestore(firebaseApp);
+import { firebaseApp } from "./firebase"; // تأكد من وجود هذا الملف في مشروعك ويصدر firebaseApp
 
 const StudentDash = () => {
+  // التهيئة العامة
   const navigate = useNavigate();
-  
-  // --- States الأساسية ---
-  const [student, setStudent] = useState(null);
-  const [activeTab, setActiveTab] = useState('dashboard'); 
-  const [topStudents, setTopStudents] = useState([]);
-  const [motivation, setMotivation] = useState("");
-  
-  // --- أنظمة التفاعل ---
-  const [activationCode, setActivationCode] = useState("");
-  const [newTask, setNewTask] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
-  const [toasts, setToasts] = useState([]);
+  const auth = useMemo(() => getAuth(firebaseApp), []);
+  const db = useMemo(() => getFirestore(firebaseApp), []);
+  const storage = useMemo(() => getStorage(firebaseApp), []);
+  const userRef = useRef(null);
 
-  // --- نظام بومودورو ---
-  const [timer, setTimer] = useState(1500);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  // الحالة العامة للطالب
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState({
+    displayName: "",
+    email: "",
+    avatarUrl: "",
+    xp: 0,
+    level: 1,
+    streak: 0,
+    balance: 0,
+    badges: [],
+    tasksCompleted: 0,
+    hoursSpent: 0,
+    coursesCompleted: 0,
+  });
+
+  // حالات UI/UX
+  const [theme, setTheme] = useState("space-dark"); // "space-dark" أو "midnight-blue"
+  const [quotes, setQuotes] = useState([]);
+  const [dailyQuote, setDailyQuote] = useState("");
+  const [todos, setTodos] = useState([]);
+  const [questions, setQuestions] = useState([]);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [adminBroadcasts, setAdminBroadcasts] = useState([]);
+  const [pomodoro, setPomodoro] = useState({ running: false, seconds: 1500, mode: "focus" });
+  const [avatars, setAvatars] = useState({}); // placeholder لوثائق avatar مؤثرة
+  const [notifications, setNotifications] = useState([]);
   const [focusMode, setFocusMode] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // مصفوفة الرسائل التحفيزية
-  const quotes = useMemo(() => [
-    "التميز ليس فعلاً، بل عادة.. استمر في دراستك!",
-    "عقلك هو أقوى سلاح تملكه، قم بشحنه الآن.",
-    "كل درس تنهيه اليوم يجعلك أقرب لحلمك غداً.",
-    "لا تدرس لتعبر الامتحان، ادرس لتغير العالم.",
-    "الرصيد الحقيقي هو العلم الذي تبنيه في عقلك."
-  ], []);
-
-  // ==========================================
-  // [1] محرك البيانات والربط (Firebase Core)
-  // ==========================================
-  
+  // تعيين التغييرات في التخطيط
   useEffect(() => {
-    if (!auth.currentUser) return navigate('/login');
-
-    // 1. مراقبة بيانات المستخدم حياً
-    const unsubUser = onSnapshot(doc(db, "users", auth.currentUser.uid), (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        setStudent(data);
-        handleDailyBonus(data);
+    // ربط المصادقة والتأكد من تسجيل الدخول
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      if (u) {
+        setUser(u);
+        userRef.current = u;
+        // جلب بيانات المستخدم
+        subscribeUserProfile(u.uid);
+        // تسجيل المتابعة الأخرى
+        subscribeLiveData(u.uid);
       } else {
-        // إنشاء بروفايل جديد إذا لم يوجد
-        initializeNewStudent();
+        // إذا لم يكن مسجلاً، تحويل للمسار تسجيل الدخول
+        navigate("/login", { replace: true });
       }
     });
+    return () => unsubscribe();
+  // eslint-disable-next-line
+  }, []);
 
-    // 2. جلب الأوائل
-    const qLeaders = query(collection(db, "users"), orderBy("points", "desc"), limit(5));
-    const unsubLeaders = onSnapshot(qLeaders, (snap) => {
-      setTopStudents(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-
-    // 3. اختيار رسالة تحفيزية
-    setMotivation(quotes[Math.floor(Math.random() * quotes.length)]);
-
-    return () => { unsubUser(); unsubLeaders(); };
-  }, [navigate, quotes]);
-
-  const initializeNewStudent = async () => {
-    await setDoc(doc(db, "users", auth.currentUser.uid), {
-      name: auth.currentUser.displayName || "طالب مجتهد",
-      email: auth.currentUser.email,
-      points: 100,
-      walletBalance: 0,
-      streak: 1,
-      lastLoginDate: new Date().toDateString(),
-      todoList: [],
-      photoURL: null,
-      createdAt: serverTimestamp()
-    });
-  };
-
-  const handleDailyBonus = async (data) => {
-    const today = new Date().toDateString();
-    if (data.lastLoginDate !== today) {
-      await updateDoc(doc(db, "users", auth.currentUser.uid), {
-        lastLoginDate: today,
-        streak: increment(1),
-        points: increment(50)
-      });
-      addToast("مكافأة دخول يومي: +50 نقطة ✨", "success");
-    }
-  };
-
-  // ==========================================
-  // [2] نظام رفع الصور (Avatar System)
-  // ==========================================
-  
-  const handlePhotoUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 1024 * 1024 * 3) return addToast("الصورة كبيرة جداً (الأقصى 3MB)", "error");
-
-    setIsUploading(true);
+  // دالة جلب الملف الشخصي
+  const subscribeUserProfile = async (uid) => {
     try {
-      const storageRef = ref(storage, `profiles/${auth.currentUser.uid}`);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
-      await updateDoc(doc(db, "users", auth.currentUser.uid), { photoURL: url });
-      addToast("تم تحديث صورتك الشخصية بنجاح!", "success");
-    } catch (err) {
-      addToast("حدث خطأ أثناء الرفع", "error");
-    }
-    setIsUploading(false);
-  };
-
-  // ==========================================
-  // [3] نظام المحفظة (Wallet Logic)
-  // ==========================================
-  
-  const handleRedeem = async () => {
-    if (!activationCode.trim()) return;
-    
-    try {
-      const q = query(collection(db, "activationCodes"), where("code", "==", activationCode), where("isUsed", "==", false));
-      const snap = await getDocs(q);
-
-      if (snap.empty) return addToast("كود خاطئ أو تم استخدامه", "error");
-
-      const codeDoc = snap.docs[0];
-      const val = codeDoc.data().value;
-
-      await updateDoc(doc(db, "users", auth.currentUser.uid), {
-        walletBalance: increment(val),
-        points: increment(100)
+      // ملف الطالب في Firestore
+      const userDoc = doc(db, "students", uid);
+      // تطبيق onSnapshot لمراقبة التحديثات
+      onSnapshot(userDoc, (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          setProfile((p) => ({
+            ...p,
+            displayName: data.displayName || "",
+            email: data.email || "",
+            avatarUrl: data.avatarUrl || "",
+            xp: data.xp ?? p.xp,
+            level: data.level ?? p.level,
+            streak: data.streak ?? p.streak,
+            balance: data.balance ?? p.balance,
+            badges: data.badges ?? p.badges,
+            tasksCompleted: data.tasksCompleted ?? p.tasksCompleted,
+            hoursSpent: data.hoursSpent ?? p.hoursSpent,
+            coursesCompleted: data.coursesCompleted ?? p.coursesCompleted,
+          }));
+        }
       });
 
-      await updateDoc(doc(db, "activationCodes", codeDoc.id), {
-        isUsed: true,
-        usedBy: student.email,
-        usedAt: serverTimestamp()
-      });
-
-      setActivationCode("");
-      addToast(`تم شحن ${val} ج.م في محفظتك بنجاح 🚀`, "success");
-    } catch (err) {
-      addToast("فشل تفعيل الكود", "error");
+      // استعادة الصورة من Storage إذا لزم الأمر
+      // يمكن أن تضيف آلية تحميل Avatar من Firestore إلى profile.avatarUrl
+    } catch (e) {
+      console.error("Error loading user profile:", e);
     }
   };
 
-  // ==========================================
-  // [4] نظام المهام (To-Do Logic)
-  // ==========================================
-  
-  const addTask = async () => {
-    if (!newTask.trim()) return;
-    const task = { id: Date.now(), text: newTask, completed: false };
-    await updateDoc(doc(db, "users", auth.currentUser.uid), {
-      todoList: arrayUnion(task)
-    });
-    setNewTask("");
-    addToast("تمت إضافة المهمة بنجاح", "info");
+  // دالة اشتراك البيانات الحيّة
+  const subscribeLiveData = (uid) => {
+    // 1) Leaderboard (Top 5 by xp)
+    const qLeaderboard = query(collection(db, "students"), orderBy("xp", "desc"), limit5);
   };
 
-  const toggleTask = async (task) => {
-    const updated = student.todoList.map(t => t.id === task.id ? {...t, completed: !t.completed} : t);
-    await updateDoc(doc(db, "users", auth.currentUser.uid), { todoList: updated });
-    if (!task.completed) {
-      await updateDoc(doc(db, "users", auth.currentUser.uid), { points: increment(10) });
-      addToast("+10 XP لإنجازك المهمة!", "success");
-    }
-  };
+  // helper: تعريف limit5
+  const limit5 = 5;
 
-  const removeTask = async (task) => {
-    await updateDoc(doc(db, "users", auth.currentUser.uid), { todoList: arrayRemove(task) });
-  };
-
-  // ==========================================
-  // [5] نظام بومودورو والوقت
-  // ==========================================
-  
+  // 2) Daily Quotes من مصفوفة ذكية نمطية
   useEffect(() => {
-    let interval = null;
-    if (isTimerRunning && timer > 0) {
-      interval = setInterval(() => setTimer(prev => prev - 1), 1000);
-    } else if (timer === 0) {
-      setIsTimerRunning(false);
-      addToast("انتهت جلسة التركيز! +50 نقطة مكافأة ☕", "success");
-      updateDoc(doc(db, "users", auth.currentUser.uid), { points: increment(50) });
-      setTimer(1500);
+    // افترض أن لديك collection dailyQuotes أو مصفوفة مخزنة في Firestore أو في الكود
+    // هنا نعطي fallback محلي
+    const localQuotes = [
+      "ابدأ اليوم بخطوة صغيرة نحو هدفك.",
+      "التعلم المستمر يفتح أبواباً لا ترى.",
+      "التحدي اليوم يجهزك لنجاح الغد.",
+      "افعل الشيء الصحيح حتى لو كان صعباً.",
+      "كل دقيقة تركيز تقربك من الإتقان."
+    ];
+    setQuotes(localQuotes);
+    // اختيارQuote تلقائياً عند الدخول
+    const idx = Math.floor(Math.random() * localQuotes.length);
+    setDailyQuote(localQuotes[idx]);
+  }, []);
+
+  // 3) ToDo List مع حفظ في Firestore وXP عند الإكمال
+  const addTodo = async (text) => {
+    if (!text?.trim()) return;
+    const newItem = { text: text.trim(), done: false, createdAt: Date.now(), xpReward: 10 };
+    try {
+      const colRef = collection(db, "students", user?.uid ?? "guest", "todos");
+      await addDoc(colRef, newItem);
+      // سيظهر عبر onSnapshot إذا كان تم الاشتراك
+    } catch (e) {
+      console.error("Add todo error:", e);
     }
-    return () => clearInterval(interval);
-  }, [isTimerRunning, timer]);
-
-  const formatTime = (time) => {
-    const m = Math.floor(time / 60);
-    const s = time % 60;
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  // ==========================================
-  // Helpers
-  // ==========================================
-  
-  const addToast = (msg, type) => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, msg, type }]);
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
+  const toggleTodo = async (docId, current) => {
+    try {
+      const docRef = doc(db, "students", user?.uid ?? "guest", "todos", docId);
+      await updateDoc(docRef, { done: !current });
+      // إضافة XP عند الإكمال
+      if (!current) {
+        accumulateXP(10, "todo_complete");
+      }
+    } catch (e) {
+      console.error("Toggle todo error:", e);
+    }
   };
 
-  const getRankData = (pts) => {
-    if (pts > 5000) return { label: "أسطوري", color: "#ff00ff" };
-    if (pts > 2000) return { label: "ذهبي", color: "#fbbf24" };
-    if (pts > 1000) return { label: "فضي", color: "#94a3b8" };
-    return { label: "مبتدئ", color: "#00d2ff" };
-  };
-
-  // ==========================================
-  // [6] واجهة المستخدم (UI)
-  // ==========================================
-
-  return (
-    <div className="student-nebula-app">
+  // 4) XP Logic محمي من التكرار (مثال بسيط)
+  const lastActionXP = useRef({ type: null, timestamp: 0 });
+  const accumulateXP = (amount, type) => {
+    const now = Date.now();
+    // منع التكرار لنفس العملية خلال 20 ثانية كحد أدنى
+    if (lastActionXP.current.type === type && now - lastActionXP.current.timestamp < 20000) {
+      return;
+    }
+    lastActionXP.current = { type, timestamp: now };
+    // تحديث XP على Firestore
+    if (user?.uid) {
+      const userDoc = doc(db, "students", user.uid);
+      // تحديث XP بشكل آمن
+      // نستخدم updateDoc مع الحصول على current XP ثم زيادة
+      // هنا نقرأ من قبل ثم نحدث
+      await updateDoc(userDoc, { xp: increment(amount) });
       
-      {/* التنبيهات المنبثقة */}
-      <div className="toast-container">
-        <AnimatePresence>
-          {toasts.map(t => (
-            <motion.div key={t.id} initial={{y: 50, opacity: 0}} animate={{y: 0, opacity: 1}} exit={{opacity: 0}} className={`nebula-toast ${t.type}`}>
-              {t.type === 'success' ? <ShieldCheck color="#00ff88"/> : <Bell color="#00d2ff"/>}
-              <span>{t.msg}</span>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+  // 5) رفع صورة الأفاتار إلى Storage وتحديث Firestore
+  const uploadAvatar = async (file) => {
+    if (!file || !user?.uid) return;
+    const storageRefUser = storageRef(storage, `avatars/${user.uid}_${Date.now()}`);
+    const uploadTask = uploadBytesResumable(storageRefUser, file);
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        // يمكن إضافة progress indication
+      },
+      (error) => console.error("Avatar upload error:", error),
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((url) => {
+          // حفظ url في Firestore
+          updateDoc(doc(db, "students", user.uid), { avatarUrl: url });
+          setProfile((p) => ({ ...p, avatarUrl: url }));
+        });
+      }
+    );
+  };
 
-      {/* سايدبار التنقل */}
-      <aside className="nebula-sidebar">
-        <div className="brand-zone">
-          <div className="glow-logo">M</div>
-          <h2 style={{fontSize: '16px', letterSpacing: '2px', marginTop: '15px'}}>STUDENT DASH</h2>
-        </div>
+  // 6) محادثة: إرسال سؤال للمعلم
+  const sendQuestion = async (text) => {
+    if (!text?.trim()) return;
+    try {
+      const quesRef = collection(db, "students", user?.uid ?? "guest", "questions");
+      await addDoc(quesRef, {
+        text: text.trim(),
+        createdAt: Date.now(),
+        status: "sent",
+        answered: false
+      });
+      // إشعار داخل التطبيق (يمكن ربط Push)
+    } catch (e) {
+      console.error("Send question error:", e);
+    }
+  };
 
-        <nav className="nav-links-container">
-          <button className={`nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
-            <Layout size={20}/> الرئيسية
-          </button>
-          <button className={`nav-btn ${activeTab === 'wallet' ? 'active' : ''}`} onClick={() => setActiveTab('wallet')}>
-            <Wallet size={20}/> المحفظة
-          </button>
-          <button className={`nav-btn ${activeTab === 'tasks' ? 'active' : ''}`} onClick={() => setActiveTab('tasks')}>
-            <ListChecks size={20}/> المهام
-          </button>
-          <button className={`nav-btn ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>
-            <Trophy size={20}/> المتصدرين
-          </button>
-        </nav>
+  // 7) الإشعارات الحية
+  useEffect(() => {
+    if (!user?.uid) return;
+    const notiCol = collection(db, "students", user.uid, "notifications");
+    const unsubscribe = onSnapshot(notiCol, (snap) => {
+      const items = [];
+      snap.forEach((doc) => items.push({ id: doc.id, ...doc.data() }));
+      setNotifications(items);
+    });
+    return () => unsubscribe();
+  // eslint-disable-next-line
+  }, [user?.uid]);
 
-        <div className="pomo-mini-card nebula-card" style={{marginTop: 'auto', padding: '15px'}}>
-          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-            <span style={{fontSize: '18px', fontWeight: '800'}}>{formatTime(timer)}</span>
-            <button onClick={() => setIsTimerRunning(!isTimerRunning)} style={{background: 'none', border: 'none', color: '#fff', cursor:'pointer'}}>
-              {isTimerRunning ? <X size={20}/> : <PlayCircle size={20}/>}
-            </button>
+  // 8) لوحة الأوائل (Leaderboard) - top 5
+  useEffect(() => {
+    if (!db) return;
+    const q = query(collection(db, "students"), orderBy("xp", "desc"));
+    const unsub = onSnapshot(q, (sn) => {
+      const list = [];
+      sn.forEach((d) => list.push({ id: d.id, ...d.data() }));
+      setLeaderboard(list.slice(0, 5));
+    });
+    return () => unsub();
+  // eslint-disable-next-line
+  }, [db]);
+
+  // 9) المحفظة والتوجيه إلى ActivationPage.jsx عند الشحن
+  const goToActivation = () => {
+    navigate("/activation");
+  };
+
+  // 10) Deep Focus – شاشة كاملة مع منع المشتتات
+  const DeepFocusOverlay = () => (
+    <AnimatePresence>
+      {focusMode && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)",
+            zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center",
+            backdropFilter: "blur(2px)"
+          }}
+        >
+          <div className="deep-focus-panel">
+            <h3>Deep Focus Mode</h3>
+            <p>Preserve focus. Time left: {formatTime(pomodoro.seconds)}</p>
+            <button onClick={() => setFocusMode(false)}>Exit Focus</button>
           </div>
-          <button onClick={() => setFocusMode(true)} style={{width: '100%', marginTop: '10px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '10px', color: '#fff', padding: '5px'}}>تركيز كامل</button>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
+  // 11) Pomodoro timer
+  useEffect(() => {
+    if (!pomodoro.running) return;
+    const t = setInterval(() => {
+      setPomodoro((p) => {
+        if (p.seconds <= 1) {
+          clearInterval(t);
+          // صدور صوت تنبيه أو إشعار
+          return { ...p, running: false, seconds: 0 };
+        }
+        return { ...p, seconds: p.seconds - 1 };
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [pomodoro.running]);
+
+  const startPomodoro = (focusSeconds = 25 * 60) => {
+    setPomodoro({ running: true, seconds: focusSeconds, mode: "focus" });
+  };
+  const stopPomodoro = () => setPomodoro((p) => ({ ...p, running: false }));
+
+  // 12).theme toggle
+  const toggleTheme = () => {
+    setTheme((t) => (t === "space-dark" ? "midnight-blue" : "space-dark"));
+  };
+
+  // 13) البحث داخل الدورات والمهام
+  const filteredLeaderboard = useMemo(() => {
+    if (!searchTerm) return leaderboard;
+    const s = searchTerm.toLowerCase();
+    return leaderboard.filter((r) => (r.displayName || "").toLowerCase().includes(s) || (r.email || "").toLowerCase().includes(s));
+  }, [leaderboard, searchTerm]);
+
+  // 14) سجل العمليات المالية (أحدث عمليات الشحن)
+  const [transactions, setTransactions] = useState([]);
+  useEffect(() => {
+    if (!user?.uid) return;
+    const tCol = collection(db, "students", user.uid, "transactions");
+    const unsub = onSnapshot(tCol, (snap) => {
+      const items = [];
+      snap.forEach((d) => items.push({ id: d.id, ...d.data() }));
+      setTransactions(items);
+    });
+    return () => unsub();
+  // eslint-disable-next-line
+  }, [user?.uid]);
+
+  // 15) التحويل إلى ActivationPage عند الضغط "شحن"
+  // 16) رسوم/تنبيهات انخفاض الرصيد عند التحقق قبل الشراء (مثال)
+  const chargeBalance = async (amount) => {
+    if (profile.balance >= amount) {
+      // تنفيذ شراء/شحن
+      await accumulateXP(5, "charge"); // كتمثيل
+    } else {
+      // إشعار انخفاض الرصيد
+      alert("الرصيد غير كافٍ لشراء الكورس. الرجاء الشحن.");
+    }
+  };
+
+  // 17) ملف avatar: استخدم DiceBear افتراضي إذا لم يوجد avatarUrl
+  const renderAvatar = () => {
+    const url = profile.avatarUrl;
+    if (url) return url;
+    // DiceBear neutral
+    // يمكنك توليد باستخدام seed من user.id أو displayName
+    const seed = user?.uid ?? "default";
+    return `https://api.dicebear.com/7.x/identicon/svg?seed=${seed}`;
+  };
+
+  // helper: تنسيق الوقت
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+
+  // 18) سلة الأوسمة/Badges
+  const earnedBadges = profile.badges ?? [];
+
+  // 19) واجهات المكونات الفرعية كإدماج داخلي
+  // قد تكون هناك مكونات خارجية. هنا كود داخلي بسيط لواجهة متكاملة
+  return (
+    <div className={`student-dash ${theme}`} style={{ minHeight: "100vh" }}>
+      {/* 19-1: رأس الصفحة مع معلومات الطالب وتبديل الثيم */}
+      <header className="sd-header glass">
+        <div className="left">
+          <img src={renderAvatar()} alt="avatar" className="avatar" />
+          <div className="user-info">
+            <div className="name">{profile.displayName || user?.email?.split("@")[0] || "طالب"}</div>
+            <div className="subtitle">حالة الاتصال: <span className="online">نشط الآن</span></div>
+          </div>
         </div>
+        <div className="center">
+          <input
+            className="search"
+            placeholder="ابحث في الكورسات والمهام..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="right">
+          <button className="icon-btn" onClick={toggleTheme} title="تغيير الثيم">
+            🌗
+          </button>
+          <button className="icon-btn" onClick={() => setFocusMode((f) => !f)} title="Deep Focus">
+            ⏱
+          </button>
+          <button className="cta" onClick={() => navigate("/profile")}>الملف الشخصي</button>
+        </div>
+      </header>
 
-        <button className="nav-btn" onClick={() => auth.signOut()} style={{marginTop: '20px', color: '#ff4b2b'}}>
-          <Power size={20}/> خروج
-        </button>
-      </aside>
+      {/* 19-2: جسم الصفحة مقسم إلى شبكة 3-Column تقليدية مع Glassmorphism و3D */}
+      <main className="sd-grid">
+        {/* العمود 1: Streak، Level، XP، المحفظة، Pomodoro، Avatar */}
+        <section className="card glass panel" aria-label="Overview">
+          <div className="panel-title">النظرة الشاملة</div>
 
-      {/* المحتوى الرئيسي */}
-      <main className="nebula-main-layout">
-        
-        <header className="cosmic-header">
-          <div className="user-profile-meta">
-            <label className="avatar-orbital">
-              <input type="file" hidden onChange={handlePhotoUpload} accept="image/*" />
-              <img src={student?.photoURL || `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${student?.name}`} alt="avatar" />
-              {isUploading && <div className="orbital-loader"></div>}
-              <div className="online-dot"></div>
-              <div className="camera-overlay" style={{position:'absolute', inset: 0, display:'flex', alignItems:'center', justifyContent:'center', opacity: 0, hover: {opacity: 1}}}>
-                <Camera size={20} />
-              </div>
-            </label>
-            <div>
-              <h3 style={{margin: 0}}>مرحباً، {student?.name} 👋</h3>
-              <p style={{margin: 0, fontSize: '13px', color: 'var(--accent-blue)'}}><Sparkles size={14}/> {motivation}</p>
+          <div className="stat-grid">
+            <StatCard title="Streak" value={profile?.streak ?? 0} hint="أيام متتالية" />
+            <StatCard title="XP" value={profile?.xp ?? 0} hint="نقاط الخبرة" />
+            <StatCard title="المستوى" value={profile?.level ?? 1} hint="Level based on XP" />
+          </div>
+
+          <div className="wallet-row">
+            <div className="wallet-label">المحفظة الذكية</div>
+            <div className="wallet-balance">{profile.balance ?? 0} USDT</div>
+            <button className="btn" onClick={goToActivation}>شحن</button>
+          </div>
+
+          <div className="avatar-row">
+            <img src={renderAvatar()} alt="avatar-big" className="avatar-large" />
+            <div className="avatar-actions">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => uploadAvatar(e.target.files[0])}
+              />
+              <span className="hint">يمكنك رفع صورة شخصية لعرضها كأفاتار.</span>
             </div>
           </div>
 
-          <div style={{display: 'flex', gap: '15px'}}>
-             <div className="nebula-card" style={{padding: '10px 20px', display: 'flex', gap: '10px', alignItems: 'center'}}>
-                <Zap size={18} fill="#ffcc00" color="#ffcc00"/> {student?.points} XP
-             </div>
-             <div className="nebula-card" style={{padding: '10px 20px', display: 'flex', gap: '10px', alignItems: 'center'}}>
-                <Flame size={18} fill="#ff4b2b" color="#ff4b2b"/> {student?.streak} أيام
-             </div>
+          <div className="pomodoro">
+            <div className="pom-title">Pomodoro</div>
+            <div className="pom-ctrls">
+              <button onClick={() => startPomodoro()} className="btn">Start 25:00</button>
+              <button onClick={stopPomodoro} className="btn secondary">Stop</button>
+              <div className="timer">{formatTime(pomodoro.seconds)}</div>
+            </div>
           </div>
-        </header>
 
-        <section className="tab-render-area">
-          <AnimatePresence mode="wait">
-            
-            {/* التبويب 1: الرئيسية */}
-            {activeTab === 'dashboard' && (
-              <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0}} className="dashboard-grid">
-                <div style={{display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px'}}>
-                  
-                  <div className="nebula-card">
-                    <h3><Target size={20}/> تقدمك التعليمي</h3>
-                    <div style={{height: '10px', background: '#111', borderRadius: '10px', overflow:'hidden', marginTop: '20px'}}>
-                      <div style={{width: `${(student?.points % 1000) / 10}%`, height: '100%', background: 'linear-gradient(90deg, #00d2ff, #9d50bb)', boxShadow: '0 0 15px #00d2ff'}}></div>
-                    </div>
-                    <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '10px'}}>
-                      <span style={{color: getRankData(student?.points).color}}>{getRankData(student?.points).label}</span>
-                      <span>{student?.points % 1000} / 1000 XP</span>
-                    </div>
-                  </div>
+          <DeepFocusOverlay />
+        </section>
 
-                  <div className="nebula-card" style={{textAlign: 'center'}}>
-                    <h3>المحفظة</h3>
-                    <div style={{fontSize: '32px', fontWeight: '800', margin: '10px 0'}}>{student?.walletBalance} <small>ج.م</small></div>
-                    <button className="redeem-btn" onClick={() => setActiveTab('wallet')} style={{width: '100%'}}>إدارة الرصيد</button>
-                  </div>
+        {/* العمود 2: To-Do، Daily Quotes، Messages، Notifications */}
+        <section className="card glass panel" aria-label="ToDo & Quotes">
+          <div className="panel-title">مهام اليوم (To-Do)</div>
+          <TodoPanel onAdd={addTodo} items={todos} onToggle={toggleTodo} />
 
-                </div>
+          <div className="panel-divider" />
 
-                <div className="nebula-card" style={{marginTop: '20px'}}>
-                  <h3><Clock size={20}/> آخر النشاطات</h3>
-                  <div style={{color: '#666', textAlign: 'center', padding: '40px'}}>لا توجد دروس مكتملة اليوم. الوقت يمر، ابدأ الآن!</div>
-                </div>
-              </motion.div>
+          <div className="panel-title">اقتباسات اليوم</div>
+          <div className="quote-block">
+            <em>“{dailyQuote}”</em>
+          </div>
+
+          <div className="panel-divider" />
+          <div className="panel-title">الإشعارات</div>
+          <NotificationsList items={notifications} />
+        </section>
+
+        {/* العمود 3: Leaderboard، Messages للمعلم، Tasks search & Badges & Focus */}
+        <section className="card glass panel" aria-label="Leaderboard & Badges">
+          <div className="panel-title">قائمة المتصدرين (Top 5)</div>
+          <LeaderboardList items={filteredLeaderboard} />
+
+          <div className="panel-divider" />
+          <div className="panel-title">الأوسمة</div>
+          <div className="badges">
+            {earnedBadges.length === 0 ? (
+              <span className="muted">لا توجد أوسمة حتى الآن.</span>
+            ) : (
+              earnedBadges.map((b, idx) => (
+                <span key={idx} className="badge">{b}</span>
+              ))
             )}
+          </div>
 
-            {/* التبويب 2: المحفظة */}
-            {activeTab === 'wallet' && (
-              <motion.div initial={{opacity:0}} animate={{opacity:1}} className="wallet-view">
-                <div className="nebula-card wallet-hero">
-                  <Wallet size={60} color="var(--accent-blue)" style={{marginBottom: '20px'}}/>
-                  <h2>محفظتي الذكية</h2>
-                  <div className="balance-large">{student?.walletBalance} <small>EGP</small></div>
-                  
-                  <div className="redeem-box">
-                    <input 
-                      placeholder="أدخل كود الشحن (مثل: XXXX-XXXX)" 
-                      value={activationCode}
-                      onChange={(e) => setActivationCode(e.target.value.toUpperCase())}
-                    />
-                    <button className="redeem-btn" onClick={handleRedeem}>شحن الآن</button>
-                  </div>
-                  <p style={{color: '#666', fontSize: '13px'}}>يمكنك شراء الكورسات والكتب باستخدام رصيد محفظتك مباشرة.</p>
-                </div>
-              </motion.div>
-            )}
-
-            {/* التبويب 3: المهام */}
-            {activeTab === 'tasks' && (
-              <motion.div initial={{opacity:0}} animate={{opacity:1}} className="todo-view">
-                <div className="nebula-card">
-                  <h3><ListChecks size={20}/> قائمة المهام الدراسية</h3>
-                  <div className="redeem-box" style={{margin: '0 0 30px'}}>
-                    <input 
-                      placeholder="أضف مهمة جديدة... (مثلاً: مذاكرة الكيمياء)" 
-                      value={newTask}
-                      onChange={(e) => setNewTask(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addTask()}
-                    />
-                    <button className="redeem-btn" onClick={addTask}><Plus /></button>
-                  </div>
-
-                  <div className="todo-wrapper">
-                    {student?.todoList?.map((t) => (
-                      <div key={t.id} className={`task-card ${t.completed ? 'completed' : ''}`}>
-                        <div style={{display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer', flex: 1}} onClick={() => toggleTask(t)}>
-                          {t.completed ? <CheckCircle color="var(--neon-green)"/> : <div style={{width: 20, height: 20, border: '2px solid #444', borderRadius: '50%'}}></div>}
-                          <span>{t.text}</span>
-                        </div>
-                        <Trash2 size={18} color="#ff4b2b" style={{cursor: 'pointer'}} onClick={() => removeTask(t)}/>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* التبويب 4: الأوائل */}
-            {activeTab === 'leaderboard' && (
-              <motion.div initial={{opacity:0}} animate={{opacity:1}}>
-                <div className="nebula-card">
-                  <h3><Trophy size={20}/> قائمة الشرف (أفضل 5 طلاب)</h3>
-                  <div style={{marginTop: '20px'}}>
-                    {topStudents.map((s, i) => (
-                      <div key={s.id} className="task-card" style={{marginBottom: '10px', background: s.id === auth.currentUser.uid ? 'rgba(0, 210, 255, 0.1)' : ''}}>
-                        <div style={{display: 'flex', alignItems: 'center', gap: '15px'}}>
-                          <span style={{fontWeight: '800', width: '30px'}}>{i+1}</span>
-                          <img src={s.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${s.name}`} alt="" style={{width: 40, height: 40, borderRadius: '50%'}}/>
-                          <span>{s.name}</span>
-                        </div>
-                        <div style={{fontWeight: '800', color: 'var(--accent-blue)'}}>{s.points} XP</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-          </AnimatePresence>
+          <div className="panel-divider" />
+          <div className="panel-title">النشاطات</div>
+          <div className="stats-chart">
+            {/* CSS-based simple chart placeholder */}
+            <div className="bar-row">
+              <div className="bar" style={{ width: `${Math.min(100, profile.hoursSpent % 100)}%` }} />
+              <span className="bar-label">ساعات الدراسة الأسبوعية</span>
+            </div>
+          </div>
         </section>
       </main>
 
-      {/* شاشة وضع التركيز الكامل */}
+      {/* 20) صندوق الاقتراحات والملاحظات للإدارة */}
+      <FooterSuggestion onSubmit={(text) => {
+        // إرسال اقتراح إلى الإدارة: تخزين في Firestore
+        if (!text
+                  {/* 20) صندوق الاقتراحات والملاحظات للإدارة */}  
+      <FooterSuggestion onSubmit={(text) => {  
+        // إرسال اقتراح إلى الإدارة: تخزين في Firestore  
+        if (!text?.trim()) return;  
+        if (!user?.uid) return;  
+        (async () => {  
+          try {  
+            const suggCol = collection(db, "admin", "suggestions");  
+            await addDoc(suggCol, {  
+              userId: user.uid,  
+              text: text.trim(),  
+              createdAt: Date.now(),  
+              status: "pending",  
+            });  
+            // ردة فعل بسيطة  
+            alert("تم إرسال الاقتراح بنجاح للإدارة.");  
+          } catch (e) {  
+            console.error("Submit suggestion error:", e);  
+          }  
+        })();  
+      }} />  
+
+      {/* 21) التحليل الإحصائي: رسم بسيط باستخدام CSS-based (مثال أسبوعي) */}  
+      <section className="card glass panel perf-panel" aria-label="Performance">  
+        <div className="panel-title">تحليل الأداء (أسبوعي)</div>  
+        <div className="perf-canvas">  
+          <div className="line" />  
+          <div className="line" style={{ height: "60%" }} />  
+          <div className="line" style={{ height: "80%" }} />  
+          <div className="line" style={{ height: `${Math.min(100, (profile.hoursSpent % 100))}%` }} />  
+        </div>  
+        <div className="perf-caption">ساعات: {profile.hoursSpent} | الدروس: {profile.coursesCompleted}</div>  
+      </section>  
+
+      {/* 22) حالة الاتصال: "نشط الآن" مع نبض متوهج */}  
+      <section className="card glass panel status-panel" aria-label="Connection Status">  
+        <div className="status-row">  
+          <span className={`status-dot ${profile?.isOnline ? "online" : ""}`} />  
+          <span className="status-label">{profile?.isOnline ? "نشط الآن" : "غير متصل"}</span>  
+        </div>  
+      </section>  
+
+      {/* 23) الحماية: Redirect إذا لم يكن الطالب مسجلاً (موجود كخيار في useEffect) */}  
+      {/* في هذا النموذج، إذا لم يوجد user ستتم إعادة التوجيه في onAuthStateChanged */}  
+
+      {/* 24) المحفزات: شاشة "قوة الطالب" تقييماً حتى 100% وفق حلول الكويزات (اختيار بسيط) */}  
+      <section className="card glass panel power-panel" aria-label="Power Meter">  
+        <div className="panel-title">مؤشر القوة</div>  
+        <div className="power-meter">  
+         <div className="meter" style={{ width: `${Math.min(100, (profile.xpPercent ?? 0))}%` }} /> 
+          <span className="meter-label">{Math.min(100, (profile.xpPercent ?? 0))}% القوة</span>  
+        </div>  
+      </section>  
+
+      {/* 25) المفكرة السريعة: ملاحظات مؤقتة محفوظة في LocalStorage */}  
+      <section className="card glass panel quick-notes" aria-label="Quick Notes">  
+        <div className="panel-title">المفكرة السريعة (Local)</div>  
+        <QuickNotesStorage />  
+      </section>  
+
+      {/* 26) تنبيه انخفاض الرصيد عند الشراء - يظهر داخل واجهة المحفظة تلقائياً عند الحاجة */}  
+
+      {/* 27) مشاركة الإنجاز: زر وهمي لتجهيز صورة للإنجازات */}  
+      <section className="card glass panel share-panel" aria-label="Share Progress">  
+        <div className="panel-title">مشاركة الإنجاز</div>  
+        <button className="cta" onClick={() => alert("تم تجهيز صورة الإنجاز للمشاركة.")}>  
+          تجهيز صورة الإنجاز للمشاركة  
+        </button>  
+      </section>  
+
+      {/* 28) التحميلات: عرض الملفات التي قام الطالب بتحميلها سابقاً */}  
+      <section className="card glass panel
+        أكيد. سأتابع من حيث انتهينا في النص البرمجي، وأكمل بناء ملف StudentDash.jsx مع بقية الأقسام والربط مع Firestore/Storage، ثم أرفق لك ملف CSS StudentDash.css لاحقاً بحسب طلبك. سأستخدم أسلوباً منظمًا مع مكوّنات فرعية داخل الملف لضمان الاستمرار والتوسع.
+
+ملاحظة سريعة قبل الاستكمال:
+- سأفترض وجود الأجزاء المخبأة مثل QuickNotesStorage وFooterSuggestion وNotificationsList وTodoPanel وLeaderboardList والأنماط الأساسية. إذا لم تكن هذه المكوّنات موجودة فعلياً في مشروعك، يمكنني إضافتها كدوال داخل الملف بنفس الأسلوب.
+- الكود سيستمر من حيث توقفت عند "Section 28) التحميلات ..." وسيغلق الهيكل الرئيسي.
+
+استكمال StudentDash.jsx (استمرار من مكان التوقف):
+
+```jsx
+      {/* 28) التحميلات: عرض الملفات التي قام الطالب بتحميلها سابقاً */}
+      <section className="card glass panel" aria-label="Uploads">
+        <div className="panel-title">التحميلات</div>
+        <UploadsPanel uid={user?.uid} />
+      </section>
+
+      {/* 29) الدعم الفني المباشر: زر يفتح نافذة تواصل سريعة */}
+      <SupportWidget />
+
+      {/* 30) حالة النظام والتهيئة العامة: مؤشر اتصال ونظام حماية بسيط */}
+      <section className="card glass panel system-status" aria-label="System Status">
+        <div className="panel-title">حالة النظام</div>
+        <div className="system-row">
+          <span className={`status-dot online`} /> <span>النظام متصل بالمخدمات الحيوية</span>
+        </div>
+        <div className="system-row">
+          <span className="muted">Theme:</span> <strong>{theme}</strong>
+        </div>
+        <div className="system-row">
+          <span className="muted">المستخدم:</span> <span>{profile.displayName || user?.email?.split("@")[0]}</span>
+        </div>
+      </section>
+
+      {/* نهاية صندوق الاقتراحات والاقسام - يمكن إضافة أقسام إضافية لاحقاً */}
+
+      {/* النوافذ النشطة: مثال على أداة Notification Toastية بسيطة (إذا أردت) */}
       <AnimatePresence>
-        {focusMode && (
-          <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} className="focus-mode-active">
-            <div className="big-timer">{formatTime(timer)}</div>
-            <h2 style={{letterSpacing: '5px'}}>DEEP FOCUS MODE</h2>
-            <p style={{color: '#666'}}>لا مشتتات، لا إشعارات.. فقط أنت ومستقبلك.</p>
-            <button onClick={() => setFocusMode(false)} style={{marginTop: '40px', background: 'transparent', border: '1px solid #ff4b2b', color: '#ff4b2b', padding: '10px 40px', borderRadius: '15px', cursor: 'pointer'}}>إنهاء الجلسة</button>
+        {notifications.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="toast"
+          >
+            {notifications[0]?.text || "إشعار جديد"}
           </motion.div>
         )}
       </AnimatePresence>
@@ -436,4 +598,421 @@ const StudentDash = () => {
   );
 };
 
+// مكوّنات داخلية (إعدادات بسيطة داخل الملف لضمان التكامل)
+const StatCard = ({ title, value, hint }) => (
+  <div className="stat-card">
+    <div className="stat-value">{value}</div>
+    <div className="stat-title">{title}</div>
+    <div className="stat-hint">{hint}</div>
+  </div>
+);
+
+const TodoPanel = ({ onAdd, items = [], onToggle }) => {
+  const [text, setText] = useState("");
+  return (
+    <div className="todo-panel">
+      <div className="todo-inputs">
+        <input
+          placeholder="إضافة مهمة جديدة..."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              onAdd(text);
+              setText("");
+            }
+          }}
+        />
+        <button className="btn" onClick={() => { onAdd(text); setText(""); }}>إضافة</button>
+      </div>
+      <div className="todo-list">
+        {items.map((t, idx) => (
+          <div key={idx} className="todo-item">
+            <input
+              type="checkbox"
+              checked={t.done}
+              onChange={() => onToggle(t.id, t.done)}
+            />
+            <span className={t.done ? "done" : ""}>{t.text}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const NotificationsList = ({ items = [] }) => (
+  <div className="notifications">
+    {items.length === 0 ? (
+      <div className="muted">لا توجد إشعارات حالياً.</div>
+    ) : (
+      items.map((
+     سأكمل من المكان الذي توقفت فيه في الكود السابق، مع الحفاظ على الأسلوب والهيكل الداخلي نفسه. سأستكمل مكوّنات الإشعارات والتحميلات والدعم الفني وبعض الأقسام المتبقية، ثم أنهي ملف StudentDash.jsx بشكل متكامل.
+
+استمرار StudentDash.jsx (من الجزء الذي بدأته في النهاية السابقة):
+
+```jsx
+      {/* 29) الدعم الفني المباشر: زر يفتح نافذة تواصل سريعة */}
+      <SupportWidget />
+
+      {/* 30) حالة النظام والتهيئة العامة: مؤشر اتصال ونظام حماية بسيط */}
+      <section className="card glass panel system-status" aria-label="System Status">
+        <div className="panel-title">حالة النظام</div>
+        <div className="system-row">
+          <span className={`status-dot online`} /> <span>النظام متصل بالمخدمات الحيوية</span>
+        </div>
+        <div className="system-row">
+          <span className="muted">Theme:</span> <strong>{theme}</strong>
+        </div>
+        <div className="system-row">
+          <span className="muted">المستخدم:</span> <span>{profile.displayName || user?.email?.split("@")[0]}</span>
+        </div>
+      </section>
+
+      {/* نهاية صندوق الاقتراحات والاقسام - يمكن إضافة أقسام إضافية لاحقاً */}
+
+      {/* النوافذ النشطة: مثال على أداة Notification Toastية بسيطة (إذا أردت) */}
+      <AnimatePresence>
+        {notifications.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="toast"
+          >
+            {notifications[0]?.text || "إشعار جديد"}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+    </div>
+  );
+};
+
+// مكوّنات داخلية (إعدادات بسيطة داخل الملف لضمان التكامل)
+const StatCard = ({ title, value, hint }) => (
+  <div className="stat-card">
+    <div className="stat-value">{value}</div>
+    <div className="stat-title">{title}</div>
+    <div className="stat-hint">{hint}</div>
+  </div>
+);
+
+const TodoPanel = ({ onAdd, items = [], onToggle }) => {
+  const [text, setText] = useState("");
+  return (
+    <div className="todo-panel">
+      <div className="todo-inputs">
+        <input
+          placeholder="إضافة مهمة جديدة..."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              onAdd(text);
+              setText("");
+            }
+          }}
+        />
+        <button className="btn" onClick={() => { onAdd(text); setText(""); }}>إضافة</button>
+      </div>
+      <div className="todo-list">
+        {items.map((t) => (
+          <div key={t.id} className="todo-item">
+            <input
+              type="checkbox"
+              checked={t.done}
+              onChange={() => onToggle(t.id, t.done)}
+            />
+            <span className={t.done ? "done" : ""}>{t.text}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const NotificationsList = ({ items = [] }) => (
+  <div className="notifications">
+    {items.length === 0 ? (
+      <div className="muted">لا توجد إشعارات حالياً.</div>
+    ) : (
+      items.map((n) => (
+        <div key={n.id} className="notification-item">
+          <span className="badge-dot" /> {n.text}
+        </div>
+      ))
+    )}
+  </div>
+);
+
+const LeaderboardList = ({ items = [] }) => (
+  <div className="leaderboard">
+    {items.map((u, idx) => (
+      <div key={u.id} className={`leader-item ${idx < 3 ? "podium" : ""}`}>
+        <span className="rank">{idx + 1}</span>
+        <img className="avatar-sm" src={u.avatarUrl || `https://api.dicebear.com/7.x/identicon/svg?seed=${u.id}`} alt="avatar" />
+        <span className="name">{u.displayName || u.email || "طالب" 
+
+
+  أكيد. سأكمل من مكان توقفت عند قسم LeaderboardList وما تبعه حتى نهاية ملف StudentDash.jsx، مع الحفاظ على التنسيق ككود جاهز للنسخ. سأعيد جزءاً من الكود السابق كمقدمة ثم أكمل البناء حتى النهاية، مع مكوّنات داخلية إضافية وروابط Firestore/Storage كما طلبت.
+
+مهمة: تقديم ملف React كامل في سطر واحد منسّق، جاهز للرفع، مع ملاحظات كافية لربط Firestore وStorage. الكود التالي يعتمد على وجود الاستيرادات والتهيئة الأساسية الموجودة في الأقسام السابقة (Firebase App، Firestore، Storage، Framer Motion، React Router). إذا احتجت لأي تعديلات لمسارات المسارات (ActivationPage، Profile)، يمكن تعديلها بسهولة.
+
+StudentDash.jsx (إكمال من حيث توقفت وإلى النهاية)
+
+```jsx
+// تابع من حيث توقفت: LeaderboardList و بقية الأقسام
+const LeaderboardList = ({ items = [] }) => (
+  <div className="leaderboard">
+    {items.map((u, idx) => (
+      <div key={u.id} className={`leader-item ${idx < 3 ? "podium" : ""}`}>
+        <span className="rank">{idx + 1}</span>
+        <img className="avatar-sm" src={u.avatarUrl || `https://api.dicebear.com/7.x/identicon/svg?seed=${u.id}`} alt="avatar" />
+        <span className="name">{u.displayName || u.email || "طالب"}</span>
+        <span className="xp">{u.xp ?? 0} XP</span>
+      </div>
+    ))}
+  </div>
+);
+
+const UploadsPanel = ({ uid }) => {
+  // عرض قائمة التحميلات المخزنة عند الطالب من Firestore Storage /downloads
+  const [files, setFiles] = useState([]);
+  useEffect(() => {
+    if (!uid) return;
+    const unsub = onSnapshot(collection(doc(db, "students", uid), "uploads"), (snap) => {
+      const list = [];
+      snap.forEach((d) => list.push({ id: d.id, ...d.data() }));
+      setFiles(list);
+    });
+    return () => unsub && unsub();
+  // eslint-disable-next-line
+  }, [uid]);
+  return (
+    <div className="uploads-panel">
+      {files.length === 0 ? (
+        <div className="muted">لا توجد ملفات محملة حتى الآن.</div>
+      ) : (
+        files.map((f) => (
+          <div key={f.id} className="upload-item">
+            <a href={f.url} target="_blank" rel="noreferrer">{f.name}</a>
+            <span className="muted small">{new Date(f.createdAt).toLocaleDateString()}</span>
+          </div>
+        ))
+      )}
+    </div>
+  );
+};
+
+const SupportWidget = () => {
+  const [open, setOpen] = useState(false);
+  const [msg, setMsg] = useState("");
+  return (
+    <div className="support-widget card glass panel" aria-label="Support">
+      <div className="panel-title">دعم فني مباشر</div>
+      <button className="btn" onClick={() => setOpen((o) => !o)}>
+        {open ? "إغلاق" : "فتح"} نافذة الدعم
+      </button>
+      {open && (
+        <div className="support-body">
+          <textarea
+            placeholder="اكتب مشكلتك هنا..."
+            value={msg}
+            onChange={(e) => setMsg(e.target.value)}
+          />
+          <button
+            className="btn"
+            onClick={() => {
+              // إرسال رسالة دعم افتراضية
+              if (!msg.trim()) return;
+              alert("تم إرسال تذكرة الدعم!");
+              setMsg("");
+              setOpen(false);
+            }}
+          >
+            إرسال
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// مۇعّدل: FooterSuggestion - صندوق الاقتراحات
+const FooterSuggestion = ({ onSubmit }) => {
+  const [text, setText] = useState("");
+  return (
+    <section className="card glass panel suggestion-panel" aria-label="Suggestions">
+      <div className="panel-title">اقتراحات للإدارة</div>
+      <div className="suggestion-inputs">
+        <input
+          placeholder="اكتب اقتراحك..."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key
+                سأكمل لك الملف StudentDash.jsx حتى النهاية من where توقفت. سأحرص على أن تكون جميع المكوّنات والربط مع Firestore/Storage مكتملة، مع الحفاظ على بنية داخلية قابلة للتوسعة. في هذا الجزء سأكفل استكمال الأقسام المتبقية والتعريفات الداخلية ونهاية الكود مع إغلاق جميع الأقسام والمكوّنات.
+
+StudentDash.jsx (إكمال من مكان توقفت عند FooterSuggestion ومن ثم الاستمرار حتى النهاية)
+
+```jsx
+      {/* 30) الاقتراحات - FooterSuggestion ينتهي بنقطة الدخول للمشروع */}
+      <FooterSuggestion onSubmit={(text) => {
+        if (!text?.trim()) return;
+        if (!user?.uid) return;
+        (async () => {
+          try {
+            const suggCol = collection(db, "admin", "suggestions");
+            await addDoc(suggCol, {
+              userId: user.uid,
+              text: text.trim(),
+              createdAt: Date.now(),
+              status: "pending",
+            });
+            alert("تم إرسال الاقتراح بنجاح للإدارة.");
+          } catch (e) {
+            console.error("Submit suggestion error:", e);
+          }
+        })();
+      }} />
+
+      {/* 31) التحليل الإحصائي: مخطط بسيط يستخدم CSS فقط */}
+      <section className="card glass panel perf-panel" aria-label="Performance">
+        <div className="panel-title">تحليل الأداء (أسبوعي)</div>
+        <div className="perf-canvas">
+          <div className="line" style={{ height: "20%" }} />
+          <div className="line" style={{ height: "60%" }} />
+          <div className="line" style={{ height: "40%" }} />
+          <div className="line" style={{ height: `${Math.min(100, profile.hoursSpent % 100)}%` }} />
+        </div>
+        <div className="perf-caption">ساعات الدراسة: {profile.hoursSpent} | الدروس: {profile.coursesCompleted}</div>
+      </section>
+
+      {/* 32) المفكرة السريعة: مجلد ملاحظات محلياً (LocalStorage) مُدمج داخل الملف */}
+      <section className="card glass panel quick-notes" aria-label="Quick Notes Local">
+        <div className="panel-title">المفكرة السريعة (Local)</div>
+        <QuickNotesStorage />
+      </section>
+
+      {/* 33) مشاركة الإنجاز: زر يتحول إلى مودال/نافذة مشاركة بسيط */}
+      <section className="card glass panel share-panel" aria-label="Share Progress">
+        <div className="panel-title">مشاركة الإنجاز</div>
+        <button className="cta" onClick={() => alert("تم تجهيز صورة الإنجاز للمشاركة.")}>
+          تجهيز صورة الإنجاز للمشاركة
+        </button>
+      </section>
+
+      {/* 34) عرض التحميلات (Uploads) - إذا لم يعرض سابقاً */}
+      <section className="card glass panel" aria-label="Uploads">
+        <div className="panel-title">التحميلات</div>
+        <UploadsPanel uid={user?.uid} />
+      </section>
+
+      {/* 35) الدعم الفني المباشر - توسيع نافذة الدعم إذا لم تكن مضافة سابقاً */}
+      <SupportWidget />
+
+      {/* 36) حالة النظام والتهيئة العامة */}
+      <section className="card glass panel system-status" aria-label="System Status Final">
+        <div className="panel-title">حالة النظام</div>
+        <div className="system-row">
+          <span className={`status-dot online`} /> النِظام متصل
+        </div>
+        <div className="system-row">
+          <span className="muted">الثيم:</span> <strong>{theme}</strong>
+        </div>
+        <div className="system-row">
+          <span className="muted">المستخدم:</span> <span>{profile.displayName || user?.email?.split("@")[0]}</span>
+        </div>
+      </section>
+
+      {/* إغلاق البنية العامة */}
+    </div>
+  );
+};
+
+// مكوّنات داخلية إضافية لإتمام البناء
+const QuickNotesStorage = () => {
+  const STORAGE_KEY = "quick_notes";
+  const [notes, setNotes] = useState([]);
+  const [text, setText] = useState("");
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) setNotes(JSON.parse(raw));
+    } catch {
+      // تجاهل
+    }
+  }, []);
+
+  useEffect(()
+
+
+
+const QuickNotesStorage = () => {
+  const STORAGE_KEY = "quick_notes";
+  const [notes, setNotes] = useState([]);
+  const [text, setText] = useState("");
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) setNotes(JSON.parse(raw));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+  }, [notes]);
+
+  const addNote = () => {
+    const t = text.trim();
+    if (!t) return;
+    const newNote = { id: Date.now().toString(), text: t, createdAt: Date.now() };
+    setNotes((n) => [newNote, ...n]);
+    setText("");
+  };
+
+  const removeNote = (id) => {
+    setNotes((n) => n.filter((x) => x.id !== id));
+  };
+
+  return (
+    <div className="quick-notes-panel">
+      <div className="notes-input">
+        <input
+          placeholder="ملاحظة سريعة..."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") addNote();
+          }}
+        />
+        <button className="btn" onClick={addNote}>إضافة</button>
+      </div>
+      <div className="notes-list">
+        {notes.length === 0 ? (
+          <div className="muted">لا ملاحظات حتى الآن.</div>
+        ) : (
+          notes.map((n) => (
+            <div key={n.id} className="note-item">
+              <span>{n.text}</span>
+              <button className="ghost" onClick={() => removeNote(n.id)}>إزالة</button>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+// End of QuickNotesStorage
+
+// Exports and main component closing
+        
 export default StudentDash;
+
+        
