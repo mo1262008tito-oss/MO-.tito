@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db, auth } from '../firebase';
-import { doc, getDoc, updateDoc, increment, arrayUnion, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, updateDoc, increment, arrayUnion, onSnapshot, setDoc } from "firebase/firestore";
 import { motion, AnimatePresence } from 'framer-motion';
 import {  
-  Play, CheckCircle, ChevronRight, List, ArrowRight, Save, 
-  Award, Lock, Shield, FileText, Download, Zap, Monitor, Clock 
+  Play, CheckCircle, ChevronRight, List, Save, Mic, Square,
+  Award, Lock, FileText, Download, Zap, Monitor, Clock, 
+  MessageCircle, SkipForward, Volume2, Trash2
 } from 'lucide-react';
 
 import './CoursePlayer.css';
@@ -14,7 +15,7 @@ const CoursePlayer = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  // حالات النظام (States)
+  // States
   const [courseData, setCourseData] = useState(null);
   const [currentLesson, setCurrentLesson] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,17 +24,20 @@ const CoursePlayer = () => {
   const [userPoints, setUserPoints] = useState(0);
   const [note, setNote] = useState("");
   const [notif, setNotif] = useState({ show: false, msg: "", type: "info" });
+  
+  // Voice Recording States
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioUrl, setAudioUrl] = useState(null);
+  const mediaRecorder = useRef(null);
+  const audioChunks = useRef([]);
 
-  // 1. نظام الحماية (Security System)
+  // 1. نظام الحماية المتقدم (Security)
   useEffect(() => {
     const preventActions = (e) => {
-      // منع النقر الأيمن
       if (e.type === 'contextmenu') e.preventDefault();
-      // منع اختصارات التصوير والحفظ
-      if (e.ctrlKey && (e.key === 'p' || e.key === 's' || e.key === 'u')) e.preventDefault();
+      if (e.ctrlKey && ['p', 's', 'u', 'c'].includes(e.key)) e.preventDefault();
       if (e.key === 'F12') e.preventDefault();
     };
-
     document.addEventListener('contextmenu', preventActions);
     document.addEventListener('keydown', preventActions);
     return () => {
@@ -42,10 +46,9 @@ const CoursePlayer = () => {
     };
   }, []);
 
-  // 2. جلب البيانات اللحظية
+  // 2. جلب البيانات + الملاحظات السحابية
   useEffect(() => {
     let unsubUser = () => {};
-
     const fetchInitialData = async () => {
       try {
         const docRef = doc(db, "courses_metadata", id);
@@ -54,13 +57,16 @@ const CoursePlayer = () => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setCourseData(data);
-          
-          // استعادة آخر درس شاهده الطالب
           const lastSavedId = localStorage.getItem(`last_vid_${id}`);
           const initialLesson = data.lessons?.find(l => l.id === lastSavedId) || data.lessons?.[0];
           setCurrentLesson(initialLesson);
-        } else {
-          navigate('/student-dash');
+          
+          // جلب ملاحظة الدرس من السحابة
+          if (auth.currentUser && initialLesson) {
+            const noteRef = doc(db, `users/${auth.currentUser.uid}/notes`, initialLesson.id);
+            const noteSnap = await getDoc(noteRef);
+            if (noteSnap.exists()) setNote(noteSnap.data().text);
+          }
         }
 
         if (auth.currentUser) {
@@ -72,174 +78,172 @@ const CoursePlayer = () => {
           });
         }
         setLoading(false);
-      } catch (error) {
-        console.error("Fetch Error:", error);
-        setLoading(false);
-      }
+      } catch (error) { setLoading(false); }
     };
 
     fetchInitialData();
     return () => unsubUser();
-  }, [id, navigate]);
+  }, [id]);
 
-  // 3. إدارة الملاحظات (Notes Management)
-  useEffect(() => {
-    if (currentLesson) {
-      const savedNote = localStorage.getItem(`note_${currentLesson.id}`);
-      setNote(savedNote || "");
-      localStorage.setItem(`last_vid_${id}`, currentLesson.id);
-    }
-  }, [currentLesson, id]);
-
-  const triggerNotif = (msg, type = "info") => {
-    setNotif({ show: true, msg, type });
-    setTimeout(() => setNotif(prev => ({ ...prev, show: false })), 4000);
+  // 3. محرك التسجيل الصوتي (Voice Notes)
+  const startRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder.current = new MediaRecorder(stream);
+    mediaRecorder.current.ondataavailable = (e) => audioChunks.current.push(e.data);
+    mediaRecorder.current.onstop = () => {
+      const blob = new Blob(audioChunks.current, { type: 'audio/ogg; codecs=opus' });
+      const url = URL.createObjectURL(blob);
+      setAudioUrl(url);
+      audioChunks.current = [];
+    };
+    mediaRecorder.current.start();
+    setIsRecording(true);
   };
 
-  const handleSaveNote = () => {
-    localStorage.setItem(`note_${currentLesson.id}`, note);
-    triggerNotif("تم حفظ الملاحظة بنجاح 💾", "success");
+  const stopRecording = () => {
+    mediaRecorder.current.stop();
+    setIsRecording(false);
+    triggerNotif("تم حفظ الريكورد في المتصفح", "success");
   };
 
-  // 4. معالج الفيديو
-  const getEmbedUrl = (url) => {
-    if (!url) return "";
-    if (url.includes("youtube.com") || url.includes("youtu.be")) {
-      const vId = url.includes("v=") ? url.split("v=")[1].split("&")[0] : url.split("/").pop();
-      return `https://www.youtube.com/embed/${vId}?rel=0&modestbranding=1&autoplay=1`;
-    }
-    return url;
-  };
-
-  // 5. إتمام الدرس
-  const handleLessonComplete = async (lessonId) => {
-    if (!auth.currentUser || completedLessons.includes(lessonId)) return;
+  // 4. حفظ الملاحظات للسحابة (Cloud Save)
+  const handleSaveNote = async () => {
+    if (!auth.currentUser || !currentLesson) return;
     try {
-      const userRef = doc(db, "users", auth.currentUser.uid);
-      await updateDoc(userRef, {
-        completedLessons: arrayUnion(lessonId),
-        points: increment(100)
+      const noteRef = doc(db, `users/${auth.currentUser.uid}/notes`, currentLesson.id);
+      await setDoc(noteRef, {
+        text: note,
+        updatedAt: new Date().toISOString(),
+        lessonTitle: currentLesson.title
       });
-      triggerNotif("بطل! حصلت على 100 نقطة XP 🌟", "success");
-    } catch (e) {
-      triggerNotif("فشل في تحديث النقاط", "error");
-    }
+      triggerNotif("تم الحفظ في سحابة حسابك ☁️", "success");
+    } catch (e) { triggerNotif("خطأ في الاتصال", "error"); }
   };
 
-  if (loading) return (
-    <div className="vortex-container">
-      <Zap className="spin-icon" size={50} color="#00f2ff" />
-      <p>جاري تحضير القاعة التعليمية...</p>
-    </div>
-  );
+  const handleLessonComplete = async () => {
+    if (!auth.currentUser || completedLessons.includes(currentLesson.id)) return;
+    const userRef = doc(db, "users", auth.currentUser.uid);
+    await updateDoc(userRef, {
+      completedLessons: arrayUnion(currentLesson.id),
+      points: increment(150) // زيادة النقاط للتحفيز
+    });
+    triggerNotif("بطل! +150 XP 🌟", "success");
+  };
+
+  if (loading) return <div className="player-loading"><Zap className="spin" size={40}/></div>;
 
   return (
-    <div className="mafa-player-env no-select rtl">
-      {/* Dynamic Watermark */}
-      <div className="dynamic-watermark">
-        {auth.currentUser?.email} — {new Date().toLocaleDateString('ar-EG')}
+    <div className="nebula-player no-select">
+      {/* Dynamic Watermark - يتحرك عشوائياً */}
+      <div className="moving-watermark">
+        {auth.currentUser?.email} - {auth.currentUser?.uid.slice(0,5)}
       </div>
 
-      {/* Professional Toast Notification */}
+      <header className="player-header glass">
+        <div className="header-right">
+          <button onClick={() => navigate(-1)} className="back-btn"><ChevronRight/></button>
+          <div className="title-area">
+            <h3>{courseData?.title}</h3>
+            <p>{currentLesson?.title}</p>
+          </div>
+        </div>
+        <div className="header-left">
+           <div className="xp-badge"><Award size={16}/> {userPoints} XP</div>
+           <button className="sos-btn" onClick={() => window.open('https://wa.me/YOUR_NUMBER', '_blank')}>
+             <MessageCircle size={18}/> مساعدة
+           </button>
+        </div>
+      </header>
+
+      <div className="player-main">
+        <div className={`video-section ${!isSidebarOpen ? 'full-width' : ''}`}>
+          <div className="iframe-wrapper glass">
+            <iframe 
+               src={`https://www.youtube.com/embed/${currentLesson?.videoUrl?.split('v=')[1] || currentLesson?.videoUrl?.split('/').pop()}?rel=0&modestbranding=1`}
+               title="video" allowFullScreen
+            ></iframe>
+          </div>
+
+          <div className="control-shelf glass">
+             <div className="lesson-desc">
+               <h2>{currentLesson?.title}</h2>
+               <div className="tags">
+                 <span className="tag"><Clock size={12}/> {currentLesson?.duration || '15:00'}</span>
+                 <span className="tag"><Zap size={12}/> مادة علمية</span>
+               </div>
+             </div>
+             <div className="actions">
+                {currentLesson?.pdfUrl && (
+                  <button className="download-btn" onClick={() => window.open(currentLesson.pdfUrl)}><Download size={18}/> المذكرة</button>
+                )}
+                <button 
+                  className={`complete-btn ${completedLessons.includes(currentLesson?.id) ? 'done' : ''}`}
+                  onClick={handleLessonComplete}
+                >
+                  {completedLessons.includes(currentLesson?.id) ? <CheckCircle/> : <Play/>}
+                  {completedLessons.includes(currentLesson?.id) ? 'تم الإنجاز' : 'أنهيت الدرس'}
+                </button>
+             </div>
+          </div>
+
+          {/* قسم الملاحظات المتطور */}
+          <div className="notes-area glass">
+             <div className="notes-tabs">
+                <button className="active"><FileText size={16}/> ملاحظات مكتوبة</button>
+                <button onClick={() => triggerNotif("سجل ملاحظتك الصوتية بالأسفل", "info")}><Mic size={16}/> ملاحظات صوتية</button>
+             </div>
+             <textarea 
+               placeholder="اكتب أهم النقاط في هذه المحاضرة..."
+               value={note}
+               onChange={(e) => setNote(e.target.value)}
+             ></textarea>
+             
+             <div className="notes-footer">
+                <div className="voice-controls">
+                   {!isRecording ? (
+                     <button className="mic-btn" onClick={startRecording}><Mic size={18}/></button>
+                   ) : (
+                     <button className="stop-btn" onClick={stopRecording}><Square size={18}/></button>
+                   )}
+                   {audioUrl && <audio src={audioUrl} controls className="mini-audio" />}
+                </div>
+                <button className="save-note-btn" onClick={handleSaveNote}><Save size={16}/> حفظ السحابة</button>
+             </div>
+          </div>
+        </div>
+
+        {/* قائمة الدروس الجانبية */}
+        <aside className={`playlist-aside ${!isSidebarOpen ? 'closed' : ''}`}>
+           <div className="aside-head" onClick={() => setSidebarOpen(!isSidebarOpen)}>
+             <List size={20}/> محتوى الدورة
+           </div>
+           <div className="lessons-list">
+             {courseData?.lessons?.map((les, idx) => (
+               <div 
+                 key={les.id} 
+                 className={`les-item ${currentLesson?.id === les.id ? 'active' : ''} ${completedLessons.includes(les.id) ? 'checked' : ''}`}
+                 onClick={() => setCurrentLesson(les)}
+               >
+                 <div className="num">{completedLessons.includes(les.id) ? <CheckCircle size={16}/> : idx + 1}</div>
+                 <div className="info">
+                   <h4>{les.title}</h4>
+                   <span>{les.duration || '10:00'}</span>
+                 </div>
+                 {currentLesson?.id === les.id && <div className="playing-bar"></div>}
+               </div>
+             ))}
+           </div>
+        </aside>
+      </div>
+      
+      {/* Toast Notif */}
       <AnimatePresence>
         {notif.show && (
-          <motion.div 
-            initial={{ x: 50, opacity: 0 }} 
-            animate={{ x: 0, opacity: 1 }} 
-            exit={{ x: 50 }} 
-            className={`player-toast ${notif.type}`}
-          >
+          <motion.div initial={{y: 50}} animate={{y: 0}} exit={{y: 50}} className={`toast ${notif.type}`}>
             {notif.msg}
           </motion.div>
         )}
       </AnimatePresence>
-
-      <header className="player-top-nav glass">
-        <div className="right-side">
-          <button onClick={() => navigate('/student-dash')} className="icon-btn"><ChevronRight /></button>
-          <div className="course-info">
-            <h1>{courseData?.title}</h1>
-            <span><Monitor size={14}/> {currentLesson?.title}</span>
-          </div>
-        </div>
-        <div className="left-side">
-          <div className="points-badge"><Award size={18}/> {userPoints} XP</div>
-        </div>
-      </header>
-
-      <div className="player-body">
-        <section className={`main-stage ${!isSidebarOpen ? 'expanded' : ''}`}>
-          <div className="video-viewport glass">
-            <iframe 
-              src={getEmbedUrl(currentLesson?.videoUrl)} 
-              allowFullScreen 
-              title="MAFA Education"
-              onContextMenu={e => e.preventDefault()}
-            ></iframe>
-          </div>
-
-          <div className="interaction-bar glass">
-            <div className="lesson-text">
-              <h2>{currentLesson?.title}</h2>
-              <p>{currentLesson?.description || "شاهد المحاضرة بتركيز ودون ملاحظاتك."}</p>
-            </div>
-            
-            <div className="action-hub">
-              {currentLesson?.pdfUrl && (
-                <a href={currentLesson.pdfUrl} target="_blank" rel="noreferrer" className="btn-attachment">
-                  <Download size={18} /> تحميل الملزمة
-                </a>
-              )}
-              <button 
-                className={`btn-complete ${completedLessons.includes(currentLesson?.id) ? 'active' : ''}`}
-                onClick={() => handleLessonComplete(currentLesson?.id)}
-              >
-                {completedLessons.includes(currentLesson?.id) ? <CheckCircle /> : <Play />}
-                {completedLessons.includes(currentLesson?.id) ? 'تم الاعتماد' : 'تأكيد الحضور'}
-              </button>
-            </div>
-          </div>
-
-          <div className="student-notes glass">
-             <div className="notes-head">
-                <h3><FileText size={18}/> مفكرة المحاضرة</h3>
-                <button onClick={handleSaveNote} className="btn-save-note"><Save size={14}/> حفظ</button>
-             </div>
-             <textarea 
-               value={note}
-               onChange={(e) => setNote(e.target.value)}
-               placeholder="اكتب ملاحظاتك المهمة هنا..."
-             ></textarea>
-          </div>
-        </section>
-
-        <aside className={`playlist-sidebar ${!isSidebarOpen ? 'collapsed' : ''}`}>
-          <div className="sidebar-toggle" onClick={() => setSidebarOpen(!isSidebarOpen)}>
-            <List size={20} /> {isSidebarOpen && "محتوى الكورس"}
-          </div>
-          
-          <div className="lesson-items-container">
-            {courseData?.lessons?.map((lesson, index) => (
-              <div 
-                key={lesson.id}
-                className={`lesson-card ${currentLesson?.id === lesson.id ? 'playing' : ''} ${completedLessons.includes(lesson.id) ? 'done' : ''}`}
-                onClick={() => setCurrentLesson(lesson)}
-              >
-                <div className="status-icon">
-                  {completedLessons.includes(lesson.id) ? <CheckCircle size={18} /> : <div className="circle-num">{index + 1}</div>}
-                </div>
-                <div className="lesson-meta">
-                  <h4>{lesson.title}</h4>
-                  <div className="sub-meta">
-                    {lesson.duration && <span><Clock size={12}/> {lesson.duration}</span>}
-                  </div>
-                </div>
-                {currentLesson?.id === lesson.id && <motion.div layoutId="pulse" className="playing-pulse" />}
-              </div>
-            ))}
-          </div>
-        </aside>
-      </div>
     </div>
   );
 };
