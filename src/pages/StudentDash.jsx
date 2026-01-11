@@ -1,399 +1,407 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { auth, db } from '../firebase';
+import React, { useState, useEffect, useCallback } from 'react';
+import { auth, db, storage } from '../firebase';
 import { 
-  doc, onSnapshot, updateDoc, arrayUnion, increment, getDocs, 
-  collection, query, where, orderBy, limit, addDoc, serverTimestamp, getDoc 
+  doc, onSnapshot, updateDoc, arrayUnion, arrayRemove, increment, 
+  getDocs, collection, query, where, orderBy, limit, serverTimestamp, setDoc 
 } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Layout, Power, CheckCircle, Award, PlayCircle, Calendar, Trash2, 
-  BookOpen, Clock, Flame, Key, Trophy, ShoppingBag, GraduationCap, Zap, 
-  Target, Plus, Check, ListChecks, Wallet, ShieldCheck, MessageSquare, 
-  StickyNote, DownloadCloud, AlertTriangle, Image as ImageIcon, Send, 
-  Smartphone, X, Monitor, Calculator, Moon, Sun, Lock, History, ExternalLink,
-  Coffee, Brain, Star, BarChart3, BellRing, User
+  Layout, Power, CheckCircle, Award, PlayCircle, Clock, Flame, Key, Trophy, 
+  ShoppingBag, BookOpen, Zap, Target, Plus, ListChecks, Wallet, ShieldCheck, 
+  Image as ImageIcon, X, Monitor, Moon, Sun, Coffee, Brain, Sparkles, Trash2,
+  Bell, Settings, ChevronRight, Star, Heart, MessageSquare, Briefcase
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './StudentDash.css';
 
 const StudentDash = () => {
   const navigate = useNavigate();
-  // --- States الأساسية ---
-  const [student, setStudent] = useState(null);
-  const [activeTab, setActiveTab] = useState('dashboard'); 
-  const [availableCourses, setAvailableCourses] = useState([]);
-  const [topStudents, setTopStudents] = useState([]);
-  const [isDarkMode, setIsDarkMode] = useState(true);
   
-  // --- أنظمة التفاعل ---
+  // 1. حالات البيانات (Data States)
+  const [student, setStudent] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview'); 
+  const [topStudents, setTopStudents] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [motivation, setMotivation] = useState("");
+  
+  // 2. حالات التفاعل (Interaction States)
   const [activationCode, setActivationCode] = useState("");
-  const [notif, setNotif] = useState({ show: false, msg: "", type: "info" });
+  const [newTask, setNewTask] = useState("");
   const [isUploading, setIsUploading] = useState(false);
-  const [dailyTask, setDailyTask] = useState([]);
+  const [notif, setNotif] = useState({ show: false, msg: "", type: "info" });
+  
+  // 3. حالات بومودورو (Pomodoro Logic)
+  const [timer, setTimer] = useState(1500); // 25 mins
+  const [timerActive, setTimerActive] = useState(false);
 
-  // --- نظام بومودورو و Focus Mode ---
-  const [minutes, setMinutes] = useState(25);
-  const [seconds, setSeconds] = useState(0);
-  const [isActive, setIsActive] = useState(false);
-  const [focusMode, setFocusMode] = useState(false);
+  // مصفوفة الرسائل التحفيزية المتغيرة
+  const quotes = [
+    "النجاح ليس صدفة، بل هو عمل شاق وإصرار.",
+    "كل سطر تذاكره اليوم هو لبنة في صرح نجاحك غداً.",
+    "أنت أقوى مما تعتقد، استمر في المحاولة.",
+    "لا يقاس النجاح بالموقع، بل بالصعاب التي تغلبت عليها.",
+    "العقل مثل العضلة، كلما استخدمته أصبح أقوى."
+  ];
 
-  // --- ميزة إضافة كورس خارجي وملاحظات ---
-  const [showExternalCourseModal, setShowExternalCourseModal] = useState(false);
-  const [externalCourse, setExternalCourse] = useState({ title: '', url: '', platform: 'YouTube' });
-  const [note, setNote] = useState("");
-
-  // --- الماركة المائية المتحركة ---
-  const [watermarkPos, setWatermarkPos] = useState({ top: '10%', left: '10%' });
-
+  // ==========================================
+  // محرك الربط بقاعدة البيانات (Firebase Engine)
+  // ==========================================
+  
   useEffect(() => {
     if (!auth.currentUser) return navigate('/login');
 
-    // 1. مراقبة بيانات الطالب والـ Streak
-    const unsub = onSnapshot(doc(db, "users", auth.currentUser.uid), (d) => {
+    // مراقبة بيانات الطالب الحية (Real-time Sync)
+    const unsubStudent = onSnapshot(doc(db, "users", auth.currentUser.uid), (d) => {
       if (d.exists()) {
         const data = d.data();
         setStudent(data);
-        handleSecurityAndStreak(data);
+        // التحقق من نظام الـ Streak (الأيام المتتالية)
+        checkStreak(data);
+      } else {
+        // إنشاء مستند جديد في حال عدم وجوده (Logic الأمان)
+        initializeStudent();
       }
     });
 
-    // 2. جلب المحتوى المتاح
-    const fetchContent = async () => {
-      const q = collection(db, "courses_metadata");
-      const snap = await getDocs(q);
-      setAvailableCourses(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    };
-
-    // 3. لوحة الأوائل
+    // جلب لوحة المتصدرين
     const fetchLeaders = () => {
-      const q = query(collection(db, "users"), orderBy("points", "desc"), limit(5));
+      const q = query(collection(db, "users"), orderBy("points", "desc"), limit(6));
       onSnapshot(q, (snap) => {
-        setTopStudents(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        setTopStudents(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       });
     };
 
-    fetchContent();
+    // تغيير الرسالة التحفيزية عشوائياً
+    setMotivation(quotes[Math.floor(Math.random() * quotes.length)]);
+
     fetchLeaders();
+    return () => unsubStudent();
+  }, [navigate]);
 
-    // مؤقت العلامة المائية
-    const watermarkInterval = setInterval(() => {
-        setWatermarkPos({
-            top: `${Math.random() * 80 + 10}%`,
-            left: `${Math.random() * 70 + 5}%`
-        });
-    }, 10000);
+  const initializeStudent = async () => {
+    await setDoc(doc(db, "users", auth.currentUser.uid), {
+      name: auth.currentUser.displayName || "طالب جديد",
+      email: auth.currentUser.email,
+      points: 100,
+      walletBalance: 0,
+      streak: 1,
+      lastLogin: serverTimestamp(),
+      todoList: [],
+      photoURL: null
+    });
+  };
 
-    return () => { unsub(); clearInterval(watermarkInterval); };
-  }, []);
-
-  // ==========================================
-  // [1] محرك الأمان والـ Streak والمهام
-  // ==========================================
-  const handleSecurityAndStreak = async (userData) => {
-    const today = new Date().toLocaleDateString('en-US');
-    const currentDevice = navigator.userAgent;
-
-    // تحديث الـ Streak والنقاط اليومية
-    if (userData.lastLoginDate !== today) {
-      let newStreak = (userData.streak || 0) + 1;
-      const lastDate = userData.lastLoginDate ? new Date(userData.lastLoginDate) : null;
-      if (lastDate) {
-        const diff = Math.ceil(Math.abs(new Date() - lastDate) / (1000 * 60 * 60 * 24));
-        if (diff > 1) newStreak = 1;
-      }
-
+  const checkStreak = async (userData) => {
+    const today = new Date().toDateString();
+    const lastLogin = userData.lastLoginDate;
+    if (lastLogin !== today) {
       await updateDoc(doc(db, "users", auth.currentUser.uid), {
-        streak: newStreak,
         lastLoginDate: today,
-        points: increment(20),
-        dailyXP: 0 // تصفير الـ XP اليومي للمهام الجديدة
+        streak: increment(1),
+        points: increment(20)
       });
-      triggerNotif("تسجيل دخول يومي: +20 XP ✨", "success");
+      showToast("رائع! +20 نقطة لمداومتك اليومية ✨", "success");
     }
   };
 
   // ==========================================
-  // [2] نظام بومودورو (Pomodoro)
+  // نظام إدارة الصور (Photo Management)
   // ==========================================
-  useEffect(() => {
-    let interval = null;
-    if (isActive && (minutes > 0 || seconds > 0)) {
-      interval = setInterval(() => {
-        if (seconds === 0) {
-          setMinutes(minutes - 1);
-          setSeconds(59);
-        } else {
-          setSeconds(seconds - 1);
-        }
-      }, 1000);
-    } else if (minutes === 0 && seconds === 0) {
-      setIsActive(false);
-      triggerNotif("انتهى وقت التركيز! خذ استراحة ☕", "success");
-      updateDoc(doc(db, "users", auth.currentUser.uid), { points: increment(30) });
+  
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) return showToast("حجم الصورة كبير جداً (الأقصى 2MB)", "error");
+
+    setIsUploading(true);
+    try {
+      const storageRef = ref(storage, `avatars/${auth.currentUser.uid}`);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+      await updateDoc(doc(db, "users", auth.currentUser.uid), { photoURL: downloadURL });
+      showToast("تم تحديث هويتك البصرية بنجاح!", "success");
+    } catch (error) {
+      showToast("خطأ في رفع الصورة", "error");
     }
-    return () => clearInterval(interval);
-  }, [isActive, minutes, seconds]);
+    setIsUploading(false);
+  };
 
   // ==========================================
-  // [3] تفعيل الأكواد والمحفظة
+  // نظام المحفظة والعملات (Wallet Logic)
   // ==========================================
-  const handleActivateCode = async () => {
-    if(!activationCode) return;
+  
+  const handleRedeemCode = async () => {
+    if (!activationCode.trim()) return;
+    
     try {
       const q = query(collection(db, "activationCodes"), where("code", "==", activationCode), where("isUsed", "==", false));
       const snap = await getDocs(q);
 
-      if(snap.empty) return triggerNotif("كود غير صالح", "error");
+      if (snap.empty) {
+        showToast("هذا الكود غير صالح أو تم استخدامه مسبقاً", "error");
+        return;
+      }
 
       const codeDoc = snap.docs[0];
-      const codeData = codeDoc.data();
+      const codeValue = codeDoc.data().value;
 
       await updateDoc(doc(db, "users", auth.currentUser.uid), {
-        walletBalance: increment(codeData.value || 0),
+        walletBalance: increment(codeValue),
         points: increment(100)
       });
 
-      await updateDoc(doc(db, "activationCodes", codeDoc.id), { 
-        isUsed: true, 
+      await updateDoc(doc(db, "activationCodes", codeDoc.id), {
+        isUsed: true,
         usedBy: student.email,
-        usedAt: serverTimestamp() 
+        usedAt: serverTimestamp()
       });
 
       setActivationCode("");
-      triggerNotif(`تم شحن ${codeData.value} ج.م بنجاح!`, "success");
-    } catch(e) { triggerNotif("فشل التفعيل", "error"); }
+      showToast(`مبروك! تم شحن ${codeValue} ج.م في محفظتك 🚀`, "success");
+    } catch (err) {
+      showToast("حدث خطأ أثناء تفعيل الكود", "error");
+    }
   };
 
-  const triggerNotif = (msg, type = "info") => {
+  // ==========================================
+  // نظام المهام (Task Management)
+  // ==========================================
+  
+  const addTask = async () => {
+    if (!newTask.trim()) return;
+    const taskObj = { id: Date.now(), text: newTask, completed: false, createdAt: new Date() };
+    await updateDoc(doc(db, "users", auth.currentUser.uid), {
+      todoList: arrayUnion(taskObj)
+    });
+    setNewTask("");
+    showToast("تمت إضافة المهمة بنجاح", "info");
+  };
+
+  const toggleTask = async (task) => {
+    const updatedList = student.todoList.map(t => 
+      t.id === task.id ? { ...t, completed: !t.completed } : t
+    );
+    await updateDoc(doc(db, "users", auth.currentUser.uid), { todoList: updatedList });
+    if (!task.completed) {
+      await updateDoc(doc(db, "users", auth.currentUser.uid), { points: increment(5) });
+      showToast("+5 XP لإنجاز المهمة", "success");
+    }
+  };
+
+  const deleteTask = async (task) => {
+    await updateDoc(doc(db, "users", auth.currentUser.uid), {
+      todoList: arrayRemove(task)
+    });
+  };
+
+  // ==========================================
+  // نظام بومودورو (Focus Timer)
+  // ==========================================
+  
+  useEffect(() => {
+    let interval = null;
+    if (timerActive && timer > 0) {
+      interval = setInterval(() => setTimer(t => t - 1), 1000);
+    } else if (timer === 0) {
+      setTimerActive(false);
+      showToast("انتهى وقت التركيز! خذ استراحة قصيرة ☕", "success");
+      updateDoc(doc(db, "users", auth.currentUser.uid), { points: increment(50) });
+    }
+    return () => clearInterval(interval);
+  }, [timerActive, timer]);
+
+  const formatTime = (s) => {
+    const mins = Math.floor(s / 60);
+    const secs = s % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  // ==========================================
+  // الوظائف المساعدة
+  // ==========================================
+  
+  const showToast = (msg, type) => {
     setNotif({ show: true, msg, type });
-    setTimeout(() => setNotif(prev => ({ ...prev, show: false })), 4000);
+    setTimeout(() => setNotif({ show: false, msg: "", type: "info" }), 4000);
+  };
+
+  const getRank = (pts) => {
+    if (pts > 5000) return { title: "أدميرال الفضاء", color: "#ff00ff" };
+    if (pts > 2000) return { title: "محارب ذهبي", color: "#ffd700" };
+    if (pts > 1000) return { title: "مستكشف فضي", color: "#c0c0c0" };
+    return { title: "مبتدئ فضائي", color: "#00d2ff" };
   };
 
   // ==========================================
-  // [4] الرتبة (Rank Calculation)
+  // واجهة العرض (UI Render)
   // ==========================================
-  const getRank = (pts) => {
-    if (pts > 2000) return { name: "أسطوري", color: "#ef4444" };
-    if (pts > 1000) return { name: "ذهبي", color: "#facc15" };
-    if (pts > 500) return { name: "فضي", color: "#94a3b8" };
-    return { name: "مبتدئ", color: "#4ade80" };
-  };
 
   return (
-    <div className={`student-nebula-app ${isDarkMode ? 'dark-mode' : 'light-mode'} ${focusMode ? 'deep-focus' : ''}`}>
+    <div className="student-nebula-app">
       
-      {/* 1. العلامة المائية الأمنية */}
-      <div className="security-watermark" style={{ top: watermarkPos.top, left: watermarkPos.left }}>
-        {student?.name} - {student?.phone} - IP: {window.location.hostname}
-      </div>
-
-      {/* 2. الإشعارات العائمة */}
+      {/* التنبيهات المنبثقة */}
       <AnimatePresence>
         {notif.show && (
-          <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 20, opacity: 1 }} exit={{ y: -50 }} className={`nebula-toast-alert ${notif.type}`}>
-             {notif.type === 'success' ? <ShieldCheck size={20}/> : <AlertTriangle size={20}/>}
-             <span>{notif.msg}</span>
+          <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, scale: 0.5 }} className={`toast-popup ${notif.type}`}>
+            {notif.type === 'success' ? <ShieldCheck /> : <Bell />}
+            <span>{notif.msg}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* 3. الـ Sidebar الذكي */}
-      {!focusMode && (
-        <nav className="nebula-sidebar">
-          <div className="brand-zone">
-            <div className="glow-logo">M</div>
-            <span>Tito Academy</span>
-          </div>
+      {/* 1. السايدبار الذكي */}
+      <aside className="nebula-sidebar">
+        <div className="brand-section">
+          <div className="brand-logo-glow">T</div>
+          <h2 style={{letterSpacing: '2px', fontSize: '18px', marginTop: '15px'}}>TITO ACADEMY</h2>
+        </div>
 
-          <div className="nav-links-group">
-            <button className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}>
-              <Layout size={20} /> <span>الرئيسية</span>
-            </button>
-            <button className={activeTab === 'my-courses' ? 'active' : ''} onClick={() => setActiveTab('my-courses')}>
-              <BookOpen size={20} /> <span>مكتبتي</span>
-            </button>
-            <button className={activeTab === 'store' ? 'active' : ''} onClick={() => setActiveTab('store')}>
-              <ShoppingBag size={20} /> <span>المتجر</span>
-            </button>
-            <button className={activeTab === 'leaderboard' ? 'active' : ''} onClick={() => setActiveTab('leaderboard')}>
-              <Trophy size={20} /> <span>المتصدرين</span>
-            </button>
-            <button className={activeTab === 'tools' ? 'active' : ''} onClick={() => setActiveTab('tools')}>
-              <Brain size={20} /> <span>أدوات الذكاء</span>
-            </button>
-          </div>
-
-          <div className="sidebar-bottom">
-            <div className="pomo-mini-widget">
-               <Clock size={16} />
-               <span>{minutes}:{seconds < 10 ? `0${seconds}` : seconds}</span>
-               <button onClick={() => setIsActive(!isActive)}>{isActive ? <X size={14}/> : <PlayCircle size={14}/>}</button>
-            </div>
-            <button className="theme-toggle" onClick={() => setIsDarkMode(!isDarkMode)}>
-              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-            <button className="logout-btn" onClick={() => auth.signOut()}><Power size={20} /></button>
-          </div>
+        <nav className="nav-links-container">
+          <button className={`nav-btn ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
+            <Layout size={20}/> <span>لوحة التحكم</span>
+          </button>
+          <button className={`nav-btn ${activeTab === 'wallet' ? 'active' : ''}`} onClick={() => setActiveTab('wallet')}>
+            <Wallet size={20}/> <span>المحفظة الرقمية</span>
+          </button>
+          <button className={`nav-btn ${activeTab === 'tasks' ? 'active' : ''}`} onClick={() => setActiveTab('tasks')}>
+            <ListChecks size={20}/> <span>خطة المذاكرة</span>
+          </button>
+          <button className={`nav-btn ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => setActiveTab('courses')}>
+            <BookOpen size={20}/> <span>كورساتي</span>
+          </button>
+          <button className={`nav-btn ${activeTab === 'ranks' ? 'active' : ''}`} onClick={() => setActiveTab('ranks')}>
+            <Trophy size={20}/> <span>قائمة الأوائل</span>
+          </button>
         </nav>
-      )}
 
-      {/* 4. المحتوى الرئيسي */}
-      <div className="nebula-main-layout">
-        <header className="nebula-top-bar">
-          <div className="user-intro">
-            <div className="avatar-area">
-               <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${student?.name}`} alt="avatar" />
-               <div className="online-indicator"></div>
-            </div>
-            <div className="name-rank">
-              <h4>يا مرحب، {student?.name?.split(' ')[0]} ✨</h4>
-              <span style={{ color: getRank(student?.points).color }}>رتبة: {getRank(student?.points).name}</span>
+        <div className="sidebar-footer" style={{marginTop: 'auto'}}>
+          <div className="pomo-widget">
+            <Clock size={16} color={var(--neon-cyan)} />
+            <span>{formatTime(timer)}</span>
+            <button onClick={() => setTimerActive(!timerActive)}>{timerActive ? <X size={14}/> : <PlayCircle size={14}/>}</button>
+          </div>
+          <button className="nav-btn exit-link" onClick={() => auth.signOut()} style={{width: '100%', color: '#ff4b2b'}}>
+            <Power size={20}/> <span>تسجيل الخروج</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* 2. منطقة المحتوى */}
+      <main className="nebula-main-stage">
+        
+        {/* الهيدر العلوي */}
+        <header className="cosmic-header">
+          <div className="user-profile-zone">
+            <label className="avatar-orbital">
+              <input type="file" hidden onChange={handleAvatarChange} />
+              <img src={student?.photoURL || `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${student?.name}`} alt="user" />
+              {isUploading && <div className="orbital-loader"></div>}
+              <div className="online-indicator"></div>
+            </label>
+            <div>
+              <h3 style={{margin: 0, fontSize: '20px'}}>مرحباً بك، {student?.name?.split(' ')[0]} 👋</h3>
+              <p style={{margin: 0, fontSize: '13px', color: var(--neon-cyan)}}><Sparkles size={14}/> {motivation}</p>
             </div>
           </div>
 
-          <div className="top-bar-stats">
-            <div className="stat-item xp" title="نقاط الخبرة">
-              <Zap size={18} fill="#fbbf24" />
+          <div className="header-actions">
+            <div className="stat-pill">
+              <Zap size={18} fill="#ffcc00" color="#ffcc00" />
               <span>{student?.points || 0} XP</span>
             </div>
-            <div className="stat-item streak" title="أيام التوالي">
-              <Flame size={18} fill="#f97316" />
-              <span>{student?.streak || 0}</span>
-            </div>
-            <div className="stat-item wallet" onClick={() => setActiveTab('wallet')}>
-              <Wallet size={18} />
-              <span>{student?.walletBalance || 0} ج.م</span>
-            </div>
-            <div className="quick-action-code">
-              <input 
-                placeholder="كود شحن.." 
-                value={activationCode} 
-                onChange={(e) => setActivationCode(e.target.value.toUpperCase())}
-              />
-              <button onClick={handleActivateCode}><Key size={16}/></button>
+            <div className="stat-pill">
+              <Flame size={18} fill="#ff4b2b" color="#ff4b2b" />
+              <span>{student?.streak || 0} يوم</span>
             </div>
           </div>
         </header>
 
-        <div className="nebula-view-container">
-          <AnimatePresence mode="wait">
+        {/* التبديل بين التبويبات (Content Router) */}
+        <div className="tab-content-area">
+          <AnimatePresence mode='wait'>
             
-            {/* --- لوحة التحكم الشاملة --- */}
-            {activeTab === 'dashboard' && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="dashboard-grid">
-                
-                {/* قسم شريط التقدم */}
-                <div className="nebula-card hero-progress-card">
-                  <div className="card-header">
-                    <h3><Target size={20}/> مستواك التعليمي</h3>
-                    <span>Level {Math.floor((student?.points || 0) / 100)}</span>
+            {/* التبويب الأول: الرئيسية */}
+            {activeTab === 'overview' && (
+              <motion.div key="overview" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-20}} className="dashboard-grid-layout">
+                <div style={{display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px'}}>
+                  
+                  <div className="nebula-card hero-stats">
+                    <div style={{display:'flex', justifyContent:'space-between'}}>
+                      <h3>المستوى التعليمي</h3>
+                      <span style={{color: getRank(student?.points).color}}>{getRank(student?.points).title}</span>
+                    </div>
+                    <div className="xp-progress-bar">
+                      <div className="xp-fill" style={{width: `${(student?.points % 1000) / 10}%`}}></div>
+                    </div>
+                    <p style={{fontSize:'12px', color:'#888'}}>تحتاج إلى {1000 - (student?.points % 1000)} نقطة للرتبة التالية</p>
                   </div>
-                  <div className="main-progress-bar">
-                    <div className="progress-fill" style={{ width: `${(student?.points % 100)}%` }}></div>
+
+                  <div className="nebula-card quick-wallet">
+                    <h4>الرصيد الحالي</h4>
+                    <div className="balance-value">{student?.walletBalance || 0} <small>ج.م</small></div>
+                    <button className="charge-btn" onClick={() => setActiveTab('wallet')}>شحن المحفظة</button>
                   </div>
-                  <p>تحتاج إلى {(100 - (student?.points % 100))} XP للوصول للمستوى القادم</p>
+
                 </div>
 
-                {/* قسم المهام اليومية */}
-                <div className="nebula-card daily-tasks-card">
-                  <h3><ListChecks size={20}/> مهام اليوم</h3>
-                  <div className="tasks-list">
-                    <div className="task-item done">
-                      <CheckCircle size={16} className="text-green-500" />
-                      <span>تسجيل الدخول اليومي</span>
-                      <small>+20 XP</small>
-                    </div>
-                    <div className="task-item">
-                      <PlayCircle size={16} />
-                      <span>مشاهدة محاضرة واحدة</span>
-                      <small>+50 XP</small>
-                    </div>
+                <div className="nebula-card" style={{marginTop: '20px'}}>
+                  <h3><Target size={20}/> نشاطك الأخير</h3>
+                  <div className="activity-placeholder">
+                    {/* هنا يمكن وضع رسم بياني أو سجل الدروس */}
+                    <p>لا توجد بيانات دروس مكتملة اليوم. ابدأ الآن!</p>
                   </div>
-                </div>
-
-                {/* بومودورو بلس */}
-                <div className="nebula-card focus-card">
-                  <h3><Coffee size={20}/> وضع التركيز</h3>
-                  <div className="timer-display">
-                    {minutes < 10 ? `0${minutes}` : minutes}:{seconds < 10 ? `0${seconds}` : seconds}
-                  </div>
-                  <div className="timer-controls">
-                    <button onClick={() => setIsActive(!isActive)}>{isActive ? "إيقاف" : "بدء التركيز"}</button>
-                    <button onClick={() => setFocusMode(true)}><Monitor size={16}/> شاشة كاملة</button>
-                  </div>
-                </div>
-
-                {/* الأوائل المصغر */}
-                <div className="nebula-card mini-leaderboard">
-                  <h3><Trophy size={20}/> أفضل المحاربين</h3>
-                  {topStudents.map((s, i) => (
-                    <div key={s.id} className="mini-leader-item">
-                      <span>#{i+1}</span>
-                      <img src={`https://api.dicebear.com/7.x/bottts/svg?seed=${s.email}`} alt="" />
-                      <p>{s.name}</p>
-                      <strong>{s.points}</strong>
-                    </div>
-                  ))}
                 </div>
               </motion.div>
             )}
 
-            {/* --- مكتبة الكورسات --- */}
-            {activeTab === 'my-courses' && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="courses-view">
-                <div className="view-header">
-                  <h2>محتواي الدراسي ({availableCourses.filter(c => student?.enrolledContent?.includes(c.id)).length})</h2>
-                  <button onClick={() => setShowExternalCourseModal(true)}><Plus size={18}/> إضافة كورس خارجي</button>
+            {/* التبويب الثاني: المحفظة */}
+            {activeTab === 'wallet' && (
+              <motion.div key="wallet" initial={{opacity:0}} animate={{opacity:1}} className="wallet-tab-view">
+                <div className="nebula-card wallet-hero">
+                  <Wallet size={40} color={var(--neon-cyan)}/>
+                  <h2>محفظة MaFa الرقمية</h2>
+                  <div className="balance-large">{student?.walletBalance || 0} EGP</div>
+                  
+                  <div className="redeem-section">
+                    <input 
+                      type="text" 
+                      placeholder="أدخل كود التفعيل هنا..." 
+                      value={activationCode}
+                      onChange={(e) => setActivationCode(e.target.value.toUpperCase())}
+                    />
+                    <button onClick={handleRedeemCode}>تفعيل الكود</button>
+                  </div>
                 </div>
-                <div className="courses-flex-grid">
-                  {availableCourses.filter(c => student?.enrolledContent?.includes(c.id)).map(course => (
-                    <div key={course.id} className="nebula-course-card" onClick={() => navigate(`/player/${course.id}`)}>
-                      <div className="course-poster" style={{backgroundImage: `url(${course.thumbnail})`}}>
-                        <div className="badge">{course.grade}</div>
-                        <PlayCircle className="play-ico" size={50} />
-                      </div>
-                      <div className="course-details">
-                        <h4>{course.title}</h4>
-                        <div className="course-stats">
-                          <span><BookOpen size={14}/> 12 درس</span>
-                          <span><Clock size={14}/> 5 ساعات</span>
+              </motion.div>
+            )}
+
+            {/* التبويب الثالث: المهام */}
+            {activeTab === 'tasks' && (
+              <motion.div key="tasks" initial={{opacity:0}} animate={{opacity:1}} className="todo-tab-view">
+                <div className="nebula-card todo-container">
+                  <h3>قائمة المهام اليومية</h3>
+                  <div className="task-entry">
+                    <input 
+                      type="text" 
+                      placeholder="مثلاً: مراجعة الوحدة الأولى فيزياء..." 
+                      value={newTask}
+                      onChange={(e) => setNewTask(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addTask()}
+                    />
+                    <button onClick={addTask} className="add-task-btn"><Plus /></button>
+                  </div>
+
+                  <div className="todo-list-wrapper">
+                    {student?.todoList?.map((task) => (
+                      <div key={task.id} className={`task-item ${task.completed ? 'completed' : ''}`}>
+                        <div style={{display:'flex', alignItems:'center', gap: '15px'}} onClick={() => toggleTask(task)}>
+                          {task.completed ? <CheckCircle color="#00ff88"/> : <div className="circle-check"></div>}
+                          <span>{task.text}</span>
                         </div>
+                        <Trash2 size={18} color="#ff4b2b" style={{cursor:'pointer'}} onClick={() => deleteTask(task)}/>
                       </div>
-                    </div>
-                  ))}
-                  {/* الكورسات الخارجية */}
-                  {student?.externalCourses?.map(ext => (
-                    <div key={ext.id} className="nebula-course-card external" onClick={() => window.open(ext.url, '_blank')}>
-                      <div className="course-poster ext">
-                        <ExternalLink size={40} />
-                        <span className="source-tag">{ext.platform}</span>
-                      </div>
-                      <div className="course-details">
-                        <h4>{ext.title}</h4>
-                        <p>كورس خارجي مضاف</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {/* --- أدوات المذاكرة --- */}
-            {activeTab === 'tools' && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="tools-view">
-                <div className="tools-grid">
-                  <div className="nebula-card">
-                    <h3><Calculator size={20}/> الآلة الحاسبة العلمية</h3>
-                    <iframe src="https://www.desmos.com/scientific" width="100%" height="400px" style={{ borderRadius: '15px', border: 'none' }}></iframe>
-                  </div>
-                  <div className="nebula-card">
-                    <h3><StickyNote size={20}/> الملاحظات السريعة</h3>
-                    <textarea 
-                      placeholder="اكتب ملاحظاتك هنا.. سيتم حفظها تلقائياً"
-                      value={note}
-                      onChange={(e) => setNote(e.target.value)}
-                    ></textarea>
-                    <button className="save-note-btn" onClick={() => triggerNotif("تم حفظ المسودة محلياً", "success")}>حفظ الآن</button>
+                    ))}
                   </div>
                 </div>
               </motion.div>
@@ -401,43 +409,15 @@ const StudentDash = () => {
 
           </AnimatePresence>
         </div>
-      </div>
+      </main>
 
-      {/* مودال الإضافة الخارجية */}
+      {/* 3. شاشة وضع التركيز (Full Screen Focus) */}
       <AnimatePresence>
-        {showExternalCourseModal && (
-          <div className="nebula-modal-overlay">
-            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="nebula-modal">
-              <div className="modal-header">
-                <h3>إضافة محتوى خارجي</h3>
-                <X onClick={() => setShowExternalCourseModal(false)} />
-              </div>
-              <input placeholder="عنوان الكورس" onChange={e => setExternalCourse({...externalCourse, title: e.target.value})} />
-              <input placeholder="رابط اليوتيوب أو الدرايف" onChange={e => setExternalCourse({...externalCourse, url: e.target.value})} />
-              <select onChange={e => setExternalCourse({...externalCourse, platform: e.target.value})}>
-                <option>YouTube</option>
-                <option>Google Drive</option>
-                <option>External Website</option>
-              </select>
-              <button onClick={async () => {
-                await updateDoc(doc(db, "users", auth.currentUser.uid), {
-                  externalCourses: arrayUnion({...externalCourse, id: Date.now()})
-                });
-                setShowExternalCourseModal(false);
-                triggerNotif("تمت إضافة المحتوى", "success");
-              }}>تأكيد الإضافة</button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* شاشة وضع التركيز العميق */}
-      <AnimatePresence>
-        {focusMode && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="deep-focus-layer">
-            <div className="focus-timer">{minutes}:{seconds < 10 ? `0${seconds}` : seconds}</div>
-            <p>لا شيء يهم الآن سوى مستقبلك.. ركز فقط</p>
-            <button onClick={() => setFocusMode(false)}><X /> إنهاء الجلسة</button>
+        {timerActive && (
+          <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="focus-overlay">
+            <div className="timer-big">{formatTime(timer)}</div>
+            <p>ركز الآن.. العالم كله يمكنه الانتظار</p>
+            <button onClick={() => setTimerActive(false)}><X /> إنهاء الجلسة</button>
           </motion.div>
         )}
       </AnimatePresence>
