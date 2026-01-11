@@ -160,24 +160,32 @@ const StudentDash = () => {
       console.error("Toggle todo error:", e);
     }
   };
-
-  // 4) XP Logic محمي من التكرار (مثال بسيط)
+// 4) XP Logic محمي من التكرار
   const lastActionXP = useRef({ type: null, timestamp: 0 });
-  const accumulateXP = (amount, type) => {
+
+  // أضفنا كلمة async قبل الأقواس هنا لتصحيح خطأ Vercel
+  const accumulateXP = async (amount, type) => { 
     const now = Date.now();
+    
     // منع التكرار لنفس العملية خلال 20 ثانية كحد أدنى
     if (lastActionXP.current.type === type && now - lastActionXP.current.timestamp < 20000) {
       return;
     }
     lastActionXP.current = { type, timestamp: now };
+
     // تحديث XP على Firestore
     if (user?.uid) {
-      const userDoc = doc(db, "students", user.uid);
-      // تحديث XP بشكل آمن
-      // نستخدم updateDoc مع الحصول على current XP ثم زيادة
-      // هنا نقرأ من قبل ثم نحدث
-      await updateDoc(userDoc, { xp: increment(amount) });
-      
+      try {
+        const userDoc = doc(db, "students", user.uid);
+        // الآن await ستعمل بنجاح وبدون أخطاء بناء (Build Errors)
+        await updateDoc(userDoc, { 
+          xp: increment(amount) 
+        });
+      } catch (error) {
+        console.error("Error updating XP:", error);
+      }
+    }
+  };
   // 5) رفع صورة الأفاتار إلى Storage وتحديث Firestore
   const uploadAvatar = async (file) => {
     if (!file || !user?.uid) return;
@@ -1016,4 +1024,5 @@ const QuickNotesStorage = () => {
 export default StudentDash;
 
         
+
 
