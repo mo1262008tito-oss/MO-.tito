@@ -927,3 +927,99 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+.all-courses-nebula {
+  background: #0f172a;
+  min-height: 100vh;
+  padding-bottom: 50px;
+  direction: rtl;
+}
+
+/* هيدر زجاجي احترافي */
+.store-header.glass {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 5%;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* بطاقة الكورس المطورة */
+.item-card {
+  background: #1e293b;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: 0.3s;
+  position: relative;
+}
+
+.item-card:hover {
+  transform: translateY(-10px);
+  border-color: #38bdf8;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+.card-media {
+  position: relative;
+  height: 180px;
+}
+
+.card-media img { width: 100%; height: 100%; object-fit: cover; }
+
+.hot-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: linear-gradient(45deg, #f43f5e, #fb7185);
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+/* أزرار الإجراءات */
+.action-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.preview-btn {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: white;
+  padding: 8px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.buy-btn {
+  background: #38bdf8;
+  color: #0f172a;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* مودال المعاينة */
+.preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.preview-modal {
+  background: #1e293b;
+  width: 90%;
+  max-width: 800px;
+  border-radius: 25px;
+  padding: 20px;
+}
