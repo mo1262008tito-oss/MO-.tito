@@ -579,3 +579,105 @@
   color: #666;
   cursor: pointer;
 }
+
+/* Nebula Theme Core */
+.nebula-theme {
+  display: flex;
+  min-height: 100vh;
+  background: #0a0a0c; /* Deep Space Black */
+  color: #e2e8f0;
+  direction: rtl;
+  font-family: 'Tajawal', sans-serif;
+}
+
+/* Moving Watermark - ميزة الأمان */
+.dynamic-watermark {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+  opacity: 0.07; /* شفافة جداً لا تزعج الطالب ولكن تظهر في التصوير */
+}
+
+.dynamic-watermark span {
+  position: absolute;
+  font-size: 14px;
+  white-space: nowrap;
+  animation: moveWatermark 20s linear infinite;
+  color: white;
+}
+
+@keyframes moveWatermark {
+  0% { transform: translate(-10%, 0); }
+  25% { transform: translate(100%, 30vh); }
+  50% { transform: translate(50%, 80vh); }
+  75% { transform: translate(-50%, 40vh); }
+  100% { transform: translate(-10%, 0); }
+}
+
+/* Glassmorphism Cards */
+.nebula-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 1.5rem;
+  transition: 0.3s;
+}
+
+.nebula-card:hover {
+  border-color: #00f2ff;
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.1);
+}
+
+/* Stats & Pills */
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 15px;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+.xp-pill { color: #facc15; border: 1px solid rgba(250, 204, 21, 0.3); }
+.wallet-pill { color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); cursor: pointer; }
+
+/* Focus Mode */
+.focus-mode .nebula-side-dock, 
+.focus-mode .nebula-header {
+  filter: blur(10px);
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+/* Leaderboard Podium */
+.podium {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 20px;
+  padding-top: 50px;
+}
+
+.podium-spot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 120px;
+}
+
+.spot-1 { transform: scale(1.2); z-index: 2; }
+.spot-1 .step { background: linear-gradient(to top, #facc15, #ca8a04); height: 100px; width: 100%; border-radius: 10px 10px 0 0;}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .nebula-side-dock { width: 70px; }
+  .label { display: none; }
+  .header-right { flex-direction: column; gap: 5px; }
+}
