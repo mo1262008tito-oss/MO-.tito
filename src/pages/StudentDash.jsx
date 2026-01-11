@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 // إذا لم يكن هناك، استخدم import { firebaseApp } from "./firebase"; ثم استخدم:
 // const db = getFirestore(firebaseApp);
 import { firebaseApp } from "./firebase"; // تأكد من وجود هذا الملف في مشروعك ويصدر firebaseApp
-
+import "./StudentDash.css";
 const StudentDash = () => {
   // التهيئة العامة
   const navigate = useNavigate();
@@ -1016,3 +1016,4 @@ const QuickNotesStorage = () => {
 export default StudentDash;
 
         
+
