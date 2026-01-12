@@ -477,12 +477,15 @@ const StudentDash = () => {
         </section>
       </main>
 
-      {/* 20) صندوق الاقتراحات والملاحظات للإدارة */}
-      <FooterSuggestion onSubmit={(text) => {
-        // إرسال اقتراح إلى الإدارة: تخزين في Firestore
-        if (!text
-               
-      <FooterSuggestion onSubmit={(text) => {  
+// 20) صندوق الاقتراحات والملاحظات للإدارة
+<FooterSuggestion onSubmit={(text) => {  
+  // إرسال اقتراح إلى الإدارة: تخزين في Firestore  
+  if (!text || !text.trim()) {
+    alert("يرجى كتابة اقتراح أولاً");
+    return;
+  }
+  // كود الإرسال لـ Firestore يوضع هنا
+}} />
         // إرسال اقتراح إلى الإدارة: تخزين في Firestore  
         if (!text?.trim()) return;  
         if (!user?.uid) return;  
@@ -1023,6 +1026,7 @@ const QuickNotesStorage = () => {
 export default StudentDash;
 
         
+
 
 
 
