@@ -1,4 +1,7 @@
 /* StudentDash.css - الجزء الأول: التأسيس والهيكل العام */
+/* السطر 1: ابدأ بالخط فوراً */
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+
 
 /* 1. إعدادات الألوان والمتغيرات (Themes) */
 :root {
@@ -551,3 +554,4 @@
 .btn.secondary:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
