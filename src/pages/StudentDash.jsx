@@ -481,7 +481,7 @@ const StudentDash = () => {
       <FooterSuggestion onSubmit={(text) => {
         // إرسال اقتراح إلى الإدارة: تخزين في Firestore
         if (!text
-                  {/* 20) صندوق الاقتراحات والملاحظات للإدارة */}  
+               
       <FooterSuggestion onSubmit={(text) => {  
         // إرسال اقتراح إلى الإدارة: تخزين في Firestore  
         if (!text?.trim()) return;  
@@ -1023,6 +1023,7 @@ const QuickNotesStorage = () => {
 export default StudentDash;
 
         
+
 
 
 
