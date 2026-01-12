@@ -1,96 +1,202 @@
-/* StudentDash.css - الجزء الأول: التأسيس والهيكل العام */
-/* السطر 1: ابدأ بالخط فوراً */
+/* 1. التأسيس وتوحيد الخطوط */
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
 
-
-/* 1. إعدادات الألوان والمتغيرات (Themes) */
 :root {
-  --bg-space: radial-gradient(circle at top right, #0b0d17 0%, #050505 100%);
-  --bg-midnight: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+  --bg-deep: #05060b;
+  --panel-bg: rgba(18, 20, 28, 0.7);
   --neon-blue: #00d2ff;
   --neon-purple: #9d50bb;
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --text-primary: #f0f0f0;
-  --text-muted: #a0a0a0;
   --accent-gold: #ffcc00;
-  --danger: #ff4b2b;
-  --success: #00ff88;
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --text-main: #f0f0f0;
+  --text-dim: #a0a0a0;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 2. الحاوية الرئيسية (Dashboard Wrapper) */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--text-main);
+  font-family: 'Tajawal', sans-serif;
+  direction: rtl;
+  overflow-x: hidden;
+}
+
+/* 2. تنظيم الحاوية الرئيسية (Layout) */
 .student-dash {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  color: var(--text-primary);
   padding: 20px;
-  transition: background 0.5s ease;
-  direction: rtl; /* يدعم اللغة العربية */
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(0, 210, 255, 0.05) 0%, transparent 20%),
+    radial-gradient(circle at 90% 80%, rgba(157, 80, 187, 0.05) 0%, transparent 20%);
 }
 
-.student-dash.space-dark {
-  background: var(--bg-space);
-}
-
-.student-dash.midnight-blue {
-  background: var(--bg-midnight);
-}
-
-/* 3. الهيدر العلوي (Header) */
+/* 3. الهيدر العلوي (Header Fix) */
 .sd-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 15px 30px;
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
+  background: var(--panel-bg);
+  backdrop-filter: blur(15px);
   border: 1px solid var(--glass-border);
   border-radius: 20px;
   margin-bottom: 25px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
 }
 
-.user-profile-summary {
+.sd-header .right, .sd-header .left {
   display: flex;
   align-items: center;
   gap: 15px;
 }
 
-.avatar-wrapper {
-  position: relative;
-  width: 55px;
-  height: 55px;
+/* 4. القائمة الجانبية (Sidebar Fix) - حل مشكلة تداخل النصوص */
+.dash-sidebar, aside {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background: var(--panel-bg);
+  border-radius: 25px;
+  border: 1px solid var(--glass-border);
 }
 
-.avatar-main {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--neon-blue);
-  box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+/* تنظيم الروابط داخل السايد بار */
+.sidebar-menu li, .nav-item {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  color: var(--text-dim);
+  transition: var(--transition);
+  cursor: pointer;
+  white-space: nowrap; /* يمنع النص من النزول سطر جديد */
 }
 
-.level-badge {
-  position: absolute;
-  bottom: -5px;
-  right: -5px;
-  background: var(--neon-purple);
-  color: #fff;
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 10px;
-  font-weight: bold;
+.sidebar-menu li:hover, .nav-item:hover {
+  background: rgba(0, 210, 255, 0.1);
+  color: var(--neon-blue);
+  transform: translateX(-5px); /* حركة تفاعلية عند الهوفر */
 }
 
-/* 4. شبكة المحتوى (Grid System) */
+/* 5. شبكة الكروت (The Grid System) */
 .sd-grid {
   display: grid;
-  grid-template-columns: 320px 1fr 300px; /* تخطيط 3 أعمدة احترافي */
+  grid-template-columns: 260px 1fr 300px; /* تقسيم ثلاثي واضح */
   gap: 20px;
+  align-items: start;
 }
 
-@media (max-width: 1200px) {
+/* 6. جماليات الكروت (Cards Aesthetics) */
+.panel, .card {
+  background: var(--panel-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 25px;
+  padding: 25px;
+  position: relative;
+  transition: var(--transition);
+}
+
+.panel:hover, .card:hover {
+  border-color: rgba(0, 210, 255, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* 7. حل مشكلة وضع التركيز (Focus Mode Overlap) */
+.focus-card, .pomodoro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  text-align: center;
+}
+
+.timer-big, .timer {
+  font-size: 3rem;
+  font-weight: 900;
+  font-family: 'Courier New', monospace;
+  color: var(--neon-blue);
+  text-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+  margin: 10px 0;
+}
+
+.focus-actions, .pom-ctrls {
+  display: flex;
+  flex-direction: column; /* جعل الأزرار تحت بعضها لمنع التداخل */
+  gap: 10px;
+  width: 100%;
+}
+
+/* 8. الأزرار (Buttons Hover Effects) */
+.btn, .cta, .nav-btn {
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+}
+
+.btn-primary, .btn {
+  background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+  color: white;
+}
+
+.btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 210, 255, 0.4);
+  filter: brightness(1.1);
+}
+
+/* 9. شريط التقدم (XP Progress Bar) */
+.progress-container {
+  width: 100%;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 15px 0;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+  box-shadow: 0 0 10px var(--neon-blue);
+  transition: width 1s ease-in-out;
+}
+
+/* 10. قائمة المتصدرين (Leaderboard Fix) */
+.leader-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 15px;
+}
+
+.avatar-sm {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--neon-blue);
+}
+
+/* 11. التعامل مع الموبايل (Responsiveness) */
+@media (max-width: 1100px) {
   .sd-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -100,458 +206,483 @@
   .sd-grid {
     grid-template-columns: 1fr;
   }
+  .sd-header {
+    flex-direction: column;
+    gap: 15px;
+  }
 }
 
-/* 5. الكروت الزجاجية (Glass Panels) */
-.panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  border-radius: 25px;
-  padding: 20px;
-  position: relative;
-  overflow: hidden;
-}
-
-.panel-title {
-  font-size: 1.1rem;
-  font-weight: 700;
+/* 12. لمسات إضافية للنصوص المبعثرة */
+h1, h2, h3 {
   margin-bottom: 15px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
   color: var(--neon-blue);
 }
 
-/* 6. شريط القوة (XP & Progress Bar) */
-.power-panel {
-  text-align: center;
-}
-
-.xp-container {
-  margin-top: 10px;
-}
-
-.xp-bar-bg {
-  width: 100%;
-  height: 10px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 5px;
-  overflow: hidden;
-  margin: 8px 0;
-}
-
-.xp-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
-  box-shadow: 0 0 10px var(--neon-blue);
-  transition: width 0.8s ease-in-out;
-}
-
-/* 7. المحفظة (Wallet Widget) */
-.wallet-panel {
-  background: linear-gradient(135deg, rgba(255, 204, 0, 0.1), rgba(0, 0, 0, 0.05));
-  border-color: rgba(255, 204, 0, 0.2);
-}
-
-.balance-display {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--accent-gold);
-  text-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
-}
-
-.btn-activate {
-  width: 100%;
-  margin-top: 15px;
-  padding: 12px;
-  border-radius: 12px;
-  background: var(--accent-gold);
-  color: #000;
-  font-weight: bold;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.btn-activate:hover {
-  transform: scale(1.03);
-  box-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
-}
-
-/* 8. نظام الـ Pomodoro */
-.pomodoro-panel {
-  text-align: center;
-}
-
-.timer-display {
-  font-size: 3rem;
-  font-family: 'Courier New', monospace;
-  font-weight: bold;
-  margin: 15px 0;
-  color: var(--danger);
-  text-shadow: 0 0 15px rgba(255, 75, 43, 0.4);
-}
-
-.pomodoro-controls {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-/* 9. تأثير Deep Focus Overlay */
-.deep-focus-panel {
-  background: rgba(10, 10, 15, 0.95);
-  padding: 40px;
-  border-radius: 30px;
-  border: 2px solid var(--neon-blue);
-  text-align: center;
-  box-shadow: 0 0 50px rgba(0, 210, 255, 0.2);
-}
-
-/* 10. نصوص الاقتباسات (Quotes) */
-.quote-box {
-  font-style: italic;
-  font-size: 1.1rem;
+p, span {
   line-height: 1.6;
-  color: var(--text-muted);
-  border-right: 4px solid var(--neon-purple);
-  padding-right: 15px;
 }
-/* --- StudentDash.css: الجزء الثاني (الأقسام التفاعلية) --- */
 
-/* 1. قائمة المهام (Todo Panel) */
-.todo-panel {
+.muted {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+/* 13. المحفظة الذكية وكود الشحن (Wallet & Charge Fix) */
+.wallet-row {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 18px;
+  border: 1px dashed var(--glass-border);
+  margin-top: 15px;
 }
 
-.todo-inputs {
+.wallet-balance {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--accent-gold);
+  text-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
+}
+
+.charge-input-group {
   display: flex;
-  gap: 10px;
+  gap: 8px;
+  width: 100%;
 }
 
-.todo-inputs input {
+.charge-input-group input {
   flex: 1;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.4);
   border: 1px solid var(--glass-border);
-  padding: 10px 15px;
-  border-radius: 12px;
   color: white;
+  padding: 10px;
+  border-radius: 10px;
   outline: none;
 }
 
-.todo-list {
-  max-height: 200px;
-  overflow-y: auto;
-  padding-right: 5px;
-}
-
-.todo-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 10px;
-  margin-bottom: 8px;
-  transition: 0.3s;
-}
-
-.todo-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.todo-item span.done {
-  text-decoration: line-through;
-  color: var(--text-muted);
-  opacity: 0.6;
-}
-
-/* 2. قائمة المتصدرين (Leaderboard) */
-.leader-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 15px;
-  border-radius: 15px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, transparent 100%);
-  margin-bottom: 10px;
-  border-right: 3px solid transparent;
-}
-
-.leader-item:nth-child(1) { border-right-color: #ffd700; background: rgba(255, 215, 0, 0.05); } /* الأول */
-.leader-item:nth-child(2) { border-right-color: #c0c0c0; } /* الثاني */
-.leader-item:nth-child(3) { border-right-color: #cd7f32; } /* الثالث */
-
-.leader-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.leader-xp {
-  font-weight: bold;
-  color: var(--neon-blue);
-}
-
-/* 3. الأوسمة (Badges) */
-.badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.badge {
-  background: linear-gradient(45deg, var(--neon-purple), #6a11cb);
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  box-shadow: 0 4px 15px rgba(157, 80, 187, 0.3);
-}
-
-/* 4. الرسوم البيانية البسيطة (Stats Chart) */
-.perf-canvas {
-  height: 150px;
-  display: flex;
-  align-items: flex-end;
-  gap: 15px;
-  padding: 20px 0;
-  border-bottom: 1px solid var(--glass-border);
-}
-
-.perf-canvas .line {
-  flex: 1;
-  background: linear-gradient(to top, var(--neon-blue), var(--neon-purple));
-  border-radius: 5px 5px 0 0;
-  min-height: 10%;
-  transition: height 1s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.perf-caption {
-  text-align: center;
-  font-size: 0.9rem;
-  margin-top: 10px;
-  color: var(--text-muted);
-}
-
-/* 5. حالة الاتصال (Status Dot) */
-.status-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.status-dot {
-  width: 10px;
-  height: 10px;
-  background: #555;
-  border-radius: 50%;
-}
-
-.status-dot.online {
-  background: var(--success);
-  box-shadow: 0 0 10px var(--success);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.5); opacity: 0.5; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* 6. التنبيهات العائمة (Toasts) */
-.toast {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--neon-blue);
-  color: #000;
-  padding: 12px 30px;
-  border-radius: 50px;
-  font-weight: bold;
-  box-shadow: 0 10px 30px rgba(0, 210, 255, 0.4);
-  z-index: 1000;
-}
-
-/* 7. الفاصل (Divider) */
-.panel-divider {
-  height: 1px;
-  background: var(--glass-border);
-  margin: 20px 0;
-}
-/* --- StudentDash.css: الجزء الثالث والأخير (المكونات المتقدمة) --- */
-
-/* 1. قائمة المتصدرين الاحترافية (Leaderboard) */
-.leaderboard {
+/* 14. قائمة المهام (Tasks List Fix) */
+.todo-panel, .tasks-card {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 15px;
+  gap: 10px;
 }
 
-.leader-item {
+.task-item {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px 15px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 15px;
-  transition: all 0.3s ease;
-  border: 1px solid transparent;
+  gap: 10px;
+  border-right: 3px solid var(--neon-purple);
+  transition: var(--transition);
 }
 
-.leader-item.podium {
-  background: rgba(0, 210, 255, 0.07);
-  border: 1px solid rgba(0, 210, 255, 0.2);
+.task-item:hover {
+  background: rgba(255, 255, 255, 0.07);
   transform: scale(1.02);
 }
 
-.rank {
-  font-weight: 800;
-  width: 30px;
-  color: var(--neon-blue);
+.task-item.done {
+  opacity: 0.5;
+  border-right-color: var(--text-dim);
+  text-decoration: line-through;
 }
 
-.avatar-sm {
-  width: 35px;
-  height: 35px;
-  border-radius: 50%;
-  margin: 0 10px;
-  border: 2px solid var(--glass-border);
-}
-
-.leader-item .name {
-  flex: 1;
-  font-size: 0.95rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.leader-item .xp {
-  font-weight: bold;
-  color: var(--success);
-  font-size: 0.9rem;
-}
-
-/* 2. المفكرة السريعة (Quick Notes) */
-.quick-notes-panel {
+/* 15. شاشة التركيز العميق (Deep Focus Overlay) */
+/* إذا كان الكود يضيف كلاس نشط عند تفعيل الفوكس */
+.focus-mode-active {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg-deep);
+  z-index: 9999;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.5s ease;
 }
 
-.notes-input {
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 16. الإشعارات (Notifications Fix) */
+.notifications-list {
+  max-height: 250px;
+  overflow-y: auto;
+  padding-left: 10px; /* للمساحة بجانب السكرول بار */
+}
+
+.notification-item {
+  padding: 10px;
+  border-bottom: 1px solid var(--glass-border);
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+/* 17. صندوق الاقتراحات (Footer Suggestions) */
+.suggestion-panel {
+  margin-top: 30px;
+  background: linear-gradient(to left, rgba(157, 80, 187, 0.1), transparent);
+}
+
+.suggestion-inputs {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
-.notes-input input {
+.suggestion-inputs textarea {
   flex: 1;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--glass-border);
-  padding: 8px 12px;
-  border-radius: 10px;
-  color: white;
-}
-
-.notes-list {
-  max-height: 150px;
-  overflow-y: auto;
-}
-
-.note-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 8px 12px;
-  border-radius: 8px;
-  margin-bottom: 6px;
-  font-size: 0.85rem;
-}
-
-.note-item button.ghost {
-  background: transparent;
-  border: none;
-  color: var(--danger);
-  cursor: pointer;
-  font-size: 0.75rem;
-  opacity: 0.7;
-}
-
-.note-item button.ghost:hover { opacity: 1; }
-
-/* 3. نافذة الدعم الفني (Support Widget) */
-.support-widget {
-  margin-top: 20px;
-  border-left: 4px solid var(--neon-blue) !important;
-}
-
-.support-body {
-  margin-top: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.support-body textarea {
-  width: 100%;
-  height: 80px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--glass-border);
   border-radius: 12px;
   color: white;
-  padding: 10px;
+  padding: 12px;
   resize: none;
+  min-height: 45px;
 }
 
-/* 4. التحميلات (Uploads Panel) */
-.upload-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  border-bottom: 1px solid var(--glass-border);
-}
-
-.upload-item a {
-  color: var(--neon-blue);
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.upload-item a:hover { text-decoration: underline; }
-
-/* 5. الإشعارات (Notifications) */
-.notification-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  font-size: 0.9rem;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-.badge-dot {
+/* 18. شريط التمرير الجمالي (Custom Scrollbar) */
+::-webkit-scrollbar {
   width: 6px;
-  height: 6px;
-  background: var(--neon-purple);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-blue);
+}
+
+/* 19. تحسين الأواتار الكبيرة (Large Avatars) */
+.avatar-large {
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
-  flex-shrink: 0;
+  border: 4px solid var(--neon-blue);
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
+  margin-bottom: 15px;
+  object-fit: cover;
 }
 
-/* 6. تحسينات عامة للأزرار */
-.btn.secondary {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+/* 20. الأوسمة (Badges) */
+.badges-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
 }
 
-.btn.secondary:hover {
-  background: rgba(255, 255, 255, 0.2);
+.badge-tag {
+  background: rgba(157, 80, 187, 0.2);
+  color: var(--neon-purple);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border: 1px solid var(--neon-purple);
 }
 
+/* 21. تأثيرات متقدمة للهوفر على الكروت */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  border-radius: 25px;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.03), transparent);
+  pointer-events: none;
+}/* 22. تأثير الزجاج المطور (Advanced Glassmorphism) */
+.glass, .panel, .card {
+    position: relative;
+    overflow: hidden;
+}
+
+/* إضافة لمعة خفيفة تتحرك عند الهوفر */
+.glass::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(255, 255, 255, 0.03),
+        transparent
+    );
+    transform: rotate(45deg);
+    transition: 0.6s;
+    pointer-events: none;
+}
+
+.glass:hover::after {
+    left: 100%;
+    top: 100%;
+}
+
+/* 23. تنسيق قائمة "المتصدرين" (Leaderboard List) */
+.leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.leader-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    transition: var(--transition);
+}
+
+.leader-item:nth-child(1) {
+    border-color: var(--accent-gold);
+    background: rgba(255, 204, 0, 0.05);
+}
+
+.rank-number {
+    font-weight: 900;
+    font-size: 1.1rem;
+    color: var(--neon-blue);
+    width: 30px;
+}
+
+/* 24. أزرار التحكم في الثيم (Theme & Focus Toggles) */
+.icon-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.icon-btn:hover {
+    background: var(--neon-blue);
+    color: var(--bg-deep);
+    box-shadow: 0 0 15px var(--neon-blue);
+}
+
+/* 25. تنسيق الرسوم البيانية البسيطة (CSS Charts) */
+.bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.bar {
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--neon-purple), var(--neon-blue));
+    box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
+}
+
+.bar-label {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    min-width: 100px;
+}
+
+/* 26. حالة الاتصال (Online Status Glow) */
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 8px;
+}
+
+.status-dot.online {
+    background: #00ff88;
+    box-shadow: 0 0 10px #00ff88, 0 0 20px rgba(0, 255, 136, 0.2);
+    animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+    0% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
+    100% { opacity: 0.6; transform: scale(1); }
+}
+
+/* 27. تنظيف النصوص المتقاطعة (Text Cleanup) */
+.user-info .name {
+    font-weight: 800;
+    font-size: 1.2rem;
+    background: linear-gradient(to left, #fff, var(--text-dim));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-top: 4px;
+}
+
+/* 28. تحسين مظهر الفورم (Inputs & Textareas) */
+input::placeholder, textarea::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* 29. شاشة الدعم الفني (Support Widget) */
+.support-widget {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    z-index: 2000;
+}
+
+/* 30. الأنيميشن عند فتح الصفحة */
+.student-dash > * {
+    animation: slideUp 0.6s ease forwards;
+    opacity: 0;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+
+/* =============================================
+   31. تنظيم الشاشات الصغيرة (Responsive Design)
+   ============================================= */
+
+/* للأجهزة اللوحية (Tablets) */
+@media (max-width: 1024px) {
+    .sd-grid {
+        grid-template-columns: 1fr 1fr; /* عمودين بدل ثلاثة */
+        gap: 15px;
+    }
+    
+    .dash-sidebar {
+        width: 100%;
+        flex-direction: row; /* جعل القائمة الجانبية أفقية */
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding: 10px;
+    }
+
+    .sidebar-menu li {
+        padding: 8px 15px;
+    }
+}
+
+/* للهواتف الذكية (Mobile) */
+@media (max-width: 768px) {
+    .student-dash {
+        padding: 10px;
+    }
+
+    .sd-grid {
+        grid-template-columns: 1fr; /* عمود واحد فقط */
+    }
+
+    /* تحويل الهيدر لشكل مدمج */
+    .sd-header {
+        flex-direction: column;
+        padding: 15px;
+        text-align: center;
+        gap: 15px;
+    }
+
+    .sd-header .center {
+        width: 100%;
+    }
+
+    .search {
+        width: 100% !important;
+    }
+
+    /* تصغير حجم التايمر في الموبايل عشان مياكلش الشاشة */
+    .timer-big, .timer {
+        font-size: 2.2rem;
+    }
+
+    /* جعل الكروت تأخذ كامل العرض */
+    .panel, .card {
+        padding: 15px;
+        border-radius: 15px;
+    }
+
+    /* إخفاء بعض النصوص غير المهمة في الموبايل لتوفير مساحة */
+    .bar-label {
+        font-size: 0.7rem;
+        min-width: 70px;
+    }
+
+    /* تحسين شكل أزرار الفوكس في الموبايل */
+    .focus-actions {
+        flex-direction: row; /* الأزرار بجانب بعضها في الموبايل لتوفير مساحة طولية */
+        gap: 8px;
+    }
+
+    .btn {
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+}
+
+/* =============================================
+   32. إصلاحات "الطبقات" (Z-Index Fixes)
+   ============================================= */
+
+/* منع تداخل المودال أو النوافذ المنبثقة مع الكروت */
+.modal-overlay, .overlay {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+}
+
+/* =============================================
+   33. تحسينات تجربة المستخدم (UX Micro-interactions)
+   ============================================= */
+
+/* تأثير الضغط على الأزرار */
+.btn:active, .icon-btn:active {
+    transform: scale(0.95);
+}
+
+/* أنيميشن لظهور الكروت بشكل متتابع */
+.sd-grid > section:nth-child(1) { animation-delay: 0.1s; }
+.sd-grid > section:nth-child(2) { animation-delay: 0.2s; }
+.sd-grid > section:nth-child(3) { animation-delay: 0.3s; }
+
+/* =============================================
+   34. اللمسة الجمالية الأخيرة (Orbital Glow)
+   ============================================= */
+.student-dash::before {
+    content: "";
+    position: fixed;
+    top: -10%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: var(--neon-blue);
+    filter: blur(150px);
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: -1;
+}
