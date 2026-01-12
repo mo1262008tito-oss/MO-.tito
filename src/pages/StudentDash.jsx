@@ -476,36 +476,30 @@ const StudentDash = () => {
           </div>
         </section>
       </main>
-
-// 20) صندوق الاقتراحات والملاحظات للإدارة
-<FooterSuggestion onSubmit={(text) => {  
-  // إرسال اقتراح إلى الإدارة: تخزين في Firestore  
-  if (!text || !text.trim()) {
-    alert("يرجى كتابة اقتراح أولاً");
-    return;
-  }
-  // كود الإرسال لـ Firestore يوضع هنا
-}} />
-        // إرسال اقتراح إلى الإدارة: تخزين في Firestore  
-        if (!text?.trim()) return;  
-        if (!user?.uid) return;  
-        (async () => {  
-          try {  
-            const suggCol = collection(db, "admin", "suggestions");  
-            await addDoc(suggCol, {  
-              userId: user.uid,  
-              text: text.trim(),  
-              createdAt: Date.now(),  
-              status: "pending",  
-            });  
-            // ردة فعل بسيطة  
-            alert("تم إرسال الاقتراح بنجاح للإدارة.");  
-          } catch (e) {  
-            console.error("Submit suggestion error:", e);  
-          }  
-        })();  
-      }} />  
-
+{/* 20) صندوق الاقتراحات والملاحظات للإدارة */}
+      <FooterSuggestion 
+        onSubmit={async (text) => {
+          if (!text || !text.trim()) {
+            alert("يرجى كتابة اقتراح أولاً");
+            return;
+          }
+          if (!user?.uid) return;
+          
+          try {
+            const suggCol = collection(db, "suggestions");
+            await addDoc(suggCol, {
+              userId: user.uid,
+              userName: user.displayName || "طالب",
+              text: text,
+              timestamp: new Date()
+            });
+            alert("تم إرسال اقتراحك للإدارة بنجاح!");
+          } catch (error) {
+            console.error("Error sending suggestion:", error);
+            alert("حدث خطأ أثناء الإرسال، حاول ثانية");
+          }
+        }} 
+      />
       {/* 21) التحليل الإحصائي: رسم بسيط باستخدام CSS-based (مثال أسبوعي) */}  
       <section className="card glass panel perf-panel" aria-label="Performance">  
         <div className="panel-title">تحليل الأداء (أسبوعي)</div>  
@@ -1026,6 +1020,7 @@ const QuickNotesStorage = () => {
 export default StudentDash;
 
         
+
 
 
 
