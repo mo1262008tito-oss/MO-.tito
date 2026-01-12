@@ -1,140 +1,130 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { auth, db } from '../firebase'; 
-import { doc, getDoc } from 'firebase/firestore';
-import { motion } from 'framer-motion';
-import { 
-  Heart, BookOpen, PlayCircle, Award, 
-  ChevronLeft, Zap, Star, ShieldCheck, Sparkles
-} from 'lucide-react';
-import './Home.css';
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import "./Home.css";
 
 const Home = () => {
   const navigate = useNavigate();
-  const [userName, setUserName] = useState("طالبنا المتميز");
+  const [scrolled, setScrolled] = useState(false);
 
+  // مراقبة السكرول لتغيير شكل الهيدر
   useEffect(() => {
-    const fetchUser = async () => {
-      const user = auth.currentUser;
-      if (user) {
-        // محاولة جلب الاسم من Firestore إذا لم يكن في الـ Profile
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists() && userDoc.data().name) {
-          setUserName(userDoc.data().name.split(' ')[0]);
-        } else if (user.displayName) {
-          setUserName(user.displayName.split(' ')[0]);
-        }
-      }
-    };
-    fetchUser();
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const portals = [
-    {
-      id: 1,
-      title: "واحة الإيمان",
-      desc: "غذاء الروح في محراب رقمي؛ أذكار، مواقيت، وتزكية نفس بلمسة تقنية.",
-      icon: <Heart size={40} className="floating-icon" />,
-      path: "/religious",
-      color: "#00f2ff",
-      badge: "تزكية"
-    },
-    {
-      id: 2,
-      title: "أكاديمية MaFa",
-      desc: "هنا نصنع المبدعين.. رحلتك في الفيزياء والبرمجيات تبدأ من حيث ينتهي الآخرون.",
-      icon: <PlayCircle size={40} className="floating-icon" />,
-      path: "/highschool",
-      color: "#ffcc00",
-      badge: "احتراف"
-    },
-    {
-      id: 3,
-      title: "المكتبة الذكية",
-      desc: "كنوز المعرفة بين يديك؛ كتب مختارة بعناية لتبني عقلاً ينير المستقبل.",
-      icon: <BookOpen size={40} className="floating-icon" />,
-      path: "/library",
-      color: "#00ff88",
-      badge: "ثقافة"
-    }
-  ];
-
   return (
-    <div className="modern-home rtl">
-      {/* عناصر الخلفية المتحركة */}
-      <div className="cosmic-bg">
-        <div className="nebula-1"></div>
-        <div className="nebula-2"></div>
-      </div>
+    <div className="home-universe">
+      {/* 1. الهيدر العائم الذكي */}
+      <nav className={`smart-nav ${scrolled ? "scrolled" : ""}`}>
+        <div className="nav-container">
+          <div className="logo" onClick={() => navigate("/")}>
+            MAFA<span>TEC</span>
+          </div>
+          <div className="menu-links">
+            <a href="#features">المميزات</a>
+            <a href="#roadmap">خارطة الطريق</a>
+            <a href="#stats">إحصائيات</a>
+            <button className="login-portal" onClick={() => navigate("/login")}>
+              دخول المنصة 🔐
+            </button>
+          </div>
+        </div>
+      </nav>
 
-      <main className="main-content">
-        {/* قسم الترحيب الملكي */}
-        <header className="hero-section">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="hero-card glass"
-          >
-            <div className="welcome-tag">
-              <Sparkles size={16} /> منصتك المتكاملة
+      {/* 2. قسم البطولة (Hero Section) */}
+      <section className="hero-viewport">
+        <div className="cosmic-bg"></div>
+        <motion.div 
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          className="hero-text-content"
+        >
+          <span className="top-badge">مستقبل التعليم بين يديك</span>
+          <h1>تعلم بذكاء.. <br/> <span>في فضاء MAFA</span></h1>
+          <p>المنصة رقم #1 في الوطن العربي التي تدمج التلعيب (Gamification) بالذكاء الاصطناعي لتجعل المذاكرة مغامرة ممتعة.</p>
+          <div className="hero-btns">
+            <button className="glow-btn-primary" onClick={() => navigate("/login")}>ابدأ رحلتك مجاناً</button>
+            <button className="outline-btn" onClick={() => navigate("/about")}>شاهد العرض التجريبي</button>
+          </div>
+        </motion.div>
+        
+        {/* عنصر 3D عائم (Placeholder لعمل توازن بصري) */}
+        <div className="floating-astronaut">👨‍🚀</div>
+      </section>
+
+      {/* 3. شريط الأرقام (Stats Bar) */}
+      <section id="stats" className="stats-grid">
+        <div className="stat-card"><h3>+50K</h3><p>ساعة تعليمية</p></div>
+        <div className="stat-card"><h3>+12K</h3><p>طالب مفعل</p></div>
+        <div className="stat-card"><h3>+200</h3><p>مدرس خبير</p></div>
+        <div className="stat-card"><h3>98%</h3><p>نسبة الرضا</p></div>
+      </section>
+
+      {/* 4. خريطة الطريق (The Roadmap) */}
+      <section id="roadmap" className="roadmap-section">
+        <h2 className="section-title">رحلتك نحو القمة 🏔️</h2>
+        <div className="roadmap-container">
+          <div className="road-step">
+            <div className="step-num">1</div>
+            <h4>انضم للمجرة</h4>
+            <p>أنشئ حسابك وابدأ بتحديد اهدافك الدراسية.</p>
+          </div>
+          <div className="road-step">
+            <div className="step-num">2</div>
+            <h4>اجمع الكريستالات</h4>
+            <p>كل درس تنهيه يمنحك XP ونقاط شحن حقيقية.</p>
+          </div>
+          <div className="road-step">
+            <div className="step-num">3</div>
+            <h4>تصدر الترتيب</h4>
+            <p>نافس زملاءك في قائمة المتصدرين العالمية.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. قسم المميزات (Smart Features) */}
+      <section id="features" className="features-showcase">
+        <div className="feat-box">
+          <div className="feat-icon">🤖</div>
+          <h3>مساعد ذكي 24/7</h3>
+          <p>ذكاء اصطناعي يجيب على أسئلتك الدراسية في ثوانٍ.</p>
+        </div>
+        <div className="feat-box active">
+          <div className="feat-icon">💰</div>
+          <h3>نظام المحفظة</h3>
+          <p>اشحن رصيدك بسهولة وفعل الكورسات بضغطة زر.</p>
+        </div>
+        <div className="feat-box">
+          <div className="feat-icon">🏆</div>
+          <h3>أوسمة الشرف</h3>
+          <p>احصل على أوسمة نادرة تظهر في بروفايلك أمام الجميع.</p>
+        </div>
+      </section>
+
+      {/* 6. الفوتر (The Smart Footer) */}
+      <footer className="cosmic-footer">
+        <div className="footer-content">
+          <div className="footer-brand">
+            <h2>MAFA TEC</h2>
+            <p>نحن نصنع جيل المبدعين القادم.</p>
+          </div>
+          <div className="footer-links">
+            <h4>روابط سريعة</h4>
+            <a href="/privacy">سياسة الخصوصية</a>
+            <a href="/terms">الشروط والأحكام</a>
+            <a href="/support">الدعم الفني</a>
+          </div>
+          <div className="footer-social">
+            <h4>تابعنا على</h4>
+            <div className="social-icons">
+              <span>FB</span><span>TW</span><span>IG</span>
             </div>
-            <h1>مرحباً بك يا <span className="name-gradient">{userName}</span></h1>
-            
-            {/* الرسالة التعريفية القوية */}
-            <div className="manifesto">
-              <p className="primary-msg">
-                "نحن لا نقدم مجرد دروس، بل نبني <strong>جيلاً متزناً</strong> يمتلك ناصية العلم في يد، ونور الإيمان في القلب."
-              </p>
-              <div className="separator"></div>
-              <p className="secondary-msg">
-                في <strong>MaFa Tec</strong>، نؤمن أن التكنولوجيا وجدت لخدمة الروح والعقل معاً. اكتشف بواباتنا الذكية وابدأ رحلة التغيير الآن.
-              </p>
-            </div>
-
-            <div className="hero-features">
-              <span><ShieldCheck size={16}/> أمان تعليمي</span>
-              <span><Award size={16}/> شهادات معتمدة</span>
-              <span><Star size={16}/> دعم مستمر</span>
-            </div>
-          </motion.div>
-        </header>
-
-        {/* شبكة البوابات */}
-        <section className="portal-grid">
-          {portals.map((portal, idx) => (
-            <motion.div 
-              key={portal.id}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              className="portal-box"
-              onClick={() => navigate(portal.path)}
-              style={{ '--accent': portal.color }}
-            >
-              <div className="box-inner glass">
-                <div className="box-top">
-                  <div className="icon-wrapper" style={{ background: portal.color + '22' }}>
-                    {portal.icon}
-                  </div>
-                  <span className="box-badge">{portal.badge}</span>
-                </div>
-                <h3>{portal.title}</h3>
-                <p>{portal.desc}</p>
-                <div className="box-action">
-                  استكشف الآن <ChevronLeft size={18} />
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </section>
-
-        {/* تذييل الصفحة برسالة قصيرة */}
-        <footer className="home-footer">
-          <p>بني بكل ❤️ ليكون منارتك نحو القمة | <b>MaFa Tec 2026</b></p>
-        </footer>
-      </main>
+          </div>
+        </div>
+        <div className="copyright">كل الحقوق محفوظة © 2026 - صمم بواسطة MO-TITO</div>
+      </footer>
     </div>
   );
 };
