@@ -3,7 +3,7 @@ import { db, auth } from '../firebase';
 import { doc, updateDoc, increment, arrayUnion, setDoc } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldAlert, Award, AlertTriangle, Lock, Download, RotateCcw } from 'lucide-react';
-
+import './QuizSystem.css';
 const QuizSystem = ({ quizData, lessonId, courseName }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
