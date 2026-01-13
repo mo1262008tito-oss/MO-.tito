@@ -13,7 +13,47 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 import './HighSchool.css';
+// ... أضف أيقونة المحفظة في الاستيرادات
+import { Wallet, BellDot, PlusCircle } from 'lucide-react';
 
+// داخل قسم الـ hero-main-card
+<div className="hero-main-card glass">
+  <div className="top-action-bar">
+    <div className="hero-badge">
+      <Flame size={16} className="flame-icon" />
+      <span>أنت في المركز #{userData?.rank || '??'} هذا الأسبوع</span>
+    </div>
+    
+    {/* مركز التنبيهات الجديد */}
+    <div className="notification-bell" onClick={() => navigate('/notifications')}>
+      <BellDot size={22} color={userData?.hasUnread ? "#ff4d4d" : "#fff"} />
+      {userData?.hasUnread && <span className="red-dot"></span>}
+    </div>
+  </div>
+
+  <h1>أكاديمية <span className="text-gradient">MAFA</span> الذكية</h1>
+  
+  <div className="search-bar-premium">
+    {/* ... كود البحث كما هو */}
+  </div>
+
+  <div className="quick-stats-v2">
+     <div className="q-stat xp"><Zap size={16}/> {userData?.points || 0} XP</div>
+     <div className="q-stat streak"><Sparkles size={16}/> {userData?.streak || 0} يوم</div>
+     
+     {/* وحدة المحفظة الجديدة */}
+     <div className="wallet-pill" onClick={() => navigate('/billing')}>
+        <div className="wallet-info">
+           <Wallet size={16} color="#00f2ff" />
+           <span>{userData?.balance || 0} ج.م</span>
+        </div>
+        <button className="add-funds-btn" title="شحن الرصيد">
+           <PlusCircle size={14} />
+           <span>شحن</span>
+        </button>
+     </div>
+  </div>
+</div>
 const HighSchool = () => {
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
@@ -332,5 +372,6 @@ const HighSchool = () => {
 };
 
 export default HighSchool;
+
 
 
