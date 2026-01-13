@@ -52,6 +52,7 @@ body {
   z-index: 1000;
 }
 
+
 .sd-header .right, .sd-header .left {
   display: flex;
   align-items: center;
@@ -68,6 +69,7 @@ body {
   border-radius: 25px;
   border: 1px solid var(--glass-border);
 }
+
 
 /* تنظيم الروابط داخل السايد بار */
 .sidebar-menu li, .nav-item {
@@ -368,7 +370,7 @@ p, span {
 
 /* 19. تحسين الأواتار الكبيرة (Large Avatars) */
 .avatar-large {
-  width: 120px;
+  width: 121px;
   height: 120px;
   border-radius: 50%;
   border: 4px solid var(--neon-blue);
@@ -686,3 +688,4 @@ input::placeholder, textarea::placeholder {
     pointer-events: none;
     z-index: -1;
 }
+
