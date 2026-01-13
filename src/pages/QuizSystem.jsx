@@ -1,85 +1,173 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { db, auth } from '../firebase';
-import { doc, updateDoc, increment, arrayUnion } from 'firebase/firestore';
+import { doc, updateDoc, increment, arrayUnion, setDoc } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, XCircle, Award, RefreshCw, Zap } from 'lucide-react';
+import { ShieldAlert, Award, AlertTriangle, Lock, Download, RotateCcw } from 'lucide-react';
 
-const QuizSystem = ({ quizData, lessonId }) => {
+const QuizSystem = ({ quizData, lessonId, courseName }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [isCorrect, setIsCorrect] = useState(null);
+  const [warningCount, setWarningCount] = useState(0);
+  const [isLocked, setIsLocked] = useState(false);
+  const [startTime] = useState(Date.now());
 
-  // التحقق من وجود بيانات لتجنب انهيار الموقع
-  if (!quizData || quizData.length === 0) {
-    return <div className="quiz-empty">لا يوجد أسئلة متاحة حالياً.</div>;
-  }
+  // --- 1. نظام الحماية الذكي (Security System) ---
+  
+  const handleSecurityBreach = useCallback((reason) => {
+    setWarningCount(prev => {
+      if (prev >= 2) {
+        setIsLocked(true);
+        finishQuiz(score, true); // إنهاء إجباري بسبب الغش
+        return prev;
+      }
+      alert(`تنبيه أمني: ${reason}. محاولة الغش قد تؤدي لإلغاء امتحانك.`);
+      return prev + 1;
+    });
+  }, [score]);
+
+  useEffect(() => {
+    // منع القائمة اليمنى
+    const preventRightClick = (e) => e.preventDefault();
+    // منع الاختصارات (Ctrl+C, Ctrl+V, F12, Inspect element)
+    const preventShortcuts = (e) => {
+      if (e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'u' || e.key === 's' || e.key === 'p') || e.keyCode === 123) {
+        e.preventDefault();
+        handleSecurityBreach("تم اكتشاف محاولة استخدام اختصارات لوحة المفاتيح");
+      }
+    };
+    // كشف الخروج من التبويب (Tab Switching)
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        handleSecurityBreach("تم اكتشاف مغادرة صفحة الامتحان");
+      }
+    };
+
+    window.addEventListener('contextmenu', preventRightClick);
+    window.addEventListener('keydown', preventShortcuts);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('contextmenu', preventRightClick);
+      window.removeEventListener('keydown', preventShortcuts);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [handleSecurityBreach]);
+
+  // --- 2. معالجة الإجابات ---
 
   const handleAnswer = (index) => {
-    if (selectedAnswer !== null) return;
-    
-    setSelectedAnswer(index);
-    const correct = quizData[currentQuestion].correctAnswer === index;
-    setIsCorrect(correct);
+    if (isLocked) return;
 
-    // تحديث النتيجة
-    const newScore = correct ? score + 1 : score;
-    if (correct) setScore(newScore);
+    const isCorrect = quizData[currentQuestion].correctAnswer === index;
+    const nextScore = isCorrect ? score + 1 : score;
 
-    setTimeout(() => {
-      if (currentQuestion + 1 < quizData.length) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedAnswer(null);
-        setIsCorrect(null);
-      } else {
-        // نمرر النتيجة النهائية للدالة مباشرة لضمان الدقة
-        finishQuiz(newScore);
-      }
-    }, 1200);
+    if (currentQuestion + 1 < quizData.length) {
+      setScore(nextScore);
+      setCurrentQuestion(currentQuestion + 1);
+    } else {
+      finishQuiz(nextScore, false);
+    }
   };
 
-  const finishQuiz = async (finalScore) => {
+  const finishQuiz = async (finalScore, cheated = false) => {
     setShowResult(true);
-    const finalPercentage = (finalScore / quizData.length) * 100;
+    const totalQuestions = quizData.length;
+    const missed = totalQuestions - finalScore;
+    const canGetCertificate = missed <= 2; // شرطك: الدرجة النهائية أو نقص درجة/درجتين
 
-    // تفعيل الجائزة إذا نجح الطالب (أكبر من 50%)
-    if (finalPercentage >= 50 && auth.currentUser) {
-      try {
-        const userRef = doc(db, "users", auth.currentUser.uid);
-        await updateDoc(userRef, {
-          completedQuizzes: arrayUnion(lessonId),
-          points: increment(50) 
+    if (auth.currentUser) {
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      const examData = {
+        lessonId,
+        score: finalScore,
+        date: new Date().toISOString(),
+        cheated,
+        earnedCertificate: canGetCertificate && !cheated
+      };
+
+      await updateDoc(userRef, {
+        examHistory: arrayUnion(examData),
+        points: increment(canGetCertificate ? 100 : 10)
+      });
+
+      // إذا استحق الشهادة، سجلها في جدول الشهادات
+      if (canGetCertificate && !cheated) {
+        const certId = `CERT-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+        await setDoc(doc(db, "certificates", certId), {
+          uid: auth.currentUser.uid,
+          userName: auth.currentUser.displayName,
+          courseName,
+          date: new Date().toISOString(),
+          score: `${finalScore}/${totalQuestions}`
         });
-      } catch (error) {
-        console.error("Error saving score:", error);
       }
     }
   };
 
-  if (showResult) return (
-    <motion.div 
-      initial={{ scale: 0.9, opacity: 0 }} 
-      animate={{ scale: 1, opacity: 1 }}
-      className="quiz-result-card glass"
-    >
-      <Award size={60} color={score / quizData.length >= 0.5 ? "#00ff88" : "#ff4444"} />
-      <h2>النتيجة النهائية</h2>
-      <div className="score-display">{score} / {quizData.length}</div>
-      <p>{(score / quizData.length) >= 0.5 ? "عمل رائع! استمر في التفوق 🚀" : "حاول مرة أخرى لتحسين مستواك 📚"}</p>
-      <button onClick={() => window.location.reload()} className="retry-btn">
-        <RefreshCw size={18} /> إعادة المحاولة
-      </button>
-    </motion.div>
-  );
+  // --- 3. واجهة النتائج والشهادة ---
 
+  if (showResult) {
+    const isSuccess = (quizData.length - score) <= 2;
+    return (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="result-container">
+        <div className={`result-card ${isLocked ? 'locked-border' : ''}`}>
+          {isLocked ? (
+            <div className="status-header error">
+              <ShieldAlert size={48} />
+              <h2>تم إلغاء الامتحان</h2>
+              <p>بسبب مخالفة معايير الأمان (محاولة غش).</p>
+            </div>
+          ) : (
+            <div className="status-header">
+              <Award size={64} className={isSuccess ? "gold-glow" : ""} />
+              <h2>{isSuccess ? "مبروك! تستحق الشهادة" : "نتيجة الامتحان"}</h2>
+            </div>
+          )}
+
+          <div className="score-circle">
+            <span className="big-score">{score}</span>
+            <span className="total">/ {quizData.length}</span>
+          </div>
+
+          {isSuccess && !isLocked && (
+            <motion.div whileHover={{ scale: 1.05 }} className="certificate-box">
+              <div className="cert-preview">
+                <h3>شهادة إتمام</h3>
+                <p>نقر بأن الطالب <b>{auth.currentUser?.displayName}</b></p>
+                <p>قد اجتاز دورة <b>{courseName}</b> بنجاح.</p>
+              </div>
+              <button className="download-btn" onClick={() => window.print()}>
+                <Download size={18} /> تحميل الشهادة (PDF)
+              </button>
+            </motion.div>
+          )}
+
+          <button onClick={() => window.location.reload()} className="retry-btn">
+            <RotateCcw size={18} /> العودة للمقرر
+          </button>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // --- 4. واجهة الامتحان الرئيسية ---
   return (
-    <div className="quiz-container-v2 glass">
-      <div className="quiz-progress">
-        <span>سؤال {currentQuestion + 1} من {quizData.length}</span>
-        <div className="progress-bar">
+    <div className="secure-quiz-layout select-none"> {/* منع اختيار النص عبر CSS */}
+      <div className="exam-header">
+        <div className="security-badge">
+          <Lock size={14} /> بيئة امتحانية مؤمنة
+        </div>
+        <div className="warnings">
+          التحذيرات: {warningCount} / 3
+        </div>
+      </div>
+
+      <div className="progress-container">
+        <div className="progress-text">السؤال {currentQuestion + 1} من {quizData.length}</div>
+        <div className="progress-bar-bg">
           <motion.div 
-            className="progress-fill" 
+            className="progress-bar-fill"
             initial={{ width: 0 }}
             animate={{ width: `${((currentQuestion + 1) / quizData.length) * 100}%` }}
           />
@@ -89,28 +177,17 @@ const QuizSystem = ({ quizData, lessonId }) => {
       <AnimatePresence mode="wait">
         <motion.div 
           key={currentQuestion}
-          initial={{ x: 50, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: -50, opacity: 0 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="question-section"
         >
-          <h3 className="quiz-q-text">{quizData[currentQuestion].question}</h3>
-          
-          <div className="options-grid">
-            {quizData[currentQuestion].options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleAnswer(index)}
-                className={`option-btn ${
-                  selectedAnswer === index 
-                    ? (isCorrect ? 'correct-glow' : 'wrong-glow') 
-                    : ''
-                } ${selectedAnswer !== null && quizData[currentQuestion].correctAnswer === index ? 'correct-glow' : ''}`}
-              >
-                <div className="option-label">{String.fromCharCode(65 + index)}</div>
+          <h2 className="question-text">{quizData[currentQuestion].question}</h2>
+          <div className="options-list">
+            {quizData[currentQuestion].options.map((option, idx) => (
+              <button key={idx} onClick={() => handleAnswer(idx)} className="secure-option-btn">
+                <span className="option-index">{String.fromCharCode(65 + idx)}</span>
                 {option}
-                {selectedAnswer === index && (
-                  isCorrect ? <CheckCircle className="stat-icon" /> : <XCircle className="stat-icon" />
-                )}
               </button>
             ))}
           </div>
