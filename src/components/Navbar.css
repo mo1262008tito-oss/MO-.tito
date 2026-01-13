@@ -173,4 +173,124 @@
     border-radius: 50px;
     border: 1px solid rgba(0, 242, 255, 0.3);
   }
+
+  /* --- 1. تأثيرات إضافية للجسم العام --- */
+.super-nav {
+    /* إضافة خط توهج خفيف تحت الناف بار */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
 }
+
+/* --- 2. تحسين شكل اللوجو (Logo Animation) --- */
+.brand-section:hover .logo-cube {
+    transform: rotate(10deg) scale(1.1);
+    filter: hue-rotate(45deg);
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* --- 3. تصميم متطور لروابط الهب (Nav Hub) --- */
+.nav-item-3d i {
+    transition: 0.3s;
+    color: var(--primary);
+    opacity: 0.8;
+}
+
+.nav-item-3d:hover i {
+    transform: translateY(-2px);
+    opacity: 1;
+    text-shadow: 0 0 8px var(--primary);
+}
+
+/* --- 4. بروفايل المستخدم (User Profile Group) --- */
+.user-control-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 5px 15px;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: 0.3s;
+}
+
+.user-control-group:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: var(--primary);
+}
+
+/* --- 5. نقاط الـ XP (العملات) --- */
+.xp-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 215, 0, 0.1);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.gold-icon {
+    color: #ffd700;
+    filter: drop-shadow(0 0 5px #ffd700);
+}
+
+/* --- 6. زر تسجيل الخروج --- */
+.logout-btn {
+    background: none;
+    border: none;
+    color: #ff4d4d;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.logout-btn:hover {
+    background: rgba(255, 77, 77, 0.1);
+    transform: scale(1.1);
+}
+
+/* --- 7. تعديلات الهواتف الذكية (Mobile Optimization) --- */
+@media (max-width: 900px) {
+    /* جعل الروابط تتنفس في الأسفل */
+    .nav-hub {
+        padding: 0 10px;
+    }
+
+    /* جعل الأيقونة النشطة في الموبايل متوهجة */
+    .nav-item-3d.active i {
+        filter: drop-shadow(0 0 8px var(--primary));
+    }
+
+    /* تحسين شكل زر الدخول المنفصل في الموبايل (أعلى اليسار) */
+    .nav-actions {
+        position: fixed;
+        top: 12px;
+        left: 15px;
+        z-index: 10000;
+    }
+
+    .login-btn-3d {
+        padding: 6px 15px;
+        font-size: 0.8rem;
+    }
+
+    /* إخفاء شريط الموبايل عند التمرير لأسفل (اختياري عبر JS) 
+       أو جعل الخلفية أكثر قتامة لسهولة القراءة */
+    .super-nav {
+        background: rgba(5, 8, 15, 0.95);
+    }
+}
+
+/* --- 8. أنيميشن الظهور (Fade In) --- */
+@keyframes navAppear {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.nav-container {
+    animation: navAppear 0.6s ease forwards;
+}
+}
+
