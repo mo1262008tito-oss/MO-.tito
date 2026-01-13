@@ -674,3 +674,71 @@ body {
     .hero-side-card { display: none; }
     .nav-container { width: 100%; display: flex; justify-content: space-around; }
 }
+.quick-stats-v2 {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.wallet-pill {
+  background: rgba(0, 242, 255, 0.1);
+  border: 1px solid rgba(0, 242, 255, 0.3);
+  padding: 5px 5px 5px 12px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.wallet-pill:hover {
+  background: rgba(0, 242, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.wallet-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.add-funds-btn {
+  background: #00f2ff;
+  color: #000;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.notification-bell {
+  position: relative;
+  cursor: pointer;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50%;
+  transition: 0.3s;
+}
+
+.notification-bell:hover { background: rgba(255, 255, 255, 0.1); }
+
+.red-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 10px;
+  height: 10px;
+  background: #ff4d4d;
+  border-radius: 50%;
+  border: 2px solid #0a0f1c;
+}
