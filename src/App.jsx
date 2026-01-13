@@ -1,125 +1,91 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { auth, db } from './firebase';
-import { doc, onSnapshot } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './firebase'; // المسار حسب صورك في الـ src
 
-// المكونات الأساسية
-import Navbar from './components/Navbar';
-import ParticlesBg from './components/ParticlesBg';
-
-// الصفحات
+// استيراد الصفحات حسب بنية المجلدات في صورك
 import Home from './pages/Home';
-import HighSchool from './pages/HighSchool';
-import AdminDash from './pages/AdminDash';
 import Login from './pages/Login';
+import AdminDash from './pages/AdminDash';
 import StudentDash from './pages/StudentDash';
-import TeacherDash from './pages/TeacherDash';
-import AllCourses from './pages/AllCourses'; 
+import AllCourses from './pages/AllCourses';
 import CoursePlayer from './pages/CoursePlayer';
+import QuizSystem from './pages/QuizSystem';
+import Wallet from './pages/Wallet';
+import ActivationPage from './pages/ActivationPage';
 import Religious from './pages/Religious';
+import HighSchool from './pages/HighSchool';
 import About from './pages/About';
-import Library from './pages/Library';
-// --- إضافة صفحة التفعيل الجديدة هنا ---
-import ActivationPage from './pages/ActivationPage'; 
 
+// استيراد ملفات التنسيق
 import './Global.css';
-
-// مكون حماية المسارات الذكي
-const ProtectedRoute = ({ children, isActive, loading, redirectPath = "/login" }) => {
-  if (loading) return <div className="loading-overlay">جاري التحقق من الصلاحيات...</div>; 
-  return isActive ? children : <Navigate to={redirectPath} />; 
-};
 
 function App() {
   const [user, setUser] = useState(null);
-  const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (currentUser) {
-        const userDocRef = doc(db, "users", currentUser.uid);
-        const unsubDoc = onSnapshot(userDocRef, (docSnap) => {
-          if (docSnap.exists()) {
-            setUserData(docSnap.data());
-          }
-          setLoading(false);
-        }, (error) => {
-          console.error("Firestore Error:", error);
-          setLoading(false);
-        });
-        return () => unsubDoc();
-      } else {
-        setUserData(null);
-        setLoading(false);
-      }
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
+  // شاشة تحميل بسيطة لمنع الانهيار أثناء التحقق من Firebase
+  if (loading) {
+    return (
+      <div className="loader-container">
+        <div className="loader"></div>
+        <p>جاري تشغيل محركات تيتو أكاديمي...</p>
+      </div>
+    );
+  }
+
+  // دالة حماية المسارات (عادي/أدمن)
+  const ProtectedAdminRoute = ({ children }) => {
+    const adminEmails = ['mahmoud@tito.com', 'fathy@tito.com'];
+    if (!user || !adminEmails.includes(user.email?.toLowerCase())) {
+      return <Navigate to="/login" />;
+    }
+    return children;
+  };
+
   return (
     <Router>
-      <ParticlesBg /> 
-      <Navbar user={user} userData={userData} />
-      
-      <main className="universal-page-container">
-        <Routes>
-          {/* 1. المسارات العامة */}
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={!user ? <Login /> : <Navigate to="/student-dash" />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/religious" element={<Religious />} />
-          <Route path="/library" element={<Library />} />
-          <Route path="/highschool" element={<HighSchool />} />
+      <Routes>
+        {/* المسارات العامة */}
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/login" element={!user ? <Login /> : <Navigate to="/student-dash" />} />
 
-          {/* 2. مسارات الطالب (يجب تسجيل الدخول) */}
-          <Route path="/student-dash" element={
-            <ProtectedRoute isActive={!!user} loading={loading}>
-              <StudentDash />
-            </ProtectedRoute>
-          } />
+        {/* مسارات الطالب */}
+        <Route path="/student-dash" element={user ? <StudentDash /> : <Navigate to="/login" />} />
+        <Route path="/courses" element={user ? <AllCourses /> : <Navigate to="/login" />} />
+        <Route path="/course/:id" element={user ? <CoursePlayer /> : <Navigate to="/login" />} />
+        <Route path="/quiz/:id" element={user ? <QuizSystem /> : <Navigate to="/login" />} />
+        <Route path="/wallet" element={user ? <Wallet /> : <Navigate to="/login" />} />
+        <Route path="/activate" element={user ? <ActivationPage /> : <Navigate to="/login" />} />
+        
+        {/* أقسام المحتوى الخاصة */}
+        <Route path="/religious" element={user ? <Religious /> : <Navigate to="/login" />} />
+        <Route path="/high-school" element={user ? <HighSchool /> : <Navigate to="/login" />} />
 
-          <Route path="/all-courses" element={
-            <ProtectedRoute isActive={!!user} loading={loading}>
-              <AllCourses />
-            </ProtectedRoute>
-          } />
-
-          {/* --- مسار تفعيل الكورس (فودافون كاش / كود) --- */}
-          <Route path="/activate/:courseId" element={
-            <ProtectedRoute isActive={!!user} loading={loading}>
-              <ActivationPage />
-            </ProtectedRoute>
-          } />
-
-          <Route path="/course/:id" element={
-            <ProtectedRoute isActive={!!user} loading={loading}>
-              <CoursePlayer />
-            </ProtectedRoute>
-          } />
-
-          {/* 3. مسار المعلم */}
-          <Route path="/teacher-dash" element={
-            <ProtectedRoute isActive={userData?.role === 'teacher' || userData?.role === 'admin'} loading={loading} redirectPath="/">
-              <TeacherDash />
-            </ProtectedRoute>
-          } />
-          
-          {/* 4. مسار الإدارة */}
-          <Route path="/admin" element={
-            <ProtectedRoute isActive={userData?.role === 'admin'} loading={loading} redirectPath="/">
+        {/* المسار المحمي للمديرين (محمود وفتحي) */}
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedAdminRoute>
               <AdminDash />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </main>
+            </ProtectedAdminRoute>
+          } 
+        />
+
+        {/* تحويل أي مسار خاطئ للرئيسية */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
     </Router>
   );
 }
 
 export default App;
-
