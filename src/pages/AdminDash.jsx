@@ -990,47 +990,44 @@ const AdminDash = () => {
                  <h3>142 كود</h3>
               </div>
            </div>
-
-           <div className="glass-panel transaction-history">
+<div className="glass-panel transaction-history">
               <h3>سجل المعاملات المالية</h3>
               {/* جدول مفصل بكل قرش دخل المنصة */}
               <div className="finance-table-wrapper">
-                 <table className="tito-table">
+                  <table className="tito-table">
                     <thead>
-                       <tr>
+                        <tr>
                           <th>المعرف</th>
                           <th>الطالب</th>
                           <th>المبلغ</th>
                           <th>النوع</th>
                           <th>الحالة</th>
-                       </tr>
+                        </tr>
                     </thead>
                     <tbody>
-                       {/* بيانات وهمية للمحاكاة */}
-                       <tr>
+                        {/* بيانات وهمية للمحاكاة */}
+                        <tr>
                           <td>#TX9901</td>
                           <td>ياسين علي</td>
                           <td>150 ج.م</td>
                           <td>فودافون كاش</td>
                           <td><span className="status-ok">ناجحة</span></td>
-                       </tr>
+                        </tr>
                     </tbody>
-                 </table>
+                  </table>
               </div>
-           </div>
-        </motion.div>
-      )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence> {/* التأكد من إغلاق الأنيميشن هنا */}
+      
+    </div> {/* إغلاق dashboard-content */}
+  </main> {/* إغلاق main-layout */}
+</div> /* إغلاق admin-root-container أو الديف الرئيسي */
+);
+}; // إغلاق دالة المكون AdminDash
 
-      {/* 14. نهاية هيكل لوحة التحكم - الخاتمة */}
-      {/* تم إغلاق جميع الـ Divs والـ AnimatePresence المفتوحة سابقاً لضمان سلامة الكود */}
-          </AnimatePresence>
-        </div>
-      </main>
-    </div>
-  );
-};
-
-
+// الدوال المساعدة (يجب أن تكون خارج نطاق المكون أو داخله قبل الـ return)
 const handleSendBroadcast = () => {
   // منطق إرسال الإشعارات عبر Firebase Cloud Messaging
   console.log("إرسال إشعار للطلاب...");
@@ -1042,6 +1039,3 @@ const handleUnbanUser = (id) => {
 
 // تصدير المكون النهائي للاستخدام في ملف App.js
 export default AdminDash;
-
-
-
