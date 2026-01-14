@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import './Wallet.css';
 
+
 const Wallet = () => {
   // --- 1. States Management ---
   const [userData, setUserData] = useState({ balance: 0, xp: 0 });
