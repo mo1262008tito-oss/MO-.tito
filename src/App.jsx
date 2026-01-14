@@ -17,8 +17,7 @@ import Religious from './pages/Religious';
 import HighSchool from './pages/HighSchool';
 import About from './pages/About';
 
-// استيراد ملفات التنسيق
-import './Global.css';
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -89,3 +88,4 @@ function App() {
 }
 
 export default App;
+
