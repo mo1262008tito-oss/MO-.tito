@@ -665,377 +665,299 @@ const AdminDash = () => {
     </div>
   );
 };
-
 {/* 8. نظام إضافة الكورسات المطور (Advanced Course Creator) */}
-      <AnimatePresence>
-        {showCourseModal && (
-          <motion.div 
-            className="fixed-modal-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div 
-              className="course-creator-modal"
-              initial={{ scale: 0.9, y: 50 }}
-              animate={{ scale: 1, y: 0 }}
-            >
-              <div className="modal-header-premium">
-                <div className="header-title">
-                  <PlusCircle size={24} color="#3b82f6"/>
-                  <h2>إنشاء محتوى تعليمي جديد</h2>
-                </div>
-                <button className="close-modal" onClick={() => setShowCourseModal(false)}><X size={24}/></button>
+<AnimatePresence>
+  {showCourseModal && (
+    <motion.div 
+      className="fixed-modal-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div 
+        className="course-creator-modal"
+        initial={{ scale: 0.9, y: 50 }}
+        animate={{ scale: 1, y: 0 }}
+      >
+        <div className="modal-header-premium">
+          <div className="header-title">
+            <PlusCircle size={24} color="#3b82f6"/>
+            <h2>إنشاء محتوى تعليمي جديد</h2>
+          </div>
+          <button className="close-modal" onClick={() => setShowCourseModal(false)}><X size={24}/></button>
+        </div>
+
+        <div className="modal-body-scrollable">
+          {/* القسم الأول: التصنيف والنوع */}
+          <div className="form-section">
+            <h3 className="section-label">1. تصنيف المحتوى ونوع الوصول</h3>
+            <div className="input-grid-3">
+              <div className="input-group">
+                <label>قسم المحتوى</label>
+                <select 
+                  value={newCourse.category} 
+                  onChange={(e) => setNewCourse({...newCourse, category: e.target.value})}
+                >
+                  <option value="education">تعليم أكاديمي</option>
+                  <option value="religious">ديني وتربوي</option>
+                  <option value="programming">برمجة وتقنية</option>
+                  <option value="softskills">تنمية مهارات</option>
+                </select>
               </div>
+              <div className="input-group">
+                <label>نوع التفعيل المطلوب</label>
+                <select 
+                  value={newCourse.activationType} 
+                  onChange={(e) => setNewCourse({...newCourse, activationType: e.target.value})}
+                >
+                  <option value="single">كود فردي (للكورس كاملاً)</option>
+                  <option value="lecture">كود محاضرة (حصة بحصتها)</option>
+                  <option value="wallet">نظام المحفظة (خصم رصيد)</option>
+                </select>
+              </div>
+              <div className="input-group">
+                <label>سعر الكورس (ج.م)</label>
+                <input 
+                  type="number" 
+                  placeholder="0.00"
+                  value={newCourse.price}
+                  onChange={(e) => setNewCourse({...newCourse, price: e.target.value})}
+                />
+              </div>
+            </div>
+          </div>
 
-              <div className="modal-body-scrollable">
-                {/* القسم الأول: التصنيف والنوع */}
-                <div className="form-section">
-                  <h3 className="section-label">1. تصنيف المحتوى ونوع الوصول</h3>
-                  <div className="input-grid-3">
-                    <div className="input-group">
-                      <label>قسم المحتوى</label>
-                      <select 
-                        value={newCourse.category} 
-                        onChange={(e) => setNewCourse({...newCourse, category: e.target.value})}
-                      >
-                        <option value="education">تعليم أكاديمي</option>
-                        <option value="religious">ديني وتربوي</option>
-                        <option value="programming">برمجة وتقنية</option>
-                        <option value="softskills">تنمية مهارات</option>
-                      </select>
-                    </div>
-                    <div className="input-group">
-                      <label>نوع التفعيل المطلوب</label>
-                      <select 
-                        value={newCourse.activationType} 
-                        onChange={(e) => setNewCourse({...newCourse, activationType: e.target.value})}
-                      >
-                        <option value="single">كود فردي (للكورس كاملاً)</option>
-                        <option value="lecture">كود محاضرة (حصة بحصتها)</option>
-                        <option value="wallet">نظام المحفظة (خصم رصيد)</option>
-                      </select>
-                    </div>
-                    <div className="input-group">
-                      <label>سعر الكورس (ج.م)</label>
-                      <input 
-                        type="number" 
-                        placeholder="0.00"
-                        value={newCourse.price}
-                        onChange={(e) => setNewCourse({...newCourse, price: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* القسم الثاني: بيانات المدرس والوصف */}
-                <div className="form-section">
-                  <h3 className="section-label">2. بيانات المحاضر والتفاصيل</h3>
-                  <div className="input-grid-2">
-                    <div className="input-group">
-                      <label>اسم المدرس / المحاضر</label>
-                      <input 
-                        placeholder="مثلاً: أ. محمود فرج"
-                        value={newCourse.teacherName}
-                        onChange={(e) => setNewCourse({...newCourse, teacherName: e.target.value})}
-                      />
-                    </div>
-                    <div className="input-group">
-                      <label>رابط صورة المدرس</label>
-                      <div className="image-upload-wrapper">
-                        <input 
-                          placeholder="رابط الصورة أو ارفع من المعرض"
-                          value={newCourse.teacherImg}
-                          onChange={(e) => setNewCourse({...newCourse, teacherImg: e.target.value})}
-                        />
-                        <button className="gallery-btn"><ImageIcon size={18}/> المعرض</button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="input-group full-width">
-                    <label>وصف الكورس الشامل</label>
-                    <textarea 
-                      rows="3" 
-                      placeholder="اكتب هنا ما سيتم دراسته في هذا الكورس..."
-                      value={newCourse.description}
-                      onChange={(e) => setNewCourse({...newCourse, description: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                {/* القسم الثالث: الوسائط والكتب */}
-                <div className="form-section">
-                  <h3 className="section-label">3. الوسائط والمرفقات (فيديو + كتب)</h3>
-                  <div className="input-grid-2">
-                    <div className="input-group">
-                      <label>رابط الفيديو التعريفي (Trailer)</label>
-                      <div className="url-input-box">
-                        <Play size={16}/>
-                        <input 
-                          placeholder="Youtube, Vimeo, or Bunnet Link"
-                          value={newCourse.videoUrl}
-                          onChange={(e) => setNewCourse({...newCourse, videoUrl: e.target.value})}
-                        />
-                      </div>
-                    </div>
-                    <div className="input-group">
-                      <label>صورة غلاف الكورس (Thumbnail)</label>
-                      <div className="image-upload-wrapper">
-                        <input 
-                          placeholder="رابط غلاف الكورس"
-                          value={newCourse.thumbnail}
-                          onChange={(e) => setNewCourse({...newCourse, thumbnail: e.target.value})}
-                        />
-                        <button className="gallery-btn"><ImageIcon size={18}/></button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="books-manager">
-                    <div className="books-header">
-                      <h4><BookOpen size={18}/> الكتب والمذكرات المرفقة</h4>
-                      <button className="add-book-pill" onClick={addNewBookRow}><Plus size={14}/> إضافة كتاب</button>
-                    </div>
-                    {newCourse.books.map((book, bIndex) => (
-                      <div key={bIndex} className="book-row-input">
-                        <input 
-                          placeholder="اسم الكتاب (مثلاً: ملزمة المراجعة)"
-                          value={book.name}
-                          onChange={(e) => updateBookData(bIndex, 'name', e.target.value)}
-                        />
-                        <input 
-                          placeholder="رابط PDF"
-                          value={book.url}
-                          onChange={(e) => updateBookData(bIndex, 'url', e.target.value)}
-                        />
-                        <button onClick={() => removeBookRow(bIndex)}><Trash2 size={16}/></button>
-                      </div>
-                    ))}
-                  </div>
+          {/* القسم الثاني: بيانات المدرس والوصف */}
+          <div className="form-section">
+            <h3 className="section-label">2. بيانات المحاضر والتفاصيل</h3>
+            <div className="input-grid-2">
+              <div className="input-group">
+                <label>اسم المدرس / المحاضر</label>
+                <input 
+                  placeholder="مثلاً: أ. محمود فرج"
+                  value={newCourse.teacherName}
+                  onChange={(e) => setNewCourse({...newCourse, teacherName: e.target.value})}
+                />
+              </div>
+              <div className="input-group">
+                <label>رابط صورة المدرس</label>
+                <div className="image-upload-wrapper">
+                  <input 
+                    placeholder="رابط الصورة أو ارفع من المعرض"
+                    value={newCourse.teacherImg}
+                    onChange={(e) => setNewCourse({...newCourse, teacherImg: e.target.value})}
+                  />
+                  <button className="gallery-btn"><ImageIcon size={18}/> المعرض</button>
                 </div>
               </div>
+            </div>
+            <div className="input-group full-width">
+              <label>وصف الكورس الشامل</label>
+              <textarea 
+                rows="3" 
+                placeholder="اكتب هنا ما سيتم دراسته في هذا الكورس..."
+                value={newCourse.description}
+                onChange={(e) => setNewCourse({...newCourse, description: e.target.value})}
+              />
+            </div>
+          </div>
 
-              <div className="modal-footer-actions">
-                <div className="status-indicator">
-                  <div className="pulse-dot"></div>
-                  <span>سيتم النشر فوراً لجميع الطلاب</span>
-                </div>
-                <div className="btns">
-                  <button className="cancel-btn" onClick={() => setShowCourseModal(false)}>إلغاء</button>
-                  <button className="confirm-btn" onClick={submitNewCourse}>
-                    {isProcessing ? 'جاري الرفع...' : <><Zap size={18}/> تفعيل ونشر الكورس</>}
-                  </button>
+          {/* القسم الثالث: الوسائط والكتب */}
+          <div className="form-section">
+            <h3 className="section-label">3. الوسائط والمرفقات (فيديو + كتب)</h3>
+            <div className="input-grid-2">
+              <div className="input-group">
+                <label>رابط الفيديو التعريفي (Trailer)</label>
+                <div className="url-input-box">
+                  <Play size={16}/>
+                  <input 
+                    placeholder="Youtube, Vimeo, or Bunnet Link"
+                    value={newCourse.videoUrl}
+                    onChange={(e) => setNewCourse({...newCourse, videoUrl: e.target.value})}
+                  />
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <div className="input-group">
+                <label>صورة غلاف الكورس (Thumbnail)</label>
+                <div className="image-upload-wrapper">
+                  <input 
+                    placeholder="رابط غلاف الكورس"
+                    value={newCourse.thumbnail}
+                    onChange={(e) => setNewCourse({...newCourse, thumbnail: e.target.value})}
+                  />
+                  <button className="gallery-btn"><ImageIcon size={18}/></button>
+                </div>
+              </div>
+            </div>
 
-      {/* 9. نظام تفعيل الأكواد الذكي (Logic Handler) */}
-      {/* هذا الجزء يوضع داخل الدوال (Functions) في بداية الملف لزيادة السطور التشغيلية */}
-      {/* const handleCodeActivationLogic = async (code, type) => {
-          if(type === 'lecture') {
-            // كود الحصة الواحدة: يفتح فيديو معين فقط لمرة واحدة
-            await updateDoc(userRef, { unlockedLectures: arrayUnion(lectureId) });
-          } else if(type === 'wallet') {
-            // نظام المحفظة: يشحن رصيد الطالب ليشتري هو ما يشاء
-            await updateDoc(userRef, { balance: increment(codeValue) });
-          } else {
-            // كود فردي: يفتح الكورس بالكامل بكل محتوياته
-            await updateDoc(userRef, { ownedCourses: arrayUnion(courseId) });
-          }
-        }
-      */}
+            <div className="books-manager">
+              <div className="books-header">
+                <h4><BookOpen size={18}/> الكتب والمذكرات المرفقة</h4>
+                <button className="add-book-pill" onClick={addNewBookRow}><Plus size={14}/> إضافة كتاب</button>
+              </div>
+              {newCourse.books.map((book, bIndex) => (
+                <div key={bIndex} className="book-row-input">
+                  <input 
+                    placeholder="اسم الكتاب"
+                    value={book.name}
+                    onChange={(e) => updateBookData(bIndex, 'name', e.target.value)}
+                  />
+                  <input 
+                    placeholder="رابط PDF"
+                    value={book.url}
+                    onChange={(e) => updateBookData(bIndex, 'url', e.target.value)}
+                  />
+                  <button onClick={() => removeBookRow(bIndex)}><Trash2 size={16}/></button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
 
+        <div className="modal-footer-actions">
+          <div className="status-indicator">
+            <div className="pulse-dot"></div>
+            <span>سيتم النشر فوراً لجميع الطلاب</span>
+          </div>
+          <div className="btns">
+            <button className="cancel-btn" onClick={() => setShowCourseModal(false)}>إلغاء</button>
+            <button className="confirm-btn" onClick={submitNewCourse}>
+              {isProcessing ? 'جاري الرفع...' : <><Zap size={18}/> تفعيل ونشر الكورس</>}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
+
+{/* 11. نظام الإشعارات الجماعية */}
+{activeTab === 'notifications' && (
+  <motion.div key="notifications" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="tab-content">
+    <div className="glass-panel broadcast-manager">
+      <div className="panel-header">
+        <h3><Bell size={20} color="#f59e0b"/> إرسال إشعار عام للطلاب</h3>
+        <p>سيظهر هذا الإشعار لجميع الطلاب المسجلين فوراً.</p>
+      </div>
+      <div className="broadcast-form">
+        <div className="form-group">
+          <label>عنوان التنبيه</label>
+          <input 
+            placeholder="مثال: تحديث جديد"
+            onChange={(e) => setBroadcast({...broadcast, title: e.target.value})}
+          />
+        </div>
+        <div className="form-group">
+          <label>نص الرسالة</label>
+          <textarea 
+            rows="4" 
+            placeholder="اكتب تفاصيل التنبيه..."
+            onChange={(e) => setBroadcast({...broadcast, message: e.target.value})}
+          />
+        </div>
+        <button className="send-broadcast-btn" onClick={handleSendBroadcast}>
+          <Zap size={18}/> إرسال الإشعار الآن
+        </button>
+      </div>
+    </div>
+  </motion.div>
+)}
+
+{/* 12. مركز التحكم في الحماية */}
+{activeTab === 'security' && (
+  <motion.div key="security" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="tab-content">
+    <div className="security-grid">
+      <div className="glass-panel security-toggle-card">
+        <div className="toggle-info">
+          <h4><ShieldCheck size={20} color="#10b981"/> حماية تسجيل الشاشة</h4>
+          <p>منع الطلاب من تصوير الشاشة.</p>
+        </div>
+        <div className="toggle-switch active"></div>
+      </div>
+      <div className="glass-panel security-toggle-card">
+        <div className="toggle-info">
+          <h4><Smartphone size={20} color="#3b82f6"/> قفل الجهاز الواحد</h4>
+          <p>إجبار الطالب على جهاز واحد فقط.</p>
+        </div>
+        <div className="toggle-switch active"></div>
+      </div>
+    </div>
+    <div className="glass-panel banned-users-list">
+       <h3>قائمة الطلاب المحظورين</h3>
+       <table className="tito-table">
+          <thead>
+            <tr><th>الطالب</th><th>السبب</th><th>الإجراء</th></tr>
+          </thead>
+          <tbody>
+            {users.filter(u => u.isBanned).map(bUser => (
+              <tr key={bUser.id}>
+                <td>{bUser.name}</td>
+                <td><span className="reason-pill">محاولة غش</span></td>
+                <td><button className="unban-btn">إلغاء الحظر</button></td>
+              </tr>
+            ))}
+          </tbody>
+       </table>
+    </div>
+  </motion.div>
+)}
+
+{/* 13. قسم التقارير المالية */}
+{activeTab === 'finance' && (
+  <motion.div key="finance" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="tab-content">
+    <div className="finance-summary-row">
+      <div className="f-card">
+        <span>صافي أرباح الشهر</span>
+        <h3>{(calculateNetProfit * 0.9).toLocaleString()} ج.م</h3>
+      </div>
+    </div>
+    <div className="glass-panel transaction-history">
+      <h3>سجل المعاملات</h3>
+      <table className="tito-table">
+        <tbody>
+          <tr><td>#TX9901</td><td>ياسين علي</td><td>150 ج.م</td><td><span className="status-ok">ناجحة</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </motion.div>
+)}
+{/* 9. نظام تفعيل الأكواد الذكي (Logic Handler) */}
+      {/* ملاحظة: هذا الجزء عبارة عن المنطق البرمجي الذي يتم استدعاؤه عند الضغط على أزرار التفعيل */}
+      
       {/* 10. تذييل لوحة التحكم (Dashboard Footer) */}
       <footer className="admin-footer-copyrights">
         <div className="footer-content">
           <div className="copy-text">
             <span>حقوق الإدارة محفوظة © 2024</span>
-            <strong>تيتو أكاديمي - نظام الإدارة المتكامل</strong>
+            <strong> تيتو أكاديمي - نظام الإدارة المتكامل</strong>
           </div>
           <div className="system-status-pills">
             <span className="pill shadow-sm">إصدار النظام v4.2.0</span>
-            <span className="pill shadow-sm">خادم البيانات: متصل <div className="online-indicator"></div></span>
+            <span className="pill shadow-sm">
+              خادم البيانات: متصل 
+              <div className="online-indicator"></div>
+            </span>
           </div>
         </div>
       </footer>
 
-{/* 11. نظام الإشعارات الجماعية (Global Broadcasting System) */}
-      {activeTab === 'notifications' && (
-        <motion.div key="notifications" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="tab-content">
-          <div className="glass-panel broadcast-manager">
-            <div className="panel-header">
-              <h3><Bell size={20} color="#f59e0b"/> إرسال إشعار عام للطلاب</h3>
-              <p>سيظهر هذا الإشعار لجميع الطلاب المسجلين في التطبيق فوراً.</p>
-            </div>
-            
-            <div className="broadcast-form">
-              <div className="form-group">
-                <label>عنوان التنبيه</label>
-                <input 
-                  placeholder="مثال: تحديث جديد في منهج الكيمياء"
-                  onChange={(e) => setBroadcast({...broadcast, title: e.target.value})}
-                />
-              </div>
-              <div className="form-group">
-                <label>نص الرسالة</label>
-                <textarea 
-                  rows="4" 
-                  placeholder="اكتب تفاصيل التنبيه هنا..."
-                  onChange={(e) => setBroadcast({...broadcast, message: e.target.value})}
-                />
-              </div>
-              <div className="broadcast-actions">
-                <div className="target-audience">
-                  <label><input type="checkbox" defaultChecked /> طلاب 1 ثانوي</label>
-                  <label><input type="checkbox" defaultChecked /> طلاب 2 ثانوي</label>
-                  <label><input type="checkbox" defaultChecked /> طلاب 3 ثانوي</label>
-                </div>
-                <button className="send-broadcast-btn" onClick={handleSendBroadcast}>
-                  <Zap size={18}/> إرسال الإشعار الآن
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="glass-panel recent-notifications">
-            <h3>تاريخ التنبيهات المرسلة</h3>
-            <div className="notifications-history-list">
-              {/* تفاصيل الإشعارات السابقة */}
-              <div className="notif-history-item">
-                <div className="notif-meta">
-                  <strong>تأجيل حصة الثلاثاء</strong>
-                  <span>بواسطة: {currentAdmin.name}</span>
-                </div>
-                <span className="notif-date">منذ 3 أيام</span>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* 12. مركز التحكم في الحماية (Security Shield Settings) */}
-      {activeTab === 'security' && (
-        <motion.div key="security" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="tab-content">
-          <div className="security-grid">
-            <div className="glass-panel security-toggle-card">
-              <div className="toggle-info">
-                <h4><ShieldCheck size={20} color="#10b981"/> حماية تسجيل الشاشة</h4>
-                <p>منع الطلاب من تصوير الشاشة أو تسجيل الفيديوهات.</p>
-              </div>
-              <div className="toggle-switch active"></div>
-            </div>
-
-            <div className="glass-panel security-toggle-card">
-              <div className="toggle-info">
-                <h4><Smartphone size={20} color="#3b82f6"/> قفل الجهاز الواحد</h4>
-                <p>إجبار كل طالب على فتح حسابه من جهاز واحد فقط.</p>
-              </div>
-              <div className="toggle-switch active"></div>
-            </div>
-
-            <div className="glass-panel security-toggle-card">
-              <div className="toggle-info">
-                <h4><ShieldBan size={20} color="#ef4444"/> الحظر التلقائي للغش</h4>
-                <p>حظر الطالب تلقائياً إذا حاول التلاعب بملفات التطبيق.</p>
-              </div>
-              <div className="toggle-switch"></div>
-            </div>
-          </div>
-
-          {/* نظام إدارة المحظورين */}
-          <div className="glass-panel banned-users-list">
-             <h3>قائمة الطلاب المحظورين (Banned)</h3>
-             <table className="tito-table">
-                <thead>
-                   <tr>
-                      <th>الطالب</th>
-                      <th>سبب الحظر</th>
-                      <th>تاريخ الحظر</th>
-                      <th>إجراء</th>
-                   </tr>
-                </thead>
-                <tbody>
-                   {users.filter(u => u.isBanned).map(bUser => (
-                     <tr key={bUser.id}>
-                        <td>{bUser.name}</td>
-                        <td><span className="reason-pill">تكرار محاولة تسجيل الشاشة</span></td>
-                        <td>2024-05-10</td>
-                        <td><button className="unban-btn">إلغاء الحظر</button></td>
-                     </tr>
-                   ))}
-                </tbody>
-             </table>
-          </div>
-        </motion.div>
-      )}
-
-      {/* 13. قسم التقارير المالية المتقدمة (Advanced Finance) */}
-      {activeTab === 'finance' && (
-        <motion.div key="finance" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="tab-content">
-           <div className="finance-summary-row">
-              <div className="f-card">
-                 <span>صافي أرباح الشهر</span>
-                 <h3>{(calculateNetProfit * 0.9).toLocaleString()} ج.م</h3>
-                 <div className="f-trend up">+12% عن الشهر الماضي</div>
-              </div>
-              <div className="f-card">
-                 <span>إجمالي عمولات المنصة</span>
-                 <h3>{(calculateNetProfit * 0.1).toLocaleString()} ج.م</h3>
-              </div>
-              <div className="f-card">
-                 <span>أكواد مفعلة اليوم</span>
-                 <h3>142 كود</h3>
-              </div>
-           </div>
-<div className="glass-panel transaction-history">
-              <h3>سجل المعاملات المالية</h3>
-              {/* جدول مفصل بكل قرش دخل المنصة */}
-              <div className="finance-table-wrapper">
-                  <table className="tito-table">
-                    <thead>
-                        <tr>
-                          <th>المعرف</th>
-                          <th>الطالب</th>
-                          <th>المبلغ</th>
-                          <th>النوع</th>
-                          <th>الحالة</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {/* بيانات وهمية للمحاكاة */}
-                        <tr>
-                          <td>#TX9901</td>
-                          <td>ياسين علي</td>
-                          <td>150 ج.م</td>
-                          <td>فودافون كاش</td>
-                          <td><span className="status-ok">ناجحة</span></td>
-                        </tr>
-                    </tbody>
-                  </table>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence> {/* التأكد من إغلاق الأنيميشن هنا */}
-      
     </div> {/* إغلاق dashboard-content */}
   </main> {/* إغلاق main-layout */}
-</div> /* إغلاق admin-root-container أو الديف الرئيسي */
-);
-}; // إغلاق دالة المكون AdminDash
-
-// الدوال المساعدة (يجب أن تكون خارج نطاق المكون أو داخله قبل الـ return)
-const handleSendBroadcast = () => {
-  // منطق إرسال الإشعارات عبر Firebase Cloud Messaging
-  console.log("إرسال إشعار للطلاب...");
+</div> /* إغلاق admin-root-container */
+  );
 };
 
-const handleUnbanUser = (id) => {
-  // منطق فك حظر الطالب
+// --- الدوال المساعدة (Helper Functions) ---
+// يتم تعريفها هنا لتنظيم الكود أو استدعاؤها من ملفات خارجية
+
+const handleUnbanUser = async (userId) => {
+  try {
+    console.log("جاري إلغاء حظر الطالب:", userId);
+    // هنا يوضع كود Firebase: updateDoc(doc(db, "users", userId), { isBanned: false });
+  } catch (error) {
+    console.error("فشل في إلغاء الحظر:", error);
+  }
 };
 
-// تصدير المكون النهائي للاستخدام في ملف App.js
+// تصدير المكون النهائي
 export default AdminDash;
