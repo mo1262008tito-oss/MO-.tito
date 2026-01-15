@@ -16,211 +16,194 @@ import {
   where, writeBatch, getDoc 
 } from 'firebase/firestore';
 import * as XLSX from 'xlsx';
-
 // ============================================================
-// [1] الدالة الرئيسية للوحة التحكم الاحترافية
-// ============================================================
-const AdminDash = () => {
-  // --- حالات الهوية (Identity State) ---
-  const [currentAdmin, setCurrentAdmin] = useState({
-    name: "جاري التحميل...",
-    role: "مسؤول",
-    email: "",
-    avatar: ""
-  });
-
-  // --- حالات البيانات الرئيسية ---
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  // [5] استكمال الحالات المفقودة (Extended States)
+  // ============================================================
+  const [showCourseModal, setShowCourseModal] = useState(false);
+  const [exams, setExams] = useState([]);
+  const [selectedExam, setSelectedExam] = useState(null);
+  const [newExamMode, setNewExamMode] = useState(false);
+  const [broadcast, setBroadcast] = useState({ title: '', message: '' });
   
-  // --- مستودعات البيانات ---
-  const [users, setUsers] = useState([]);
-  const [courses, setCourses] = useState([]);
-  const [paymentRequests, setPaymentRequests] = useState([]);
-  const [auditLogs, setAuditLogs] = useState([]);
-  const [systemStats, setSystemStats] = useState({});
-  const [supportTickets, setSupportTickets] = useState([]);
-
-  // --- حالات النماذج (Forms) ---
-  const [gradeFilter, setGradeFilter] = useState('الكل');
-  const [statusNotification, setStatusNotification] = useState(null);
-  const [financeForm, setFinanceForm] = useState({ batchName: '', codeCount: 10, codeValue: 50, prefix: 'TITO' });
-  const [examForm, setExamForm] = useState({
-    id: null, title: '', courseId: '', timeLimit: 60, minPassingScore: 50,
-    questions: [{ id: Date.now(), text: '', options: ['', '', '', ''], correctIndex: 0, points: 5 }]
+  // نموذج الكورس الجديد بكامل تفاصيله
+  const [newCourse, setNewCourse] = useState({
+    title: '',
+    category: 'education',
+    activationType: 'single',
+    price: '',
+    teacherName: '',
+    teacherImg: '',
+    description: '',
+    videoUrl: '',
+    thumbnail: '',
+    books: [] // [{ name: '', url: '' }]
   });
 
   // ============================================================
-  // [2] نظام التعرف على هوية الأدمن (محمود / فتحي)
-  // ============================================================
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        // تخصيص البيانات بناءً على الإيميل
-        const adminEmail = user.email.toLowerCase();
-        let adminData = {
-          email: adminEmail,
-          avatar: `https://ui-avatars.com/api/?name=${adminEmail === 'mahmoud@tito.com' ? 'Mahmoud+Farag' : 'Fathy+Admin'}&background=0D8ABC&color=fff`
-        };
-
-        if (adminEmail === 'mahmoud@tito.com') { // إيميل محمود
-          adminData.name = "أ. محمود فرج";
-          adminData.role = "المدير العام (Owner)";
-        } else if (adminEmail === 'fathy@tito.com') { // إيميل فتحي
-          adminData.name = "أ. فتحي";
-          adminData.role = "مدير العمليات (Admin)";
-        } else {
-          adminData.name = "مشرف النظام";
-          adminData.role = "إشراف محدود";
-        }
-        
-        setCurrentAdmin(adminData);
-        // تسجيل دخول في سجل العمليات
-        createAuditLog("تسجيل دخول", `قام ${adminData.name} بفتح لوحة التحكم`, 'low');
-      }
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // ============================================================
-  // [3] نظام جلب البيانات الفوري (Real-time Sync)
-  // ============================================================
-  useEffect(() => {
-    const qUsers = query(collection(db, "users"), orderBy("createdAt", "desc"));
-    const unsubUsers = onSnapshot(qUsers, (snap) => {
-      setUsers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-      setIsLoading(false);
-    });
-
-    const qPayments = query(collection(db, "payments"), where("status", "==", "pending"));
-    const unsubPayments = onSnapshot(qPayments, (snap) => {
-      setPaymentRequests(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-
-    const qLogs = query(collection(db, "auditLogs"), orderBy("timestamp", "desc"), limit(50));
-    const unsubLogs = onSnapshot(qLogs, (snap) => {
-      setAuditLogs(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-
-    // جلب الكورسات
-    const qCourses = query(collection(db, "courses"));
-    const unsubCourses = onSnapshot(qCourses, (snap) => {
-      setCourses(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-
-    return () => { unsubUsers(); unsubPayments(); unsubLogs(); unsubCourses(); };
-  }, []);
-
-  // ============================================================
-  // [4] الدوال البرمجية (Business Logic)
+  // [6] منطق إدارة المحتوى والكورسات (Course Builder Logic)
   // ============================================================
   
-  // نظام التنبيهات (Toast)
-  const triggerToast = (message, type = 'info') => {
-    setStatusNotification({ message, type });
-    setTimeout(() => setStatusNotification(null), 4000);
+  // إدارة مصفوفة الكتب المرفقة
+  const addNewBookRow = () => {
+    setNewCourse(prev => ({
+      ...prev,
+      books: [...prev.books, { name: '', url: '' }]
+    }));
   };
 
-  // سجل العمليات الأمني - مع ربطه بالأدمن الحالي
-  const createAuditLog = async (action, details, severity = 'low') => {
-    try {
-      await addDoc(collection(db, "auditLogs"), {
-        admin: currentAdmin.name,
-        adminEmail: currentAdmin.email,
-        action,
-        details,
-        severity,
-        timestamp: serverTimestamp()
-      });
-    } catch (e) { console.error("Audit Log Error:", e); }
+  const updateBookData = (index, field, value) => {
+    const updatedBooks = [...newCourse.books];
+    updatedBooks[index][field] = value;
+    setNewCourse(prev => ({ ...prev, books: updatedBooks }));
   };
 
-  // تصفير جهاز الطالب (Reset Device ID)
-  const handleResetDevice = async (userId, userName) => {
-    if (!window.confirm(`هل أنت متأكد من تصفير جهاز الطالب ${userName}؟`)) return;
-    try {
-      await updateDoc(doc(db, "users", userId), { deviceId: null });
-      triggerToast("تم تصفير الجهاز بنجاح", "success");
-      createAuditLog("تصفير جهاز", `تم تصفير جهاز الطالب: ${userName}`, 'medium');
-    } catch (e) { triggerToast("فشل التصفير", "error"); }
+  const removeBookRow = (index) => {
+    setNewCourse(prev => ({
+      ...prev,
+      books: prev.books.filter((_, i) => i !== index)
+    }));
   };
 
-  // معالجة طلبات الدفع
-  const handleProcessPayment = async (req, action) => {
-    setIsProcessing(true);
-    try {
-      const batch = writeBatch(db);
-      const payRef = doc(db, "payments", req.id);
-      const userRef = doc(db, "users", req.userId);
-
-      if (action === 'approve') {
-        batch.update(payRef, { status: 'approved', processedBy: currentAdmin.name });
-        batch.update(userRef, { [`ownedCourses.${req.courseId}`]: true });
-        triggerToast("تم تفعيل الكورس للطالب", "success");
-        createAuditLog("قبول دفع", `تفعيل ${req.courseName} لـ ${req.userName}`, 'medium');
-      } else {
-        batch.update(payRef, { status: 'rejected', processedBy: currentAdmin.name });
-        triggerToast("تم رفض الطلب", "warning");
-        createAuditLog("رفض دفع", `رفض طلب ${req.userName}`, 'low');
-      }
-      await batch.commit();
-    } catch (e) { triggerToast("خطأ في المعالجة", "error"); }
-    finally { setIsProcessing(false); }
-  };
-
-  // توليد أكواد الشحن
-  const handleGenerateActivationCodes = async () => {
-    if (!financeForm.batchName || !financeForm.codeCount) {
-      return triggerToast("يرجى ملء بيانات الدفعة", "error");
+  // حفظ الكورس الجديد في Firebase
+  const submitNewCourse = async () => {
+    if (!newCourse.title || !newCourse.price) {
+      return triggerToast("يرجى إدخال عنوان الكورس وسعره", "error");
     }
     setIsProcessing(true);
     try {
-      const batch = writeBatch(db);
-      const codesData = [];
-      for (let i = 0; i < financeForm.codeCount; i++) {
-        const code = `${financeForm.prefix}-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
-        const newCode = {
-          code,
-          value: Number(financeForm.codeValue),
-          batchName: financeForm.batchName,
-          isUsed: false,
-          createdAt: new Date(),
-          createdBy: currentAdmin.name
-        };
-        const ref = doc(collection(db, "activationCodes"));
-        batch.set(ref, newCode);
-        codesData.push({ "الكود": code, "القيمة": financeForm.codeValue, "الدفعة": financeForm.batchName });
+      await addDoc(collection(db, "courses"), {
+        ...newCourse,
+        studentsCount: 0,
+        rating: 5.0,
+        createdAt: serverTimestamp(),
+        adminOwner: currentAdmin.name
+      });
+      triggerToast("تم تفعيل ونشر الكورس بنجاح", "success");
+      setShowCourseModal(false);
+      createAuditLog("إنشاء محتوى", `إضافة كورس جديد: ${newCourse.title}`, 'medium');
+      // تصفير النموذج
+      setNewCourse({ title: '', category: 'education', activationType: 'single', price: '', teacherName: '', teacherImg: '', description: '', videoUrl: '', thumbnail: '', books: [] });
+    } catch (e) {
+      triggerToast("خطأ في رفع البيانات", "error");
+      console.error(e);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleEditCourse = (course) => {
+    setNewCourse(course);
+    setShowCourseModal(true);
+  };
+
+  const handleDeleteCourse = async (courseId) => {
+    if (!window.confirm("هل أنت متأكد من حذف الكورس نهائياً؟")) return;
+    try {
+      await deleteDoc(doc(db, "courses", courseId));
+      triggerToast("تم حذف الكورس بنجاح", "success");
+      createAuditLog("حذف محتوى", `حذف الكورس ID: ${courseId}`, 'high');
+    } catch (e) { triggerToast("فشل الحذف", "error"); }
+  };
+
+  // ============================================================
+  // [7] منطق بنك الأسئلة والامتحانات (Interactive Exams Logic)
+  // ============================================================
+
+  // جلب الامتحانات في الوقت الفعلي
+  useEffect(() => {
+    const qExams = query(collection(db, "exams"), orderBy("createdAt", "desc"));
+    const unsubExams = onSnapshot(qExams, (snap) => {
+      setExams(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+    return () => unsubExams();
+  }, []);
+
+  // إدارة الأسئلة داخل النموذج
+  const addNewQuestion = () => {
+    const newQ = { id: Date.now(), text: '', options: ['', '', '', ''], correctIndex: 0, points: 5 };
+    setExamForm(prev => ({ ...prev, questions: [...prev.questions, newQ] }));
+  };
+
+  const updateQuestion = (id, field, value) => {
+    const updatedQuestions = examForm.questions.map(q => 
+      q.id === id ? { ...q, [field]: value } : q
+    );
+    setExamForm(prev => ({ ...prev, questions: updatedQuestions }));
+  };
+
+  const removeQuestion = (id) => {
+    if (examForm.questions.length <= 1) return triggerToast("يجب وجود سؤال واحد على الأقل", "warning");
+    setExamForm(prev => ({
+      ...prev,
+      questions: prev.questions.filter(q => q.id !== id)
+    }));
+  };
+
+  const handleSaveExam = async () => {
+    if (!examForm.title) return triggerToast("عنوان الامتحان مطلوب", "error");
+    setIsProcessing(true);
+    try {
+      if (newExamMode) {
+        await addDoc(collection(db, "exams"), { 
+          ...examForm, 
+          createdAt: serverTimestamp(),
+          createdBy: currentAdmin.name 
+        });
+        triggerToast("تم إضافة الامتحان لبنك الأسئلة", "success");
+      } else {
+        await updateDoc(doc(db, "exams", examForm.id), examForm);
+        triggerToast("تم تحديث الامتحان بنجاح", "success");
       }
-      await batch.commit();
-      
-      const ws = XLSX.utils.json_to_sheet(codesData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Codes");
-      XLSX.writeFile(wb, `${financeForm.batchName}.xlsx`);
-      
-      triggerToast("تم توليد الأكواد وتصدير ملف Excel", "success");
-      createAuditLog("توليد أكواد", `إنشاء ${financeForm.codeCount} كود دفعة: ${financeForm.batchName}`, 'high');
-    } catch (e) { triggerToast("خطأ في التوليد", "error"); }
+      setNewExamMode(false);
+      setSelectedExam(null);
+    } catch (e) { triggerToast("خطأ في الحفظ", "error"); }
     finally { setIsProcessing(false); }
   };
 
-  // حساب الأرباح (Logic محاكي)
-  const calculateNetProfit = useMemo(() => {
-    const totalRev = users.reduce((acc, curr) => acc + (curr.totalSpent || 0), 0);
-    return totalRev * 0.85; // افترضنا 15% مصاريف سيرفرات ومنصة
-  }, [users]);
+  // تعبئة النموذج عند اختيار امتحان للتعديل
+  useEffect(() => {
+    if (selectedExam) {
+      setExamForm(selectedExam);
+      setNewExamMode(false);
+    }
+  }, [selectedExam]);
 
-  // تصفية الطلاب للبحث
-  const filteredUsers = useMemo(() => {
-    return users.filter(u => 
-      (u.name?.toLowerCase().includes(searchQuery.toLowerCase()) || u.phone?.includes(searchQuery)) &&
-      (gradeFilter === 'الكل' || u.grade === gradeFilter)
-    );
-  }, [users, searchQuery, gradeFilter]);
+  // ============================================================
+  // [8] منطق الإشعارات والحماية (Security & Broadcast Logic)
+  // ============================================================
 
+  const handleSendBroadcast = async () => {
+    if (!broadcast.title || !broadcast.message) return triggerToast("أكمل بيانات الإشعار", "warning");
+    setIsProcessing(true);
+    try {
+      await addDoc(collection(db, "notifications"), {
+        ...broadcast,
+        timestamp: serverTimestamp(),
+        sender: currentAdmin.name,
+        type: 'global'
+      });
+      triggerToast("تم إرسال الإشعار لجميع الطلاب", "success");
+      createAuditLog("إرسال تنبيه", `بث إشعار: ${broadcast.title}`, 'low');
+      setBroadcast({ title: '', message: '' });
+    } catch (e) { triggerToast("فشل الإرسال", "error"); }
+    finally { setIsProcessing(false); }
+  };
+
+  const handleUnbanUser = async (userId) => {
+    try {
+      await updateDoc(doc(db, "users", userId), { isBanned: false });
+      triggerToast("تم فك الحظر عن الطالب", "success");
+      createAuditLog("أمان", `فك حظر الطالب ID: ${userId}`, 'medium');
+    } catch (e) { triggerToast("خطأ في العملية", "error"); }
+  };
+
+  // دالة تسجيل الخروج
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      window.location.reload();
+    } catch (e) { console.error(e); }
+  };
   // ============================================================
   // [5] هيكل الواجهة الرسومية (UI)
   // ============================================================
@@ -961,3 +944,4 @@ const handleUnbanUser = async (userId) => {
 
 // تصدير المكون النهائي
 export default AdminDash;
+
