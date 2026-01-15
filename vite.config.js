@@ -4,19 +4,20 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: './', 
+  // نصيحة: base: './' قد تسبب مشاكل في المسارات (Routes) على Vercel 
+  // يفضل تركها '/' إذا كنت تستخدم React Router
+  base: '/', 
   build: {
     outDir: 'dist',
-    // 1. زيادة حد التحذير لحجم الملفات ليناسب الكود الضخم الجديد
     chunkSizeWarningLimit: 2000, 
     
-    // 2. تحسين عملية تقسيم الكود (Code Splitting) لضمان سرعة التحميل
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            return 'vendor'; // وضع المكتبات الخارجية في ملف منفصل
-          }
+        // تحسين تقسيم الملفات بشكل أدق
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-utils': ['xlsx', 'framer-motion'],
+          'vendor-icons': ['lucide-react', 'react-icons']
         }
       }
     }
