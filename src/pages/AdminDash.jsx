@@ -14,6 +14,7 @@ const AdminDash = () => {
   const [statusNotification, setStatusNotification] = useState(null);
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
   
   // بيانات الأنظمة المختلفة
   const [users, setUsers] = useState([]);
@@ -1226,4 +1227,5 @@ const handleGlobalAction = (actionType) => {
 
 // --- التصدير النهائي للمكون المكتمل ---
 export default AdminDash;
+
 
