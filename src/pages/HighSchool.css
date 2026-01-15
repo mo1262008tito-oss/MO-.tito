@@ -306,7 +306,7 @@
 
 /* --- HighSchool.css: The Next-Gen Educational UI --- */
 
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+
 
 :root {
     --primary: #00f2ff;
@@ -742,3 +742,4 @@ body {
   border-radius: 50%;
   border: 2px solid #0a0f1c;
 }
+
