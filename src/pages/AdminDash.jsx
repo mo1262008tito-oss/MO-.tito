@@ -644,12 +644,19 @@ import * as XLSX from 'xlsx';
             </div>
           </motion.div>
         )}
+</AnimatePresence>
+      
+      {/* 8. نظام إضافة الكورسات المطور (Advanced Course Creator) */}
+      <AnimatePresence>
+         {/* باقي كود المودال الخاص بالكورسات هنا */}
+         {showCourseModal && (
+            <motion.div className="course-modal"> 
+               {/* محتوى المودال */}
+            </motion.div>
+         )}
       </AnimatePresence>
-    </div>
-  );
-};
-{/* 8. نظام إضافة الكورسات المطور (Advanced Course Creator) */}
-<AnimatePresence>
+
+
   {showCourseModal && (
     <motion.div 
       className="fixed-modal-overlay"
@@ -944,4 +951,5 @@ const handleUnbanUser = async (userId) => {
 
 // تصدير المكون النهائي
 export default AdminDash;
+
 
