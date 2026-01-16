@@ -31,7 +31,7 @@ const Wallet = () => {
 
   const XP_RATE = 20000;
   const MONEY_RATE = 10;
-  const ADMIN_WHATSAPP = "201012345678"; // رقم الأدمن هنا
+  const ADMIN_WHATSAPP = "201514184033"; // رقم الأدمن هنا
 
   useEffect(() => {
     if (!auth.currentUser) return;
@@ -174,13 +174,13 @@ const Wallet = () => {
                  <div className="method-card-v8 glass">
                     <div className="m-icon"><Smartphone color="#ff4d4d"/></div>
                     <h4>فودافون كاش</h4>
-                    <p>01012345678</p>
+                    <p>01514184033</p>
                     <button onClick={() => navigator.clipboard.writeText("01012345678")}>نسخ الرقم</button>
                  </div>
                  <div className="method-card-v8 glass">
                     <div className="m-icon"><Banknote color="#43e97b"/></div>
                     <h4>إنستا باي</h4>
-                    <p>student@instapay</p>
+                    <p>01514184033</p>
                     <button onClick={() => navigator.clipboard.writeText("student@instapay")}>نسخ المعرف</button>
                  </div>
               </div>
@@ -246,5 +246,6 @@ const Wallet = () => {
     </div>
   );
 };
+
 
 export default Wallet;
