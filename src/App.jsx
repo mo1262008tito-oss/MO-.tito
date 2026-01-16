@@ -55,7 +55,7 @@ function App() {
   }
 
   // مصفوفة إيميلات الأدمن
-  const adminEmails = ['mahmoud@tito.com', 'fathy@tito.com'];
+  const adminEmails = ['mahmoudtito1262008@gmail.com', 'fathy@tito.com'];
   const isAdmin = user && adminEmails.includes(user.email?.toLowerCase());
 
   return (
@@ -92,5 +92,6 @@ function App() {
     </Router>
   );
 }
+
 
 export default App;
