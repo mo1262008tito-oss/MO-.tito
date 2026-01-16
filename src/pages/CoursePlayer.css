@@ -1,0 +1,398 @@
+/* --- CoursePlayer.css - إعدادات الوحش --- */
+
+.mafa-player-env {
+    background: radial-gradient(circle at center, #0a1118 0%, #020406 100%);
+    min-height: 100vh;
+    color: #ffffff;
+    font-family: 'Cairo', sans-serif;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* 🛡️ حماية المحتوى - العلامة المائية */
+.dynamic-watermark {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 9999;
+    font-size: 14px;
+    color: #00f2ff;
+    letter-spacing: 1px;
+    user-select: none;
+}
+
+/* 🔝 الهيدر العلوي */
+.player-top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(0, 242, 255, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.right-side { display: flex; align-items: center; gap: 20px; }
+.course-info h1 { font-size: 18px; margin: 0; color: #00f2ff; text-shadow: 0 0 10px rgba(0, 242, 255, 0.3); }
+.course-info span { font-size: 13px; color: #8899a6; display: flex; align-items: center; gap: 5px; }
+
+.points-badge {
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    padding: 6px 15px;
+    border-radius: 20px;
+    color: #000;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+/* 🎬 منطقة المشغل */
+.player-body {
+    display: flex;
+    height: calc(100vh - 75px);
+}
+
+.main-stage {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    transition: all 0.4s ease;
+}
+
+.main-stage.expanded { padding: 20px 60px; }
+
+.video-viewport {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 242, 255, 0.2);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.video-viewport iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* 📊 شريط التفاعل */
+.interaction-bar {
+    margin-top: 25px;
+    padding: 25px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.02);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.lesson-text h2 { color: #fff; margin-bottom: 8px; font-size: 22px; }
+.lesson-text p { color: #8899a6; font-size: 15px; max-width: 600px; line-height: 1.6; }
+
+.action-hub { display: flex; gap: 15px; }
+
+.btn-attachment {
+    background: rgba(0, 242, 255, 0.1);
+    color: #00f2ff;
+    padding: 12px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(0, 242, 255, 0.3);
+    transition: 0.3s;
+}
+
+.btn-attachment:hover { background: rgba(0, 242, 255, 0.2); transform: translateY(-3px); }
+
+.btn-complete {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-complete.active { background: #059669; opacity: 0.8; }
+.btn-complete:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+
+/* 📋 قائمة الدروس الجانبية */
+.playlist-sidebar {
+    width: 380px;
+    background: rgba(10, 15, 20, 0.95);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.playlist-sidebar.collapsed { width: 60px; overflow: hidden; }
+
+.sidebar-toggle {
+    padding: 20px;
+    background: rgba(0, 242, 255, 0.05);
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.lesson-items-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.lesson-card {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.3s;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid transparent;
+    gap: 15px;
+}
+
+.lesson-card:hover { background: rgba(255, 255, 255, 0.05); border-color: rgba(0, 242, 255, 0.2); }
+
+.lesson-card.playing {
+    background: rgba(0, 242, 255, 0.1);
+    border-color: #00f2ff;
+}
+
+.lesson-card.done { opacity: 0.7; }
+
+.status-icon .circle-num {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+}
+
+.lesson-meta h4 { font-size: 14px; margin: 0 0 5px 0; color: #e1e8ed; }
+.sub-meta { display: flex; gap: 10px; font-size: 11px; color: #8899a6; }
+
+/* 📝 النوتة والمفكرة */
+.student-notes {
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: 15px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.student-notes h3 { font-size: 16px; margin-bottom: 15px; color: #00f2ff; }
+.student-notes textarea {
+    width: 100%;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    color: #fff;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+}
+
+.student-notes textarea:focus { border-color: #00f2ff; }
+
+/* 🌀 اللودر - التحميل */
+.vortex-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #020406;
+}
+
+.spin-icon { animation: spin 2s linear infinite; }
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* 📱 استجابة الموبايل */
+@media (max-width: 992px) {
+    .player-body { flex-direction: column; height: auto; }
+    .playlist-sidebar { width: 100%; height: 400px; order: 2; }
+    .main-stage { order: 1; }
+    .interaction-bar { flex-direction: column; gap: 20px; text-align: center; }
+}
+
+.nebula-player {
+  background: #0b0e14;
+  color: white;
+  min-height: 100vh;
+  direction: rtl;
+  overflow-x: hidden;
+}
+
+/* العلامة المائية المتحركة للأمان */
+.moving-watermark {
+  position: fixed;
+  color: rgba(255, 255, 255, 0.05);
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 9999;
+  animation: float 15s infinite linear;
+}
+
+@keyframes float {
+  0% { top: 10%; left: 10%; }
+  25% { top: 80%; left: 30%; }
+  50% { top: 40%; left: 80%; }
+  75% { top: 10%; left: 60%; }
+  100% { top: 10%; left: 10%; }
+}
+
+/* قسم الفيديو */
+.iframe-wrapper {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  height: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+.iframe-wrapper iframe {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  border: none;
+}
+
+/* الملاحظات الصوتية والمكتوبة */
+.notes-area {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.03);
+}
+
+.notes-tabs {
+  display: flex; gap: 15px; margin-bottom: 15px;
+}
+
+.notes-tabs button {
+  background: none; border: none; color: #888; cursor: pointer; display: flex; align-items: center; gap: 5px;
+}
+
+.notes-tabs button.active { color: #00f2ff; border-bottom: 2px solid #00f2ff; }
+
+textarea {
+  width: 100%; height: 120px; background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+  padding: 15px; color: white; resize: none;
+}
+
+.notes-footer {
+  display: flex; justify-content: space-between; align-items: center; margin-top: 10px;
+}
+
+/* الأزرار الاحترافية */
+.mic-btn { background: #ef4444; color: white; border-radius: 50%; width: 40px; height: 40px; border: none; cursor: pointer; }
+.stop-btn { background: #111; color: white; border-radius: 50%; width: 40px; height: 40px; border: none; animation: pulse 1s infinite; }
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.save-note-btn {
+  background: linear-gradient(45deg, #00f2ff, #0066ff);
+  border: none; padding: 10px 20px; border-radius: 10px; color: black; font-weight: bold; cursor: pointer;
+}
+
+
+/* وضع التركيز - السحر البصري */
+.nebula-player.focus-active .playlist-sidebar,
+.nebula-player.focus-active .player-header,
+.nebula-player.focus-active .interactive-tools-grid {
+    opacity: 0.1;
+    filter: blur(5px);
+    pointer-events: none;
+    transition: 0.5s;
+}
+
+.nebula-player.focus-active .video-section {
+    max-width: 1000px;
+    margin: 0 auto;
+    transform: translateY(50px);
+}
+
+.bookmarks-display {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 15px;
+    border-right: 2px solid var(--cyan);
+}
+
+.bm-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-left: 3px solid #ffd700;
+    transition: 0.3s;
+}
+
+.bm-card:hover {
+    background: rgba(0, 242, 255, 0.05);
+}
+
+.time-tag {
+    background: #ffd700;
+    color: #000;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 5px;
+}
+
+.prog-container {
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.prog-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.prog-bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00f2ff, #00d4ff);
+    box-shadow: 0 0 10px #00f2ff;
+}

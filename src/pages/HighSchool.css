@@ -1,0 +1,735 @@
+/* 1. الإعدادات العامة للجسم (Root Setup) */
+.edu-portal-root {
+  background-color: #020617; /* لون كحلي عميق جداً */
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(0, 242, 254, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 0% 100%, rgba(79, 172, 254, 0.05) 0%, transparent 50%);
+  min-height: 100vh;
+  color: #f8fafc;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow-x: hidden;
+}
+
+/* 2. شريط التقدم العلوي (Scroll Progress) */
+.scroll-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #00f2fe, #4facfe);
+  transform-origin: 0%;
+  z-index: 2000;
+  box-shadow: 0 0 10px #00f2fe;
+}
+
+/* 3. الهيدر العائم (Floating Glass Header) */
+.portal-header.glass {
+  position: sticky;
+  top: 15px;
+  margin: 0 20px;
+  padding: 12px 25px;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.brand-icon {
+  color: #00f2fe;
+  filter: drop-shadow(0 0 5px #00f2fe);
+}
+
+.tech-v {
+  font-size: 0.7rem;
+  background: #00f2fe;
+  color: #020617;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-left: 5px;
+  font-weight: bold;
+}
+
+/* 4. قسم الهيرو (Hero Section) */
+.hero-banner-v4 {
+  padding: 100px 20px 40px;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 30px;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.hero-welcome-card.glass-premium {
+  padding: 40px;
+  background: rgba(30, 41, 59, 0.4);
+  border-radius: 30px;
+  border: 1px solid rgba(0, 242, 254, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-welcome-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(0, 242, 254, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.name-gradient {
+  background: linear-gradient(90deg, #00f2fe, #4facfe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}
+
+/* 5. البحث والفلترة (Search & Tabs) */
+.search-box-v2 {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 15px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 25px 0;
+}
+
+.search-box-v2 input {
+  background: transparent;
+  border: none;
+  color: white;
+  width: 100%;
+  outline: none;
+}
+
+.tab-item {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 10px 20px;
+  cursor: pointer;
+  position: relative;
+  transition: 0.3s;
+}
+
+.tab-item.active {
+  color: #00f2fe;
+  font-weight: bold;
+}
+
+.tab-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #00f2fe;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #00f2fe;
+}
+
+/* 6. شبكة الكورسات (Courses Grid) */
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+  padding: 20px;
+}
+
+.course-card-v4.glass-card {
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: 0.4s;
+  cursor: pointer;
+  position: relative;
+}
+
+.course-card-v4:hover {
+  transform: translateY(-10px);
+  border-color: rgba(0, 242, 254, 0.5);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+.card-thumb {
+  position: relative;
+  height: 180px;
+  border-radius: 20px 20px 0 0;
+  overflow: hidden;
+}
+
+.card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.badge-overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 242, 254, 0.9);
+  color: #020617;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+/* 7. لوحة الأوائل (Leaderboard) */
+.leaderboard-card {
+  background: rgba(30, 41, 59, 0.3);
+  padding: 25px;
+  border-radius: 25px;
+  border: 1px solid rgba(250, 204, 21, 0.2);
+}
+
+.l-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: 0.3s;
+}
+
+.l-item.rank-1 {
+  background: linear-gradient(90deg, rgba(250, 204, 21, 0.1), transparent);
+  border-radius: 12px;
+}
+
+/* 8. شريط التقدم (Progress Bars) */
+.prog-bar-bg {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.prog-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00f2fe, #4facfe);
+  box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+}
+
+/* 9. نظام الحماية (Security Layer) */
+.security-layer {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  z-index: 5000;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.watermark-text {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.2);
+  transform: rotate(-15deg);
+}
+
+/* 10. لودر التحميل (Loader) */
+.mafa-loading-screen {
+  height: 100vh;
+  background: #020617;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.progress-bar-container {
+  width: 250px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: #00f2fe;
+}
+
+
+
+
+/* 11. شبكة الأدوات والمميزات (Tools Grid) */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tool-card.glass {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tool-card.glass:hover {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: #00f2fe;
+  transform: scale(1.03);
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.2);
+}
+
+.t-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 15px currentColor;
+}
+
+.t-icon.purple { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+.t-icon.gold { background: rgba(250, 204, 21, 0.2); color: #facc15; }
+.t-icon.cyan { background: rgba(6, 182, 212, 0.2); color: #22d3ee; }
+
+.t-text h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #f8fafc;
+}
+
+.t-text p {
+  margin: 5px 0 0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+/* 12. الفوتر الحديث (Modern Footer) */
+.portal-footer-v2.glass {
+  margin-top: 60px;
+  background: rgba(15, 23, 42, 0.9);
+  padding: 40px 20px 20px;
+  border-top: 1px solid rgba(0, 242, 254, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.f-top {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.f-col { max-width: 300px; }
+.f-col p { color: #94a3b8; font-size: 0.9rem; margin-top: 15px; }
+
+.f-links {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.f-links a {
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: 0.3s;
+}
+
+.f-links a:hover { color: #00f2fe; }
+
+.f-bottom {
+  max-width: 1200px;
+  margin: 20px auto 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.Mahmoud {
+  color: #00f2fe;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+}
+
+/* 13. تحسينات الموبايل (Responsive Design) */
+@media (max-width: 1024px) {
+  .hero-banner-v4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .portal-header.glass {
+    margin: 10px;
+    padding: 10px 15px;
+  }
+  
+  .main-title { font-size: 1.8rem; }
+  
+  .header-actions {
+    display: none; /* إخفاء العناصر غير الضرورية في الموبايل لسرعة التصفح */
+  }
+
+  .courses-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .f-top {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .f-links {
+    justify-content: center;
+    flex-direction: column;
+  }
+}
+
+/* 14. تأثيرات الأنيميشن الإضافية */
+.unread::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 8px;
+  height: 8px;
+  background: #00f2fe;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #00f2fe;
+}
+
+.enroll-btn-v2 {
+  background: linear-gradient(90deg, #00f2fe, #4facfe);
+  color: #020617;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.enroll-btn-v2:hover {
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
+  transform: scale(1.05);
+}
+/* 11. شبكة الأدوات والمميزات (Tools Grid) */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tool-card.glass {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tool-card.glass:hover {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: #00f2fe;
+  transform: scale(1.03);
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.2);
+}
+
+.t-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 15px currentColor;
+}
+
+.t-icon.purple { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+.t-icon.gold { background: rgba(250, 204, 21, 0.2); color: #facc15; }
+.t-icon.cyan { background: rgba(6, 182, 212, 0.2); color: #22d3ee; }
+
+.t-text h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #f8fafc;
+}
+
+.t-text p {
+  margin: 5px 0 0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+/* 12. الفوتر الحديث (Modern Footer) */
+.portal-footer-v2.glass {
+  margin-top: 60px;
+  background: rgba(15, 23, 42, 0.9);
+  padding: 40px 20px 20px;
+  border-top: 1px solid rgba(0, 242, 254, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.f-top {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.f-col { max-width: 300px; }
+.f-col p { color: #94a3b8; font-size: 0.9rem; margin-top: 15px; }
+
+.f-links {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.f-links a {
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: 0.3s;
+}
+
+.f-links a:hover { color: #00f2fe; }
+
+.f-bottom {
+  max-width: 1200px;
+  margin: 20px auto 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.Mahmoud {
+  color: #00f2fe;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+}
+
+/* 13. تحسينات الموبايل (Responsive Design) */
+@media (max-width: 1024px) {
+  .hero-banner-v4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .portal-header.glass {
+    margin: 10px;
+    padding: 10px 15px;
+  }
+  
+  .main-title { font-size: 1.8rem; }
+  
+  .header-actions {
+    display: none; /* إخفاء العناصر غير الضرورية في الموبايل لسرعة التصفح */
+  }
+
+  .courses-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .f-top {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .f-links {
+    justify-content: center;
+    flex-direction: column;
+  }
+}
+
+/* 14. تأثيرات الأنيميشن الإضافية */
+.unread::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 8px;
+  height: 8px;
+  background: #00f2fe;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #00f2fe;
+}
+
+.enroll-btn-v2 {
+  background: linear-gradient(90deg, #00f2fe, #4facfe);
+  color: #020617;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.enroll-btn-v2:hover {
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
+  transform: scale(1.05);
+}
+
+/* --- 1. تعديل لوحة الإشعارات (تلوين كامل) --- */
+.notif-panel.glass {
+  position: fixed;
+  top: 80px;
+  left: 20px; /* لتظهر من الجنب بشكل عائم */
+  width: 320px;
+  max-height: 500px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid #00f2fe;
+  box-shadow: 0 0 30px rgba(0, 242, 254, 0.2);
+  border-radius: 20px;
+  z-index: 2000;
+  overflow-y: auto;
+  padding: 15px;
+}
+
+.notif-item {
+  background: rgba(255, 255, 255, 0.03);
+  margin-bottom: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  border-right: 3px solid #00f2fe; /* تمييز لوني */
+  transition: 0.3s;
+}
+
+.notif-item:hover {
+  background: rgba(0, 242, 254, 0.1);
+}
+
+/* --- 2. تلوين المحفظة (Wallet Action) --- */
+.wallet-action {
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.1), rgba(79, 172, 254, 0.2));
+  border: 1px solid rgba(0, 242, 254, 0.5);
+  padding: 8px 15px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.wallet-action:hover {
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+  transform: scale(1.05);
+}
+
+.balance-text {
+  color: #00f2fe;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(0, 242, 254, 0.5);
+}
+
+/* --- 3. ضبط شريط البحث (Search Box Color) --- */
+.search-box-v2 {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border: 2px solid rgba(0, 242, 254, 0.3) !important;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.search-box-v2:focus-within {
+  border-color: #00f2fe !important;
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+}
+
+.search-btn {
+  background: #00f2fe;
+  color: #020617;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+}
+
+/* --- 4. تلوين كروت الإحصائيات (Stats Row) --- */
+.stat-unit {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 15px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: 0.3s;
+}
+
+.stat-unit:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(0, 242, 254, 0.3);
+}
+
+.stat-icon.xp { color: #facc15; filter: drop-shadow(0 0 5px #facc15); }
+.stat-icon.time { color: #00f2fe; filter: drop-shadow(0 0 5px #00f2fe); }
+.stat-icon.done { color: #22c55e; filter: drop-shadow(0 0 5px #22c55e); }
+
+/* --- 5. تنسيق الفلاتر (Tabs & Select) --- */
+.glass-select {
+  background: rgba(15, 23, 42, 0.8);
+  color: #00f2fe;
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  padding: 8px 15px;
+  border-radius: 10px;
+  outline: none;
+  cursor: pointer;
+}
+
+.tab-indicator {
+  box-shadow: 0 0 15px #00f2fe, 0 0 30px #00f2fe; /* توهج مضاعف */
+}

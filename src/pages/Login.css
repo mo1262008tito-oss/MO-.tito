@@ -1,0 +1,479 @@
+/* 1. الخلفية العامة (Root Background) */
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #020617; /* كحلي غامق جداً */
+  background-image: 
+    radial-gradient(circle at 70% 20%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 30% 80%, rgba(79, 172, 254, 0.08) 0%, transparent 40%);
+  overflow: hidden; /* لمنع ظهور scroll عند التحركات */
+  position: relative;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  direction: rtl; /* دعم اللغة العربية */
+}
+
+/* 2. تأثيرات التوهج الخلفية (Decorative Glow) */
+.bg-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(0, 242, 254, 0.15) 0%, transparent 50%);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  filter: blur(80px);
+  animation: bg-pulse 8s infinite alternate ease-in-out;
+  z-index: 0;
+}
+
+@keyframes bg-pulse {
+  0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.6; }
+  100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+}
+
+/* 3. حاوية تسجيل الدخول الرئيسية (Floating Card Container) */
+.login-container {
+  position: relative;
+  z-index: 10;
+  perspective: 1000px; /* لإضافة عمق 3D */
+}
+
+.login-card {
+  background: rgba(15, 23, 42, 0.9); /* خلفية زجاجية غامقة */
+  backdrop-filter: blur(15px);
+  border: 2px solid rgba(0, 242, 254, 0.3); /* إطار نيون متوهج */
+  border-radius: 25px;
+  padding: 40px;
+  width: 450px; /* عرض ثابت لبطاقة الدخول */
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 242, 254, 0.4);
+  text-align: center;
+  color: #e2e8f0;
+  transform: rotateY(0deg); /* بداية التحول 3D */
+  transition: transform 0.6s ease-out, box-shadow 0.6s ease-out;
+}
+
+/* تأثير ثلاثي الأبعاد عند التحويل بين الدخول والتسجيل */
+.login-container.transform-active .login-card {
+  transform: rotateY(10deg); /* مثال لتحويل بسيط */
+}
+
+
+/* 4. رأس البطاقة (Header) */
+.card-header .logo-box {
+  width: 60px;
+  height: 60px;
+  background: rgba(0, 242, 254, 0.1);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 20px;
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+}
+
+.icon-neon {
+  color: #00f2fe;
+  filter: drop-shadow(0 0 8px #00f2fe);
+}
+
+.card-header h2 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  background: linear-gradient(90deg, #00f2fe, #4facfe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.card-header p {
+  color: #94a3b8;
+  margin-bottom: 30px;
+  font-size: 0.95rem;
+}
+
+/* 5. محدد الرتبة (Role Selector) */
+.role-selector-v2 {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 25px;
+  background: rgba(30, 41, 59, 0.7);
+  border-radius: 15px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.role-selector-v2 button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 10px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.role-selector-v2 button.active {
+  background: #00f2fe;
+  color: #020617;
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+  transform: scale(1.05);
+}
+
+.role-selector-v2 button:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.05);
+  color: #00f2fe;
+}
+
+
+/* 6. حقول الإدخال (Input Fields) */
+.input-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.input-group input,
+.input-group select {
+  width: 100%;
+  padding: 14px 15px 14px 50px; /* مساحة للأيقونة */
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: white;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  border-color: #00f2fe;
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+}
+
+.input-group .input-icon {
+  position: absolute;
+  right: 15px; /* للأيقونة */
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  transition: color 0.3s;
+}
+
+.input-group input:focus + .input-icon,
+.input-group select:focus + .input-icon {
+  color: #00f2fe;
+}
+
+/* 7. الأزرار (Buttons) */
+.btn-primary {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(90deg, #00f2fe, #4facfe);
+  border: none;
+  border-radius: 15px;
+  color: #020617;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 242, 254, 0.7);
+}
+
+.btn-primary:disabled {
+  background: #1e293b;
+  cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: none;
+}
+
+.btn-google {
+  width: 100%;
+  padding: 12px;
+  background: #4285F4; /* لون جوجل الأزرق */
+  border: none;
+  border-radius: 15px;
+  color: white;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(66, 133, 244, 0.4);
+  margin-top: 20px;
+}
+
+.btn-google:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(66, 133, 244, 0.6);
+}
+
+.btn-google img {
+  width: 20px;
+  height: 20px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 30px 0;
+  color: #475569;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.divider:not(:empty)::before {
+  margin-left: .25em;
+}
+
+.divider:not(:empty)::after {
+  margin-right: .25em;
+}
+
+.toggle-auth button {
+  background: transparent;
+  border: none;
+  color: #00f2fe;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: text-shadow 0.3s;
+}
+
+.toggle-auth button:hover {
+  text-shadow: 0 0 10px #00f2fe;
+}
+
+/* 8. صفحة إكمال البيانات (Profile Complete State) */
+.profile-complete .card-header {
+  margin-bottom: 30px;
+}
+
+.profile-complete .icon-success {
+  color: #22c55e;
+  filter: drop-shadow(0 0 10px #22c55e);
+}
+
+/* 9. تحسينات الموبايل (Responsive Design) */
+@media (max-width: 550px) {
+  .login-card {
+    width: 90%;
+    padding: 30px;
+  }
+  .card-header h2 { font-size: 1.5rem; }
+  .btn-primary, .btn-google { font-size: 1rem; padding: 12px; }
+  .input-group input, .input-group select { font-size: 0.9rem; }
+}
+
+/* --- تحديثات لتمييز الواجهة وجعلها استثنائية --- */
+
+/* 1. تأثير "النبض" للأزرار (Pulse Effect) */
+@keyframes pulse-cyan {
+  0% { box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(0, 242, 254, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 242, 254, 0); }
+}
+
+.btn-primary {
+  animation: pulse-cyan 2s infinite;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* 2. الإطار المتحرك النيون (Glow Border Trace) */
+.login-card {
+  position: relative;
+  overflow: hidden; /* ضروري لتأثير الإضاءة المتحركة */
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    transparent, 
+    rgba(0, 242, 254, 0.3), 
+    transparent 30%
+  );
+  animation: rotate-border 4s linear infinite;
+  z-index: -1;
+}
+
+@keyframes rotate-border {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 3. تأثير الخطوط الرقمية الخلفية (Matrix Background Overlay) */
+.login-page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(0, 242, 254, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 242, 254, 0.03) 1px, transparent 1px);
+  background-size: 30px 30px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* 4. تلوين الحقول عند الكتابة (Floating Label Style) */
+.input-group input:focus {
+  background: rgba(0, 242, 254, 0.05);
+  border-bottom: 2px solid #00f2fe;
+}
+
+/* 5. تصميم خاص لمحدد الرتبة (Role Tabs) */
+.role-selector-v2 {
+  padding: 5px;
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.role-selector-v2 button.active {
+  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+  color: #020617;
+  text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
+}
+
+/* 6. تأثير الانبثاق (Pop-in) عند تحميل الصفحة */
+.login-container {
+  animation: pop-in 0.8s cubic-bezier(0.26, 0.53, 0.74, 1.48) forwards;
+}
+
+@keyframes pop-in {
+  0% { opacity: 0; transform: scale(0.5) translateY(100px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* 7. الفاصل الذكي (Smart Divider) */
+.divider span {
+  background: #020617;
+  padding: 0 15px;
+  color: #00f2fe;
+  font-size: 0.8rem;
+  font-weight: bold;
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  border-radius: 20px;
+}
+/* --- 📱 لمسات احترافية لتمييز واجهة الهاتف --- */
+
+@media (max-width: 480px) {
+  /* 1. ضبط الخلفية لتناسب الشاشة الطولية */
+  .login-page {
+    padding: 15px;
+    align-items: flex-start; /* يبدأ الكارت من الأعلى قليلاً في الموبايل */
+    padding-top: 50px;
+    overflow-y: auto; /* السماح بالتمرير إذا كانت الحقول كثيرة */
+  }
+
+  /* 2. جعل الكارت يملأ العرض مع حواف ناعمة */
+  .login-card {
+    width: 100%;
+    padding: 25px 20px;
+    border-radius: 30px; /* حواف دائرية أكثر للموبايل */
+    border-width: 1px; /* خط أنحف ليكون أرقى */
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 242, 254, 0.2);
+  }
+
+  /* 3. تكبير أزرار الرتب لسهولة اللمس (UX) */
+  .role-selector-v2 {
+    gap: 5px;
+    padding: 4px;
+  }
+
+  .role-selector-v2 button {
+    padding: 12px 5px;
+    font-size: 0.8rem;
+    flex-direction: column; /* الأيقونة فوق النص لتعطي شكلاً عصرياً */
+    gap: 4px;
+  }
+
+  .role-selector-v2 button svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* 4. تحسين الحقول لتناسب لوحة مفاتيح الموبايل */
+  .input-group input, 
+  .input-group select {
+    font-size: 16px !important; /* يمنع الـ iPhone من عمل Zoom تلقائي عند الكتابة */
+    padding: 12px 45px 12px 15px;
+    height: 55px; /* ارتفاع مريح للأصابع */
+  }
+
+  /* 5. زر الدخول (تأثير ضغط الإصبع) */
+  .btn-primary {
+    height: 55px;
+    font-size: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(90deg, #00f2fe, #4facfe);
+    box-shadow: 0 10px 20px rgba(0, 242, 254, 0.3);
+  }
+
+  .btn-primary:active {
+    transform: scale(0.95); /* تأثير الضغطة عند لمس الزر */
+    filter: brightness(1.2);
+  }
+
+  /* 6. تصغير الهيدر ليعطي مساحة أكبر للفورم */
+  .card-header h2 {
+    font-size: 1.5rem;
+    margin-top: 10px;
+  }
+  
+  .card-header p {
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+  }
+
+  /* 7. شريط جوجل (Google Button) في الموبايل */
+  .btn-google {
+    height: 50px;
+    font-size: 0.9rem;
+    border-radius: 12px;
+  }
+
+  /* 8. تأثير الضباب الخلفي (Blur) أخف لتحسين الأداء */
+  .bg-glow {
+    width: 300px;
+    height: 300px;
+    filter: blur(50px);
+  }
+
+  /* 9. إضافة "هزة" بسيطة عند ظهور الكارت (Vibration-like animation) */
+  .login-container {
+    animation: mobile-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+}
+
+@keyframes mobile-pop {
+  0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}

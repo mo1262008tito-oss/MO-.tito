@@ -1,0 +1,374 @@
+.super-wallet-container {
+    padding: 40px;
+    background: #020205;
+    min-height: 100vh;
+    color: #fff;
+    direction: rtl;
+    font-family: 'Tajawal', sans-serif;
+}
+
+
+/* Header Design */
+.wallet-header-v6 {
+    padding: 40px;
+    border-radius: 35px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 30px;
+}
+
+
+
+.w-info { display: flex; align-items: center; gap: 20px; }
+.w-icon-box {
+    width: 65px; height: 65px; background: #4facfe; border-radius: 20px;
+    display: flex; justify-content: center; align-items: center;
+    box-shadow: 0 10px 25px rgba(79, 172, 254, 0.3);
+}
+
+.w-total-display { display: flex; gap: 30px; }
+.balance-box, .xp-box { text-align: left; }
+.amount { font-size: 2.2rem; font-weight: 900; }
+.amount span { font-size: 1rem; color: #4facfe; }
+
+/* Tabs */
+.wallet-tabs {
+    display: flex; gap: 15px; margin-bottom: 40px;
+}
+
+.wallet-tabs button {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    padding: 12px 25px;
+    border-radius: 15px;
+    color: #888;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    transition: 0.3s;
+}
+
+.wallet-tabs button.active {
+    background: #fff; color: #000; border-color: #fff; font-weight: bold;
+}
+
+/* Convert Section */
+.convert-box {
+    max-width: 600px; margin: 0 auto; text-align: center; padding: 50px;
+}
+
+.input-group-v6 { margin: 40px 0; text-align: right; }
+.input-group-v6 label { display: block; margin-bottom: 15px; color: #aaa; }
+.input-group-v6 input {
+    width: 100%; padding: 20px; border-radius: 20px; background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 1.5rem; text-align: center;
+}
+
+.preview-gain { margin-top: 20px; font-size: 1.2rem; color: #43e97b; }
+
+.confirm-convert-btn {
+    width: 100%; padding: 20px; border-radius: 20px; background: #f1c40f;
+    color: #000; font-weight: 900; border: none; cursor: pointer; transition: 0.3s;
+}
+
+/* Plans Grid */
+.plans-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px;
+}
+
+.price-plan-card {
+    padding: 40px; border-radius: 35px; border: 1px solid rgba(255,255,255,0.08);
+    position: relative; transition: 0.4s;
+}
+
+.price-plan-card:hover { border-color: #4facfe; transform: translateY(-10px); }
+
+.popular-tag {
+    position: absolute; top: 20px; left: 20px; background: #ff7675;
+    padding: 5px 15px; border-radius: 50px; font-size: 0.7rem; font-weight: bold;
+}
+
+.p-price { font-size: 3rem; font-weight: 900; margin: 20px 0; }
+.p-price span { font-size: 1.2rem; color: #666; }
+
+.p-features { list-style: none; margin-bottom: 30px; }
+.p-features li { display: flex; align-items: center; gap: 10px; color: #ccc; margin-bottom: 12px; }
+
+.file-label {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 15px; border: 2px dashed rgba(255,255,255,0.1); border-radius: 15px;
+    cursor: pointer; margin-bottom: 20px; transition: 0.3s;
+}
+
+.file-label:hover { border-color: #4facfe; background: rgba(79, 172, 254, 0.05); }
+
+.order-btn {
+    width: 100%; padding: 18px; border-radius: 15px; background: #4facfe;
+    color: #fff; border: none; font-weight: 900; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; gap: 10px;
+}
+
+/* History */
+.h-item {
+    display: flex; align-items: center; gap: 20px; padding: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.h-icon { width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
+.h-icon.plus { background: rgba(67, 233, 123, 0.1); color: #43e97b; }
+.h-icon.convert { background: rgba(241, 196, 15, 0.1); color: #f1c40f; }
+
+.h-text { flex: 1; }
+.h-text strong { display: block; font-size: 1rem; }
+.h-text small { color: #555; }
+.h-amount { font-weight: 900; }
+
+/* --- المتغيرات الأساسية (Theming) --- */
+:root {
+    --primary-gold: #ffd700;
+    --success-green: #43e97b;
+    --error-red: #ff4d4d;
+    --glass-bg: rgba(255, 255, 255, 0.07);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --dark-bg: #0f172a;
+}
+
+/* --- الحاوية الرئيسية --- */
+.modern-wallet-root {
+    min-height: 100vh;
+    background: radial-gradient(circle at top left, #1e293b, #0f172a);
+    color: #fff;
+    padding: 20px;
+    padding-bottom: 100px; /* مساحة للـ Nav السفلي */
+    font-family: 'Cairo', sans-serif;
+    direction: rtl;
+}
+
+/* --- الهيدر (Wallet Main Header) --- */
+.wallet-main-header {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 25px;
+    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.user-profile-mini {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.avatar-wrapper {
+    position: relative;
+}
+
+.avatar-wrapper img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-gold);
+    padding: 3px;
+}
+
+.level-badge {
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary-gold);
+    color: #000;
+    font-size: 0.65rem;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+/* بطاقة الرصيد (Balance Card) */
+.balance-card-v8 {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02));
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(255,215,0,0.2);
+}
+
+.main-bal h1 {
+    font-size: 2.2rem;
+    margin: 5px 0;
+    font-weight: 800;
+}
+
+.main-bal h1 span {
+    font-size: 1rem;
+    color: var(--primary-gold);
+}
+
+.bal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.bal-actions button {
+    padding: 8px 20px;
+    border-radius: 12px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bal-actions button:first-child { background: var(--primary-gold); color: #000; }
+.bal-actions button.sec { background: rgba(255,255,255,0.1); color: #fff; }
+
+/* --- الشريط السفلي (Bottom Nav) --- */
+.bottom-nav-v8 {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 500px;
+    height: 70px;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    border-radius: 35px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 1000;
+}
+
+.bottom-nav-v8 button {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.bottom-nav-v8 button.active {
+    color: var(--primary-gold);
+    transform: translateY(-5px);
+}
+
+.bottom-nav-v8 button span { font-size: 0.7rem; }
+
+/* --- سجل العمليات (Transactions) --- */
+.transaction-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    border-radius: 18px;
+    margin-bottom: 12px;
+    transition: 0.3s;
+}
+
+.t-icon-box {
+    width: 45px;
+    height: 45px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.t-icon-box.deposit { background: rgba(67, 233, 123, 0.15); color: var(--success-green); }
+.t-icon-box.convert { background: rgba(255, 215, 0, 0.15); color: var(--primary-gold); }
+
+.t-main-info { flex: 1; }
+.t-main-info h4 { font-size: 0.95rem; margin-bottom: 4px; }
+.t-main-info small { color: #94a3b8; font-size: 0.75rem; }
+
+.t-price { font-weight: bold; text-align: left; }
+.t-price.plus { color: var(--success-green); }
+.t-price.minus { color: var(--error-red); }
+
+/* --- كروت الشحن (Scratch Card Area) --- */
+.scratch-card-area {
+    text-align: center;
+    padding: 40px 20px;
+    border-radius: 30px;
+    background: linear-gradient(145deg, rgba(255,215,0,0.1), rgba(0,0,0,0.2));
+}
+
+.input-group-v8 {
+    margin: 25px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.input-group-v8 input {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--glass-border);
+    padding: 18px;
+    border-radius: 15px;
+    color: #fff;
+    text-align: center;
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+}
+
+.input-group-v8 button {
+    background: var(--primary-gold);
+    padding: 18px;
+    border-radius: 15px;
+    border: none;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(255,215,0,0.2);
+}
+
+/* --- زر الطوارئ (SOS Button) --- */
+.sos-button {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: #25d366; /* لون واتساب */
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
+    cursor: pointer;
+    z-index: 999;
+}
+
+/* --- تأثيرات التحميل (Loaders) --- */
+.wallet-loader-overlay {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--dark-bg);
+    font-weight: bold;
+    color: var(--primary-gold);
+}
+
+/* --- Responsive --- */
+@media (max-width: 480px) {
+    .main-bal h1 { font-size: 1.8rem; }
+    .wallet-main-header { padding: 15px; }
+}
