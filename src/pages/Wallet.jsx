@@ -103,7 +103,40 @@ const Wallet = () => {
       setIsVaultLocked(true);
     }
   };
+// 5. ميزة (3): تحدي الرهان التعليمي (Education Staking)
+const startStudyChallenge = async (opponentId, betAmount) => {
+  if (user?.balance < betAmount) return alert("رصيدك لا يكفي لدخول التحدي");
+  setLoading(true);
+  try {
+    await addDoc(collection(db, 'challenges'), {
+      challengerId: auth.currentUser.uid,
+      opponentId: opponentId,
+      amount: betAmount,
+      status: 'waiting', // ينتظر موافقة الطرف الآخر
+      deadline: new Date(Date.now() + 24 * 60 * 60 * 1000) // تحدي لمدة 24 ساعة
+    });
+    alert("تم إرسال التحدي لصديقك! سيتم خصم المبلغ عند موافقته.");
+  } catch (e) { console.error(e); }
+  setLoading(false);
+};
 
+// 6. ميزة (2): الإيداع والسحب من الخزنة (Vault Movement)
+const moveMoneyToVault = async (amount) => {
+  if (user?.balance < amount) return alert("الرصيد المتاح غير كافٍ");
+  try {
+    await updateDoc(doc(db, 'users', auth.currentUser.uid), {
+      balance: increment(-amount),
+      vaultBalance: increment(amount)
+    });
+    alert("تم تأمين المبلغ داخل الخزنة السرية بنجاح 🔒");
+  } catch (e) { console.error(e); }
+};
+
+// 7. ميزة (16): توليد فاتورة PDF (بشكل مبسط برمجياً)
+const downloadInvoice = (transId) => {
+  alert(`جاري تجهيز الفاتورة رقم ${transId.slice(0,8)} بصيغة PDF...`);
+  // هنا يمكن ربط مكتبة jsPDF لاحقاً
+};
   return (
     <div className="mega-wallet-v4">
       {/* خلفية ديناميكية تفاعلية */}
@@ -537,3 +570,4 @@ const handleP2PTransfer = async () => {
 };
 
 export default Wallet;
+
