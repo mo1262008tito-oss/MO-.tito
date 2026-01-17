@@ -5,7 +5,7 @@ import {
   Library, ShieldCheck, LogOut, GraduationCap, 
   Sparkles, LogIn, User, Wallet 
 } from 'lucide-react';
-import { auth } from '../firebase';
+import { auth } from './firebase';
 import { signOut } from 'firebase/auth';
 import './Navbar.css';
 
@@ -105,3 +105,4 @@ const Navbar = ({ userData, isAdmin }) => {
 };
 
 export default Navbar;
+
