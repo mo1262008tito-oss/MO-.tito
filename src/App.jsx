@@ -8,7 +8,7 @@ import {
 
 import { auth } from './firebase';
 import { signOut } from 'firebase/auth';
-import './Navbar.css';
+import './components/Navbar.css';
 
 const Navbar = ({ userData, isAdmin }) => {
   const navigate = useNavigate();
@@ -110,5 +110,6 @@ const Navbar = ({ userData, isAdmin }) => {
 };
 
 export default Navbar;
+
 
 
