@@ -7,6 +7,7 @@ import {
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
+
 import { 
   ShieldCheck, Wallet as WalletIcon, ArrowRightLeft, Lock, Plus, 
   Star, Clock, Eye, EyeOff, Receipt, Smartphone, Landmark, 
@@ -199,6 +200,7 @@ const downloadInvoice = (transId) => {
         {/* واجهة التحكم الرئيسية (Dashboard) */}
         {activeTab === 'dashboard' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+
             
             {/* البطاقة البنكية المتطورة (Tier System) */}
             <div className={`card-v4 ${user?.balance > 2000 ? 'tier-diamond' : 'tier-gold'}`}>
@@ -603,6 +605,7 @@ const handleP2PTransfer = async () => {
 };
 
 export default Wallet;
+
 
 
 
