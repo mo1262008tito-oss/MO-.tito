@@ -8,6 +8,7 @@ import { auth, db } from './firebase';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './ProtectedRoute';
 
+
 // استيراد الصفحات (المسارات بناءً على صورك)
 import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
@@ -88,4 +89,5 @@ function App() {
 }
 
 export default App;
+
 
