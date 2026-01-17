@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { db, auth, storage } from '../firebase';
+import { db, auth, storage } from './firebase';
 import { 
   doc, onSnapshot, updateDoc, increment, collection, addDoc, 
   getDoc, runTransaction, query, where, orderBy, limit 
@@ -107,7 +107,8 @@ const [activeModal, setActiveModal] = useState(null); // للتحكم في ظه�
       setIsVaultLocked(true);
     }
   };
-// 5. ميزة (3): تحدي الرهان التعليمي (Education Staking)
+  
+// 5. ميزة (3): تحدي التعليمي (Education Staking)
 const startStudyChallenge = async (opponentId, betAmount) => {
   if (user?.balance < betAmount) return alert("رصيدك لا يكفي لدخول التحدي");
   setLoading(true);
@@ -602,6 +603,7 @@ const handleP2PTransfer = async () => {
 };
 
 export default Wallet;
+
 
 
 
