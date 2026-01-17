@@ -9,8 +9,11 @@ const ProtectedRoute = ({ user }) => {
     return <Navigate to="/login" replace />;
   }
 
+  
   // إذا كان مسجل، يتم عرض الصفحة المطلوبة (مثل المحفظة أو لوحة الطالب)
   return <Outlet />;
 };
 
+
 export default ProtectedRoute;
+
