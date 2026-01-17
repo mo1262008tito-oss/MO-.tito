@@ -1,103 +1,91 @@
-import React from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { 
-  School, BookOpen, Heart, 
-  Library, ShieldCheck, LogOut, GraduationCap, 
-  Sparkles, LogIn, User, Wallet 
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { auth, db } from './firebase';
 
-import { auth } from './firebase';
-import { signOut } from 'firebase/auth';
-import './components/Navbar.css'; // تأكد أن هذا المسار صحيح بالنسبة لمكان الملف الحالي
+// استيراد المكونات
+import Navbar from './components/Navbar';
+import ProtectedRoute from './ProtectedRoute';
 
-const Navbar = ({ userData, isAdmin }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
+// استيراد الصفحات (المسارات بناءً على صورك)
+import Home from './pages/Home.jsx';
+import Login from './pages/Login.jsx';
+import StudentDash from './pages/StudentDash.jsx';
+import AdminDash from './pages/AdminDash.jsx';
+import Wallet from './pages/Wallet.jsx';
+import AllCourses from './pages/AllCourses.jsx';
+import HighSchool from './pages/HighSchool.jsx';
+import Religious from './pages/Religious.jsx';
+import ActivationPage from './pages/ActivationPage.jsx';
 
-  const handleLogout = () => {
-    signOut(auth).then(() => {
-      navigate('/login');
-    }).catch((error) => {
-      console.error("خطأ في تسجيل الخروج:", error);
+// التنسيقات العامة
+import './Global.css';
+
+function App() {
+  const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      
+      if (currentUser) {
+        // جلب بيانات المستخدم اللحظية من Firestore
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        const unsubDoc = onSnapshot(userDocRef, (docSnap) => {
+          if (docSnap.exists()) {
+            setUserData(docSnap.data());
+          }
+          setLoading(false);
+        });
+        return () => unsubDoc();
+      } else {
+        setUserData(null);
+        setLoading(false);
+      }
     });
-  };
 
-  const publicLinks = [
-    { name: 'التعليم المنهجي', path: '/highschool', icon: <School size={20}/> },
-    { name: 'المكتبة', path: '/library', icon: <Library size={20}/> },
-    { name: 'الكورسات', path: '/all-courses', icon: <BookOpen size={20}/> },
-    { name: 'الواحة', path: '/religious', icon: <Heart size={20}/> },
-  ];
+    return () => unsubscribe();
+  }, []);
 
-  const privateLinks = [
-    { name: 'لوحة الطالب', path: '/student-dash', icon: <GraduationCap size={20} /> },
-    { name: 'المحفظة', path: '/wallet', icon: <Wallet size={20} /> },
-  ];
+  if (loading) {
+    return <div className="loading-screen">جاري تحميل المنصة...</div>;
+  }
 
   return (
-    <nav className="super-nav neon-border">
-      <div className="nav-container">
+    <BrowserRouter>
+      {/* تمرير البيانات للـ Navbar للتحكم في ما يظهر للطالب */}
+      <Navbar userData={userData} isAdmin={userData?.role === 'admin'} />
+      
+      <Routes>
+        {/* المسارات العامة */}
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={!user ? <Login /> : <Navigate to="/student-dash" />} />
         
-        <div className="brand-section" onClick={() => navigate('/student-dash')}>
-          <div className="logo-glow">
-            <Sparkles size={20} color="#fff" />
-          </div>
-          <span className="brand-name">MaFa <span className="text-primary">Tec</span></span>
-        </div>
+        {/* مسارات الطالب (محمية) */}
+        <Route element={<ProtectedRoute user={user} />}>
+          <Route path="/student-dash" element={<StudentDash userData={userData} />} />
+          <Route path="/wallet" element={<Wallet userData={userData} />} />
+          <Route path="/activation" element={<ActivationPage userData={userData} />} />
+          <Route path="/all-courses" element={<AllCourses />} />
+          <Route path="/highschool" element={<HighSchool />} />
+          <Route path="/religious" element={<Religious />} />
+        </Route>
 
-        <ul className="nav-hub">
-          {publicLinks.map((link) => (
-            <li key={link.path}>
-              <Link to={link.path} className={`nav-item-glow ${location?.pathname === link.path ? 'active' : ''}`}>
-                {link.icon}
-                <span>{link.name}</span>
-              </Link>
-            </li>
-          ))}
+        {/* مسار الأدمن (محمي بصلاحية الـ role) */}
+        <Route 
+          path="/admin" 
+          element={userData?.role === 'admin' ? <AdminDash /> : <Navigate to="/" />} 
+        />
 
-          {/* استخدام userData? للتأكد من وجود البيانات */}
-          {userData && privateLinks.map((link) => (
-            <li key={link.path}>
-              <Link to={link.path} className={`nav-item-glow ${location?.pathname === link.path ? 'active' : ''}`}>
-                {link.icon}
-                <span>{link.name}</span>
-              </Link>
-            </li>
-          ))}
-
-          {/* تأمين شرط الأدمن */}
-          {Boolean(isAdmin) && (
-            <li>
-              <Link to="/admin" className="nav-item-glow admin-glow">
-                <ShieldCheck size={20} color="#00f2fe" />
-                <span className="admin-text">لوحة الإدارة</span>
-              </Link>
-            </li>
-          )}
-        </ul>
-
-        <div className="nav-actions">
-          {userData ? (
-            <div className="user-control-group">
-              <div className="profile-orb" onClick={() => navigate('/student-dash')}>
-                 <User size={20} />
-              </div>
-              <button className="logout-glass" onClick={handleLogout}>
-                <LogOut size={20} />
-              </button>
-            </div>
-          ) : (
-            <button className="login-glow-btn" onClick={() => navigate('/login')}>
-              <LogIn size={18} />
-              <span>دخول</span>
-            </button>
-          )}
-        </div>
-      </div>
-    </nav>
+        {/* إعادة توجيه لأي مسار غير معروف */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </BrowserRouter>
   );
-};
+}
 
-export default Navbar;
-
+export default App;
 
