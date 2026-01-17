@@ -29,70 +29,41 @@ const Library = () => {
   const [selectedBook, setSelectedBook] = useState(null);
   const [stats, setStats] = useState({ downloads: 0, saved: 0 });
   const scrollRef = useRef(null);
-
-  // --- 2. Firebase Integration (الربط مع قاعدة البيانات) ---
+// --- 2. Firebase Integration (الربط المصلح) ---
   useEffect(() => {
     setLoading(true);
-    // استعلام ذكي: إذا كان الفلتر "الكل" اجلب كل الكتب، وإلا افلتر حسب القسم
     const booksRef = collection(db, 'library');
+    
+    // تبسيط الاستعلام لتجنب مشاكل الـ Index في البداية
     const q = activeFilter === 'الكل' 
-      ? query(booksRef, orderBy('createdAt', 'desc'))
-      : query(booksRef, where('category', '==', activeFilter), orderBy('createdAt', 'desc'));
+      ? query(booksRef) 
+      : query(booksRef, where('category', '==', activeFilter));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-        // قيم افتراضية لضمان عدم حدوث خطأ في حال نسيانها في الآدمن
         pages: doc.data().pages || '150+',
         rating: doc.data().rating || 4.9,
         size: doc.data().size || '4.2 MB',
         downloads: doc.data().downloads || 0
       }));
-      setBooks(data);
+
+      // ترتيب البيانات برمجياً بدلاً منorderBy لضمان العمل فوراً
+      const sortedData = data.sort((a, b) => b.createdAt - a.createdAt);
+      
+      setBooks(sortedData);
       setLoading(false);
     }, (error) => {
       console.error("Library Firebase Error:", error);
       setLoading(false);
+      // تنبيه بسيط لك إذا كانت القاعدة فارغة
+      if(error.code === 'permission-denied') {
+        alert("تأكد من إعدادات القواعد (Rules) في فايربيز");
+      }
     });
 
-    return () => unsubscribe();
-  }, [activeFilter]);
 
-  // --- 3. Search Engine Logic (محرك البحث المحلي) ---
-  const filteredResults = useMemo(() => {
-    return books.filter(book => 
-      book.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      book.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      book.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-  }, [books, searchQuery]);
-
-  // --- 4. Functionality Handlers (معالجة الوظائف) ---
-  const handleDownload = async (book) => {
-    try {
-      // تحديث عداد التحميلات في الفايربيز
-      const bookRef = doc(db, 'library', book.id);
-      await updateDoc(bookRef, { downloads: increment(1) });
-      
-      // فتح رابط الـ PDF للتحميل
-      window.open(book.pdfUrl, '_blank');
-    } catch (err) {
-      console.error("Download Error:", err);
-    }
-  };
-
-  const shareBook = (book) => {
-    if (navigator.share) {
-      navigator.share({
-        title: book.title,
-        text: `ألقِ نظرة على هذا الكتاب: ${book.title}`,
-        url: window.location.href,
-      });
-    }
-  };
-
-  // --- 5. UI Components (مكونات الواجهة) ---
   return (
     <div className="modern-library-root">
       
@@ -264,5 +235,6 @@ const Library = () => {
     </div>
   );
 };
+
 
 export default Library;
