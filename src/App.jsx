@@ -5,6 +5,7 @@ import {
   Library, ShieldCheck, LogOut, GraduationCap, 
   Sparkles, LogIn, User, Wallet 
 } from 'lucide-react';
+
 import { auth } from './firebase';
 import { signOut } from 'firebase/auth';
 import './Navbar.css';
@@ -22,6 +23,7 @@ const Navbar = ({ userData, isAdmin }) => {
     });
   };
 
+  
   // الروابط المتاحة للجميع
   const publicLinks = [
     { name: 'التعليم المنهجي', path: '/highschool', icon: <School size={20}/> },
@@ -30,6 +32,7 @@ const Navbar = ({ userData, isAdmin }) => {
     { name: 'الواحة', path: '/religious', icon: <Heart size={20}/> },
   ];
 
+  
   // الروابط المتاحة للمسجلين فقط (طلاب)
   const privateLinks = [
     { name: 'لوحة الطالب', path: '/student-dash', icon: <GraduationCap size={20} /> },
@@ -48,6 +51,7 @@ const Navbar = ({ userData, isAdmin }) => {
           <span className="brand-name">MaFa <span className="text-primary">Tec</span></span>
         </div>
 
+        
         {/* الروابط المركزية */}
         <ul className="nav-hub">
           {/* عرض الروابط العامة */}
@@ -60,6 +64,7 @@ const Navbar = ({ userData, isAdmin }) => {
             </li>
           ))}
 
+          
           {/* عرض روابط الطالب المسجل */}
           {userData && privateLinks.map((link) => (
             <li key={link.path}>
@@ -105,4 +110,5 @@ const Navbar = ({ userData, isAdmin }) => {
 };
 
 export default Navbar;
+
 
