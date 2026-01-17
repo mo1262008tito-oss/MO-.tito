@@ -8,14 +8,12 @@ import {
 
 import { auth } from './firebase';
 import { signOut } from 'firebase/auth';
-import './components/Navbar.css';
-
+import './components/Navbar.css'; // تأكد أن هذا المسار صحيح بالنسبة لمكان الملف الحالي
 
 const Navbar = ({ userData, isAdmin }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // تسجيل الخروج
   const handleLogout = () => {
     signOut(auth).then(() => {
       navigate('/login');
@@ -24,8 +22,6 @@ const Navbar = ({ userData, isAdmin }) => {
     });
   };
 
-  
-  // الروابط المتاحة للجميع
   const publicLinks = [
     { name: 'التعليم المنهجي', path: '/highschool', icon: <School size={20}/> },
     { name: 'المكتبة', path: '/library', icon: <Library size={20}/> },
@@ -33,8 +29,6 @@ const Navbar = ({ userData, isAdmin }) => {
     { name: 'الواحة', path: '/religious', icon: <Heart size={20}/> },
   ];
 
-  
-  // الروابط المتاحة للمسجلين فقط (طلاب)
   const privateLinks = [
     { name: 'لوحة الطالب', path: '/student-dash', icon: <GraduationCap size={20} /> },
     { name: 'المحفظة', path: '/wallet', icon: <Wallet size={20} /> },
@@ -44,7 +38,6 @@ const Navbar = ({ userData, isAdmin }) => {
     <nav className="super-nav neon-border">
       <div className="nav-container">
         
-        {/* القسم الخاص باللوجو */}
         <div className="brand-section" onClick={() => navigate('/student-dash')}>
           <div className="logo-glow">
             <Sparkles size={20} color="#fff" />
@@ -52,32 +45,28 @@ const Navbar = ({ userData, isAdmin }) => {
           <span className="brand-name">MaFa <span className="text-primary">Tec</span></span>
         </div>
 
-        
-        {/* الروابط المركزية */}
         <ul className="nav-hub">
-          {/* عرض الروابط العامة */}
           {publicLinks.map((link) => (
             <li key={link.path}>
-              <Link to={link.path} className={`nav-item-glow ${location.pathname === link.path ? 'active' : ''}`}>
+              <Link to={link.path} className={`nav-item-glow ${location?.pathname === link.path ? 'active' : ''}`}>
                 {link.icon}
                 <span>{link.name}</span>
               </Link>
             </li>
           ))}
 
-          
-          {/* عرض روابط الطالب المسجل */}
+          {/* استخدام userData? للتأكد من وجود البيانات */}
           {userData && privateLinks.map((link) => (
             <li key={link.path}>
-              <Link to={link.path} className={`nav-item-glow ${location.pathname === link.path ? 'active' : ''}`}>
+              <Link to={link.path} className={`nav-item-glow ${location?.pathname === link.path ? 'active' : ''}`}>
                 {link.icon}
                 <span>{link.name}</span>
               </Link>
             </li>
           ))}
 
-          {/* قسم الإدارة - يظهر للأدمن فقط بناءً على البروب isAdmin الممرر من App.js */}
-          {isAdmin && (
+          {/* تأمين شرط الأدمن */}
+          {Boolean(isAdmin) && (
             <li>
               <Link to="/admin" className="nav-item-glow admin-glow">
                 <ShieldCheck size={20} color="#00f2fe" />
@@ -87,7 +76,6 @@ const Navbar = ({ userData, isAdmin }) => {
           )}
         </ul>
 
-        {/* الملف الشخصي وتسجيل الخروج */}
         <div className="nav-actions">
           {userData ? (
             <div className="user-control-group">
@@ -111,7 +99,5 @@ const Navbar = ({ userData, isAdmin }) => {
 };
 
 export default Navbar;
-
-
 
 
