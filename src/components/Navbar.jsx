@@ -6,14 +6,16 @@ import {
   Sparkles, LogIn, User, Wallet 
 } from 'lucide-react';
 
-import { auth } from './firebase';
+import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 import './components/Navbar.css'; // تأكد أن هذا المسار صحيح بالنسبة لمكان الملف الحالي
+
 
 const Navbar = ({ userData, isAdmin }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  
   const handleLogout = () => {
     signOut(auth).then(() => {
       navigate('/login');
@@ -99,3 +101,4 @@ const Navbar = ({ userData, isAdmin }) => {
 };
 
 export default Navbar;
+
