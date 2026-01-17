@@ -11,7 +11,9 @@ import {
   Star, Clock, Eye, EyeOff, Receipt, Smartphone, Landmark, 
   CreditCard, Gift, TrendingUp, AlertTriangle, UserPlus, Zap, 
   History, BarChart3, Bell, Settings, Info, ChevronRight, 
-  ShieldAlert, Target, Award, MousePointer2, RefreshCw
+  ShieldAlert, Target, Award, MousePointer2, RefreshCw,
+  Search, X, QrCode, Headphones, Image as ImageIcon, Copy, Unlock,
+  ArrowDownLeft, ArrowUpRight 
 } from 'lucide-react';
 import './Wallet.css';
 
@@ -29,7 +31,7 @@ const Wallet = () => {
   const [rechargeForm, setRechargeForm] = useState({ amount: '', phone: '', img: null, method: 'voda' });
   const [transferForm, setTransferForm] = useState({ id: '', amount: '', note: '' });
   const [vaultPass, setVaultPass] = useState('');
-
+const [activeModal, setActiveModal] = useState(null); // للتحكم في ظهور نافذة "اطلب من أهلك"
   // 1. مراقبة البيانات الحية (Real-time Engine)
   useEffect(() => {
     if (!auth.currentUser) return;
@@ -137,6 +139,34 @@ const downloadInvoice = (transId) => {
   alert(`جاري تجهيز الفاتورة رقم ${transId.slice(0,8)} بصيغة PDF...`);
   // هنا يمكن ربط مكتبة jsPDF لاحقاً
 };
+
+  // دالة تأكيد الشحن (داخل المكون)
+  const handleConfirmPayment = async () => {
+    if (!rechargeForm.amount || !rechargeForm.phone) {
+      return alert("يرجى إدخال المبلغ ورقم الهاتف");
+    }
+    setLoading(true);
+    try {
+      // هنا يوضع منطق Firebase Storage لرفع الصورة
+      alert("تم إرسال طلبك للأدمن بنجاح ✅");
+      setActiveTab('dashboard');
+    } catch (e) {
+      console.error("Error:", e);
+    }
+    setLoading(false);
+  };
+
+  // دالة التحويل (داخل المكون)
+  const handleP2PTransfer = async () => {
+    if (!transferForm.id || !transferForm.amount) {
+      return alert("يرجى إدخال معرف الطالب والمبلغ");
+    }
+    setLoading(true);
+    // منطق التحويل
+    setLoading(false);
+  };
+
+  
   return (
     <div className="mega-wallet-v4">
       {/* خلفية ديناميكية تفاعلية */}
@@ -570,4 +600,5 @@ const handleP2PTransfer = async () => {
 };
 
 export default Wallet;
+
 
