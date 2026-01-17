@@ -1,14 +1,16 @@
-import { Navigate } from 'react-router-dom';
-import { auth } from '../firebase';
-import { useAuthState } from 'react-firebase-hooks/auth';
+import React from 'react';
+import { Navigate, Outlet } from 'react-router-dom';
 
-const ProtectedRoute = ({ children }) => {
-  const [user, loading] = useAuthState(auth);
+// نحن نمرر الـ user من ملف App.jsx كـ prop
+const ProtectedRoute = ({ user }) => {
+  
+  // إذا لم يكن هناك مستخدم مسجل، يتم تحويله لصفحة الدخول
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
-  if (loading) return <div className="loader">جاري التحقق من الهوية...</div>;
-  if (!user) return <Navigate to="/" />; // يرجعه لصفحة Login إذا لم يسجل
-
-  return children;
+  // إذا كان مسجل، يتم عرض الصفحة المطلوبة (مثل المحفظة أو لوحة الطالب)
+  return <Outlet />;
 };
 
 export default ProtectedRoute;
