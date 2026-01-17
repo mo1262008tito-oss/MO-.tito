@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
 
+// 1. الاستيرادات (Import) - تأكد من وجود ملف Library.jsx في مجلد pages
 import Navbar from './components/Navbar'; 
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -16,16 +17,17 @@ import ActivationPage from './pages/ActivationPage';
 import Religious from './pages/Religious';
 import HighSchool from './pages/HighSchool';
 import About from './pages/About';
+import Library from './pages/Library'; // استيراد صفحة المكتبة
 
-const AppLayout = ({ user, children }) => {
+const AppLayout = ({ user, isAdmin, children }) => {
   const location = useLocation();
-  // إخفاء الناف بار في الهوم واللوجين
   const hideNavbarPaths = ['/', '/login'];
   const shouldShowNavbar = !hideNavbarPaths.includes(location.pathname);
 
   return (
     <>
-      {shouldShowNavbar && <Navbar userData={user} />}
+      {/* تمرير isAdmin و userData للناف بار */}
+      {shouldShowNavbar && <Navbar userData={user} isAdmin={isAdmin} />}
       <div className={shouldShowNavbar ? "main-content-active" : ""}>
         {children}
       </div>
@@ -45,6 +47,10 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  // مصفوفة إيميلات الأدمن (أنت وفتحي)
+  const adminEmails = ['mahmoud1262008tito@gmail.com', 'fathy@tito.com'];
+  const isAdmin = user && adminEmails.includes(user.email?.toLowerCase());
+
   if (loading) {
     return (
       <div className="loader-container">
@@ -54,24 +60,21 @@ function App() {
     );
   }
 
-  // مصفوفة إيميلات الأدمن
-  const adminEmails = ['mahmoud1262008tito@gmail.com', 'fathy@tito.com'];
-  const isAdmin = user && adminEmails.includes(user.email?.toLowerCase());
-
   return (
     <Router>
-      <AppLayout user={user}>
+      <AppLayout user={user} isAdmin={isAdmin}>
         <Routes>
-          {/* 1. المسارات العامة (متاحة للكل ولا تسبب ريمكس) */}
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/login" element={<Login />} />
 
-          {/* 2. مسارات الطالب (تأكد من مطابقة path مع روابط الـ Navbar) */}
+          {/* مسارات الطالب */}
           <Route path="/student-dash" element={user ? <StudentDash /> : <Navigate to="/login" />} />
           <Route path="/all-courses" element={user ? <AllCourses /> : <Navigate to="/login" />} />
           <Route path="/highschool" element={user ? <HighSchool /> : <Navigate to="/login" />} />
-          <Route path="/library" element={user ? < library/>: <Navigate to="/login" />} />
+          
+          {/* تصحيح مسار المكتبة */}
+          <Route path="/library" element={user ? <Library /> : <Navigate to="/login" />} />
           
           <Route path="/course/:id" element={user ? <CoursePlayer /> : <Navigate to="/login" />} />
           <Route path="/quiz/:id" element={user ? <QuizSystem /> : <Navigate to="/login" />} />
@@ -79,20 +82,15 @@ function App() {
           <Route path="/activate" element={user ? <ActivationPage /> : <Navigate to="/login" />} />
           <Route path="/religious" element={user ? <Religious /> : <Navigate to="/login" />} />
 
-          {/* 3. مسار الإدارة */}
+          {/* مسار الإدارة - محمي بـ isAdmin */}
           <Route 
             path="/admin" 
             element={isAdmin ? <AdminDash /> : <Navigate to="/" />} 
           />
-
-          {/* 4. معالج الروابط الخطأ (قم بتعطيله مؤقتاً إذا استمرت المشكلة للتجربة) */}
-          {/* <Route path="*" element={<Navigate to="/" />} /> */}
         </Routes>
       </AppLayout>
     </Router>
   );
 }
 
-
 export default App;
-
