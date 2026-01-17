@@ -10,6 +10,7 @@ import { auth } from './firebase';
 import { signOut } from 'firebase/auth';
 import './components/Navbar.css';
 
+
 const Navbar = ({ userData, isAdmin }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -110,6 +111,7 @@ const Navbar = ({ userData, isAdmin }) => {
 };
 
 export default Navbar;
+
 
 
 
