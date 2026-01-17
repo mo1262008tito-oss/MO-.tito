@@ -6,11 +6,10 @@ import {
   Sparkles, LogIn, User, Wallet 
 } from 'lucide-react';
 
-
-import { auth } from '../firebase';
+// المسارات المصححة للعمل من داخل مجلد components
+import { auth } from '../firebase'; // نقطتين للخروج للمجلد الرئيسي
 import { signOut } from 'firebase/auth';
-import './components/Navbar.css'; // تأكد أن هذا المسار صحيح بالنسبة لمكان الملف الحالي
-
+import './Navbar.css'; // نقطة واحدة لأن الملف بجانبك تماماً
 
 const Navbar = ({ userData, isAdmin }) => {
   const navigate = useNavigate();
@@ -102,5 +101,6 @@ const Navbar = ({ userData, isAdmin }) => {
 };
 
 export default Navbar;
+
 
 
