@@ -1,263 +1,534 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { db, auth, rtdb } from '../firebase';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { db, auth } from '../firebase';
 import { 
-  collection, getDocs, query, orderBy, limit, doc, onSnapshot, getDoc,
-  updateDoc, increment, serverTimestamp, writeBatch 
+  collection, getDocs, query, orderBy, limit, 
+  doc, onSnapshot, where, updateDoc, increment,
+  addDoc, serverTimestamp, getDoc
 } from 'firebase/firestore';
-import { ref, set, onDisconnect } from "firebase/database";
-import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useSpring, useTransform } from 'framer-motion';
 import { 
   GraduationCap, BookOpen, PlayCircle, Shield, 
-  ChevronLeft, Star, Search, Filter, Sparkles,
-  Clock, Award, Flame, Zap, Trophy, Wallet, 
-  PlusCircle, CheckCircle2, AlertCircle, Menu, X, 
-  MessageSquare, Info, Lock, BarChart3, ArrowRightCircle
+  ChevronLeft, Star, Users, Layout, Search, Filter,
+  Clock, Award, Flame, Zap, LayoutDashboard,
+  Trophy, Bell, History, ArrowRightCircle, Sparkles,
+  Wallet, BellDot, PlusCircle, CheckCircle2, AlertCircle,
+  Menu, X, Share2, Heart, MessageSquare, Info,
+  Settings, LogOut, CreditCard, BookText, School,
+  Target, Rocket, Headphones, PenTool, Monitor
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import './HighSchool.css'; 
 
+/**
+ * @component MAFA_Universal_Portal_v2
+ * @description نظام الإدارة التعليمي المتكامل - يدعم جميع المراحل التعليمية بتقنيات الهولوغرام
+ */
 const HighSchool = () => {
   const navigate = useNavigate();
+  const scrollRef = useRef(null);
+  
+  // --- 1. إدارة الحالات (State Management) ---
   const [userData, setUserData] = useState(null);
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
+  const [topStudents, setTopStudents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('الكل'); 
   const [searchTerm, setSearchTerm] = useState('');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [showWalletModal, setShowWalletModal] = useState(false);
-  const [rechargeCode, setRechargeCode] = useState('');
-  const [studentNote, setStudentNote] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  
-  // حالات الفلترة الجديدة
-  const [selectedLevel, setSelectedLevel] = useState('all');
   const [sortBy, setSortBy] = useState('latest');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotificationPanel, setShowNotificationPanel] = useState(false);
+  
+  // الحالة الجديدة للمراحل التعليمية
+  const [educationStage, setEducationStage] = useState('ثانوي'); // ابتدائي | اعدادي | ثانوي
+  const [currentGrade, setCurrentGrade] = useState('الكل');
 
+  // --- 2. التحكم في المؤثرات البصرية (Advanced Framer Motion) ---
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
+  const opacityHero = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
 
-  const educationLevels = [
-    { id: 'all', label: 'الكل' },
-    { id: 'primary', label: 'الابتدائي' },
-    { id: 'prep', label: 'الإعدادي' },
-    { id: 'secondary', label: 'الثانوي' },
-    { id: 'reviews', label: 'مراجعات' }
-  ];
-
-  // --- 1. نظام الحماية والرادار ---
+  // --- 3. نظام الحماية (Security System) ---
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    const presenceRef = ref(rtdb, `status/${user.uid}`);
-    set(presenceRef, { state: 'online', last_changed: serverTimestamp(), name: user.displayName || 'طالب' });
-    onDisconnect(presenceRef).set({ state: 'offline', last_changed: serverTimestamp() });
-
-    const unsubUser = onSnapshot(doc(db, "users", user.uid), (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        if (data.status === 'LOCKED') {
-          auth.signOut();
-          navigate('/login?error=account_locked');
-        }
-        setUserData({ id: snap.id, ...data });
-        setStudentNote(data.personalNotes || '');
-      }
-    });
-
+    const handleContextMenu = (e) => e.preventDefault();
     const handleKeyDown = (e) => {
-      if (e.ctrlKey && (e.key === 'u' || e.key === 'i' || e.key === 'j')) {
-        e.preventDefault();
-        alert("نظام تيتان: محاولة وصول غير مصرح بها.");
-      }
+      if (e.ctrlKey && (e.key === 'u' || e.key === 's' || e.key === 'p')) e.preventDefault();
     };
-    window.addEventListener('keydown', handleKeyDown);
-
+    
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('keydown', handleKeyDown);
+    
     return () => {
-      unsubUser();
-      set(presenceRef, { state: 'offline' });
-      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [navigate]);
-
-  // --- 2. جلب المحتوى والفلترة الذكية ---
-  useEffect(() => {
-    const fetchContent = async () => {
-      setLoading(true);
-      try {
-        const q = query(collection(db, "courses_metadata"), orderBy("createdAt", "desc"));
-        const snap = await getDocs(q);
-        const fetched = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        setCourses(fetched);
-      } catch (err) { console.error(err); }
-      finally { setLoading(false); }
-    };
-    fetchContent();
   }, []);
 
-  // محرك الفلترة (يحدث تلقائياً عند تغيير البحث أو المرحلة)
+  // --- 4. مزامنة بيانات المستخدم والاشعارات (Real-time Engine) ---
   useEffect(() => {
-    let result = [...courses];
-    if (selectedLevel !== 'all') {
-      result = result.filter(c => c.level === selectedLevel);
-    }
-    if (searchTerm) {
-      result = result.filter(c => c.title.toLowerCase().includes(searchTerm.toLowerCase()));
-    }
-    setFilteredCourses(result);
-  }, [selectedLevel, searchTerm, courses]);
+    let unsubscribeUser = () => {};
+    let unsubscribeNotif = () => {};
 
-  // --- 3. العمليات (شحن وحفظ) ---
-  const handleRecharge = async () => {
-    if (!rechargeCode || isProcessing) return;
-    setIsProcessing(true);
-    try {
-      const codeRef = doc(db, "prepaid_codes", rechargeCode);
-      const codeSnap = await getDoc(codeRef);
-      if (!codeSnap.exists() || codeSnap.data().isUsed) throw new Error("الكود غير صالح");
+    const syncData = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
 
-      const batch = writeBatch(db);
-      batch.update(doc(db, "users", auth.currentUser.uid), {
-        balance: increment(codeSnap.data().amount),
-        points: increment(50)
+      // مزامنة الملف الشخصي
+      unsubscribeUser = onSnapshot(doc(db, "users", user.uid), (snap) => {
+        if (snap.exists()) {
+          setUserData({ id: snap.id, ...snap.data() });
+        }
       });
-      batch.update(codeRef, { isUsed: true, usedBy: auth.currentUser.uid });
-      await batch.commit();
-      alert("تم الشحن بنجاح!");
-      setShowWalletModal(false);
-    } catch (e) { alert(e.message); }
-    finally { setIsProcessing(false); }
-  };
 
-  const saveNote = async () => {
+      // مزامنة الاشعارات
+      const nQuery = query(
+        collection(db, "notifications"),
+        where("userId", "==", user.uid),
+        orderBy("createdAt", "desc"),
+        limit(10)
+      );
+      unsubscribeNotif = onSnapshot(nQuery, (snap) => {
+        setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      });
+    };
+
+    syncData();
+    return () => { unsubscribeUser(); unsubscribeNotif(); };
+  }, []);
+
+  // --- 5. جلب البيانات بناءً على المرحلة (Data Fetching) ---
+  const fetchEducationData = useCallback(async () => {
+    setLoading(true);
     try {
-      await updateDoc(doc(db, "users", auth.currentUser.uid), { personalNotes: studentNote });
-      alert("تم الحفظ بالسحابة ☁️");
-    } catch (e) { alert("فشل الحفظ"); }
+      // جلب الكورسات بناءً على التعليم (ثانوي/اعدادي/ابتدائي)
+      const q = query(
+        collection(db, "courses_metadata"),
+        where("stage", "==", educationStage),
+        orderBy("createdAt", "desc")
+      );
+      
+      const snap = await getDocs(q);
+      const data = snap.docs.map(d => ({
+        id: d.id,
+        ...d.data(),
+        rating: d.data().rating || (Math.random() * 2 + 3).toFixed(1),
+        studentsCount: d.data().studentsCount || Math.floor(Math.random() * 500) + 50
+      }));
+      
+      setCourses(data);
+      setFilteredCourses(data);
+
+      // جلب لوحة الصدارة للمرحلة الحالية
+      const leaderQ = query(
+        collection(db, "users"),
+        where("stage", "==", educationStage),
+        orderBy("points", "desc"),
+        limit(5)
+      );
+      const leaderSnap = await getDocs(leaderQ);
+      setTopStudents(leaderSnap.docs.map(d => d.data()));
+
+    } catch (error) {
+      console.error("Fetch Error:", error);
+    } finally {
+      setTimeout(() => setLoading(false), 1200);
+    }
+  }, [educationStage]);
+
+  useEffect(() => {
+    fetchEducationData();
+  }, [fetchEducationData]);
+
+  // --- 6. نظام الفلترة والبحث الذكي (Filtering System) ---
+  useEffect(() => {
+    let result = courses.filter(c => {
+      const matchSearch = c.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          c.instructor?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchGrade = activeTab === 'الكل' || c.grade === activeTab;
+      return matchSearch && matchGrade;
+    });
+
+    if (sortBy === 'popular') result.sort((a, b) => b.studentsCount - a.studentsCount);
+    if (sortBy === 'rating') result.sort((a, b) => b.rating - a.rating);
+
+    setFilteredCourses(result);
+  }, [searchTerm, activeTab, courses, sortBy]);
+
+  // --- 7. دوال التفاعل (Interaction Handlers) ---
+  const handleStageChange = (stage) => {
+    setEducationStage(stage);
+    setActiveTab('الكل');
   };
 
-  if (loading) return <div className="mafa-loading-screen"><Zap className="spin-icon" /></div>;
+  const toggleLike = async (courseId, e) => {
+    e.stopPropagation();
+    // هنا يوضع منطق Firebase للـ Like
+    console.log("Liked:", courseId);
+  };
+
+  // --- 8. مكونات UI الفرعية (Sub-components) ---
+  const Sidebar = () => (
+    <motion.aside 
+      initial={{ x: 300 }} 
+      animate={{ x: 0 }} 
+      exit={{ x: 300 }}
+      className="portal-sidebar glass-heavy"
+    >
+      <div className="sidebar-header">
+        <Zap size={30} className="text-cyan-400" />
+        <h3>MAFA System</h3>
+        <X onClick={() => setIsSidebarOpen(false)} />
+      </div>
+      <nav className="sidebar-nav">
+        <div className="nav-group">
+          <span>الرئيسية</span>
+          <button onClick={() => navigate('/dashboard')}><LayoutDashboard size={18}/> لوحة التحكم</button>
+          <button onClick={() => navigate('/courses')} className="active"><BookOpen size={18}/> دوراتي التعليمية</button>
+        </div>
+        <div className="nav-group">
+          <span>الأدوات</span>
+          <button onClick={() => navigate('/exams')}><PenTool size={18}/> بنك الامتحانات</button>
+          <button onClick={() => navigate('/library')}><Monitor size={18}/> المكتبة الرقمية</button>
+          <button onClick={() => navigate('/ai-chat')}><Sparkles size={18}/> مساعد AI</button>
+        </div>
+        <div className="nav-group">
+          <span>الحساب</span>
+          <button onClick={() => navigate('/wallet')}><Wallet size={18}/> المحفظة</button>
+          <button onClick={() => navigate('/settings')}><Settings size={18}/> الإعدادات</button>
+        </div>
+      </nav>
+      <div className="sidebar-footer">
+        <button className="logout-btn"><LogOut size={18}/> تسجيل الخروج</button>
+      </div>
+    </motion.aside>
+  );
+
+  // --- 9. شاشة التحميل المطورة ---
+  if (loading) return (
+    <div className="mafa-loader-v2">
+      <div className="loader-content">
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="main-icon"
+        >
+          <Zap size={50} />
+        </motion.div>
+        <div className="loading-bar">
+          <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 1 }} className="fill" />
+        </div>
+        <p>جاري تحميل محتوى {educationStage}...</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="edu-portal-root rtl" onContextMenu={e => e.preventDefault()}>
-      <motion.div className="scroll-progress-bar" style={{ scaleX }} />
-
-      {/* العلامة المائية */}
-      <div className="security-layer">
-        <motion.div animate={{ x: [0, 200, 0], y: [0, 100, 0] }} transition={{ duration: 15, repeat: Infinity }} className="watermark-text">
-          {userData?.name} - {userData?.phone}
-        </motion.div>
+    <div className={`portal-container stage-${educationStage}`} ref={scrollRef}>
+      <motion.div className="scroll-progress" style={{ scaleX }} />
+      
+      {/* طبقة الحماية - العلامة المائية */}
+      <div className="security-overlay">
+        <span>{userData?.email}</span>
+        <span>{new Date().toLocaleDateString()}</span>
+        <span>MAFA-PROTECT-V2</span>
       </div>
 
-      <header className="portal-header glass">
+      <AnimatePresence>
+        {isSidebarOpen && <Sidebar />}
+      </AnimatePresence>
+
+      {/* 🧭 الهيدر العلوي - Floating Navbar */}
+      <header className="main-header glass-premium">
         <div className="header-left">
-          <Menu size={24} onClick={() => setIsSidebarOpen(true)} />
-          <div className="brand"><Zap size={28} /> <span>TITAN v2.0</span></div>
-        </div>
-        <div className="header-actions">
-          <div className="wallet-action" onClick={() => setShowWalletModal(true)}>
-            <Wallet size={18} /> <span>{userData?.balance || 0} ج.م</span>
+          <button className="menu-btn" onClick={() => setIsSidebarOpen(true)}>
+            <Menu />
+          </button>
+          <div className="logo" onClick={() => navigate('/')}>
+            <div className="logo-icon"><Rocket /></div>
+            <div className="logo-text">MAFA<span>ACADEMY</span></div>
           </div>
-          <img className="user-avatar" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userData?.name}`} alt="avatar" />
+        </div>
+
+        <div className="stage-selector glass">
+          {['ابتدائي', 'اعدادي', 'ثانوي'].map(s => (
+            <button 
+              key={s} 
+              className={educationStage === s ? 'active' : ''}
+              onClick={() => handleStageChange(s)}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
+        <div className="header-right">
+          <div className="user-stats glass" onClick={() => navigate('/wallet')}>
+            <div className="stat">
+               <Wallet size={16} />
+               <span>{userData?.balance || 0} ج.م</span>
+            </div>
+            <div className="stat">
+               <Flame size={16} />
+               <span>{userData?.streak || 0}</span>
+            </div>
+          </div>
+
+          <div className="notification-bell" onClick={() => setShowNotificationPanel(!showNotificationPanel)}>
+            <Bell />
+            {notifications.filter(n => !n.read).length > 0 && <span className="badge" />}
+          </div>
+
+          <div className="profile-trigger" onClick={() => navigate('/profile')}>
+            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userData?.name}`} alt="user" />
+            <div className="online-indicator" />
+          </div>
         </div>
       </header>
 
-      <main className="portal-content">
-        {/* البانر الترحيبي */}
-        <section className="hero-banner-v4">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hero-welcome-card glass-premium">
-            <div className="streak-pill"><Flame size={18} /> {userData?.streak || 0} يوم حماس</div>
-            <h1>مرحباً، <span className="name-gradient">{userData?.name}</span></h1>
-            <div className="search-box-v2">
+      {/* 🚀 قسم الهيرو والترحيب */}
+      <section className="hero-section">
+        <motion.div style={{ opacity: opacityHero }} className="hero-bg-effects">
+          <div className="blob blob-1" />
+          <div className="blob blob-2" />
+        </motion.div>
+
+        <div className="hero-grid">
+          <motion.div 
+            initial={{ x: 100, opacity: 0 }} 
+            animate={{ x: 0, opacity: 1 }}
+            className="hero-welcome"
+          >
+            <div className="badge-pill"><Sparkles size={14}/> نظام التعلم الذكي v2.0</div>
+            <h1>أهلاً بك يا <span className="name-gradient">{userData?.name?.split(' ')[0] || 'طالبنا'}</span></h1>
+            <p>أنت الآن تتصفح مناهج المرحلة <strong>{educationStage}</strong>. لديك اليوم {filteredCourses.length} كورسات متاحة ومهمة واحدة متبقية.</p>
+            
+            <div className="hero-search-bar glass">
               <Search />
-              <input type="text" placeholder="ماذا تريد أن تتعلم اليوم؟" onChange={(e) => setSearchTerm(e.target.value)} />
+              <input 
+                type="text" 
+                placeholder="ابحث عن مادة، مدرس، أو درس معين..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <button className="btn-primary">بحث سريع</button>
             </div>
-            <div className="stats-row">
-              <div className="stat-unit"><Zap /><span className="val">{userData?.points}</span><span className="lab">نقطة</span></div>
-              <div className="stat-unit"><Trophy /><span className="val">#{userData?.rank || '--'}</span><span className="lab">ترتيبي</span></div>
+
+            <div className="quick-info">
+              <div className="info-item">
+                <Target />
+                <span>هدف اليوم: 4 ساعات مذاكرة</span>
+              </div>
+              <div className="info-item">
+                <Award />
+                <span>المستوى الحالي: {userData?.level || 'مبتدئ'}</span>
+              </div>
             </div>
           </motion.div>
-        </section>
 
-        {/* تصفية المراحل الدراسية */}
-        <div className="discovery-header">
-          <div className="levels-pills">
-            {educationLevels.map((level) => (
-              <button key={level.id} className={`pill-btn ${selectedLevel === level.id ? 'active' : ''}`} onClick={() => setSelectedLevel(level.id)}>
-                {level.label}
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }} 
+            animate={{ scale: 1, opacity: 1 }}
+            className="hero-leaderboard glass"
+          >
+            <div className="l-head">
+              <Trophy className="text-yellow-400" />
+              <h3>أوائل المرحلة {educationStage}</h3>
+            </div>
+            <div className="l-body">
+              {topStudents.map((s, i) => (
+                <div key={i} className="l-row">
+                  <span className="rank">#{i+1}</span>
+                  <img src={`https://api.dicebear.com/initials/svg?seed=${s.name}`} alt="" />
+                  <div className="details">
+                    <p>{s.name}</p>
+                    <span>{s.points} XP</span>
+                  </div>
+                  {i === 0 && <Sparkles size={16} className="crown" />}
+                </div>
+              ))}
+            </div>
+            <button className="view-all" onClick={() => navigate('/leaderboard')}>
+              عرض القائمة الكاملة <ArrowRightCircle size={16} />
+            </button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 📚 قسم المحتوى التعليمي */}
+      <main className="content-area">
+        <div className="content-filters">
+          <div className="tabs glass">
+            {['الكل', 'الصف الأول', 'الصف الثاني', 'الصف الثالث', 'مراجعات نهائية'].map(tab => (
+              <button 
+                key={tab} 
+                className={activeTab === tab ? 'active' : ''}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+                {activeTab === tab && <motion.div layoutId="tab-underline" className="underline" />}
               </button>
             ))}
           </div>
-        </div>
 
-        {/* شبكة المحاضرات */}
-        <section className="courses-section">
-          <div className="filters-row">
-            <h3>المحاضرات المتاحة ({filteredCourses.length})</h3>
-            <select className="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-              <option value="latest">الأحدث</option>
+          <div className="sort-box glass">
+            <Filter size={18} />
+            <select onChange={(e) => setSortBy(e.target.value)}>
+              <option value="latest">المضاف حديثاً</option>
+              <option value="popular">الأكثر تفاعلاً</option>
               <option value="rating">الأعلى تقييماً</option>
             </select>
           </div>
+        </div>
 
-          <div className="courses-grid">
-            <AnimatePresence mode="popLayout">
-              {filteredCourses.map((course) => (
-                <motion.div layout initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} key={course.id} className="course-card-v4 glass-card" onClick={() => navigate(`/course/${course.id}`)}>
+        <section className="courses-grid">
+          <AnimatePresence mode="popLayout">
+            {filteredCourses.length > 0 ? (
+              filteredCourses.map((course, idx) => (
+                <motion.div
+                  key={course.id}
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="course-card-premium glass"
+                  onClick={() => navigate(`/course/${course.id}`)}
+                >
                   <div className="card-thumb">
-                    <img src={course.thumbnail} alt="" />
-                    <div className="level-badge">{course.grade}</div>
-                    {course.isLocked && <div className="lock-overlay"><Lock /></div>}
-                  </div>
-                  <div className="card-content">
-                    <h3>{course.title}</h3>
-                    <div className="prog-container">
-                      <div className="prog-bar-bg"><div className="prog-bar-fill" style={{ width: `${course.progress}%` }} /></div>
+                    <img src={course.thumbnail} alt={course.title} />
+                    <div className="overlay-tags">
+                      <span className="tag-grade">{course.grade}</span>
+                      <span className="tag-type">{course.category || 'فيديو'}</span>
                     </div>
-                    <button className="enroll-btn-v2">استكمال التعلم <ArrowRightCircle size={18}/></button>
+                    <div className="play-overlay">
+                      <PlayCircle size={50} />
+                    </div>
+                  </div>
+
+                  <div className="card-info">
+                    <div className="inst-meta">
+                      <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${course.instructor}`} alt="" />
+                      <span>{course.instructor}</span>
+                    </div>
+                    <h3>{course.title}</h3>
+                    
+                    <div className="stats-row">
+                      <div className="stat"><Users size={14}/> {course.studentsCount}</div>
+                      <div className="stat"><Star size={14} className="star-icon"/> {course.rating}</div>
+                      <div className="stat"><Clock size={14}/> {course.duration || '10س'}</div>
+                    </div>
+
+                    <div className="progress-section">
+                      <div className="prog-text">
+                        <span>نسبة الإكمال</span>
+                        <span>{course.progress || 0}%</span>
+                      </div>
+                      <div className="prog-bar">
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${course.progress || 0}%` }}
+                          className="prog-fill" 
+                        />
+                      </div>
+                    </div>
+
+                    <div className="card-actions">
+                      <button className="enroll-btn">إبدأ التعلم الآن</button>
+                      <button className="like-btn" onClick={(e) => toggleLike(course.id, e)}>
+                        <Heart size={18} />
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+              ))
+            ) : (
+              <div className="no-data-state glass">
+                <AlertCircle size={50} />
+                <h2>لا توجد كورسات متاحة حالياً</h2>
+                <p>جرب تغيير فلاتر البحث أو المرحلة التعليمية</p>
+                <button onClick={() => {setSearchTerm(''); setActiveTab('الكل');}} className="btn-secondary">إعادة ضبط</button>
+              </div>
+            )}
+          </AnimatePresence>
         </section>
 
-        {/* الإحصائيات والمفكرة */}
-        <div className="dashboard-footer-grid">
-          <section className="analytics-dashboard glass">
-            <h3><BarChart3 /> نشاطك التعليمي</h3>
-            <div className="analytics-card">
-              <span>نسبة الإنجاز</span>
-              <div className="mini-progress"><div className="fill" style={{width: '68%'}}></div></div>
-            </div>
-          </section>
+        {/* 🛠️ قسم الأدوات المساعدة (Tools) */}
+        <section className="mega-tools-grid">
+           <div className="mega-tool glass-premium" onClick={() => navigate('/exam-center')}>
+              <div className="tool-icon bg-red-500/20 text-red-400"><PenTool /></div>
+              <div className="tool-desc">
+                <h4>مركز الامتحانات</h4>
+                <p>أكثر من 50,000 سؤال بنظام الوزارة الجديد مع تصحيح ذكي.</p>
+                <span className="tool-link">ابدأ الاختبار <ChevronLeft size={16}/></span>
+              </div>
+           </div>
+           
+           <div className="mega-tool glass-premium" onClick={() => navigate('/library')}>
+              <div className="tool-icon bg-purple-500/20 text-purple-400"><BookText /></div>
+              <div className="tool-desc">
+                <h4>المكتبة الشاملة</h4>
+                <p>تحميل الكتب الخارجية، الملخصات، والمذكرات بصيغة PDF.</p>
+                <span className="tool-link">تصفح الكتب <ChevronLeft size={16}/></span>
+              </div>
+           </div>
 
-          <section className="student-notes-section glass">
-            <h3><MessageSquare /> المفكرة الشخصية</h3>
-            <textarea value={studentNote} onChange={(e) => setStudentNote(e.target.value)} placeholder="دون ملاحظاتك هنا..." />
-            <button className="save-note-btn" onClick={saveNote}>حفظ التغييرات</button>
-          </section>
-        </div>
+           <div className="mega-tool glass-premium" onClick={() => navigate('/support')}>
+              <div className="tool-icon bg-cyan-500/20 text-cyan-400"><Headphones /></div>
+              <div className="tool-desc">
+                <h4>الدعم والمساعدة</h4>
+                <p>فريق تقني وتعليمي متواجد 24 ساعة لحل مشكلاتك.</p>
+                <span className="tool-link">تواصل معنا <ChevronLeft size={16}/></span>
+              </div>
+           </div>
+        </section>
       </main>
 
-      {/* مودال الشحن */}
-      <AnimatePresence>
-        {showWalletModal && (
-          <div className="modal-overlay">
-            <motion.div initial={{ y: 50 }} animate={{ y: 0 }} className="wallet-modal glass">
-              <X className="close-modal" onClick={() => setShowWalletModal(false)} />
-              <h3>شحن المحفظة</h3>
-              <input type="text" placeholder="أدخل الكود هنا" onChange={(e) => setRechargeCode(e.target.value)} />
-              <button onClick={handleRecharge} disabled={isProcessing}>تفعيل الآن</button>
-            </motion.div>
+      {/* 🦶 الفوتر العملاق */}
+      <footer className="portal-footer glass-heavy">
+        <div className="f-content">
+          <div className="f-brand">
+             <div className="logo">
+               <Zap size={30} fill="#00f2ff" />
+               <h2>MAFA ACADEMY</h2>
+             </div>
+             <p>نحن نصنع مستقبلك التعليمي بأحدث تقنيات الذكاء الاصطناعي والتعلم التفاعلي. منصة MAFA هي بيتك الثاني للتميز.</p>
+             <div className="social-links">
+                <button><Share2 size={20}/></button>
+                <button><MessageSquare size={20}/></button>
+                <button><Info size={20}/></button>
+             </div>
           </div>
-        )}
-      </AnimatePresence>
 
-      <footer className="portal-footer-v2 glass">
-        <p>جميع الحقوق محفوظة &copy; 2026 | تطوير TITAN-SYSTEM</p>
-        <div className="f-socials"><Shield size={18} /> <Lock size={18} /></div>
+          <div className="f-links-grid">
+             <div className="link-col">
+                <h4>المراحل</h4>
+                <a href="#">الثانوية العامة</a>
+                <a href="#">الشهادة الإعدادية</a>
+                <a href="#">المرحلة الابتدائية</a>
+             </div>
+             <div className="link-col">
+                <h4>المنصة</h4>
+                <a href="#">من نحن</a>
+                <a href="#">الأسئلة الشائعة</a>
+                <a href="#">سياسة الخصوصية</a>
+             </div>
+             <div className="link-col">
+                <h4>الدعم</h4>
+                <a href="#">تواصل معنا</a>
+                <a href="#">شحن الرصيد</a>
+                <a href="#">الدعم الفني</a>
+             </div>
+          </div>
+        </div>
+        
+        <div className="f-bottom">
+           <p>جميع الحقوق محفوظة &copy; 2026 | تم التطوير بواسطة <span className="dev-name">TITo-TEC</span></p>
+           <div className="trust-badges">
+              <Shield size={16} /> مؤمن بواسطة MAFA-SHIELD
+           </div>
+        </div>
       </footer>
     </div>
   );
