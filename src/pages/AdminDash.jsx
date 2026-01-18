@@ -1,18 +1,75 @@
 import { db, rtdb, auth } from "../firebase";
-import { collection, query, where, getDocs, increment, writeBatch } from "firebase/firestore";
+import { 
+  collection, 
+  query, 
+  where, 
+  getDocs, 
+  getDoc, // مفقود سابقاً
+  doc,    // مفقود سابقاً
+  updateDoc, // مفقود سابقاً
+  addDoc,    // مفقود سابقاً
+  setDoc,    // مفقود سابقاً
+  increment, 
+  writeBatch,
+  serverTimestamp // مفقود سابقاً
+} from "firebase/firestore";
+import { ref, set, onValue, update } from "firebase/database"; // مفقود سابقاً للـ Realtime
 
 // 1. نظام الحماية الشامل (The Fortress Shield)
 export const SecurityShield = {
-  // بصمة المتصفح المتقدمة
+  // بصمة المتصفح المتقدمة + التحقق من الجلسة النشطة
   verifyDevice: async (studentId, fingerprint) => {
     const userRef = doc(db, "users", studentId);
     const snap = await getDoc(userRef);
-    if (snap.exists() && snap.data().deviceId !== fingerprint) {
-      // حظر تلقائي إذا حاول الدخول من جهاز ثانٍ
-      await updateDoc(userRef, { status: 'LOCKED', lastViolation: 'MULTI_DEVICE' });
-      throw new Error("SECURITY_ERR_DEVICE_LIMIT");
+
+    if (snap.exists()) {
+      const userData = snap.data();
+
+      // أ- التحقق من ربط الجهاز (Device Binding)
+      if (userData.deviceId && userData.deviceId !== fingerprint) {
+        // حظر تلقائي مؤقت وإرسال إشعار للمدير
+        await updateDoc(userRef, { 
+          status: 'LOCKED', 
+          lastViolation: 'MULTI_DEVICE_ATTEMPT',
+          violationTime: serverTimestamp()
+        });
+        throw new Error("SECURITY_ERR_DEVICE_LIMIT");
+      }
+
+      // ب- إذا كان الطالب يسجل لأول مرة، نربط جهازه الحساب
+      if (!userData.deviceId) {
+        await updateDoc(userRef, { deviceId: fingerprint });
+      }
+
+      // ج- منع فتح الحساب في تبويبين أو متصفحين مختلفين (Session Lock)
+      const sessionRef = ref(rtdb, `active_sessions/${studentId}`);
+      set(sessionRef, {
+        lastActive: Date.now(),
+        fingerprint: fingerprint,
+        status: 'online'
+      });
     }
   },
+
+  // رصد برامج تسجيل الشاشة أو محاولات الاختراق
+  reportSecurityIncident: async (studentId, incidentType, details = {}) => {
+    // 1. تسجيل الحادثة في الأرشيف للتحقيق
+    await addDoc(collection(db, "security_incidents"), {
+      studentId,
+      incident: incidentType, // مثل: 'SCREEN_RECORD' أو 'TAB_SWITCH'
+      details,
+      timestamp: serverTimestamp()
+    });
+
+    // 2. إغلاق الجلسة فوراً (Kill Switch)
+    const sessionRef = ref(rtdb, `active_sessions/${studentId}`);
+    await update(sessionRef, { kill: true, reason: incidentType });
+
+    // 3. قفل حساب الطالب في Firestore لمنعه من تسجيل الدخول مرة أخرى
+    const userRef = doc(db, "users", studentId);
+    await updateDoc(userRef, { status: 'SUSPENDED' });
+  }
+};
 
   // رصد برامج تسجيل الشاشة
   reportScreenCapture: async (studentId, softwareName) => {
@@ -917,3 +974,4 @@ const StudentHub = () => {
   );
 };
 export default AdminDash;
+
