@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { db, auth, storage } from './firebase';
+// 1. تصحيح المسار للعودة لمجلد src الرئيسي
+import { db, auth, storage } from '../firebase'; 
 import { 
   doc, onSnapshot, updateDoc, increment, collection, addDoc, 
   getDoc, runTransaction, query, where, orderBy, limit 
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-
 
 import { 
   ShieldCheck, Wallet as WalletIcon, ArrowRightLeft, Lock, Plus, 
@@ -19,73 +19,73 @@ import {
 } from 'lucide-react';
 import './Wallet.css';
 
-
 const Wallet = () => {
-  // --- States: البنية التحتية للنظام ---
+  // --- States ---
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('dashboard'); // dashboard, recharge, p2p, vault, analytics
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [showBalance, setShowBalance] = useState(true);
   const [isVaultLocked, setIsVaultLocked] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [notifications, setNotifications] = useState([]);
   const [transactions, setTransactions] = useState([]);
-  
-  // --- States: النماذج والبيانات ---
   const [rechargeForm, setRechargeForm] = useState({ amount: '', phone: '', img: null, method: 'voda' });
   const [transferForm, setTransferForm] = useState({ id: '', amount: '', note: '' });
   const [vaultPass, setVaultPass] = useState('');
-const [activeModal, setActiveModal] = useState(null); // للتحكم في ظهور نافذة "اطلب من أهلك"
-  // 1. مراقبة البيانات الحية (Real-time Engine)
+  const [activeModal, setActiveModal] = useState(null);
+
+  // --- 1. مراقبة البيانات الحية مع حماية ضد الـ Null ---
   useEffect(() => {
-    if (!auth.currentUser) return;
+    // مراقبة حالة تسجيل الدخول أولاً
+    const unsubscribeAuth = auth.onAuthStateChanged((currentUser) => {
+      if (currentUser) {
+        // جلب بيانات المستخدم
+        const unsubUser = onSnapshot(doc(db, 'users', currentUser.uid), (snap) => {
+          if (snap.exists()) setUser(snap.data());
+        });
 
-    // جلب بيانات المستخدم كاملة
-    const unsubUser = onSnapshot(doc(db, 'users', auth.currentUser.uid), (snap) => {
-      if (snap.exists()) setUser(snap.data());
+        // جلب العمليات المالية
+        const qTrans = query(
+          collection(db, 'transactions'),
+          where('userId', '==', currentUser.uid),
+          orderBy('date', 'desc'),
+          limit(8)
+        );
+        const unsubTrans = onSnapshot(qTrans, (snap) => {
+          setTransactions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        });
+
+        return () => { unsubUser(); unsubTrans(); };
+      }
     });
 
-    // جلب آخر عمليات مالية
-    const qTrans = query(
-      collection(db, 'transactions'),
-      where('userId', '==', auth.currentUser.uid),
-      orderBy('date', 'desc'),
-      limit(8)
-    );
-    const unsubTrans = onSnapshot(qTrans, (snap) => {
-      setTransactions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-
-    return () => { unsubUser(); unsubTrans(); };
+    return () => unsubscribeAuth();
   }, []);
 
-  // 2. ميزة (17): نظام بورصة النقاط (Points Exchange)
+  // --- 2. نظام بورصة النقاط ---
   const handlePointsConversion = async () => {
-    if (user?.points < 100) return alert("عذراً، أقل كمية للتحويل هي 100 نقطة");
+    if (!user?.points || user.points < 100) return alert("عذراً، أقل كمية للتحويل هي 100 نقطة");
     setLoading(true);
     try {
-      const cashAmount = user.points / 10; // كل 10 نقاط بجنيه
+      const cashAmount = user.points / 10;
       await updateDoc(doc(db, 'users', auth.currentUser.uid), {
         balance: increment(cashAmount),
         points: 0
       });
-      // تسجيل العملية
       await addDoc(collection(db, 'transactions'), {
         userId: auth.currentUser.uid,
-        title: "تحويل نقاط لتجارة رصيد",
+        title: "تحويل نقاط لرصيد",
         amount: cashAmount,
         type: 'deposit',
         date: new Date()
       });
-      alert(`مبروك! تم إضافة ${cashAmount} ج.م لمحفظتك بنجاح.`);
+      alert(`مبروك! تم إضافة ${cashAmount} ج.م لمحفظتك.`);
     } catch (e) { console.error(e); }
     setLoading(false);
   };
 
-  // 3. ميزة (6): نظام السلفة التعليمية (Emergency Credit)
+  // --- 3. نظام السلفة التعليمية ---
   const handleRequestCredit = async () => {
-    if (user?.balance > 5) return alert("السلفة متاحة فقط في حالات الطوارئ (الرصيد أقل من 5 ج.م)");
+    if (user?.balance > 5) return alert("السلفة متاحة فقط إذا كان رصيدك أقل من 5 ج.م");
     if (user?.hasActiveCredit) return alert("لديك سلفة حالية لم تسددها بعد.");
-    
     setLoading(true);
     try {
       await updateDoc(doc(db, 'users', auth.currentUser.uid), {
@@ -93,84 +93,99 @@ const [activeModal, setActiveModal] = useState(null); // للتحكم في ظه�
         hasActiveCredit: true,
         creditAmount: 20
       });
-      alert("تم إضافة 20 ج.م سلفة تعليمية لحسابك. سيتم خصمها من أول عملية شحن قادمة.");
+      alert("تم إضافة 20 ج.م سلفة طوارئ.");
     } catch (e) { console.error(e); }
     setLoading(false);
   };
 
-  // 4. ميزة (2): نظام الخزنة الذكية (The Vault)
+  // --- 4. نظام الخزنة الذكية ---
   const toggleVaultStatus = () => {
     if (isVaultLocked) {
-      const entry = prompt("أدخل كلمة سر الخزنة السرية:");
+      const entry = prompt("أدخل كلمة سر الخزنة:");
       if (entry === user?.vaultPassword) setIsVaultLocked(false);
-      else alert("كلمة سر خاطئة! حاول مجدداً.");
+      else alert("كلمة سر خاطئة!");
     } else {
       setIsVaultLocked(true);
     }
   };
-  
-// 5. ميزة (3): تحدي التعليمي (Education Staking)
-const startStudyChallenge = async (opponentId, betAmount) => {
-  if (user?.balance < betAmount) return alert("رصيدك لا يكفي لدخول التحدي");
-  setLoading(true);
-  try {
-    await addDoc(collection(db, 'challenges'), {
-      challengerId: auth.currentUser.uid,
-      opponentId: opponentId,
-      amount: betAmount,
-      status: 'waiting', // ينتظر موافقة الطرف الآخر
-      deadline: new Date(Date.now() + 24 * 60 * 60 * 1000) // تحدي لمدة 24 ساعة
-    });
-    alert("تم إرسال التحدي لصديقك! سيتم خصم المبلغ عند موافقته.");
-  } catch (e) { console.error(e); }
-  setLoading(false);
-};
 
-// 6. ميزة (2): الإيداع والسحب من الخزنة (Vault Movement)
-const moveMoneyToVault = async (amount) => {
-  if (user?.balance < amount) return alert("الرصيد المتاح غير كافٍ");
-  try {
-    await updateDoc(doc(db, 'users', auth.currentUser.uid), {
-      balance: increment(-amount),
-      vaultBalance: increment(amount)
-    });
-    alert("تم تأمين المبلغ داخل الخزنة السرية بنجاح 🔒");
-  } catch (e) { console.error(e); }
-};
-
-// 7. ميزة (16): توليد فاتورة PDF (بشكل مبسط برمجياً)
-const downloadInvoice = (transId) => {
-  alert(`جاري تجهيز الفاتورة رقم ${transId.slice(0,8)} بصيغة PDF...`);
-  // هنا يمكن ربط مكتبة jsPDF لاحقاً
-};
-
-  // دالة تأكيد الشحن (داخل المكون)
+  // --- 5. تأكيد الشحن (ربط فعلي بـ Firebase Storage) ---
   const handleConfirmPayment = async () => {
-    if (!rechargeForm.amount || !rechargeForm.phone) {
-      return alert("يرجى إدخال المبلغ ورقم الهاتف");
+    if (!rechargeForm.amount || !rechargeForm.img) {
+      return alert("يرجى إدخال المبلغ ورفع صورة التحويل");
     }
     setLoading(true);
     try {
-      // هنا يوضع منطق Firebase Storage لرفع الصورة
-      alert("تم إرسال طلبك للأدمن بنجاح ✅");
+      // رفع الصورة
+      const storageRef = ref(storage, `receipts/${auth.currentUser.uid}_${Date.now()}`);
+      await uploadBytes(storageRef, rechargeForm.img);
+      const photoURL = await getDownloadURL(storageRef);
+
+      // تسجيل الطلب للأدمن
+      await addDoc(collection(db, 'rechargeRequests'), {
+        userId: auth.currentUser.uid,
+        userName: user?.name,
+        amount: Number(rechargeForm.amount),
+        phone: rechargeForm.phone,
+        screenshot: photoURL,
+        status: 'pending',
+        date: new Date()
+      });
+
+      alert("تم إرسال طلب الشحن للمراجعة ✅");
       setActiveTab('dashboard');
-    } catch (e) {
-      console.error("Error:", e);
-    }
+    } catch (e) { alert("فشل الإرسال: " + e.message); }
     setLoading(false);
   };
+// --- 6. نظام التحويل P2P (المصحح) ---
+const handleP2PTransfer = async () => {
+  const amount = Number(transferForm.amount);
+  if (!transferForm.id || amount <= 0) return alert("بيانات التحويل غير مكتملة");
+  if (user?.balance < amount) return alert("رصيدك غير كافٍ");
+  if (transferForm.id === auth.currentUser.uid) return alert("لا يمكنك التحويل لنفسك!");
 
-  // دالة التحويل (داخل المكون)
-  const handleP2PTransfer = async () => {
-    if (!transferForm.id || !transferForm.amount) {
-      return alert("يرجى إدخال معرف الطالب والمبلغ");
+  setLoading(true);
+  try {
+    const recipientRef = doc(db, 'users', transferForm.id);
+    const recipientSnap = await getDoc(recipientRef);
+
+    if (!recipientSnap.exists()) {
+      throw new Error("معرف الطالب غير موجود");
     }
-    setLoading(true);
-    // منطق التحويل
-    setLoading(false);
-  };
 
-  
+    await runTransaction(db, async (transaction) => {
+      const senderRef = doc(db, 'users', auth.currentUser.uid);
+      
+      // إنشاء مرجع لوثيقة العملية الجديدة (بدل addDoc)
+      const transRef = doc(collection(db, 'transactions'));
+
+      transaction.update(senderRef, {
+        balance: increment(-amount)
+      });
+      
+      transaction.update(recipientRef, {
+        balance: increment(amount)
+      });
+
+      // استخدام set داخل الـ transaction
+      transaction.set(transRef, {
+        userId: auth.currentUser.uid,
+        recipientId: transferForm.id,
+        title: `تحويل إلى ${recipientSnap.data().name}`,
+        amount: amount,
+        type: 'withdraw',
+        date: new Date()
+      });
+    });
+
+    alert("تم التحويل بنجاح 💸");
+    setActiveTab('dashboard');
+    setTransferForm({ id: '', amount: '', note: '' }); // تصفير الفورم
+  } catch (e) { 
+    alert("حدث خطأ: " + e.message); 
+  }
+  setLoading(false);
+};
   return (
     <div className="mega-wallet-v4">
       {/* خلفية ديناميكية تفاعلية */}
@@ -200,7 +215,6 @@ const downloadInvoice = (transId) => {
         {/* واجهة التحكم الرئيسية (Dashboard) */}
         {activeTab === 'dashboard' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-
             
             {/* البطاقة البنكية المتطورة (Tier System) */}
             <div className={`card-v4 ${user?.balance > 2000 ? 'tier-diamond' : 'tier-gold'}`}>
@@ -274,14 +288,16 @@ const downloadInvoice = (transId) => {
                 <Star size={18} color="#fbbf24" fill="#fbbf24" />
                 <span>لديك {user?.points || 0} نقطة جاهزة للتحويل</span>
               </div>
-              <button onClick={handlePointsConversion} disabled={loading}>تحويل لرصيد</button>
+              <button onClick={handlePointsConversion} disabled={loading}>
+                {loading ? <RefreshCw className="spin" size={14}/> : "تحويل لرصيد"}
+              </button>
             </div>
 
             {/* سجل النشاط الأخير */}
             <section className="recent-activity-v4">
               <div className="section-head">
                 <h4>النشاط المالي الأخير</h4>
-                <button>مشاهدة الكل</button>
+                <button onClick={() => setActiveTab('history')}>مشاهدة الكل</button>
               </div>
               <div className="trans-list-v4">
                 {transactions.length > 0 ? transactions.map(t => (
@@ -291,7 +307,7 @@ const downloadInvoice = (transId) => {
                     </div>
                     <div className="details">
                       <h5>{t.title}</h5>
-                      <small>{new Date(t.date?.toDate()).toLocaleDateString('ar-EG')}</small>
+                      <small>{t.date?.toDate ? new Date(t.date.toDate()).toLocaleDateString('ar-EG') : 'قيد المعالجة'}</small>
                     </div>
                     <div className={`amount ${t.type === 'deposit' ? 'plus' : 'minus'}`}>
                       {t.type === 'deposit' ? '+' : '-'}{t.amount} ج.م
@@ -304,7 +320,8 @@ const downloadInvoice = (transId) => {
             </section>
           </motion.div>
         )}
-        {/* واجهة شحن الرصيد المتقدمة (Recharge View) - ميزة 1, 9, 18 */}
+
+        {/* واجهة شحن الرصيد المتقدمة */}
         {activeTab === 'recharge' && (
           <motion.div className="action-panel-v4" initial={{ x: 30, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
             <div className="panel-header">
@@ -333,7 +350,10 @@ const downloadInvoice = (transId) => {
               <p>قم بتحويل المبلغ إلى الرقم التالي ثم ارفع صورة التحويل:</p>
               <div className="copy-num">
                 <strong>01262008</strong>
-                <button onClick={() => navigator.clipboard.writeText('01262008')}><Copy size={16} /></button>
+                <button onClick={() => {
+                  navigator.clipboard.writeText('01262008');
+                  alert("تم نسخ الرقم بنجاح");
+                }}><Copy size={16} /></button>
               </div>
             </div>
 
@@ -343,6 +363,7 @@ const downloadInvoice = (transId) => {
                 <input 
                   type="number" 
                   placeholder="0.00" 
+                  value={rechargeForm.amount}
                   onChange={e => setRechargeForm({...rechargeForm, amount: e.target.value})}
                 />
               </div>
@@ -351,31 +372,33 @@ const downloadInvoice = (transId) => {
                 <input 
                   type="text" 
                   placeholder="01xxxxxxxxx" 
+                  value={rechargeForm.phone}
                   onChange={e => setRechargeForm({...rechargeForm, phone: e.target.value})}
                 />
               </div>
               <label className="upload-dropzone">
                 <ImageIcon size={32} />
-                <p>{rechargeForm.img ? "تم اختيار إثبات الدفع ✅" : "ارفع سكرين شوت التحويل (Screenshot)"}</p>
+                <p>{rechargeForm.img ? `تم اختيار: ${rechargeForm.img.name}` : "ارفع سكرين شوت التحويل (Screenshot)"}</p>
                 <input 
                   type="file" 
                   hidden 
+                  accept="image/*"
                   onChange={e => setRechargeForm({...rechargeForm, img: e.target.files[0]})} 
                 />
               </label>
               
               <button 
                 className="mega-submit-btn" 
-                onClick={handleConfirmPayment} // سيتم تعريفه في منطق الإرسال
+                onClick={handleConfirmPayment}
                 disabled={loading}
               >
-                {loading ? <RefreshCw className="spin" /> : "تأكيد الطلب وإرسال للأدمن"}
+                {loading ? <RefreshCw className="spin" size={20} /> : "تأكيد الطلب وإرسال للأدمن"}
               </button>
             </div>
           </motion.div>
         )}
 
-        {/* واجهة تحويل الرصيد (P2P Transfer) - ميزة 5, 12 */}
+        {/* واجهة تحويل الرصيد (P2P Transfer) */}
         {activeTab === 'p2p' && (
           <motion.div className="action-panel-v4" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
             <div className="panel-header">
@@ -395,6 +418,7 @@ const downloadInvoice = (transId) => {
                   <input 
                     type="text" 
                     placeholder="أدخل الـ ID المكون من 15 حرف" 
+                    value={transferForm.id}
                     onChange={e => setTransferForm({...transferForm, id: e.target.value})}
                   />
                   <Search size={18} />
@@ -405,6 +429,7 @@ const downloadInvoice = (transId) => {
                 <input 
                   type="number" 
                   placeholder="0.00" 
+                  value={transferForm.amount}
                   onChange={e => setTransferForm({...transferForm, amount: e.target.value})}
                 />
               </div>
@@ -412,6 +437,7 @@ const downloadInvoice = (transId) => {
                 <label>رسالة قصيرة (اختياري)</label>
                 <textarea 
                   placeholder="مثلاً: ثمن مذكرة الفيزياء" 
+                  value={transferForm.note}
                   onChange={e => setTransferForm({...transferForm, note: e.target.value})}
                 ></textarea>
               </div>
@@ -428,7 +454,7 @@ const downloadInvoice = (transId) => {
           </motion.div>
         )}
 
-        {/* واجهة الخزنة السرية (The Vault) - ميزة 2, 4 */}
+        {/* واجهة الخزنة السرية (The Vault) */}
         {activeTab === 'vault' && (
           <motion.div className="action-panel-v4" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
             <div className="panel-header">
@@ -461,8 +487,8 @@ const downloadInvoice = (transId) => {
                   <h2>{user?.vaultBalance || 0} <small>ج.م</small></h2>
                 </div>
                 <div className="vault-actions">
-                  <button className="v-btn deposit">إيداع للخزنة</button>
-                  <button className="v-btn withdraw">سحب للمحفظة</button>
+                  <button className="v-btn deposit" onClick={() => alert("سيتم إضافة نظام الإيداع للخزنة قريباً")}>إيداع للخزنة</button>
+                  <button className="v-btn withdraw" onClick={() => alert("سيتم إضافة نظام السحب من الخزنة قريباً")}>سحب للمحفظة</button>
                 </div>
                 <button onClick={() => setIsVaultLocked(true)} className="lock-now-btn">قفل الآن</button>
               </div>
@@ -470,12 +496,13 @@ const downloadInvoice = (transId) => {
           </motion.div>
         )}
 
-        {/* نظام "ادفع لي" للعائلة (Request Payment) - ميزة 15 */}
+        {/* نظام "ادفع لي" للعائلة */}
         <div className="request-payment-floating" onClick={() => setActiveModal('request_pay')}>
           <div className="r-icon"><UserPlus size={20} /></div>
           <span>اطلب شحن من أهلك</span>
         </div>
-{/* واجهة تحليل الإنفاق الذكي (Analytics) - ميزة 7, 10 */}
+
+        {/* واجهة تحليل الإنفاق */}
         {activeTab === 'analytics' && (
           <motion.div className="action-panel-v4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="panel-header">
@@ -500,19 +527,18 @@ const downloadInvoice = (transId) => {
               </div>
             </div>
 
-            {/* ميزة (3): تحدي الأصدقاء المالي (Staking Challenge) */}
             <div className="challenge-card-v4">
               <div className="c-head">
                 <Target size={24} color="#facc15" />
                 <h5>تحدي المذاكرة المالي</h5>
               </div>
-              <p>راهن بـ 10 ج.م مع صديقك، ومن ينهي "فصل الفيزياء" أولاً يربح الرهان في محفظته!</p>
+              <p>راهن بـ 10 ج.م مع صديقك، ومن ينهي "فصل الفيزياء" أولاً يربح الرهان!</p>
               <button className="start-challenge-btn">بدء تحدي جديد</button>
             </div>
           </motion.div>
         )}
 
-        {/* واجهة الفواتير الرقمية (Digital Invoices) - ميزة 2, 16 */}
+        {/* سجل الفواتير */}
         {activeTab === 'history' && (
           <motion.div className="action-panel-v4" initial={{ x: -20 }} animate={{ x: 0 }}>
             <div className="panel-header">
@@ -521,25 +547,25 @@ const downloadInvoice = (transId) => {
             </div>
             
             <div className="invoice-list-v4">
-              {transactions.map(t => (
+              {transactions.length > 0 ? transactions.map(t => (
                 <div className="invoice-item-v4 glass" key={t.id}>
                   <div className="i-icon"><Receipt size={20} /></div>
                   <div className="i-details">
                     <h6>{t.title}</h6>
                     <small>رقم العملية: #{t.id.slice(0, 8)}</small>
-                    <p>{new Date(t.date?.toDate()).toLocaleString('ar-EG')}</p>
+                    <p>{t.date?.toDate ? new Date(t.date.toDate()).toLocaleString('ar-EG') : 'جاري التحميل'}</p>
                   </div>
                   <div className="i-action">
                     <span className="amt">{t.amount} ج.م</span>
                     <button className="download-btn"><ArrowDownLeft size={14} /> PDF</button>
                   </div>
                 </div>
-              ))}
+              )) : <div className="empty-state">لا توجد فواتير بعد.</div>}
             </div>
           </motion.div>
         )}
 
-        {/* مودال "ادفع لي" (Request From Parents) - ميزة 15 */}
+        {/* مودال "ادفع لي" */}
         <AnimatePresence>
           {activeModal === 'request_pay' && (
             <motion.div className="mafa-modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -550,18 +576,14 @@ const downloadInvoice = (transId) => {
                 </div>
                 <div className="m-body">
                   <div className="request-options">
-                    <button className="opt-card" onClick={() => window.open(`https://wa.me/?text=يا بابا/ماما، محتاج أشحن محفظتي على منصة MaFa Tec بمبلغ 100 جنيه عشان أفتح الدروس الجديدة. ده ID بتاعي: ${auth.currentUser.uid}`)}>
+                    <button className="opt-card" onClick={() => window.open(`https://wa.me/?text=يا بابا، محتاج أشحن محفظتي بمبلغ 100ج لتفعيل الكورسات. كود الطالب الخاص بي هو: ${auth.currentUser?.uid}`)}>
                       <Smartphone size={24} />
                       <span>واتساب</span>
                     </button>
-                    <button className="opt-card">
+                    <button className="opt-card" onClick={() => alert("سيتم تفعيل الـ QR قريباً")}>
                       <QrCode size={24} />
                       <span>QR Code</span>
                     </button>
-                  </div>
-                  <div className="qr-container-v4">
-                    <p>اجعل ولي أمرك يمسح الـ QR للدفع المباشر</p>
-                    <div className="qr-placeholder">QR CODE HERE</div>
                   </div>
                 </div>
               </motion.div>
@@ -569,15 +591,13 @@ const downloadInvoice = (transId) => {
           )}
         </AnimatePresence>
 
-        {/* ميزة (1): نظام الكاش باك التلقائي (Cashback) - تنبيه يظهر تحت البطاقة */}
         <div className="cashback-ticker">
           <Zap size={14} />
           <span>مبروك! حصلت على 2% كاش باك من آخر عملية شحن.</span>
         </div>
 
-      </div> {/* نهاية الـ wallet-container */}
+      </div>
       
-      {/* الفوتر السريع للتنقل */}
       <footer className="wallet-footer-v4">
         <button className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}>
           <WalletIcon size={20} /> <span>الرئيسية</span>
@@ -589,23 +609,11 @@ const downloadInvoice = (transId) => {
           <Headphones size={20} /> <span>الدعم</span>
         </button>
       </footer>
-    </div> // نهاية الـ mega-wallet-v4
+    </div>
   );
 };
 
-// --- الدوال المساعدة (Helper Functions) لربط العمليات ---
-
-const handleConfirmPayment = async () => {
-  // هذا المنطق يربط واجهة الشحن بالداتابيز (تم شرحه سابقاً)
-  // يرفع الصورة لـ Storage ويصنع طلب جديد في Firestore
-};
-
-const handleP2PTransfer = async () => {
-  // هذا المنطق يقوم بعملية التحويل البنكي بين طالب وطالب
-};
-
 export default Wallet;
-
 
 
 
