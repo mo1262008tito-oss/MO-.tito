@@ -1484,3 +1484,161 @@
   font-size: 12px;
   color: var(--text-dim);
 }
+
+/* =========================================
+   Q&A Panel & Support Interface (V3)
+   ========================================= */
+
+.grid-col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    padding: 20px;
+}
+
+/* الكرت الزجاجي الرئيسي */
+.qa-panel-v3 {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 30px;
+    padding: 25px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    position: relative;
+}
+
+/* رأس اللوحة مع علامة Live */
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.panel-title-v3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.badge-live {
+    background: rgba(255, 59, 48, 0.15);
+    color: var(--accent-red);
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255, 59, 48, 0.3);
+}
+
+.badge-live::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--accent-red);
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse-red 1.5s infinite;
+}
+
+@keyframes pulse-red {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(255, 59, 48, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
+}
+
+/* منطقة المدخلات */
+.qa-body {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.qa-input-wrapper {
+    position: relative;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    padding: 15px;
+    transition: 0.3s ease;
+}
+
+.qa-input-wrapper:focus-within {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 20px rgba(0, 122, 255, 0.1);
+}
+
+.qa-textarea-v2 {
+    width: 100%;
+    min-height: 100px;
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: none;
+    outline: none;
+    line-height: 1.6;
+}
+
+.qa-textarea-v2::placeholder {
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+
+/* زر الإرسال الاحترافي */
+.send-qa-btn-v2 {
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px;
+    background: var(--accent-blue);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.send-qa-btn-v2:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 122, 255, 0.3);
+    background: #0084ff;
+}
+
+.send-qa-btn-v2:active {
+    transform: scale(0.98);
+}
+
+/* النص السفلي */
+.recent-questions-mini {
+    padding: 10px 5px;
+    text-align: center;
+}
+
+.recent-questions-mini p.muted {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* تحسينات للشاشات الصغيرة */
+@media (max-width: 480px) {
+    .qa-panel-v3 {
+        padding: 15px;
+        border-radius: 20px;
+    }
+}
