@@ -29,6 +29,31 @@ const Library = () => {
   const [selectedBook, setSelectedBook] = useState(null);
   const [stats, setStats] = useState({ downloads: 0, saved: 0 });
   const scrollRef = useRef(null);
+
+  const handleDownload = async (book) => {
+  if (!book.fileUrl) return alert("رابط التحميل غير متوفر حالياً");
+  window.open(book.fileUrl, '_blank');
+  
+  // تحديث عدد التحميلات في فايربيز (اختياري)
+  try {
+    const bookRef = doc(db, 'library', book.id);
+    await updateDoc(bookRef, { downloads: increment(1) });
+  } catch (e) { console.error(e); }
+};
+
+const shareBook = (book) => {
+  if (navigator.share) {
+    navigator.share({
+      title: book.title,
+      text: `حمل كتاب ${book.title} من مكتبة المعرفة`,
+      url: window.location.href,
+    });
+  } else {
+    navigator.clipboard.writeText(window.location.href);
+    alert("تم نسخ رابط المكتبة!");
+  }
+};
+  
 // --- 2. Firebase Integration (الربط المصلح) ---
   useEffect(() => {
     setLoading(true);
@@ -62,7 +87,26 @@ const Library = () => {
         alert("تأكد من إعدادات القواعد (Rules) في فايربيز");
       }
     });
+const filteredResults = useMemo(() => {
+  return books.filter(book => {
+    const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (book.author && book.author.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesSearch;
+  });
+}, [books, searchQuery]);
+    
+    const filteredResults = useMemo(() => {
+  return books.filter(book => {
+    // 1. التأكد من مطابقة نص البحث
+    const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (book.author && book.author.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    // 2. التأكد من مطابقة القسم المختار
+    const matchesCategory = activeFilter === 'الكل' || book.category === activeFilter;
 
+    return matchesSearch && matchesCategory;
+  });
+}, [books, searchQuery, activeFilter]); // أضفنا activeFilter هنا لضمان التحديث عند تغيير القسم
 
   return (
     <div className="modern-library-root">
@@ -238,3 +282,4 @@ const Library = () => {
 
 
 export default Library;
+
