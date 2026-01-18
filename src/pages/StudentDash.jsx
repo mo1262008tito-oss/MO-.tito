@@ -971,23 +971,46 @@ const goToActivation = () => {
             </section>
 
           </div>
-
-          {/* 9) مكون الملاحظات الجانبي السريع (Quick Notes Floating) */}
-          <div className="quick-notes-overlay glass-heavy">
-             <div className="notes-header">
-               <h4>📌 ملاحظات سريعة</h4>
-             </div>
-             <textarea 
-               defaultValue={localStorage.getItem(`note_${user?.uid}`) || ""} 
-               onChange={(e) => saveQuickNote(e.target.value)}
-               placeholder="اكتب فكرة سريعة أو تذكير..."
-               className="notes-textarea"
-             />
-             <div className="notes-footer">
-               <small>يتم الحفظ تلقائياً في السحابة</small>
-             </div>
-          </div>
-
+{/* 9) مكون الملاحظات الجانبي السريع (Quick Notes Floating) */}
+<div className="quick-notes-overlay glass-heavy">
+  <div className="notes-header">
+    <div className="header-title">
+      <Pin size={16} className="text-cyan-400" />
+      <h4>ملاحظات سريعة</h4>
+    </div>
+    {/* زر المسح الجديد */}
+    <button 
+      onClick={() => {
+        if(window.confirm("هل تريد مسح جميع الملاحظات؟")) {
+          // 1. مسح من التخزين المحلي
+          localStorage.removeItem(`note_${user?.uid}`);
+          // 2. تحديث الحقل برمجياً (نبحث عن العنصر ونفرغه)
+          document.querySelector('.notes-textarea').value = "";
+          // 3. تحديث السحابة (استدعاء نفس دالة الحفظ بنص فارغ)
+          saveQuickNote("");
+        }
+      }}
+      className="delete-note-btn"
+      title="مسح الكل"
+    >
+      <Trash2 size={16} />
+    </button>
+  </div>
+  
+  <textarea 
+    defaultValue={localStorage.getItem(`note_${user?.uid}`) || ""} 
+    onChange={(e) => saveQuickNote(e.target.value)}
+    placeholder="اكتب فكرة سريعة أو تذكير..."
+    className="notes-textarea"
+  />
+  
+  <div className="notes-footer">
+    <div className="sync-status">
+      <div className="pulse-dot"></div>
+      <small>يتم المزامنة مع السحابة</small>
+    </div>
+  </div>
+</div>
           {/* زر العودة للأعلى المطور */}
           <AnimatePresence>
             {showBackToTop && (
@@ -1053,5 +1076,6 @@ const goToActivation = () => {
 };
 
 export default StudentDash;
+
 
 
