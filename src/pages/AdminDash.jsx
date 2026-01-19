@@ -930,13 +930,12 @@ const mockData = [
               </motion.div>
             )}
 
-          </AnimatePresence>
+       </AnimatePresence>
         </div> {/* نهاية titan-content */}
       </main> {/* نهاية titan-main */}
-    </div> // نهاية titan-app
-  );
-}
+    </div> 
+  ); // نهاية الـ return
+}; // نهاية المكون AdminDash
 
-// التصدير النهائي للمكون ليكون متاحاً في App.js أو أي ملف آخر
+// التصدير النهائي
 export default AdminDash;
-
