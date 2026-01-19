@@ -367,11 +367,10 @@ const mockData = [
 
 
 
-  
   return (
     <div className={`titan-app ${isEmergency ? 'emergency-active' : ''}`}>
       
-      {/* Sidebar - القائمة الجانبية المتقدمة */}
+      {/* Sidebar - القائمة الجانبية المتقدمة كما أرسلتها تماماً */}
       <aside className="titan-sidebar">
         <div className="sidebar-header">
           <div className="logo-box"><Cpu size={28} /></div>
@@ -545,382 +544,263 @@ const mockData = [
                 </div>
                 <div className="finance-insights glass-card">
                   <h3>تحليلات الخزينة</h3>
-                  {/* هنا يمكن إضافة PieChart لتحليل مبيعات السناتر */}
+                </div>
+              </motion.div>
+            )}
+            {/* 6. VIEW: AI LAB (تحليل سلوك الطلاب بالذكاء الاصطناعي) */}
+            {tab === 'ai' && (
+              <motion.div key="ai" initial={{opacity:0}} animate={{opacity:1}} className="ai-lab-container">
+                <div className="ai-header glass-card">
+                  <div className="ai-title">
+                    <Target className="pulse-icon" />
+                    <h2>TITAN AI : تحليلات التنبؤ بالسلوك</h2>
+                  </div>
+                  <p>يقوم المحرك الآن بتحليل نشاط {students.length} طالب للتنبؤ بمعدلات التسرب والغش.</p>
+                </div>
+
+                <div className="ai-grid">
+                  <div className="glass-card ai-stat">
+                    <h4>معدل الالتزام العام</h4>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <PieChart>
+                        <Pie data={aiMockData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                          {aiMockData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="ai-legend">
+                      <span><i style={{background: '#10b981'}}></i> ملتزم</span>
+                      <span><i style={{background: '#f59e0b'}}></i> متذبذب</span>
+                      <span><i style={{background: '#ef4444'}}></i> معرض للخطر</span>
+                    </div>
+                  </div>
+
+                  <div className="glass-card ai-reports">
+                    <h3>تقارير المخاطر الأمنية</h3>
+                    <div className="report-list">
+                      {students.filter(s => s.status === 'BANNED').slice(0, 5).map(s => (
+                        <div className="report-item danger" key={s.id}>
+                          <Fingerprint size={16} />
+                          <div className="report-details">
+                            <b>محاولة تخطي حماية: {s.name}</b>
+                            <p>تم رصد محاولة تشغيل محاكي (Emulator) الساعة 10:30 م</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}
 
-          </AnimatePresence>
-        </div>
-      </main>
-    </div>
-  );
-}
+            {/* 7. VIEW: EXAM CONTROL (إدارة الامتحانات والنتائج) */}
+            {tab === 'exams' && (
+              <motion.div key="ex" initial={{x: 50, opacity: 0}} animate={{x: 0, opacity: 1}} className="exam-module">
+                <div className="exam-toolbar glass-card">
+                  <button className="btn-primary" onClick={() => createNewExam()}>
+                    <PlusSquare size={18} /> إنشاء امتحان جديد
+                  </button>
+                  <div className="filter-group">
+                    <select><option>كل المجموعات</option></select>
+                    <button className="btn-outline"><History size={16} /> الأرشيف</button>
+                  </div>
+                </div>
 
+                <div className="exams-list-grid">
+                  {[1, 2, 3].map(ex => (
+                    <div className="exam-card glass-card" key={ex}>
+                      <div className="exam-badge">LIVE</div>
+                      <h3>امتحان الفيزياء الشامل - نموذج {ex}</h3>
+                      <div className="exam-meta">
+                        <span><Users size={14}/> 450 طالب</span>
+                        <span><Award size={14}/> متوسط الدرجات: 85%</span>
+                      </div>
+                      <div className="exam-ops">
+                        <button className="btn-sm-view"><Eye size={14}/> النتائج</button>
+                        <button className="btn-sm-edit"><Settings size={14}/> إعدادات</button>
+                        <button className="btn-sm-stop"><Lock size={14}/> إيقاف</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
+            {/* 8. VIEW: SUPPORT CENTER (مركز الدعم الفني اللحظي) */}
+            {tab === 'support' && (
+              <motion.div key="sup" initial={{opacity:0}} animate={{opacity:1}} className="support-workstation">
+                <div className="support-layout">
+                  <div className="tickets-sidebar glass-card">
+                    <h3>التذاكر النشطة</h3>
+                    <div className="ticket-list">
+                      {[1,2,3,4].map(t => (
+                        <div key={t} className="ticket-item-preview">
+                          <div className="status-indicator online"></div>
+                          <div className="t-meta">
+                            <b>مشكلة في شحن الكود #{t * 452}</b>
+                            <p>الطالب: أحمد محمد ...</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="chat-interface glass-card">
+                    <div className="chat-header">
+                      <div className="user-profile">
+                        <div className="u-avatar">A</div>
+                        <div><b>أحمد محمد</b><small>متصل الآن</small></div>
+                      </div>
+                      <div className="chat-ops">
+                        <button className="icon-btn"><Lock size={16}/></button>
+                        <button className="icon-btn danger"><Trash2 size={16}/></button>
+                      </div>
+                    </div>
+                    <div className="chat-messages">
+                      <div className="msg-received">أهلاً يا مستر، الكود مش شغال معايا</div>
+                      <div className="msg-sent">مرحباً أحمد، ابعت صورة الكود وهنفحصه حالاً</div>
+                    </div>
+                    <div className="chat-input-area">
+                      <input type="text" placeholder="اكتب ردك هنا..." />
+                      <button className="btn-send"><Send size={18}/></button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
-// 6. VIEW: AI LAB (تحليل سلوك الطلاب بالذكاء الاصطناعي)
-{tab === 'ai' && (
-  <motion.div key="ai" initial={{opacity:0}} animate={{opacity:1}} className="ai-lab-container">
-    <div className="ai-header glass-card">
-      <div className="ai-title">
-        <Target className="pulse-icon" />
-        <h2>TITAN AI : تحليلات التنبؤ بالسلوك</h2>
-      </div>
-      <p>يقوم المحرك الآن بتحليل نشاط {students.length} طالب للتنبؤ بمعدلات التسرب والغش.</p>
-    </div>
+            {/* 9. VIEW: DATABASE TERMINAL (محاكي قاعدة البيانات) */}
+            {tab === 'terminal' && (
+              <motion.div key="term" initial={{opacity:0, scale:0.9}} animate={{opacity:1, scale:1}} className="terminal-view">
+                <div className="terminal-window">
+                  <div className="terminal-header">
+                    <div className="dots"><span className="red"></span><span className="yellow"></span><span className="green"></span></div>
+                    <span>Titan System Terminal v1.0.0</span>
+                  </div>
+                  <div className="terminal-body">
+                    <p className="cmd">> TITAN_OS --INITIALIZE</p>
+                    <p className="res">System initialized in 245ms...</p>
+                    <p className="cmd">> CHECK_FIREBASE_AUTH</p>
+                    <p className="res">Status: 200 OK | Connection: Secure</p>
+                    <p className="cmd">> LIST_ACTIVE_ADMINS</p>
+                    <p className="res">1. Master_Admin (Online)</p>
+                    <div className="cursor"></div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
-    <div className="ai-grid">
-      <div className="glass-card ai-stat">
-        <h4>معدل الالتزام العام</h4>
-        <ResponsiveContainer width="100%" height={200}>
-          <PieChart>
-            <Pie data={aiMockData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-              {aiMockData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
-        <div className="ai-legend">
-          <span><i style={{background: '#10b981'}}></i> ملتزم</span>
-          <span><i style={{background: '#f59e0b'}}></i> متذبذب</span>
-          <span><i style={{background: '#ef4444'}}></i> معرض للخطر</span>
-        </div>
-      </div>
+            {/* 10. VIEW: LIVE MONITOR (مراقبة البث المباشر والدروس الحية) */}
+            {tab === 'live' && (
+              <motion.div key="live" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="live-monitor-grid">
+                <div className="stream-status glass-card">
+                  <div className="live-indicator"><span className="blink-red"></span> LIVE: مراجعة ليلة الامتحان</div>
+                  <div className="viewer-stats"><Users size={20} /> <span>1,240 مشاهد حالياً</span></div>
+                  <div className="stream-preview">
+                    <div className="video-placeholder">
+                      <Radio size={48} className="pulse" />
+                      <p>Signal Strength: Excellent (4.2 Mbps)</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="live-chat-monitor glass-card">
+                  <h3>الرقابة على المحادثة</h3>
+                  <div className="moderation-logs">
+                    <p><span>12:01</span> <b>سيستم:</b> تم حظر كلمة "غش" تلقائياً.</p>
+                    <p><span>12:05</span> <b>أدمن:</b> الرجاء التركيز في الشرح.</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
-      <div className="glass-card ai-reports">
-        <h3>تقارير المخاطر الأمنية</h3>
-        <div className="report-list">
-          {students.filter(s => s.status === 'BANNED').slice(0, 5).map(s => (
-            <div className="report-item danger" key={s.id}>
-              <Fingerprint size={16} />
-              <div className="report-details">
-                <b>محاولة تخطي حماية: {s.name}</b>
-                <p>تم رصد محاولة تشغيل محاكي (Emulator) الساعة 10:30 م</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  </motion.div>
-)}
+            {/* 11. VIEW: FORENSIC DATA (التحليل الجنائي الرقمي) */}
+            {tab === 'forensic' && (
+              <motion.div key="for" initial={{ y: 20 }} animate={{ y: 0 }} className="forensic-view">
+                <div className="alert-ribbon">تنبيه: تم رصد 3 محاولات استخدام Proxies في آخر ساعة</div>
+                <div className="forensic-grid">
+                  <div className="glass-card hardware-check">
+                    <h3>بصمة الأجهزة (Fingerprinting)</h3>
+                    <table className="mini-table">
+                      <thead>
+                        <tr><th>الطالب</th><th>المتصفح</th><th>المعالج</th><th>درجة الثقة</th></tr>
+                      </thead>
+                      <tbody>
+                        {students.slice(0, 5).map(s => (
+                          <tr key={s.id}>
+                            <td>{s.name}</td>
+                            <td>Chrome/Win11</td>
+                            <td>Intel i7 Gen 12</td>
+                            <td><span className="trust-high">99%</span></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="glass-card network-map">
+                    <h3>توزيع الطلاب جغرافياً</h3>
+                    <div className="map-mockup">
+                      <Globe size={100} className="globe-icon" />
+                      <p>القاهرة: 80% | الإسكندرية: 10% | أخرى: 10%</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
-// 7. VIEW: EXAM CONTROL (إدارة الامتحانات والنتائج)
-{tab === 'exams' && (
-  <motion.div key="ex" initial={{x: 50, opacity: 0}} animate={{x: 0, opacity: 1}} className="exam-module">
-    <div className="exam-toolbar glass-card">
-      <button className="btn-primary" onClick={() => createNewExam()}>
-        <PlusSquare size={18} /> إنشاء امتحان جديد
-      </button>
-      <div className="filter-group">
-        <select><option>كل المجموعات</option></select>
-        <button className="btn-outline"><History size={16} /> الأرشيف</button>
-      </div>
-    </div>
+            {/* 13. VIEW: WALLET & FINANCE (الخزينة والتقارير المالية) */}
+            {tab === 'finance_advanced' && (
+              <motion.div key="fin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="finance-dashboard">
+                <div className="finance-top-row">
+                  <div className="glass-card balance-card">
+                    <div className="balance-info">
+                      <p>إجمالي التحصيل الكلي</p>
+                      <h1>450,230 <small>EGP</small></h1>
+                    </div>
+                    <CreditCard size={40} className="card-icon-bg" />
+                  </div>
+                </div>
+                <div className="glass-card transaction-table">
+                  <h3>سجل المعاملات الأخيرة</h3>
+                  <table className="titan-table">
+                    <thead>
+                      <tr><th>الطالب</th><th>نوع العملية</th><th>المبلغ</th><th>الحالة</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>محمد علي</td><td>شحن كود</td><td>100 ج.م</td>
+                        <td><span className="badge-success">ناجحة</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            )}
 
-    <div className="exams-list-grid">
-      {[1, 2, 3].map(ex => (
-        <div className="exam-card glass-card" key={ex}>
-          <div className="exam-badge">LIVE</div>
-          <h3>امتحان الفيزياء الشامل - نموذج {ex}</h3>
-          <div className="exam-meta">
-            <span><Users size={14}/> 450 طالب</span>
-            <span><Award size={14}/> متوسط الدرجات: 85%</span>
-          </div>
-          <div className="exam-ops">
-            <button className="btn-sm-view"><Eye size={14}/> النتائج</button>
-            <button className="btn-sm-edit"><Settings size={14}/> إعدادات</button>
-            <button className="btn-sm-stop"><Lock size={14}/> إيقاف</button>
-          </div>
-        </div>
-      ))}
-    </div>
-  </motion.div>
-)}
+            {/* 14. VIEW: ADMINS & ROLES (إدارة المسؤولين) */}
+            {tab === 'admins' && (
+              <motion.div key="adm" className="admins-view glass-card">
+                <div className="section-title"><ShieldCheck size={22} /> <h3>إدارة طاقم العمل</h3></div>
+                <div className="admin-list">
+                  <div className="admin-card-detailed">
+                    <b>Master Admin</b>
+                    <p>Access Level: Root</p>
+                    <button className="btn-edit-roles">تعديل الصلاحيات</button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
-/**
- * ============================================================
- * [10] ADDITIONAL VIEWS (التبويبات الإضافية المتقدمة)
- * ============================================================
- */
-
-// 8. VIEW: SUPPORT CENTER (مركز الدعم الفني اللحظي)
-{tab === 'support' && (
-  <motion.div key="sup" initial={{opacity:0}} animate={{opacity:1}} className="support-workstation">
-    <div className="support-layout">
-      <div className="tickets-sidebar glass-card">
-        <h3>التذاكر النشطة</h3>
-        <div className="ticket-list">
-          {[1,2,3,4].map(t => (
-            <div key={t} className="ticket-item-preview">
-              <div className="status-indicator online"></div>
-              <div className="t-meta">
-                <b>مشكلة في شحن الكود #{t * 452}</b>
-                <p>الطالب: أحمد محمد ...</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      <div className="chat-interface glass-card">
-        <div className="chat-header">
-          <div className="user-profile">
-            <div className="u-avatar">A</div>
-            <div><b>أحمد محمد</b><small>متصل الآن</small></div>
-          </div>
-          <div className="chat-ops">
-            <button className="icon-btn"><Lock size={16}/></button>
-            <button className="icon-btn danger"><Trash2 size={16}/></button>
-          </div>
-        </div>
-        <div className="chat-messages">
-          <div className="msg-received">أهلاً يا مستر، الكود مش شغال معايا</div>
-          <div className="msg-sent">مرحباً أحمد، ابعت صورة الكود وهنفحصه حالاً</div>
-        </div>
-        <div className="chat-input-area">
-          <input type="text" placeholder="اكتب ردك هنا..." />
-          <button className="btn-send"><Send size={18}/></button>
-        </div>
-      </div>
-    </div>
-  </motion.div>
-)}
-
-// 9. VIEW: DATABASE TERMINAL (محاكي قاعدة البيانات)
-{tab === 'terminal' && (
-  <motion.div key="term" initial={{opacity:0, scale:0.9}} animate={{opacity:1, scale:1}} className="terminal-view">
-    <div className="terminal-window">
-      <div className="terminal-header">
-        <div className="dots"><span className="red"></span><span className="yellow"></span><span className="green"></span></div>
-        <span>Titan System Terminal v1.0.0</span>
-      </div>
-      <div className="terminal-body">
-        <p className="cmd">> TITAN_OS --INITIALIZE</p>
-        <p className="res">System initialized in 245ms...</p>
-        <p className="cmd">> CHECK_FIREBASE_AUTH</p>
-        <p className="res">Status: 200 OK | Connection: Secure</p>
-        <p className="cmd">> LIST_ACTIVE_ADMINS</p>
-        <p className="res">1. Master_Admin (Online)</p>
-        <div className="cursor"></div>
-      </div>
-    </div>
-  </motion.div>
-)}
-// 10. VIEW: LIVE MONITOR (مراقبة البث المباشر والدروس الحية)
-{tab === 'live' && (
-  <motion.div key="live" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="live-monitor-grid">
-    <div className="stream-status glass-card">
-      <div className="live-indicator">
-        <span className="blink-red"></span> LIVE: مراجعة ليلة الامتحان
-      </div>
-      <div className="viewer-stats">
-        <Users size={20} /> <span>1,240 مشاهد حالياً</span>
-      </div>
-      <div className="stream-preview">
-        {/* محاكي عرض البث */}
-        <div className="video-placeholder">
-          <Radio size={48} className="pulse" />
-          <p>Signal Strength: Excellent (4.2 Mbps)</p>
-        </div>
-      </div>
-    </div>
-
-    <div className="live-chat-monitor glass-card">
-      <h3>الرقابة على المحادثة</h3>
-      <div className="chat-moderation">
-        <div className="mod-actions">
-          <button className="btn-danger-sm">إيقاف الشات</button>
-          <button className="btn-warning-sm">مسح السجل</button>
-        </div>
-        <div className="mod-logs">
-          <p><span>12:01</span> <b>سيستم:</b> تم حظر كلمة "غش" تلقائياً.</p>
-          <p><span>12:05</span> <b>أدمن:</b> الرجاء التركيز في الشرح.</p>
-        </div>
-      </div>
-    </div>
-  </motion.div>
-)}
-
-// 11. VIEW: FORENSIC DATA (التحليل الجنائي الرقمي)
-{tab === 'forensic' && (
-  <motion.div key="for" initial={{ y: 20 }} animate={{ y: 0 }} className="forensic-view">
-    <div className="alert-ribbon">تنبيه: تم رصد 3 محاولات استخدام Proxies في آخر ساعة</div>
-    <div className="forensic-grid">
-      <div className="glass-card hardware-check">
-        <h3>بصمة الأجهزة (Fingerprinting)</h3>
-        <table className="mini-table">
-          <thead>
-            <tr><th>الطالب</th><th>المتصفح</th><th>المعالج</th><th>درجة الثقة</th></tr>
-          </thead>
-          <tbody>
-            {students.slice(0, 5).map(s => (
-              <tr key={s.id}>
-                <td>{s.name}</td>
-                <td>Chrome/Win11</td>
-                <td>Intel i7 Gen 12</td>
-                <td><span className="trust-high">99%</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      
-      <div className="glass-card network-map">
-        <h3>توزيع الطلاب جغرافياً</h3>
-        <div className="map-mockup">
-          <Globe size={100} className="globe-icon" />
-          <p>القاهرة: % | الإسكندرية: % | أخرى: 20%</p>
-        </div>
-      </div>
-    </div>
-  </motion.div>
-)}
-// 12. VIEW: EXAM MANAGEMENT (إدارة الامتحانات والرقابة)
-{tab === 'exams' && (
-  <motion.div key="ex" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="exams-viewport">
-    <div className="exam-header glass-card">
-      <div className="title-area">
-        <Award size={24} color="var(--accent-blue)" />
-        <h2>مركز الاختبارات المركزية</h2>
-      </div>
-      <button className="btn-primary" onClick={() => {/* Logic to create exam */}}>
-        <UserPlus size={18} /> إنشاء نموذج امتحان
-      </button>
-    </div>
-
-    <div className="exams-grid">
-      <div className="glass-card exam-stats">
-        <h3>إحصائيات الأداء العام</h3>
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={mockData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-            <XAxis dataKey="name" hide />
-            <YAxis hide />
-            <Tooltip />
-            <Line type="monotone" dataKey="uv" stroke="#10b981" strokeWidth={3} />
-          </LineChart>
-        </ResponsiveContainer>
-        <p>متوسط الدرجات هذا الشهر: <b>82%</b></p>
-      </div>
-
-      <div className="glass-card active-exams">
-        <h3>الامتحانات الجارية الآن</h3>
-        <div className="exam-list">
-          <div className="exam-row">
-            <span>فيزياء - فصل 1</span>
-            <span className="live-tag">جاري..</span>
-            <button className="btn-view">مراقبة</button>
-          </div>
-          <div className="exam-row">
-            <span>رياضيات - ميكانيكا</span>
-            <span className="ended-tag">منتهي</span>
-            <button className="btn-results">النتائج</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </motion.div>
-)}
-// 13. VIEW: WALLET & FINANCE (الخزينة والتقارير المالية)
-{tab === 'finance' && (
-  <motion.div key="fin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="finance-dashboard">
-    <div className="finance-top-row">
-      <div className="glass-card balance-card">
-        <div className="balance-info">
-          <p>إجمالي التحصيل الكلي</p>
-          <h1>450,230 <small>EGP</small></h1>
-        </div>
-        <CreditCard size={40} className="card-icon-bg" />
-      </div>
-
-      <div className="glass-card actions-card">
-        <h3>العمليات السريعة</h3>
-        <div className="action-buttons">
-          <button className="btn-opt" onClick={() => exportAdvancedReport(students, 'Invoices')}>
-            <Download size={16} /> كشف حسابات الطلاب
-          </button>
-          <button className="btn-opt">
-            <RefreshCcw size={16} /> تصفير حسابات السناتر
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div className="glass-card transaction-table">
-      <h3>سجل المعاملات الأخيرة</h3>
-      <table className="titan-table">
-        <thead>
-          <tr>
-            <th>الطالب</th>
-            <th>نوع العملية</th>
-            <th>المبلغ</th>
-            <th>التاريخ</th>
-            <th>الحالة</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>محمد علي</td>
-            <td>شحن كود</td>
-            <td>100 ج.م</td>
-            <td>منذ 5 دقائق</td>
-            <td><span className="badge-success">ناجحة</span></td>
-          </tr>
-          <tr>
-            <td>سارة كمال</td>
-            <td>شراء كورس</td>
-            <td>250 ج.م</td>
-            <td>منذ ساعة</td>
-            <td><span className="badge-success">ناجحة</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </motion.div>
-)}
-// 14. VIEW: ADMINS & ROLES (إدارة المسؤولين)
-{tab === 'admins' && (
-  <motion.div key="adm" className="admins-view glass-card">
-    <div className="section-title">
-      <ShieldCheck size={22} />
-      <h3>إدارة طاقم العمل والصلاحيات</h3>
-    </div>
-    <div className="admin-list">
-      <div className="admin-card-detailed">
-        <div className="admin-main">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin1" alt="avatar" />
-          <div>
-            <b>Master Admin</b>
-            <p>Access Level: Root</p>
-          </div>
-        </div>
-        <div className="permissions">
-          <span className="p-tag">حظر</span>
-          <span className="p-tag">مسح بيانات</span>
-          <span className="p-tag">تعديل مالي</span>
-        </div>
-        <button className="btn-edit-roles">تعديل الصلاحيات</button>
-      </div>
-    </div>
-  </motion.div>
-)}
-
-{/* التبويب الختامي: معلومات النظام */}
-            {tab === 'system_info' && (
+            {/* التبويب الختامي: معلومات النظام */}
+            {tab === 'settings' && (
               <motion.div key="sys" initial={{opacity:0}} animate={{opacity:1}} className="glass-card">
                 <h3><Server size={20}/> حالة البنية التحتية</h3>
                 <div className="system-grid">
                   <div className="sys-item">
                     <span>قاعدة البيانات (Firestore):</span>
                     <b className="text-success">متصلة (Latency: 12ms)</b>
-                  </div>
-                  <div className="sys-item">
-                    <span>تخزين الملفات (Storage):</span>
-                    <b>استهلاك 45GB من 100GB</b>
                   </div>
                   <div className="sys-item">
                     <span>إصدار النواة:</span>
@@ -930,8 +810,8 @@ const mockData = [
               </motion.div>
             )}
 
-               </AnimatePresence> 
-        </div>
+          </AnimatePresence> 
+        </div> {/* نهاية main-viewport */}
       </main>
     </div>
   );
