@@ -11,6 +11,7 @@ import { auth } from '../firebase'; // نقطتين للخروج للمجلد ا
 import { signOut } from 'firebase/auth';
 import './Navbar.css'; // نقطة واحدة لأن الملف بجانبك تماماً
 
+
 const Navbar = ({ userData, isAdmin }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -38,6 +39,7 @@ const Navbar = ({ userData, isAdmin }) => {
     { name: 'المحفظة', path: '/wallet', icon: <Wallet size={20} /> },
   ];
 
+  
   return (
     <nav className="super-nav neon-border">
       <div className="nav-container">
@@ -103,6 +105,7 @@ const Navbar = ({ userData, isAdmin }) => {
 };
 
 export default Navbar;
+
 
 
 
