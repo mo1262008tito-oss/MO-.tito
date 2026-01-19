@@ -14,6 +14,7 @@ import app, { db, auth } from "../firebase";
 import "./StudentDash.css";
 
 
+
 // 1. مكون بطاقة الإحصائيات (StatCard)
 const StatCard = ({ title, value, icon, hint, trend }) => (
   <motion.div 
@@ -60,6 +61,7 @@ const TodoPanel = ({ items, onAdd, onToggle, onDelete }) => {
   );
 };
 
+
 // 3. مكون قائمة المتصدرين (LeaderboardList)
 const LeaderboardList = ({ items, currentUser }) => (
   <div className="leader-list">
@@ -98,6 +100,7 @@ const StudentDash = () => {
   const storage = useMemo(() => getStorage(app), []);
   const userRef = useRef(null);
 
+  
   // --- حالات الطالب (Profile State) ---
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState({
@@ -107,6 +110,7 @@ const StudentDash = () => {
     coursesCompleted: 0, xpPercent: 0, isOnline: true, lastLoginDate: null
   });
 
+  
   // --- حالات الواجهة (UI State) ---
   const [theme, setTheme] = useState("space-dark");
   const [dailyQuote, setDailyQuote] = useState("النجاح هو مجموع محاولات صغيرة تتكرر يوماً بعد يوم.");
@@ -1078,6 +1082,7 @@ const goToActivation = () => {
 };
 
 export default StudentDash;
+
 
 
 
