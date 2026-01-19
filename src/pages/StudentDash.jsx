@@ -104,7 +104,7 @@ const NotificationsList = ({ items }) => (
   const userRef = useRef(null); 
 
   // ... باقي الحالات (States)
-  
+  const notesRef = useRef(null);
   // --- حالات الطالب (Profile State) ---
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState({
@@ -170,8 +170,7 @@ const goToActivation = () => {
   return () => unsubscribe();
 }, []);
 
-// أضف هذا السطر قبل الـ return النهائي لضمان عدم وجود شاشة سوداء
-if (!user) return <div className="loading">جاري تحميل المنصة...</div>;
+
   // --- 1. إدارة الجلسة والتحقق من المستخدم ---
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
@@ -239,7 +238,7 @@ if (!user) return <div className="loading">جاري تحميل المنصة...</
   };
 
   const toggleTodo = async (docId, currentStatus) => {
-    await updateDoc(doc(doc(db, "students", user.uid, "todos", docId)), { done: !currentStatus });
+   await updateDoc(doc(db, "students", user.uid, "todos", docId), { done: !currentStatus });
     if (!currentStatus) accumulateXP(10, "todo_complete");
   };
 
@@ -445,34 +444,48 @@ if (!user) return <div className="loading">جاري تحميل المنصة...</
     alert("📄 جاري تجهيز تقرير الأداء الشامل... سيتم التحميل فوراً.");
     window.print();
   };
-
-  // --- 17) ميزة الحماية من الخمول (Auto-Logout/Security) ---
-  useEffect(() => {
+useEffect(() => {
     let timeout;
     const resetTimer = () => {
-      clearTimeout(timeout);
+      if (timeout) clearTimeout(timeout);
       timeout = setTimeout(() => {
         console.log("User inactive for too long.");
-      }, 1800000); // 30 mins
+        // هنا يمكنك إضافة navigate("/logout") مثلاً
+      }, 1800000); 
     };
+
+    resetTimer(); // تشغيل التايمر فور دخول الصفحة
     window.addEventListener("mousemove", resetTimer);
-    return () => window.removeEventListener("mousemove", resetTimer);
+    window.addEventListener("keydown", resetTimer); // إضافة ضغطات المفاتيح لزيادة الدقة
+
+    return () => {
+      clearTimeout(timeout); // تنظيف التايمر عند مغادرة المكون
+      window.removeEventListener("mousemove", resetTimer);
+      window.removeEventListener("keydown", resetTimer);
+    };
   }, []);
 
-  // --- 18) ميزة تتبع الإشعارات الحية ---
   useEffect(() => {
-    if (!db) return;
+    if (!db || !user) return; // التأكد من وجود الاتصال والمستخدم
+
     const qBroadcast = query(
       collection(db, "admin_broadcasts"),
       where("target", "in", ["all", "students"]),
       orderBy("timestamp", "desc"),
       limit(5)
     );
-    const unsub = onSnapshot(qBroadcast, (snapshot) => {
-      setBroadcasts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    });
+
+    const unsub = onSnapshot(qBroadcast, 
+      (snapshot) => {
+        setBroadcasts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      }, 
+      (error) => {
+        console.error("Broadcast Error:", error); // إضافة معالجة الأخطاء مهمة هنا
+      }
+    );
+
     return () => unsub();
-  }, [db]);
+  }, [user?.uid]); // التغيير بناءً على هوية المستخدم لضمان دقة البيانات
 
   // --- 19) ميزة الـ "Confetti" والإنجازات الجمالية ---
   const triggerCelebration = () => {
@@ -565,7 +578,16 @@ if (!user) return <div className="loading">جاري تحميل المنصة...</
       ))}
     </div>
   );
+  if (!user) return <div className="loading">جاري تحميل المنصة...</div>;
 
+
+
+
+
+
+
+
+  
   // --- بداية الـ JSX المعقد (The Massive Render Tree) ---
   return (
     <div className={`student-dash-root ${theme} ${focusMode ? "focus-active" : ""}`}>
@@ -994,23 +1016,23 @@ if (!user) return <div className="loading">جاري تحميل المنصة...</
             </section>
 
           </div>
-{/* 9) مكون الملاحظات الجانبي السريع (Quick Notes Floating) */}
+   {/* 9) مكون الملاحظات الجانبي السريع (Quick Notes Floating) */}
 <div className="quick-notes-overlay glass-heavy">
   <div className="notes-header">
     <div className="header-title">
       <Pin size={16} className="text-cyan-400" />
       <h4>ملاحظات سريعة</h4>
     </div>
-    {/* زر المسح الجديد */}
+    
     <button 
-      onClick={() => {
+      onClick={async () => {
         if(window.confirm("هل تريد مسح جميع الملاحظات؟")) {
           // 1. مسح من التخزين المحلي
           localStorage.removeItem(`note_${user?.uid}`);
-          // 2. تحديث الحقل برمجياً (نبحث عن العنصر ونفرغه)
-          document.querySelector('.notes-textarea').value = "";
-          // 3. تحديث السحابة (استدعاء نفس دالة الحفظ بنص فارغ)
-          saveQuickNote("");
+          // 2. تفريغ الحقل باستخدام المرجع (React Way)
+          if(notesRef.current) notesRef.current.value = "";
+          // 3. تحديث السحابة بنص فارغ
+          await saveQuickNote("");
         }
       }}
       className="delete-note-btn"
@@ -1021,8 +1043,9 @@ if (!user) return <div className="loading">جاري تحميل المنصة...</
   </div>
   
   <textarea 
+    ref={notesRef} // ربط المرجع هنا
     defaultValue={localStorage.getItem(`note_${user?.uid}`) || ""} 
-    onChange={(e) => saveQuickNote(e.target.value)}
+    onBlur={(e) => saveQuickNote(e.target.value)} // الحفظ عند الخروج من الحقل فقط لحماية الـ API
     placeholder="اكتب فكرة سريعة أو تذكير..."
     className="notes-textarea"
   />
@@ -1099,6 +1122,7 @@ if (!user) return <div className="loading">جاري تحميل المنصة...</
 };
 
 export default StudentDash;
+
 
 
 
