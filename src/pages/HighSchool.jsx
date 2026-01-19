@@ -27,6 +27,7 @@ import './HighSchool.css';
 const HighSchool = () => {
   const navigate = useNavigate();
   const scrollRef = useRef(null);
+
   
   // --- 1. إدارة الحالات (State Management) ---
   const [userData, setUserData] = useState(null);
@@ -50,6 +51,7 @@ const HighSchool = () => {
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
   const opacityHero = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
 
+  
   // --- 3. نظام الحماية (Security System) ---
   useEffect(() => {
     const handleContextMenu = (e) => e.preventDefault();
@@ -535,3 +537,4 @@ const HighSchool = () => {
 };
 
 export default HighSchool;
+
