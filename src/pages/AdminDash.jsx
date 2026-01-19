@@ -14,7 +14,7 @@ import {
   serverTimestamp // مفقود سابقاً
 } from "firebase/firestore";
 import { ref, set, onValue, update } from "firebase/database"; // مفقود سابقاً للـ Realtime
-
+import './AdminDash.css';
 // 1. نظام الحماية الشامل (The Fortress Shield)
 export const SecurityShield = {
   // بصمة المتصفح المتقدمة + التحقق من الجلسة النشطة
@@ -974,4 +974,5 @@ const StudentHub = () => {
   );
 };
 export default AdminDash;
+
 
