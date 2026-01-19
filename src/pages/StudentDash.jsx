@@ -1,19 +1,26 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+// استيراد وظائف Firebase
 import { 
-  getFirestore, collection, doc, getDocs, query, where, orderBy, 
-  onSnapshot, updateDoc, addDoc, deleteDoc, setDoc, increment, limit, arrayUnion 
+  onAuthStateChanged 
+} from "firebase/auth";
+import { 
+  collection, doc, getDocs, query, where, orderBy, 
+  onSnapshot, updateDoc, addDoc, deleteDoc, setDoc, increment, limit, arrayUnion 
 } from "firebase/firestore";
-import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { 
+  ref as storageRef, uploadBytesResumable, getDownloadURL 
+} from "firebase/storage";
+
+// استيراد المكتبات الخارجية
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { 
+  Pin, Trash2, User, Mail, Lock, Phone, UserPlus, AlertCircle, Shield, Zap, Star 
+} from 'lucide-react'; // تأكد من تثبيت lucide-react
 
-
-// استيراد الإعدادات الصحيحة
-import app, { db, auth } from "../firebase";
+// استيراد الإعدادات المركزية (هذا السطر الأهم لمنع التكرار)
+import { auth, db, storage } from "../firebase"; 
 import "./StudentDash.css";
-
-
 
 // 1. مكون بطاقة الإحصائيات (StatCard)
 const StatCard = ({ title, value, icon, hint, trend }) => (
@@ -1082,6 +1089,7 @@ const goToActivation = () => {
 };
 
 export default StudentDash;
+
 
 
 
