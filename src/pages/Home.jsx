@@ -1,43 +1,57 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
   FaRocket, FaCode, FaBook, FaWallet, FaUserShield, 
-  FaChartLine, FaQuestionCircle, FaAward, FaCrown, FaUsers 
+  FaChartLine, FaQuestionCircle, FaAward, FaCrown, FaUsers,
+  FaDiscord, FaGithub, FaYoutube, FaTwitter, FaArrowRight,
+  FaMicrochip, FaBrain, FaGem, FaSatellite
 } from 'react-icons/fa';
 import './Home.css';
 
+/**
+ * HOME ULTIMATE V4 - NEBULA EDITION
+ * تم تصميم هذا الملف ليكون لوحة فنية تفاعلية تعتمد على الطبقات العميقة
+ */
+
 const Home = () => {
   const navigate = useNavigate();
-  const scrollRef = useRef(null);
+  const containerRef = useRef(null);
   
-  // --- 1. حالة النظام والرسائل التفاعلية ---
+  // --- 1. الـ Scroll Progress للتحكم في العناصر أثناء النزول ---
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  });
+
+  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+  const textY = useTransform(scrollYProgress, [0, 1], ["0%", "200%"]);
+
+  // --- 2. State Management ---
   const [displayText, setDisplayText] = useState('');
   const [msgIndex, setMsgIndex] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeFeature, setActiveFeature] = useState(0);
-  const [stats, setStats] = useState({ students: 0, courses: 0, xp: 0 });
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [activeTab, setActiveTab] = useState('highschool');
+  const [isVisible, setIsVisible] = useState(false);
 
+  // نصوص الهيرو المتغيرة
   const heroMessages = useMemo(() => [
-    "مرحباً بك في عصر التعليم الذكي 4.0",
-    "حوّل شغفك بالبرمجة إلى واقع ملموس",
-    "منظومة متكاملة لطلاب الثانوية العامة",
-    "تعلم، نـافس، واربح جوائز حقيقية USDT"
+    "مرحباً بك في مجرة التعليم الذكي 4.0",
+    "حوّل شغفك بالبرمجة إلى أصول رقمية",
+    "منظومة متكاملة لطلاب النخبة في مصر",
+    "تعلم، نـافس، واستلم جوائزك بـ USDT"
   ], []);
 
-  // --- 2. محرك العدادات الحية (Live Counters) ---
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStats(prev => ({
-        students: prev.students < 15400 ? prev.students + 127 : 15400,
-        courses: prev.courses < 850 ? prev.courses + 12 : 850,
-        xp: prev.xp < 1000000 ? prev.xp + 5400 : 1000000
-      }));
-    }, 50);
-    return () => clearInterval(interval);
-  }, []);
+  // --- 3. محرك الجاذبية البصري (Mouse Parallax) ---
+  const handleMouseMove = (e) => {
+    const { clientX, clientY } = e;
+    const x = (clientX - window.innerWidth / 2) / 35;
+    const y = (clientY - window.innerHeight / 2) / 35;
+    setMousePos({ x, y });
+  };
 
-  // --- 3. محرك كتابة النصوص (Typewriter Engine) ---
+  // --- 4. تأثير الكتابة الذكي ---
   useEffect(() => {
     let i = 0;
     const currentMsg = heroMessages[msgIndex];
@@ -48,294 +62,377 @@ const Home = () => {
         clearInterval(typing);
         setTimeout(() => {
           setMsgIndex((prev) => (prev + 1) % heroMessages.length);
-        }, 2500);
+        }, 3000);
       }
-    }, 70);
+    }, 60);
     return () => clearInterval(typing);
   }, [msgIndex, heroMessages]);
 
-  // --- 4. معالجة حركة الماوس للـ 3D Parallax ---
-  const [rotate, setRotate] = useState({ x: 0, y: 0 });
-  const handleMouseMove = (e) => {
-    const x = (window.innerWidth / 2 - e.pageX) / 40;
-    const y = (window.innerHeight / 2 - e.pageY) / 40;
-    setRotate({ x, y });
-  };
-
-  // --- 5. بيانات المميزات الضخمة (Features Database) ---
-  const features = [
+  // --- 5. بيانات مصفوفة المستقبل (Data Grid) ---
+  const ecosystem = [
     {
-      title: "نظام التلعيب (Gamification)",
-      desc: "نحن لا ندرّس فقط، بل نحوّل المنهج إلى رحلة RPG. اجمع الـ XP، ارفع مستواك، ونافس في قائمة المتصدرين العالمية لتربح أوسمة حقيقية.",
+      id: 'gamification',
+      title: "نظام التلعيب RPG",
       icon: <FaAward />,
-      color: "#ff0055"
+      color: "from-purple-500 to-pink-500",
+      details: "اجمع نقاط الـ XP، وارفع مستواك لفتح كورسات سرية وجوائز نادرة.",
+      stats: "98% تحفيز"
     },
     {
-      title: "الحماية ضد الغش (Anti-Cheat)",
-      desc: "نظام ذكاء اصطناعي يراقب السلوك لضمان نزاهة الاختبارات. تشفير كامل لبياناتك ومحفظتك الرقمية باستخدام بروتوكولات حماية متطورة.",
-      icon: <FaUserShield />,
-      color: "#00d2ff"
+      id: 'crypto',
+      title: "اقتصاد المتعلم",
+      icon: <FaGem />,
+      color: "from-cyan-400 to-blue-600",
+      details: "أول منصة في مصر تمنحك عملات رقمية (USDT) مقابل تفوقك الدراسي.",
+      stats: "USDT Rewards"
     },
     {
-      title: "المحفظة الذكية (Crypto-Wallet)",
-      desc: "نظام مالي متكامل يدعم USDT. اشحن رصيدك عبر الأكواد، اشترك في الكورسات، أو استلم جوائزك المالية مباشرة في حسابك.",
-      icon: <FaWallet />,
-      color: "#43e97b"
+      id: 'ai',
+      title: "الذكاء الاصطناعي",
+      icon: <FaBrain />,
+      color: "from-green-400 to-emerald-600",
+      details: "مساعد ذكي يحلل نقاط ضعفك ويضع لك خطة مذاكرة مخصصة يومياً.",
+      stats: "AI Mentor"
     }
   ];
 
+  // --- 6. المكونات الفرعية التفاعلية ---
+  const FloatingParticle = ({ size, color, duration, delay }) => (
+    <motion.div
+      className="particle"
+      style={{
+        width: size,
+        height: size,
+        background: color,
+        position: 'absolute',
+        borderRadius: '50%',
+        filter: 'blur(10px)',
+        zIndex: 0
+      }}
+      animate={{
+        y: [0, -100, 0],
+        x: [0, 50, 0],
+        opacity: [0.2, 0.5, 0.2]
+      }}
+      transition={{
+        duration,
+        repeat: Infinity,
+        delay,
+        ease: "easeInOut"
+      }}
+    />
+  );
+
   return (
-    <div className="home-ultimate-container" onMouseMove={handleMouseMove}>
+    <div className="home-v4-master" ref={containerRef} onMouseMove={handleMouseMove}>
       
-      {/* هيدر التنقل الشفاف */}
-      <nav className={`main-nav ${isMenuOpen ? 'open' : ''} glass`}>
-        <div className="nav-logo">
-          <FaRocket className="logo-icon" />
-          <span>STUDENT-PRO <small>V3</small></span>
-        </div>
-        <div className="nav-links">
-          <a href="#hero">الرئيسية</a>
-          <a href="#features">المميزات</a>
-          <a href="#stages">المراحل</a>
-          <a href="#stats">الإحصائيات</a>
-          <button className="nav-login-btn" onClick={() => navigate('/login')}>دخول المنصة</button>
-        </div>
-        <div className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-          <span></span><span></span><span></span>
+      {/* 🌌 الخلفية الفضائية المتحركة */}
+      <div className="nebula-bg">
+        <div className="stars-layer"></div>
+        <FloatingParticle size="300px" color="rgba(79, 172, 254, 0.15)" duration={15} delay={0} />
+        <FloatingParticle size="400px" color="rgba(255, 0, 85, 0.1)" duration={20} delay={5} />
+      </div>
+
+      {/* 🛰️ Navbar Future Edition */}
+      <nav className="nav-v4 glass-morphism">
+        <div className="nav-container">
+          <motion.div className="brand-v4" whileHover={{ scale: 1.05 }}>
+            <div className="logo-glitch-wrapper">
+              <FaSatellite className="main-logo-icon" />
+              <span className="logo-text">NEBULA <small>PRO</small></span>
+            </div>
+          </motion.div>
+
+          <div className="nav-links-v4">
+            {['المسارات', 'المختبر', 'المتجر', 'المتصدرين'].map((link) => (
+              <motion.a 
+                key={link} 
+                href={`#${link}`} 
+                whileHover={{ y: -2, color: '#4facfe' }}
+              >
+                {link}
+              </motion.a>
+            ))}
+          </div>
+
+          <div className="nav-actions-v4">
+            <button className="btn-login-v4" onClick={() => navigate('/login')}>
+              <span>دخول النظام</span>
+              <div className="btn-glow"></div>
+            </button>
+            <div className="menu-burger-v4" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              <div className={`bar ${isMenuOpen ? 'active' : ''}`}></div>
+            </div>
+          </div>
         </div>
       </nav>
 
-      {/* قسم الهيرو العملاق (Hero Core) */}
-      <section id="hero" className="hero-section-v3">
-        <div className="background-3d-layers">
+      {/* 🚀 Hero Section - THE IMPRESSION MAKER */}
+      <section className="hero-v4">
+        <div className="hero-grid">
           <motion.div 
-            className="shape circle-1" 
-            animate={{ x: rotate.x * 2, y: rotate.y * 2, rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
-          />
-          <motion.div 
-            className="shape cube-1" 
-            animate={{ x: -rotate.x * 3, y: -rotate.y * 3, rotate: -360 }}
-            transition={{ repeat: Infinity, duration: 15, ease: "linear" }}
-          />
-          <div className="overlay-grid"></div>
-        </div>
-
-        <div className="hero-main-content">
-          <motion.div 
-            className="hero-badge"
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
+            className="hero-text-content"
+            initial={{ opacity: 0, x: -100 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1 }}
           >
-            ⭐ المنصة التعليمية رقم #1 في الوطن العربي
+            <div className="status-badge">
+              <span className="pulse-dot"></span>
+              نظام التشغيل: V4.0.2 - ONLINE
+            </div>
+            
+            <h1 className="ultra-title">
+              التعلم ليس مجرد <br />
+              <span className="gradient-span">استيعاب</span>، بل <br />
+              <span className="shining-text">غـزو للمستقبل</span>
+            </h1>
+
+            <div className="typing-container-v4">
+              <p className="typed-msg">{displayText}<span className="cursor">|</span></p>
+            </div>
+
+            <p className="hero-sub-p">
+              أول منظومة تعليمية هجينة تدمج بين المناهج المصرية الرسمية 
+              وبين تقنيات تطوير الذات والبرمجة العالمية.
+            </p>
+
+            <div className="hero-buttons-v4">
+              <button className="main-cta-v4" onClick={() => navigate('/onboarding')}>
+                ابدأ رحلة الغزو الآن
+                <FaRocket className="btn-icon" />
+              </button>
+              <button className="secondary-cta-v4">
+                اكتشف المنهج
+              </button>
+            </div>
+
+            <div className="hero-trust-badges">
+              <div className="trust-item">
+                <FaUsers /> <span>+25K طالب</span>
+              </div>
+              <div className="trust-divider"></div>
+              <div className="trust-item">
+                <FaCrown /> <span>الأول تقنياً</span>
+              </div>
+            </div>
           </motion.div>
 
-          <h1 className="main-title">
-            مستقبلك يبدأ من <br />
-            <span className="text-gradient">نقرة واحدة</span>
-          </h1>
-
-          <div className="typewriter-box">
-            <span className="typed-text">{displayText}</span>
-            <span className="blinking-cursor">_</span>
-          </div>
-
-          <p className="hero-description">
-            انضم لأكثر من 1500 طالب في أكبر تجمع تعليمي رقمي. نوفر لك شروحات تفاعلية، 
-            امتحانات ذكية، وجوائز مالية حقيقية لتحفيزك على التفوق الدراسي والتقني.
-          </p>
-
-          <div className="hero-cta-group">
-            <motion.button 
-              className="cta-btn primary"
-              whileHover={{ scale: 1.05, boxShadow: "0 0 20px #4facfe" }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/register')}
-            >
-              سجل الآن مجاناً <FaUsers style={{marginRight: '10px'}} />
-            </motion.button>
-            
-            <motion.button 
-              className="cta-btn secondary"
-              whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-              onClick={() => navigate('/about')}
-            >
-              مشاهدة العرض التجريبي
-            </motion.button>
-          </div>
-        </div>
-
-        <motion.div 
-          className="hero-visual-card glass"
-          style={{ transform: `perspective(1000px) rotateY(${rotate.x}deg) rotateX(${-rotate.y}deg)` }}
-        >
-          <div className="card-header-v3">
-            <div className="dot red"></div><div className="dot yellow"></div><div className="dot green"></div>
-          </div>
-          <div className="card-body-v3">
-            <div className="user-stats-demo">
-              <div className="stat-circle">
-                <svg viewBox="0 0 36 36" className="circular-chart">
-                  <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                  <path className="circle" strokeDasharray="85, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                </svg>
-                <div className="percentage">85%</div>
+          {/* 3D Visual Object (The Floating Dashboard) */}
+          <motion.div 
+            className="hero-3d-visual"
+            style={{ 
+              rotateX: mousePos.y, 
+              rotateY: -mousePos.x,
+              transformStyle: "preserve-3d" 
+            }}
+          >
+            <div className="visual-core glass-v4">
+              <div className="core-header">
+                <div className="controls"><span className="r"></span><span className="y"></span><span className="g"></span></div>
+                <div className="core-title">Mainframe_System.exe</div>
               </div>
-              <div className="stat-info">
-                <h4>مستوى الإنجاز اليومي</h4>
-                <p>لقد اجتزت 4 دروس بنجاح!</p>
+              <div className="core-body">
+                <div className="data-row">
+                  <div className="data-label">نظام الحماية</div>
+                  <div className="data-bar"><motion.div className="bar-fill" initial={{width: 0}} animate={{width: '94%'}}></motion.div></div>
+                </div>
+                <div className="data-row">
+                  <div className="data-label">تزامن البيانات</div>
+                  <div className="data-bar"><motion.div className="bar-fill purple" initial={{width: 0}} animate={{width: '80%'}}></motion.div></div>
+                </div>
+                <div className="visual-stats-grid">
+                  <div className="v-stat-card">
+                    <FaMicrochip className="v-icon" />
+                    <span>8.4 GHz</span>
+                  </div>
+                  <div className="v-stat-card">
+                    <FaChartLine className="v-icon" />
+                    <span>+450% تفوق</span>
+                  </div>
+                </div>
               </div>
+              {/* Floating Holograms */}
+              <motion.div className="hologram h1" animate={{ y: [0, -20, 0] }} transition={{ repeat: Infinity, duration: 4 }}>
+                <FaCode />
+              </motion.div>
+              <motion.div className="hologram h2" animate={{ y: [0, 20, 0] }} transition={{ repeat: Infinity, duration: 5, delay: 1 }}>
+                <FaWallet />
+              </motion.div>
             </div>
-            <div className="xp-gain-alert">
-              <FaCrown className="crown-icon" />
-              <span>+250 XP حصلت على وسام الاجتهاد</span>
-            </div>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* قسم الإحصائيات (Live Counters Section) */}
-      <section id="stats" className="stats-strip glass">
-        <div className="stat-box">
-          <h3>+{stats.students.toLocaleString()}</h3>
-          <p>طالب نشط</p>
-        </div>
-        <div className="stat-box divider">
-          <h3>+{stats.courses.toLocaleString()}</h3>
-          <p>دورة تدريبية</p>
-        </div>
-        <div className="stat-box divider">
-          <h3>+{stats.xp.toLocaleString()}</h3>
-          <p>نقطة خبرة مكتسبة</p>
-        </div>
-        <div className="stat-box">
-          <h3>99.9%</h3>
-          <p>نسبة رضا الطلاب</p>
+          </motion.div>
         </div>
       </section>
 
-      {/* قسم المميزات بنظام البطاقات التفاعلية (Features V3) */}
-      <section id="features" className="features-grid-v3">
-        <div className="section-title">
-          <h2>لماذا نحن <span className="highlight">مختلفون؟</span></h2>
-          <p>نحن لا نقدم محتوى فقط، نحن نصنع تجربة مستخدم لا تُنسى</p>
+      {/* 📊 Live Statistics Strip */}
+      <section className="stats-v4">
+        {[
+          { label: "كورس تفاعلي", val: "850+", icon: <FaBook /> },
+          { label: "ساعة محتوى", val: "12,000+", icon: <FaClock /> },
+          { label: "جوائز وزعت", val: "$45,000", icon: <FaGem /> },
+          { label: "معدل النجاح", val: "99.2%", icon: <FaChartLine /> }
+        ].map((s, i) => (
+          <div key={i} className="stat-unit-v4">
+            <div className="s-icon-v4">{s.icon}</div>
+            <div className="s-info-v4">
+              <span className="s-val-v4">{s.val}</span>
+              <span className="s-label-v4">{s.label}</span>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      {/* 🌌 Ecosystem Section (The 3 Cards) */}
+      <section className="ecosystem-v4">
+        <div className="section-head-v4">
+          <h2 className="title-v4">النظام <span className="highlight">البيئي</span> للمنصة</h2>
+          <p>أكثر من مجرد فيديوهات، نحن نبني مستقبلك الرقمي بالكامل</p>
         </div>
 
-        <div className="cards-container">
-          {features.map((f, idx) => (
+        <div className="eco-cards-container">
+          {ecosystem.map((item, idx) => (
             <motion.div 
-              key={idx}
-              className="feature-card-v3 glass-heavy"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              key={item.id}
+              className="eco-card-v4"
+              whileHover={{ y: -15 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: idx * 0.2 }}
-              onMouseEnter={() => setActiveFeature(idx)}
             >
-              <div className="card-icon" style={{ backgroundColor: f.color }}>{f.icon}</div>
-              <h3>{f.title}</h3>
-              <p>{f.desc}</p>
-              <div className="card-footer-v3">
-                <span onClick={() => navigate('/features')}>اقرأ المزيد ➔</span>
+              <div className={`eco-icon-wrapper ${item.color}`}>
+                {item.icon}
               </div>
+              <h3>{item.title}</h3>
+              <p>{item.details}</p>
+              <div className="eco-stats-badge">{item.stats}</div>
+              <div className="eco-card-bg"></div>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* قسم بوكسات المراحل الدراسية (Study Stages) */}
-      <section id="stages" className="stages-mega-section">
-        <div className="stages-content">
-          <div className="stages-text">
-            <h2>اختر مرحلتك وابدأ <br /> <span className="text-gradient">رحلة الإبداع</span></h2>
-            <p>سواء كنت في بداية مشوارك أو تستعد للجامعة، لدينا المسار المثالي لك.</p>
-            
-            <div className="stage-selector">
-              <div className="stage-item-v3" onClick={() => navigate('/primary')}>
-                <div className="stage-num">01</div>
-                <div className="stage-info">
-                  <h4>المرحلة الابتدائية</h4>
-                  <p>تأسيس قوي بأساليب ممتعة</p>
-                </div>
-              </div>
-              <div className="stage-item-v3" onClick={() => navigate('/preparatory')}>
-                <div className="stage-num">02</div>
-                <div className="stage-info">
-                  <h4>المرحلة الإعدادية</h4>
-                  <p>تطوير المهارات العلمية والبرمجية</p>
-                </div>
-              </div>
-              <div className="stage-item-v3 active" onClick={() => navigate('/highschool')}>
-                <div className="stage-num">03</div>
-                <div className="stage-info">
-                  <h4>المرحلة الثانوية</h4>
-                  <p>تجهيز شامل لامتحانات الدولة والقدرات</p>
-                </div>
-              </div>
-            </div>
+      {/* 🏫 Academic Stages - THE INTERACTIVE TABS */}
+      <section className="stages-v4">
+        <div className="stages-wrapper-v4 glass-heavy">
+          <div className="stages-nav-v4">
+            <button className={activeTab === 'primary' ? 'active' : ''} onClick={() => setActiveTab('primary')}>الأساسي</button>
+            <button className={activeTab === 'highschool' ? 'active' : ''} onClick={() => setActiveTab('highschool')}>الثانوي</button>
+            <button className={activeTab === 'dev' ? 'active' : ''} onClick={() => setActiveTab('dev')}>البرمجة</button>
           </div>
-          
-          <div className="stages-visual">
-            <div className="floating-preview-ui glass-heavy">
-              <img src="/dashboard-preview.png" alt="Preview" className="ui-img" />
-              <div className="floating-tag t1">دروس حية 🔴</div>
-              <div className="floating-tag t2">اختبارات 📝</div>
-              <div className="floating-tag t3">جوائز 🎁</div>
-            </div>
+
+          <div className="stages-display-v4">
+            <AnimatePresence mode="wait">
+              <motion.div 
+                key={activeTab}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="stage-info-card-v4"
+              >
+                <div className="stage-text-v4">
+                  <h3>{activeTab === 'highschool' ? 'المسار الثانوي الاحترافي' : 'مسار المبدعين الصغار'}</h3>
+                  <p>تغطية كاملة للمناهج الدراسية مع ربطها بسوق العمل البرمجي العالمي. لا تدرس الفيزياء فقط، بل برمج محاكي فيزياء خاص بك!</p>
+                  <ul className="stage-features-v4">
+                    <li><FaCheckCircle /> بنك أسئلة يضم 50,000 سؤال</li>
+                    <li><FaCheckCircle /> مراجعات ليلة الامتحان بالذكاء الاصطناعي</li>
+                    <li><FaCheckCircle /> شهادات معتمدة محلياً ودولياً</li>
+                  </ul>
+                  <button className="stage-btn-v4">استكشف المسار <FaArrowRight /></button>
+                </div>
+                <div className="stage-image-v4">
+                  <div className="abstract-shape"></div>
+                  <img src={activeTab === 'highschool' ? '/highschool.png' : '/junior.png'} alt="Stage" />
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </section>
 
-      {/* قسم الأسئلة الشائعة (FAQ Interactive) */}
-      <section className="faq-section-v3">
-        <h2>هل لديك <span className="highlight">أسئلة؟</span></h2>
-        <div className="faq-container">
-          <details className="faq-item glass">
-            <summary>كيف يمكنني سحب الجوائز المالية؟ <FaQuestionCircle /></summary>
-            <div className="faq-answer">يمكنك سحب جوائزك عبر محفظة USDT أو تحويلها لرصيد داخل المنصة لشراء كورسات متقدمة.</div>
-          </details>
-          <details className="faq-item glass">
-            <summary>هل المحتوى متاح مدى الحياة؟ <FaQuestionCircle /></summary>
-            <div className="faq-answer">نعم، بمجرد شراء الكورس أو تفعيله بالكود، يظل في مكتبتك الخاصة للأبد.</div>
-          </details>
-          <details className="faq-item glass">
-            <summary>ما هو نظام الـ XP؟ <FaQuestionCircle /></summary>
-            <div className="faq-answer">هو نظام نقاط تجمعها عند مشاهدة الفيديوهات أو حل الاختبارات لترقية رتبتك في المنصة.</div>
-          </details>
+      {/* 🏆 Leaderboard Preview - SOCIAL PROOF */}
+      <section className="leaderboard-preview-v4">
+        <div className="lb-header">
+          <h2>قائمة <span className="highlight">العظماء</span> لهذا الأسبوع</h2>
+          <p>كن من ضمن الـ 1% الأوائل واربح جوائز نقدية فورية</p>
+        </div>
+        <div className="lb-list-v4">
+          {[
+            { name: "أحمد محمد", xp: "15,400", rank: 1, img: "A" },
+            { name: "سارة علي", xp: "14,200", rank: 2, img: "S" },
+            { name: "محمود حسن", xp: "12,900", rank: 3, img: "M" }
+          ].map((user) => (
+            <div key={user.rank} className={`lb-item-v4 rank-${user.rank}`}>
+              <div className="lb-rank">#{user.rank}</div>
+              <div className="lb-user-img">{user.img}</div>
+              <div className="lb-user-info">
+                <h4>{user.name}</h4>
+                <span>{user.xp} XP</span>
+              </div>
+              <div className="lb-badge-v4">{user.rank === 1 ? <FaCrown /> : <FaAward />}</div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* الفوتر التقني (The Cyber Footer) */}
-      <footer className="mega-footer-v3">
-        <div className="footer-grid-v3">
-          <div className="footer-brand">
-            <FaRocket className="f-logo" />
-            <h3>STUDENT-PRO</h3>
-            <p>المنصة التعليمية الرائدة في تقنيات التعلم عن بعد.</p>
-          </div>
-          <div className="footer-links">
-            <h4>روابط سريعة</h4>
-            <ul>
-              <li>من نحن</li>
-              <li>فريق العمل</li>
-              <li>سياسة الخصوصية</li>
-              <li>اتصل بنا</li>
-            </ul>
-          </div>
-          <div className="footer-newsletter">
-            <h4>اشترك في النشرة</h4>
-            <div className="subscribe-box">
-              <input type="email" placeholder="بريدك الإلكتروني" />
-              <button>اشترك</button>
+      {/* 📩 Newsletter - THE CYBER BOX */}
+      <section className="newsletter-v4">
+        <div className="news-card-v4 glass-morphism">
+          <div className="news-content">
+            <h2>انضم إلى <span className="text-gradient">المستقبل</span></h2>
+            <p>احصل على أحدث التحديثات، الدروس المجانية، وأكواد الخصم مباشرة</p>
+            <div className="input-group-v4">
+              <input type="email" placeholder="أدخل بريدك الإلكتروني التقني" />
+              <button>اشترك الآن</button>
             </div>
           </div>
+          <div className="news-visual">
+            <FaRocket className="floating-rocket" />
+          </div>
         </div>
-        <div className="footer-bottom">
-          <p>© 2024 جميع الحقوق محفوظة لمنصة Student-Pro | صنع بكل ❤️ للمستقبل</p>
+      </section>
+
+      {/* 🌌 Footer - THE FINAL IMPRESSION */}
+      <footer className="footer-v4">
+        <div className="footer-top-v4">
+          <div className="f-col-v4 brand">
+            <h3>NEBULA <small>PRO</small></h3>
+            <p>نحن لا نبيع كورسات، نحن نصنع جيلاً قادراً على غزو المستقبل الرقمي بوعي وعلم وقوة تقنية.</p>
+            <div className="social-row-v4">
+              <FaDiscord /><FaGithub /><FaYoutube /><FaTwitter />
+            </div>
+          </div>
+          <div className="f-col-v4">
+            <h4>النظام</h4>
+            <a href="#">الأمان والحماية</a>
+            <a href="#">نظام المحفظة</a>
+            <a href="#">قواعد البيانات</a>
+            <a href="#">الذكاء الاصطناعي</a>
+          </div>
+          <div className="f-col-v4">
+            <h4>الدعم</h4>
+            <a href="#">مركز المساعدة</a>
+            <a href="#">تواصل مع المعلم</a>
+            <a href="#">بلاغات الغش</a>
+            <a href="#">الأسئلة الشائعة</a>
+          </div>
+          <div className="f-col-v4">
+            <h4>المكتب الرئيسي</h4>
+            <p>القاهرة، مصر - مدينة نصر <br /> برج الطالب الذكي - الدور 40</p>
+          </div>
+        </div>
+        <div className="footer-bottom-v4">
+          <p>© 2026 جميع الحقوق محفوظة لشركة NEBULA TECH | صُمم بشغف للمستقبل</p>
+          <div className="f-status-v4">
+            <span className="online-dot"></span> الخوادم تعمل بكفاءة 100%
+          </div>
         </div>
       </footer>
+
     </div>
   );
 };
+
+// مكونات أيقونات مفقودة لضمان التشغيل
+const FaClock = () => <FaChartLine style={{transform: 'rotate(90deg)'}} />;
+const FaCheckCircle = () => <div className="custom-check">✓</div>;
 
 export default Home;
