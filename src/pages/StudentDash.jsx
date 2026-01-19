@@ -8,9 +8,11 @@ import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } f
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
+
 // استيراد الإعدادات الصحيحة
 import app, { db, auth } from "../firebase";
 import "./StudentDash.css";
+
 
 // 1. مكون بطاقة الإحصائيات (StatCard)
 const StatCard = ({ title, value, icon, hint, trend }) => (
@@ -1076,6 +1078,7 @@ const goToActivation = () => {
 };
 
 export default StudentDash;
+
 
 
 
