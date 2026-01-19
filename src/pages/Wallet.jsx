@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import './Wallet.css';
 
+
 const Wallet = () => {
   // ===================== [ States & Refs ] =====================
   const [user, setUser] = useState(null);
@@ -32,6 +33,7 @@ const Wallet = () => {
   const [vaultPIN, setVaultPIN] = useState('');
   const [isVaultLocked, setIsVaultLocked] = useState(true);
 
+  
   // UI States
   const [notifications, setNotifications] = useState([]);
   const [searchID, setSearchID] = useState('');
@@ -658,4 +660,5 @@ const Wallet = () => {
 };
 
 export default Wallet;
+
 
