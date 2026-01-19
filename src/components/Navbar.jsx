@@ -6,10 +6,12 @@ import {
   Sparkles, LogIn, User, Wallet, Info 
 } from 'lucide-react';
 
+
 // تأكد من أن هذه المسارات صحيحة في مشروعك
 import { auth } from '../firebase'; 
 import { signOut } from 'firebase/auth';
 import './Navbar.css'; 
+
 
 const Navbar = ({ userData, isAdmin }) => {
   const navigate = useNavigate();
@@ -22,6 +24,7 @@ const Navbar = ({ userData, isAdmin }) => {
       console.error("خطأ في تسجيل الخروج:", error);
     });
   };
+  
 
   // المصفوفة تبدأ هنا وتنتهي بعد كل العناصر
   const publicLinks = [
@@ -100,6 +103,7 @@ const Navbar = ({ userData, isAdmin }) => {
 };
 
 export default Navbar;
+
 
 
 
