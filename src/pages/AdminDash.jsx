@@ -1,978 +1,712 @@
-import { db, rtdb, auth } from "../firebase";
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { db, rtdb, auth, storage } from "../firebase";
 import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  getDoc, // مفقود سابقاً
-  doc,    // مفقود سابقاً
-  updateDoc, // مفقود سابقاً
-  addDoc,    // مفقود سابقاً
-  setDoc,    // مفقود سابقاً
-  increment, 
-  writeBatch,
-  serverTimestamp // مفقود سابقاً
+  collection, query, where, getDocs, getDoc, doc, updateDoc, 
+  addDoc, setDoc, increment, writeBatch, serverTimestamp, 
+  orderBy, limit, deleteDoc, onSnapshot 
 } from "firebase/firestore";
-import { ref, set, onValue, update } from "firebase/database"; // مفقود سابقاً للـ Realtime
+import { ref, set, onValue, update, remove, push, serverTimestamp as rtdbTimestamp } from "firebase/database";
+import { 
+  ShieldCheck, Radio, BookOpen, Users, Key, BarChart3, Cpu, Search, 
+  Zap, ShieldAlert, Fingerprint, MapPin, TrendingUp, Ticket, 
+  MessageCircle, Download, Activity, Wifi, Server, MessageSquare, 
+  History, AlertTriangle, UserPlus, FileText, Settings, Bell, 
+  Lock, Unlock, RefreshCcw, Database, Globe, Layers, Eye, 
+  Target, Award, CreditCard, HardDrive, Share2, Terminal
+} from 'lucide-react';
 import './AdminDash.css';
-// 1. نظام الحماية الشامل (The Fortress Shield)
-export const SecurityShield = {
-  // بصمة المتصفح المتقدمة + التحقق من الجلسة النشطة
-  verifyDevice: async (studentId, fingerprint) => {
+
+/**
+ * ============================================================
+ * [1] المحرك الأمني الفائق (ULTIMATE SECURITY KERNEL)
+ * ============================================================
+ */
+export const TitanSecurity = {
+  // منع تعدد الأجهزة (Device Binding)
+  lockToDevice: async (studentId, fingerprint) => {
     const userRef = doc(db, "users", studentId);
     const snap = await getDoc(userRef);
-
     if (snap.exists()) {
-      const userData = snap.data();
-
-      // أ- التحقق من ربط الجهاز (Device Binding)
-      if (userData.deviceId && userData.deviceId !== fingerprint) {
-        // حظر تلقائي مؤقت وإرسال إشعار للمدير
-        await updateDoc(userRef, { 
-          status: 'LOCKED', 
-          lastViolation: 'MULTI_DEVICE_ATTEMPT',
-          violationTime: serverTimestamp()
-        });
-        throw new Error("SECURITY_ERR_DEVICE_LIMIT");
+      const data = snap.data();
+      if (data.deviceId && data.deviceId !== fingerprint) {
+        await TitanSecurity.triggerAutoBan(studentId, "DEVICE_LOCK_VIOLATION");
+        return false;
       }
-
-      // ب- إذا كان الطالب يسجل لأول مرة، نربط جهازه الحساب
-      if (!userData.deviceId) {
-        await updateDoc(userRef, { deviceId: fingerprint });
-      }
-
-      // ج- منع فتح الحساب في تبويبين أو متصفحين مختلفين (Session Lock)
-      const sessionRef = ref(rtdb, `active_sessions/${studentId}`);
-      set(sessionRef, {
-        lastActive: Date.now(),
-        fingerprint: fingerprint,
-        status: 'online'
-      });
+      if (!data.deviceId) await updateDoc(userRef, { deviceId: fingerprint });
     }
+    return true;
   },
 
-  // رصد برامج تسجيل الشاشة أو محاولات الاختراق
-  reportSecurityIncident: async (studentId, incidentType, details = {}) => {
-    // 1. تسجيل الحادثة في الأرشيف للتحقيق
+  // نظام الحظر التلقائي الفوري
+  triggerAutoBan: async (studentId, reason) => {
+    await updateDoc(doc(db, "users", studentId), { 
+      status: 'BANNED', 
+      banReason: reason,
+      bannedAt: serverTimestamp() 
+    });
+    // تدمير الجلسة في الوقت الفعلي
+    set(ref(rtdb, `active_sessions/${studentId}/kill`), {
+      state: true,
+      reason: reason,
+      time: Date.now()
+    });
+  },
+
+  // رصد محاولات تصوير الشاشة
+  reportScreenshot: async (studentId, info) => {
     await addDoc(collection(db, "security_incidents"), {
       studentId,
-      incident: incidentType, // مثل: 'SCREEN_RECORD' أو 'TAB_SWITCH'
-      details,
+      type: 'SCREEN_CAPTURE_DETECTED',
+      details: info,
       timestamp: serverTimestamp()
     });
-
-    // 2. إغلاق الجلسة فوراً (Kill Switch)
-    const sessionRef = ref(rtdb, `active_sessions/${studentId}`);
-    await update(sessionRef, { kill: true, reason: incidentType });
-
-    // 3. قفل حساب الطالب في Firestore لمنعه من تسجيل الدخول مرة أخرى
-    const userRef = doc(db, "users", studentId);
-    await updateDoc(userRef, { status: 'SUSPENDED' });
   }
 };
 
-  // رصد برامج تسجيل الشاشة
-  reportScreenCapture: async (studentId, softwareName) => {
-    await addDoc(collection(db, "security_incidents"), {
-      studentId,
-      incident: 'SCREEN_RECORD_DETECTED',
-      tool: softwareName,
-      timestamp: serverTimestamp()
-    });
-    // إغلاق الجلسة فوراً عبر Realtime Database
-    set(ref(rtdb, `active_sessions/${studentId}/kill`), true);
-  }
-};
-
-// 2. محرك الأكواد الضخم (Bulk Engine)
-export const CodeEngine = {
-  generateBulk: async (config) => {
-    const { count, courseId, prefix, distributor } = config;
+/**
+ * ============================================================
+ * [2] المحرك المالي وتوليد الأكواد (FINANCIAL OPS ENGINE)
+ * ============================================================
+ */
+export const FinOps = {
+  // توليد أكواد الشحن بكميات ضخمة
+  generateBulkCodes: async (config) => {
+    const { count, amount, prefix, distributor, courseId } = config;
     const batch = writeBatch(db);
     const codes = [];
 
     for (let i = 0; i < count; i++) {
-      const code = `${prefix}-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
-      const ref = doc(db, "codes", code);
-      batch.set(ref, {
-        courseId,
-        distributor,
+      const secureCode = `${prefix}-${Math.random().toString(36).substring(2, 12).toUpperCase()}`;
+      const codeRef = doc(db, "billing_codes", secureCode);
+      batch.set(codeRef, {
+        code: secureCode,
+        value: Number(amount),
         isUsed: false,
+        courseId: courseId || 'all',
+        distributor: distributor || 'system',
         createdAt: serverTimestamp(),
-        expiresAt: Date.now() + (90 * 24 * 60 * 60 * 1000) // صلاحية 3 شهور
+        expiresAt: Date.now() + (90 * 24 * 60 * 60 * 1000)
       });
-      codes.push(code);
+      codes.push(secureCode);
     }
     await batch.commit();
-    return codes; // يتم تصديرها لاحقاً لملف CSV/PDF
+    return codes;
+  },
+
+  // حساب الأرباح الصافية بعد العمولات
+  calculateNetProfit: (grossRevenue) => {
+    const paymentGatewayFee = 0.03; // 3% عمولة فوري/كاش
+    const serverCostPercent = 0.05; // 5% تكاليف سيرفرات
+    const net = grossRevenue - (grossRevenue * paymentGatewayFee) - (grossRevenue * serverCostPercent);
+    return {
+      gross: grossRevenue,
+      fees: grossRevenue * paymentGatewayFee,
+      servers: grossRevenue * serverCostPercent,
+      net: net
+    };
   }
 };
 
-// 3. محلل الأداء بالذكاء الاصطناعي (AI Analytics)
-export const AIAnalyzer = {
-  predictChurn: async (daysInactive = 7) => {
-    const limit = Date.now() - (daysInactive * 24 * 60 * 60 * 1000);
-    const q = query(collection(db, "users"), where("lastActive", "<", limit));
-    const snap = await getDocs(q);
-    return snap.docs.map(d => ({
-      email: d.data().email,
-      riskLevel: 'HIGH',
-      suggestion: 'إرسال كوبون خصم لتحفيزه'
-    }));
-  }
-};
+/**
+ * ============================================================
+ * [3] المكون الرئيسي: أدمن داش (THE MASTER ADMIN COMPONENT)
+ * ============================================================
+ */
+const AdminDash = () => {
+  // --- States ---
+  const [activeTab, setActiveTab] = useState('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [stats, setStats] = useState({ online: 0, students: 0, revenue: 0, alerts: 0 });
+  const [securityLogs, setSecurityLogs] = useState([]);
+  const [isEmergency, setIsEmergency] = useState(false);
 
-// 4. نظام الـ Drip Content (التسلسل المنطقي)
-export const ContentLogic = {
-  canAccessLecture: async (studentId, courseId, lectureOrder) => {
-    if (lectureOrder === 1) return true;
-    const prevLecture = query(
-      collection(db, `users/${studentId}/progress`),
-      where("courseId", "==", courseId),
-      where("order", "==", lectureOrder - 1)
-    );
-    const snap = await getDocs(prevLecture);
-    return !snap.empty && snap.docs[0].data().completed === true;
-  }
-};
-const UltimateAdminPanel = () => {
-  const [activeTab, setActiveTab] = useState('security');
-  
+  // --- Real-time Listeners ---
+  useEffect(() => {
+    // مراقبة الطلاب المتصلين الآن
+    const activeRef = ref(rtdb, 'active_sessions');
+    onValue(activeRef, (snap) => {
+      setStats(prev => ({ ...prev, online: snap.exists() ? Object.keys(snap.val()).length : 0 }));
+    });
+
+    // مراقبة التنبيهات الأمنية
+    const q = query(collection(db, "security_incidents"), orderBy("timestamp", "desc"), limit(10));
+    const unsubSecurity = onSnapshot(q, (snap) => {
+      setSecurityLogs(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setStats(prev => ({ ...prev, alerts: snap.size }));
+    });
+
+    return () => unsubSecurity();
+  }, []);
+
+  // --- Handlers ---
+  const killAllSessions = async () => {
+    if (window.confirm("هل أنت متأكد من طرد جميع الطلاب من المنصة الآن؟")) {
+      const activeSnap = await getDocs(collection(db, "users")); // تبسيط للغرض
+      // كود تدمير الجلسات الجماعي
+      setIsEmergency(true);
+      setTimeout(() => setIsEmergency(false), 3000);
+    }
+  };
+
   return (
-    <div className="admin-wrapper" style={styles.container}>
+    <div className={`titan-admin-layout ${isEmergency ? 'emergency-mode' : ''}`}>
+      
       {/* Sidebar المطور */}
-      <aside className="main-sidebar" style={styles.sidebar}>
-        <div className="admin-profile">
-          <img src="/admin-avatar.png" />
-          <h3>د. محمد تيتو</h3>
-          <span>Super Admin</span>
+      <aside className={`titan-sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
+        <div className="sidebar-brand">
+          <div className="brand-icon"><Cpu size={28} /></div>
+          <div className="brand-text">
+            <h2>TITAN <span>OS</span></h2>
+            <p>Control Center v4.2</p>
+          </div>
         </div>
-        
-        <nav className="nav-list">
-          <div className="nav-group">الرقابة</div>
-          <button onClick={() => setActiveTab('fortress')}><ShieldCheck/> الحصن الأمني</button>
-          <button onClick={() => setActiveTab('live')}><Radio/> الرادار اللحظي</button>
-          
-          <div className="nav-group">المحتوى والطلاب</div>
-          <button onClick={() => setActiveTab('courses')}><BookOpen/> الأكاديمية</button>
-          <button onClick={() => setActiveTab('students')}><Users/> قاعدة البيانات</button>
-          
-          <div className="nav-group">المالية والنمو</div>
-          <button onClick={() => setActiveTab('atms')}><Key/> نظام الأكواد</button>
-          <button onClick={() => setActiveTab('sales')}><BarChart3/> التقارير المالية</button>
-          
-          <div className="nav-group">الذكاء الاصطناعي</div>
-          <button onClick={() => setActiveTab('ai-reports')}><Cpu/> AI Insights</button>
+
+        <nav className="sidebar-nav">
+          <div className="nav-section">المركز الرئيسي</div>
+          <button className={activeTab === 'overview' ? 'active' : ''} onClick={() => setActiveTab('overview')}>
+            <Activity size={18}/> الإحصائيات الحيوية
+          </button>
+          <button className={activeTab === 'live' ? 'active' : ''} onClick={() => setActiveTab('live')}>
+            <Radio size={18}/> الرادار اللحظي
+          </button>
+
+          <div className="nav-section">الأمان والرقابة</div>
+          <button className={activeTab === 'security' ? 'active' : ''} onClick={() => setActiveTab('security')}>
+            <ShieldAlert size={18}/> سجل الاختراقات
+          </button>
+          <button className={activeTab === 'devices' ? 'active' : ''} onClick={() => setActiveTab('devices')}>
+            <Fingerprint size={18}/> إدارة الأجهزة
+          </button>
+
+          <div className="nav-section">الإدارة المالية</div>
+          <button className={activeTab === 'codes' ? 'active' : ''} onClick={() => setActiveTab('codes')}>
+            <Key size={18}/> محرك الأكواد
+          </button>
+          <button className={activeTab === 'sales' ? 'active' : ''} onClick={() => setActiveTab('sales')}>
+            <TrendingUp size={18}/> تحليل الإيرادات
+          </button>
+
+          <div className="nav-section">إدارة المحتوى</div>
+          <button className={activeTab === 'students' ? 'active' : ''} onClick={() => setActiveTab('students')}>
+            <Users size={18}/> قاعدة الطلاب
+          </button>
+          <button className={activeTab === 'courses' ? 'active' : ''} onClick={() => setActiveTab('courses')}>
+            <BookOpen size={18}/> الأكاديمية
+          </button>
+
+          <div className="nav-section">الدعم والذكاء الاصطناعي</div>
+          <button className={activeTab === 'ai' ? 'active' : ''} onClick={() => setActiveTab('ai')}>
+            <Target size={18}/> AI Insights
+          </button>
+          <button className={activeTab === 'support' ? 'active' : ''} onClick={() => setActiveTab('support')}>
+            <MessageSquare size={18}/> تذاكر الدعم
+          </button>
         </nav>
+
+        <div className="sidebar-user">
+          <img src="/admin-pfp.jpg" alt="Admin" />
+          <div className="user-info">
+            <h4>د. محمد تيتو</h4>
+            <span>المدير العام</span>
+          </div>
+          <Settings size={18} />
+        </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="content-body" style={styles.main}>
-        <header style={styles.header}>
-          <div className="search-bar"><Search/> <input placeholder="ابحث عن طالب برقم الهاتف أو الكود..." /></div>
+      {/* Main Viewport */}
+      <main className="titan-main-content">
+        
+        {/* Header العلوي */}
+        <header className="titan-header">
+          <div className="header-search">
+            <Search size={20} />
+            <input placeholder="ابحث عن طالب برقم الهاتف، الكود، أو البريد الإلكتروني..." />
+            <div className="search-shortcut">Ctrl + K</div>
+          </div>
+
           <div className="header-actions">
-            <div className="server-status">سيرفر الفيديو: <span className="status-online">مستقر</span></div>
-            <button className="emergency-btn"><Zap/> تدمير الجلسات</button>
+            <div className="status-indicator">
+              <div className="pulse-dot"></div>
+              <span>السيرفر: مستقر</span>
+            </div>
+            
+            <div className="notification-bell">
+              <Bell size={22} />
+              <span className="count">{stats.alerts}</span>
+            </div>
+
+            <button className="emergency-kill-btn" onClick={killAllSessions}>
+              <Zap size={18} /> تدمير الجلسات
+            </button>
           </div>
         </header>
 
-        <section className="dashboard-view">
-           {/* هنا يتم تبديل الأقسام بناءً على الـ activeTab */}
-           {activeTab === 'fortress' && <SecurityDashboard />}
-           {activeTab === 'ai-reports' && <AIAnalyticsView />}
-        </section>
+        {/* Dynamic Content Modules */}
+        <div className="titan-viewport">
+          
+          {/* 1. OVERVIEW MODULE */}
+          {activeTab === 'overview' && (
+            <div className="module-container fade-in">
+              <div className="top-stats-grid">
+                <div className="glass-card">
+                  <div className="card-icon blue"><Users /></div>
+                  <div className="card-data">
+                    <p>الطلاب المسجلين</p>
+                    <h3>12,450</h3>
+                    <span className="trend positive">+12% هذا الشهر</span>
+                  </div>
+                </div>
+                <div className="glass-card">
+                  <div className="card-icon green"><Radio /></div>
+                  <div className="card-data">
+                    <p>متصل الآن</p>
+                    <h3>{stats.online}</h3>
+                    <span className="trend neutral">مستقر</span>
+                  </div>
+                </div>
+                <div className="glass-card">
+                  <div className="card-icon purple"><CreditCard /></div>
+                  <div className="card-data">
+                    <p>أرباح اليوم</p>
+                    <h3>8,200 ج.م</h3>
+                    <span className="trend positive">+5% عن أمس</span>
+                  </div>
+                </div>
+                <div className="glass-card">
+                  <div className="card-icon red"><ShieldAlert /></div>
+                  <div className="card-data">
+                    <p>تنبيهات أمنية</p>
+                    <h3>{stats.alerts}</h3>
+                    <span className="trend negative">تحتاج مراجعة</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="main-charts-row">
+                <div className="chart-card-large glass-card">
+                  <div className="card-header">
+                    <h3><Activity size={18}/> حركة المنصة (آخر 24 ساعة)</h3>
+                    <select>
+                      <option>عرض بالساعة</option>
+                      <option>عرض باليوم</option>
+                    </select>
+                  </div>
+                  <div className="chart-placeholder">
+                    {/* هنا يتم ربط مكتبة Recharts أو Chart.js */}
+                    <div className="visual-graph-mockup"></div>
+                  </div>
+                </div>
+
+                <div className="side-list-card glass-card">
+                  <div className="card-header">
+                    <h3><History size={18}/> آخر العمليات</h3>
+                  </div>
+                  <div className="mini-logs">
+                    <div className="log-item">
+                      <div className="log-icon plus"><UserPlus size={14}/></div>
+                      <div className="log-text">طالب جديد: <b>عمر علي</b> انضم للمنصة</div>
+                      <span className="log-time">1د</span>
+                    </div>
+                    <div className="log-item">
+                      <div className="log-icon code"><Key size={14}/></div>
+                      <div className="log-text">توليد 500 كود بواسطة <b>أدمن 2</b></div>
+                      <span className="log-time">14د</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 2. SECURITY MODULE */}
+          {activeTab === 'security' && (
+            <div className="module-container fade-in">
+              <div className="security-header glass-card">
+                <div className="title">
+                  <ShieldCheck size={24} color="#10b981" />
+                  <h2>نظام الحماية الاستباقي (Sentinel)</h2>
+                </div>
+                <div className="actions">
+                  <button className="btn-outline">تحميل التقرير الكامل</button>
+                  <button className="btn-danger">تصفير السجل</button>
+                </div>
+              </div>
+
+              <div className="security-grid">
+                <div className="logs-table-container glass-card">
+                  <table className="titan-table">
+                    <thead>
+                      <tr>
+                        <th>الطالب</th>
+                        <th>نوع المخالفة</th>
+                        <th>الجهاز</th>
+                        <th>التوقيت</th>
+                        <th>الموقع IP</th>
+                        <th>إجراء صارم</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {securityLogs.map((log) => (
+                        <tr key={log.id} className={log.type.includes('DETECTED') ? 'critical-row' : ''}>
+                          <td><b>{log.studentName || 'مجهول'}</b></td>
+                          <td>
+                            <span className="violation-tag">
+                              {log.type === 'SCREEN_RECORD' ? 'تصوير شاشة' : 'تبديل نافذة'}
+                            </span>
+                          </td>
+                          <td>{log.device || 'متصفح'}</td>
+                          <td>{new Date(log.timestamp?.seconds * 1000).toLocaleTimeString()}</td>
+                          <td>192.168.1.1</td>
+                          <td>
+                            <button className="action-btn ban" onClick={() => TitanSecurity.triggerAutoBan(log.studentId, "MANUAL_BAN")}>
+                              حظر نهائي
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+/* 3. CODES ENGINE MODULE (نظام توليد الأكواد والمالية) */
+          {activeTab === 'codes' && (
+            <div className="module-container fade-in">
+              <div className="admin-card-header">
+                <div className="header-info">
+                  <Key size={24} className="icon-glow" />
+                  <h2>محرك توليد الأكواد الضخم (Bulk Engine)</h2>
+                </div>
+              </div>
+
+              <div className="form-grid">
+                <div className="glass-card input-group">
+                  <label>عدد الأكواد المطلوبة</label>
+                  <input type="number" id="codeCount" placeholder="مثال: 500" className="titan-input" />
+                  
+                  <label>قيمة الكود (بالجنيه)</label>
+                  <input type="number" id="codeValue" placeholder="100" className="titan-input" />
+
+                  <label>المنصة / الموزع</label>
+                  <input type="text" id="distributor" placeholder="سنتر النخبة" className="titan-input" />
+                  
+                  <button className="generate-btn" onClick={async () => {
+                    const codes = await FinOps.generateBulkCodes({
+                      count: document.getElementById('codeCount').value,
+                      amount: document.getElementById('codeValue').value,
+                      prefix: 'TITAN',
+                      distributor: document.getElementById('distributor').value
+                    });
+                    alert(`تم توليد ${codes.length} كود بنجاح!`);
+                  }}>
+                    <Zap size={18} /> بدء التوليد والتشفير
+                  </button>
+                </div>
+
+                <div className="glass-card stats-display">
+                  <h3>إحصائيات الأكواد</h3>
+                  <div className="mini-stat"><span>أكواد غير مستخدمة:</span> <strong>1,420</strong></div>
+                  <div className="mini-stat"><span>أكواد تم تفعيلها اليوم:</span> <strong>85</strong></div>
+                  <div className="mini-stat"><span>إجمالي قيمة الأكواد بالسوق:</span> <strong>120,500 ج.م</strong></div>
+                  <button className="export-btn"><Download size={16} /> تصدير ملف Excel للطباعة</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          /* 4. AI & ANALYTICS MODULE (مختبر الذكاء الاصطناعي) */
+          {activeTab === 'ai' && (
+            <div className="module-container fade-in">
+              <div className="ai-layout">
+                <div className="ai-sidebar glass-card">
+                  <h3><Cpu size={20} /> TITAN AI Lab</h3>
+                  <button className="ai-tool-btn active">التنبؤ بالرسوب/الانسحاب</button>
+                  <button className="ai-tool-btn">تحليل وقت الذروة</button>
+                  <button className="ai-tool-btn">توزيع درجات الطلاب</button>
+                </div>
+
+                <div className="ai-main-view">
+                  <div className="glass-card prediction-box">
+                    <div className="box-header">
+                      <Target color="#ef4444" />
+                      <h4>طلاب في منطقة الخطر (Risk Level: High)</h4>
+                    </div>
+                    <p>بناءً على نشاط الطلاب لآخر 7 أيام، هؤلاء الطلاب معرضون لترك المنصة:</p>
+                    <div className="risk-list">
+                      <div className="risk-item">
+                        <span>محمد محمود (غائب منذ 12 يوم)</span>
+                        <button className="action-btn message">إرسال تنبيه</button>
+                      </div>
+                      <div className="risk-item">
+                        <span>سارة يوسف (لم تكمل 3 حصص متتالية)</span>
+                        <button className="action-btn coupon">إرسال كوبون تحفيزي</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          /* 5. SUPPORT & TICKETS (نظام الدعم الفني اللحظي) */
+          {activeTab === 'support' && (
+            <div className="module-container fade-in">
+              <div className="support-layout">
+                <div className="tickets-list glass-card">
+                  <h3>التذاكر النشطة</h3>
+                  <div className="ticket-item urgent">
+                    <div className="ticket-meta"><span>#8821</span> <span className="urgent-label">عاجل</span></div>
+                    <p>مشكلة في تفعيل كود الشحن</p>
+                    <small>بواسطة: علي عمر</small>
+                  </div>
+                  <div className="ticket-item">
+                    <div className="ticket-meta"><span>#8819</span></div>
+                    <p>الفيديو لا يعمل على المتصفح</p>
+                    <small>بواسطة: منى أحمد</small>
+                  </div>
+                </div>
+
+                <div className="chat-window glass-card">
+                  <div className="chat-header">
+                    <h4>محادثة: علي عمر</h4>
+                    <button className="archive-btn"><History size={16} /> أرشفة</button>
+                  </div>
+                  <div className="chat-messages">
+                    <div className="msg student">الكود مش راضي يشحن وبيقولي مستخدم قبل كدة</div>
+                    <div className="msg admin">أهلاً بك يا علي، يرجى إرسال صورة الكود المطبوع</div>
+                  </div>
+                  <div className="chat-input">
+                    <input type="text" placeholder="اكتب ردك هنا..." />
+                    <button className="send-btn"><MessageCircle size={18} /></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          /* 6. STUDENTS & DATABASE (إدارة قاعدة البيانات) */
+          {activeTab === 'students' && (
+            <div className="module-container fade-in">
+              <div className="db-controls glass-card">
+                <div className="filters">
+                  <select className="titan-select"><option>كل الدفعات</option></select>
+                  <select className="titan-select"><option>الحسابات النشطة</option></select>
+                  <button className="primary-btn"><UserPlus size={18} /> إضافة طالب يدوي</button>
+                </div>
+              </div>
+              <div className="student-table-container glass-card">
+                 {/* جدول الطلاب الضخم */}
+                 <table className="titan-table">
+                    <thead>
+                      <tr>
+                        <th>الاسم</th>
+                        <th>رقم الهاتف</th>
+                        <th>المستوى</th>
+                        <th>النقاط (XP)</th>
+                        <th>آخر ظهور</th>
+                        <th>تحكم</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><b>مازن حسن</b></td>
+                        <td>01023456789</td>
+                        <td>ثانية ثانوي</td>
+                        <td><span className="xp-tag">1,250 XP</span></td>
+                        <td>منذ 5 دقائق</td>
+                        <td className="actions-cell">
+                          <button className="icon-btn edit"><Settings size={14}/></button>
+                          <button className="icon-btn unlock"><Unlock size={14}/></button>
+                          <button className="icon-btn danger"><Lock size={14}/></button>
+                        </td>
+                      </tr>
+                    </tbody>
+                 </table>
+              </div>
+            </div>
+          )}
+        </div>
       </main>
-    </div>
-  );
-};
-// Logic/Security/Watermark.js
-export const getWatermarkPosition = () => {
-  // توليد إحداثيات عشوائية تضمن بقاء النص داخل حدود الفيديو
-  const x = Math.floor(Math.random() * 80) + "%"; 
-  const y = Math.floor(Math.random() * 80) + "%";
-  const opacity = Math.random() * (0.5 - 0.2) + 0.2; // شفافية متغيرة
-  return { x, y, opacity };
-};
 
-// Logic/Content/Library.js
-export const securePDFView = (fileUrl) => {
-  // هذا اللوجيك يعطل كليك يمين، يمنع الـ Shortcuts (Ctrl+P, Ctrl+S)
-  // ويقوم برسم طبقة شفافة فوق الملف تمنع النسخ
-  return {
-    disableRightClick: true,
-    disablePrint: true,
-    watermarkEnabled: true
-  };
-};
+      {/* CSS STYLES (Titan UI Design System) */}
+      <style>{`
+        :root {
+          --primary: #3b82f6;
+          --danger: #ef4444;
+          --success: #10b981;
+          --bg-dark: #0f172a;
+          --card-bg: rgba(30, 41, 59, 0.7);
+          --glass-border: rgba(255, 255, 255, 0.1);
+        }
 
-// Logic/Finance/Affiliate.js
-export const processReferral = async (referralCode, newStudentId) => {
-  const codeRef = query(collection(db, "affiliates"), where("code", "==", referralCode));
-  const snap = await getDocs(codeRef);
-  
-  if (!snap.empty) {
-    const affiliate = snap.docs[0];
-    const commission = 50; // 50 جنيه مثلاً
-    // إضافة رصيد للمسوق
-    await updateDoc(doc(db, "users", affiliate.data().ownerId), {
-      wallet: increment(commission)
-    });
-    // توثيق العملية
-    await addDoc(collection(db, "transactions"), {
-      from: newStudentId,
-      to: affiliate.data().ownerId,
-      amount: commission,
-      type: 'AFFILIATE_REWARD'
-    });
-  }
-};
+        .titan-admin-layout {
+          display: flex;
+          height: 100vh;
+          background: var(--bg-dark);
+          color: white;
+          font-family: 'Inter', sans-serif;
+          direction: rtl;
+        }
 
-// الميزة 34: محرك اختيار الأسئلة العشوائي
-export const getRandomizedExam = async (bankId, questionCount) => {
-  const q = query(collection(db, `question_banks/${bankId}/questions`));
-  const snap = await getDocs(q);
-  const allQuestions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  // خلط الأسئلة واختيار عدد محدد
-  return allQuestions.sort(() => 0.5 - Math.random()).slice(0, questionCount);
-};
+        .titan-sidebar {
+          width: 280px;
+          background: #1e293b;
+          border-left: 1px solid var(--glass-border);
+          display: flex;
+          flex-direction: column;
+          transition: 0.3s;
+        }
 
-// الميزة 19 & 35: التصحيح الفوري والمقالي
-export const submitExam = async (studentId, examId, answers, isManual = false) => {
-  let score = 0;
-  if (!isManual) {
-    // تصحيح تلقائي للأسئلة الاختيارية
-    answers.forEach(ans => { if (ans.isCorrect) score += ans.points; });
-  }
-  
-  await addDoc(collection(db, "exam_results"), {
-    studentId,
-    examId,
-    score,
-    status: isManual ? "PENDING_MANUAL_GRADING" : "COMPLETED",
-    submittedAt: serverTimestamp()
-  });
-};
+        .sidebar-brand {
+          padding: 30px;
+          display: flex;
+          align-items: center;
+          gap: 15px;
+        }
 
-// --- نظام مراقبة الأداء والجودة (31, 32, 33) ---
+        .brand-icon {
+          background: var(--primary);
+          padding: 8px;
+          border-radius: 12px;
+          box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        }
 
-// الميزة 31: مراقبة جودة اتصال الطالب
-export const monitorNetworkSpeed = () => {
-  if (navigator.connection) {
-    const { downlink, effectiveType } = navigator.connection;
-    if (downlink < 1.5 || effectiveType === '2g') {
-      return { slow: true, msg: "اتصالك ضعيف، ننصح بتقليل جودة الفيديو" };
-    }
-  }
-  return { slow: false };
-};
+        .sidebar-nav {
+          flex: 1;
+          padding: 0 15px;
+          overflow-y: auto;
+        }
 
-// الميزة 32: تتبع ضغط السيرفر (CDN Balancing)
-export const getOptimalServer = async () => {
-  const serverSnap = await getDocs(query(collection(db, "servers"), where("status", "==", "ONLINE")));
-  const servers = serverSnap.docs.map(d => d.data());
-  // اختيار السيرفر الأقل ضغطاً (Least Load)
-  return servers.sort((a, b) => a.currentLoad - b.currentLoad)[0];
-};
+        .nav-section {
+          font-size: 11px;
+          text-transform: uppercase;
+          color: #64748b;
+          margin: 25px 15px 10px;
+          letter-spacing: 1px;
+        }
 
-// --- نظام المالية والنمو (20, 25, 38) ---
+        .sidebar-nav button {
+          width: 100%;
+          padding: 12px 15px;
+          border: none;
+          background: transparent;
+          color: #94a3b8;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          cursor: pointer;
+          border-radius: 10px;
+          transition: 0.2s;
+          margin-bottom: 5px;
+        }
 
-// الميزة 20: حساب صافي الأرباح
-export const calculateNetRevenue = async () => {
-  const paymentsSnap = await getDocs(collection(db, "payments"));
-  let gross = 0;
-  paymentsSnap.forEach(d => gross += d.data().amount);
-  const gatewayFees = gross * 0.03; // افتراض عمولة دفع 3%
-  const serverCosts = gross * 0.05; // تكاليف استضافة
-  return { gross, net: gross - gatewayFees - serverCosts };
-};
+        .sidebar-nav button.active, .sidebar-nav button:hover {
+          background: rgba(59, 130, 246, 0.1);
+          color: white;
+        }
 
-// الميزة 38: تحويل النقاط (XP) إلى خصومات
-export const convertPointsToCoupon = async (studentId, points) => {
-  if (points < 1000) throw new Error("يجب جمع 1000 نقطة على الأقل");
-  const discountAmount = points / 100; // كل 100 نقطة بـ 1 جنيه
-  const couponCode = `REWARD-${Math.random().toString(36).toUpperCase().slice(2,8)}`;
-  
-  await setDoc(doc(db, "coupons", couponCode), {
-    amount: discountAmount,
-    type: "FIXED",
-    isUsed: false,
-    ownerId: studentId
-  });
-  
-  await updateDoc(doc(db, "users", studentId), { points: increment(-points) });
-  return couponCode;
-};
+        .titan-main-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
 
-// --- نظام الرقابة والأمن (22, 24, 26, 30) ---
+        .titan-header {
+          height: 70px;
+          background: rgba(15, 23, 42, 0.8);
+          backdrop-filter: blur(10px);
+          border-bottom: 1px solid var(--glass-border);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 30px;
+        }
 
-// الميزة 22: Geofencing (منع مشاركة الحسابات بين المحافظات)
-export const verifyLocation = async (studentId, currentCity) => {
-  const userRef = doc(db, "users", studentId);
-  const userSnap = await getDoc(userRef);
-  
-  if (userSnap.data().homeCity && userSnap.data().homeCity !== currentCity) {
-    await logSecurityViolation(studentId, "LOCATION_MISMATCH");
-    // تنبيه للأدمن: الطالب مسجل من القاهرة ويحاول الدخول من الإسكندرية
-  }
-};
+        .glass-card {
+          background: var(--card-bg);
+          backdrop-filter: blur(12px);
+          border: 1px solid var(--glass-border);
+          border-radius: 20px;
+          padding: 20px;
+        }
 
-// الميزة 24: سجل تحركات المساعدين (Audit Logs)
-export const logAdminAction = async (adminId, action, targetId) => {
-  await addDoc(collection(db, "audit_logs"), {
-    adminId,
-    action, // مثال: 'DELETE_STUDENT'
-    targetId,
-    timestamp: serverTimestamp()
-  });
-};
+        .titan-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 15px;
+        }
 
-// --- تجربة الطالب الذكية (23, 27, 28, 37, 39, 40) ---
+        .titan-table th {
+          text-align: right;
+          padding: 15px;
+          color: #64748b;
+          border-bottom: 1px solid var(--glass-border);
+        }
 
-// الميزة 28: توليد الشهادة التلقائية
-export const generateCertificate = async (studentId, courseId) => {
-  const certRef = doc(db, "certificates", `${studentId}_${courseId}`);
-  const data = {
-    studentName: auth.currentUser.displayName,
-    courseName: "فيزياء النخبة",
-    issueDate: new Date().toLocaleDateString(),
-    verifyUrl: `https://tito.edu/verify/${studentId}`
-  };
-  await setDoc(certRef, data);
-  return data;
-};
+        .titan-table td {
+          padding: 15px;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
 
-// الميزة 39 & 40: نظام الدعم الفني المؤرشف
-export const openSupportTicket = async (studentId, message) => {
-  const ticketRef = await addDoc(collection(db, "tickets"), {
-    studentId,
-    initialMessage: message,
-    status: "OPEN",
-    createdAt: serverTimestamp()
-  });
-  // بدء محادثة لحظية في Realtime Database
-  await set(ref(rtdb, `chats/${ticketRef.id}`), {
-    messages: [{ text: message, sender: "STUDENT", time: Date.now() }]
-  });
-};
+        .violation-tag {
+          background: rgba(239, 68, 68, 0.15);
+          color: #ef4444;
+          padding: 4px 10px;
+          border-radius: 6px;
+          font-size: 12px;
+        }
 
-// الميزة 37: الأوسمة (Badges)
-export const awardBadge = async (studentId, badgeType) => {
-  await updateDoc(doc(db, "users", studentId), {
-    badges: increment(1),
-    [`badge_list.${badgeType}`]: true
-  });
-};
+        .emergency-kill-btn {
+          background: var(--danger);
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 12px;
+          cursor: pointer;
+          font-weight: bold;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
 
-// --- [ الميزات 23 & 25 ]: حماية الـ PDF والجودات المتعددة ---
-export const ContentProtection = {
-  // منع التحميل وعرض الملف عبر Canvas (Logic Concept)
-  setupSecureViewer: (fileUrl) => {
-    return {
-      url: fileUrl,
-      config: {
-        onContextMenu: (e) => e.preventDefault(), // منع كليك يمين
-        userSelect: "none", // منع تحديد النص
-        onKeyDown: (e) => (e.ctrlKey && e.key === 'p') && e.preventDefault(), // منع الطباعة
-      }
-    };
-  },
+        .generate-btn {
+          background: var(--primary);
+          color: white;
+          border: none;
+          padding: 15px;
+          border-radius: 12px;
+          margin-top: 20px;
+          cursor: pointer;
+          font-weight: bold;
+        }
 
-  // اختيار الجودة المناسبة (Multi-Quality)
-  getVideoSource: (sources, qualityPreference) => {
-    return sources[qualityPreference] || sources['720p'] || sources['auto'];
-  }
-};
+        .xp-tag {
+          background: rgba(16, 185, 129, 0.2);
+          color: #10b981;
+          padding: 2px 8px;
+          border-radius: 5px;
+        }
 
-// --- [ الميزة 26 & 40 ]: التفضيلات وحفظ الملاحظات السحابية ---
-export const StudentExperience = {
-  // حفظ الملاحظات لحظياً أثناء المشاهدة
-  saveVideoNote: async (studentId, videoId, noteText, timestamp) => {
-    const noteRef = doc(db, `users/${studentId}/notes`, videoId);
-    await setDoc(noteRef, {
-      videoId,
-      text: noteText,
-      atSecond: timestamp,
-      lastUpdated: serverTimestamp()
-    }, { merge: true });
-  },
+        @keyframes pulse {
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.2); opacity: 0.5; }
+          100% { transform: scale(1); opacity: 1; }
+        }
 
-  // حفظ وضع القالب (Dark/Light)
-  saveThemePreference: async (studentId, isDark) => {
-    await updateDoc(doc(db, "users", studentId), { darkMode: isDark });
-  }
-};
-
-// --- [ الميزة 27 ]: الأسئلة الإجبارية داخل الفيديو (In-Video Quizzes) ---
-export const InVideoLogic = {
-  checkPausePoints: (currentTime, quizPoints, onTrigger) => {
-    quizPoints.forEach(point => {
-      if (Math.floor(currentTime) === point.second && !point.answered) {
-        onTrigger(point.questionData);
-      }
-    });
-  }
-};
-
-// --- [ الميزة 29 & 30 ]: الوصول بدون إنترنت والتواصل مع الأهل ---
-export const CommunicationLogic = {
-  // ربط SMS لولي الأمر (Integration Logic)
-  sendSmsToGuardian: async (parentPhone, studentName, grade) => {
-    // هنا يتم الربط مع API مزود الخدمة مثل Twilio أو Nexmo
-    const message = `ولي أمر الطالب ${studentName}: حصل ابنكم على درجة ${grade} في امتحان اليوم.`;
-    console.log("Sending SMS via API...", message);
-  }
-};
-
-// --- [ الميزة 33 & 35 ]: منع الغش والأسئلة المقالية ---
-export const ExamSecurity = {
-  // عداد الخروج من التبويب (Tab Switching)
-  initTabDetection: (sessionId) => {
-    document.addEventListener("visibilitychange", async () => {
-      if (document.hidden) {
-        const sessionRef = doc(db, "exam_sessions", sessionId);
-        await updateDoc(sessionRef, { 
-          tabSwitches: increment(1),
-          lastViolation: serverTimestamp() 
-        });
-      }
-    });
-  },
-
-  // رفع صورة الحل للمقالي
-  uploadSubjectiveAnswer: async (studentId, examId, file) => {
-    // منطق رفع الصورة لـ Storage وربط الرابط بالامتحان
-    const answerRef = collection(db, `exams/${examId}/subjective_answers`);
-    await addDoc(answerRef, { studentId, fileUrl: "LINK_FROM_STORAGE", status: "WAITING_CORRECTION" });
-  }
-};
-
-// --- [ الميزة 36 & 37 ]: نظام التلعيب (Gamification) ---
-export const Gamification = {
-  // تحديث لوحة الشرف (Leaderboard)
-  updateGlobalRank: async (studentId, newPoints) => {
-    const userRef = doc(db, "users", studentId);
-    await updateDoc(userRef, { 
-      totalPoints: increment(newPoints),
-      level: increment(newPoints > 500 ? 1 : 0) // زيادة اللفل تلقائياً
-    });
-  },
-
-  // التحقق من منح الأوسمة (Badges)
-  checkForBadges: async (studentId) => {
-    const userRef = doc(db, "users", studentId);
-    const snap = await getDoc(userRef);
-    const data = snap.data();
-
-    if (data.examsFinished >= 10 && !data.badges?.includes('WARRIOR')) {
-      await updateDoc(userRef, { "badges": [...(data.badges || []), 'WARRIOR'] });
-    }
-  }
-};
-
-// --- [ الميزة 39 ]: تذاكر الدعم المشفرة (Ticket Archive) ---
-export const SupportSystem = {
-  archiveChat: async (ticketId) => {
-    const ticketRef = doc(db, "tickets", ticketId);
-    // نقل الشات من Realtime DB إلى Firestore للأرشفة الطويلة
-    const chatRef = ref(rtdb, `chats/${ticketId}`);
-    onValue(chatRef, async (snapshot) => {
-       await updateDoc(ticketRef, { 
-         history: snapshot.val(), 
-         status: 'ARCHIVED',
-         closedAt: serverTimestamp() 
-       });
-       set(chatRef, null); // حذف الشات من اللحظي لتوفير المساحة
-    }, { onlyOnce: true });
-  }
-};
-
-// --- [ الميزة 37 ]: نظام الصيانة والطوارئ (Maintenance Mode) ---
-export const AppControl = {
-  toggleMaintenance: async (isEnabled, reason) => {
-    const configRef = ref(rtdb, "app_config");
-    await update(configRef, { 
-      maintenanceMode: isEnabled, 
-      maintenanceReason: reason 
-    });
-  }
-};
-
-// --- [ الميزة 32 ]: مراقبة ضغط السيرفر اللحظي ---
-export const ServerMonitor = {
-  trackLoad: (serverId) => {
-    // يقوم السيرفر بتحديث حالته كل دقيقة في قاعدة البيانات
-    setInterval(async () => {
-      const load = Math.random() * 100; // مثال على جلب الضغط
-      await updateDoc(doc(db, "servers", serverId), { currentLoad: load });
-    }, 60000);
-  }
-};
-
-return (
-    <div style={styles.gridContainer}>
-      {/* القسم الأول: مراقبة محاولات الغش اللحظية (الميزة 33) */}
-      <div style={styles.fullCard}>
-        <div style={styles.cardHeader}>
-          <ShieldAlert color="#ef4444" />
-          <h3>رادار محاولات الغش (Tab-Switching & Screenshot)</h3>
-        </div>
-        <div style={styles.logTable}>
-          <div style={styles.tableHeader}>
-            <span>الطالب</span>
-            <span>نوع المخالفة</span>
-            <span>الجهاز</span>
-            <span>الحدث</span>
-            <span>الإجراء الصارم</span>
-          </div>
-          {/* مثال لبيانات قادمة من اللوجيك */}
-          <SecurityRow 
-            name="ياسين رامي" 
-            type="محاولة تصوير شاشة" 
-            device="PC - Windows 11" 
-            time="منذ 30 ثانية"
-            severity="HIGH"
-          />
-          <SecurityRow 
-            name="عمر خالد" 
-            type="تبديل نافذة الامتحان (3 مرات)" 
-            device="Samsung S23" 
-            time="منذ 2 دقيقة"
-            severity="MEDIUM"
-          />
-        </div>
-      </div>
-
-      {/* القسم الثاني: إدارة بصمة الجهاز (الميزة 2 & 18) */}
-      <div style={styles.halfCard}>
-        <div style={styles.cardHeader}>
-          <Fingerprint color="#3b82f6" />
-          <h3>إدارة ربط الأجهزة (Device Binding)</h3>
-        </div>
-        <p style={styles.subText}>يسمح للطالب بجهاز واحد فقط. يمكنك فك الربط من هنا.</p>
-        <div style={styles.searchBox}>
-          <input type="text" placeholder="ابحث برقم الطالب لفك ربط جهازه..." style={styles.input} />
-        </div>
-        {/* قائمة الأجهزة الموثوقة */}
-        <div style={styles.deviceItem}>
-          <span>iPhone 14 Pro - احمد علي</span>
-          <button style={styles.resetBtn}>فك الربط</button>
-        </div>
-      </div>
-
-      {/* القسم الثالث: الجيوفنسينج (الميزة 22) */}
-      <div style={styles.halfCard}>
-        <div style={styles.cardHeader}>
-          <MapPin color="#f59e0b" />
-          <h3>تتبع الموقع الجغرافي (Anti-Account Sharing)</h3>
-        </div>
-        <div style={styles.geoAlert}>
-          <strong>تنبيه:</strong> تم رصد دخول للحساب (user_99) من "المنصورة" ثم من "أسوان" في أقل من ساعة!
-          <button style={styles.banBtn}>حظر الحساب فوراً</button>
-        </div>
-      </div>
+        .pulse-dot {
+          width: 8px;
+          height: 8px;
+          background: var(--success);
+          border-radius: 50%;
+          animation: pulse 2s infinite;
+        }
+      `}</style>
     </div>
   );
 };
 
-// مكون سطر المخالفات
-const SecurityRow = ({ name, type, device, time, severity }) => (
-  <div style={styles.tableRow}>
-    <span style={{ fontWeight: 'bold' }}>{name}</span>
-    <span style={{ color: severity === 'HIGH' ? '#ef4444' : '#f59e0b' }}>{type}</span>
-    <span style={{ fontSize: '0.8rem' }}>{device}</span>
-    <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{time}</span>
-    <button style={styles.actionBtn}>إغلاق الجلسة</button>
-  </div>
-);
-
-const AI_ExamView = () => {
-  return (
-    <div style={styles.gridContainer}>
-      {/* الميزة 34: محرك بنك الأسئلة العشوائي */}
-      <div style={styles.statBox}>
-        <div style={styles.statIcon}><MonitorOff /></div>
-        <div>
-          <h4>بنك الأسئلة الذكي</h4>
-          <p>1,250 سؤال مفعل</p>
-        </div>
-        <button style={styles.primaryBtn}>توليد امتحان عشوائي</button>
-      </div>
-
-      {/* الميزة 35: انتظار التصحيح المقالي */}
-      <div style={styles.fullCard}>
-        <h3><Eye size={18} /> امتحانات بانتظار التصحيح اليدوي</h3>
-        <div style={styles.subjectiveList}>
-          <div style={styles.subjectiveItem}>
-            <span>إجابة الطالب: <strong>مازن حسن</strong></span>
-            <span>المادة: فيزياء - فصل 1</span>
-            <button style={styles.viewBtn}>فتح صورة الحل</button>
-          </div>
-        </div>
-      </div>
-
-      {/* الميزة 36 & 37: Gamification (لوحة الشرف) */}
-      <div style={styles.fullCard}>
-        <h3><Zap size={18} color="#f59e0b" /> لوحة الشرف ونظام الأوسمة</h3>
-        <div style={styles.leaderboardGrid}>
-          <div style={styles.leaderItem}>🥇 محمد طارق - 2500 XP (وسام العبقري)</div>
-          <div style={styles.leaderItem}>🥈 سارة كمال - 2350 XP (وسام المثابر)</div>
-        </div>
-      </div>
-    </div>
-  );
-};
-const FinancialVaultView = () => {
-  return (
-    <div style={styles.gridContainer}>
-      
-      {/* الميزة 20: تحليل الأرباح الصافية (Net Revenue Analytics) */}
-      <div style={styles.fullCard}>
-        <div style={styles.cardHeader}>
-          <TrendingUp color="#10b981" />
-          <h3>ميزانية الأكاديمية (صافي الأرباح بعد الخصومات)</h3>
-        </div>
-        <div style={styles.statsRow}>
-          <div style={styles.statBoxSmall}>
-            <span>إجمالي الإيرادات</span>
-            <h2 style={{ color: '#10b981' }}>150,400 ج.م</h2>
-          </div>
-          <div style={styles.statBoxSmall}>
-            <span>عمولات الدفع (3%)</span>
-            <h2 style={{ color: '#ef4444' }}>- 4,512 ج.م</h2>
-          </div>
-          <div style={styles.statBoxSmall}>
-            <span>تكاليف السيرفرات</span>
-            <h2 style={{ color: '#f59e0b' }}>- 2,100 ج.م</h2>
-          </div>
-          <div style={styles.statBoxSmall}>
-            <span>الربح الصافي</span>
-            <h2 style={{ color: '#3b82f6' }}>143,788 ج.م</h2>
-          </div>
-        </div>
-      </div>
-
-      {/* الميزة 9: توليد الأكواد الضخم (Bulk Code Generator) */}
-      <div style={styles.halfCard}>
-        <div style={styles.cardHeader}>
-          <Ticket color="#a855f7" />
-          <h3>توليد أكواد الشحن (Bulk Generation)</h3>
-        </div>
-        <div style={styles.formGroup}>
-          <input type="number" placeholder="عدد الأكواد (مثلاً: 500)" style={styles.input} />
-          <input type="number" placeholder="قيمة الكود (ج.م)" style={styles.input} />
-          <button style={styles.generateBtn}>توليد وتصدير Excel <Download size={16} /></button>
-        </div>
-        <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '10px' }}>
-          * يتم تشفير الأكواد لمنع التخمين (الميزة 1).
-        </p>
-      </div>
-
-      {/* الميزة 25 & 38: نظام المسوقين والخصومات */}
-      <div style={styles.halfCard}>
-        <div style={styles.cardHeader}>
-          <Share2 color="#3b82f6" />
-          <h3>نظام التسويق بالعمولة (Affiliates)</h3>
-        </div>
-        <div style={styles.affiliateItem}>
-          <span>كود: TITO_S50</span>
-          <span>المسوق: محمد إبراهيم</span>
-          <span style={{ color: '#10b981' }}>عمولة: 450 ج.م</span>
-        </div>
-        <button style={styles.viewBtn}>إدارة المسوقين</button>
-      </div>
-
-      {/* الميزة 30: بوابة رسائل أولياء الأمور (Guardian SMS Gateway) */}
-      <div style={styles.fullCard}>
-        <div style={styles.cardHeader}>
-          <MessageCircle color="#22d3ee" />
-          <h3>إرسال النتائج لأولياء الأمور (SMS & WhatsApp)</h3>
-        </div>
-        <div style={{ display: 'flex', gap: '15px' }}>
-          <select style={styles.select}>
-            <option>اختر الامتحان</option>
-            <option>امتحان الفصل الأول - ميكانيكا</option>
-          </select>
-          <button style={styles.primaryBtn}>إرسال النتائج لـ 1200 ولي أمر فوراً</button>
-        </div>
-      </div>
-
-    </div>
-  );
-};
-const AI_ExperienceView = () => {
-  return (
-    <div style={styles.gridContainer}>
-      
-      {/* الميزة 28: محرك الشهادات التلقائية (Certificate Engine) */}
-      <div style={styles.halfCard}>
-        <div style={styles.cardHeader}>
-          <Icon.Award color="#f59e0b" />
-          <h3>توليد الشهادات التلقائي</h3>
-        </div>
-        <p style={styles.subText}>يتم إصدار الشهادة فور تخطي الطالب نسبة 90% من الدرجات.</p>
-        <button style={styles.viewBtn}>تخصيص قالب الشهادة</button>
-      </div>
-
-      {/* الميزة 21: عداد الخروج من الامتحان (Tab-Switching Counter) */}
-      <div style={styles.halfCard}>
-        <div style={styles.cardHeader}>
-          <Icon.ZapOff color="#ef4444" />
-          <h3>مراقبة سلوك الطالب في الامتحانات</h3>
-        </div>
-        <div style={styles.logItem}>
-          <span>أحمد حسن: خرج من الصفحة <strong>4 مرات</strong></span>
-          <button style={styles.warningBtn}>توجيه إنذار</button>
-        </div>
-      </div>
-
-      {/* الميزة 27: الأسئلة المفاجئة داخل الفيديو (In-Video Questions) */}
-      <div style={styles.fullCard}>
-        <h3>إدارة الأسئلة التفاعلية وسط الحصة</h3>
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th>الفيديو</th>
-              <th>التوقيت</th>
-              <th>السؤال</th>
-              <th>إجراء</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>المحاضرة 3 - الفيزياء الحديثة</td>
-              <td>12:45</td>
-              <td>ما هي وحدة قياس الثابت؟</td>
-              <td><Icon.Edit size={16} /></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-    </div>
-  );
-};
-const OpsRadarView = () => {
-  return (
-    <div style={styles.gridContainer}>
-      
-      {/* الميزة 31 & 32: الرادار التقني (Network & Infrastructure) */}
-      <div style={styles.fullCard}>
-        <div style={styles.cardHeader}>
-          <Activity color="#10b981" />
-          <h3>رادار أداء النظام والاتصال (Real-time Infrastructure)</h3>
-        </div>
-        <div style={styles.statsRow}>
-          {/* مراقبة جودة اتصال الطلاب المباشر */}
-          <div style={styles.radarBox}>
-            <Wifi size={24} color="#3b82f6" />
-            <h4>جودة إنترنت الطلاب</h4>
-            <p>متوسط السرعة: <span style={{color: '#10b981'}}>12.5 Mbps</span></p>
-            <small>85% جودة ممتازة | 15% اتصال ضعيف</small>
-          </div>
-          {/* مراقبة ضغط السيرفر (CDN Load) */}
-          <div style={styles.radarBox}>
-            <Server size={24} color="#a855f7" />
-            <h4>ضغط السيرفرات (Global CDNs)</h4>
-            <div style={styles.progressBar}>
-              <div style={{...styles.progressFill, width: '38%', background: '#10b981'}}></div>
-            </div>
-            <p>38% مستخدم | 62% متاح</p>
-          </div>
-        </div>
-      </div>
-
-      {/* الميزة 39 & 40: نظام الدعم الفني والأرشفة (Support Hub) */}
-      <div style={styles.fullCard}>
-        <div style={styles.cardHeader}>
-          <MessageSquare color="#3b82f6" />
-          <h3>مركز الدعم الفني والمحادثات المؤرشفة</h3>
-        </div>
-        <div style={styles.ticketGrid}>
-          {/* مثال لتذكرة دعم نشطة */}
-          <div style={styles.ticketCard}>
-            <div style={{display: 'flex', justifyContent: 'space-between'}}>
-              <strong>تذكرة #8821 - كود شحن تالف</strong>
-              <span style={styles.statusBadge}>نشط الآن</span>
-            </div>
-            <p style={styles.ticketText}>الطالب: علي محمود | المساعد: م. سارة</p>
-            <div style={styles.ticketActions}>
-              <button style={styles.viewBtn}>دخول للمحادثة</button>
-              <button style={styles.archiveBtn}><History size={14}/> أرشفة</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  );
-};
-const SmartExamUI = () => {
-  return (
-    <div style={styles.gridContainer}>
-      
-      {/* الميزة 33 & 34: التحكم في الامتحانات */}
-      <div style={styles.halfCard}>
-        <div style={styles.cardHeader}>
-          <AlertTriangle color="#ef4444" />
-          <h3>التحكم في أمن الامتحانات</h3>
-        </div>
-        <div style={styles.controlRow}>
-          <span>تبديل ترتيب الأسئلة تلقائياً (Randomization):</span>
-          <div style={styles.toggleActive}>مفعل ✅</div>
-        </div>
-        <div style={styles.controlRow}>
-          <span>منع الخروج من نافذة الامتحان (Anti-Cheat):</span>
-          <div style={styles.toggleActive}>مفعل ✅</div>
-        </div>
-      </div>
-
-      {/* الميزة 36 & 37 & 38: نظام التلعيب (Gamification Center) */}
-      <div style={styles.halfCard}>
-        <div style={styles.cardHeader}>
-          <Zap color="#f59e0b" />
-          <h3>لوحة الشرف والأوسمة (Hall of Fame)</h3>
-        </div>
-        <div style={styles.leaderboard}>
-          <div style={styles.leaderRow}>
-            <span>🥇 الأول: عمر ياسين</span>
-            <span style={styles.xpBadge}>+2400 XP</span>
-            <span style={styles.medal}>🎖️ ملك الفيزياء</span>
-          </div>
-          <div style={styles.leaderRow}>
-            <span>🥈 الثاني: مريم حسن</span>
-            <span style={styles.xpBadge}>+2150 XP</span>
-            <span style={styles.medal}>🥈 العبقري</span>
-          </div>
-        </div>
-        <button style={{...styles.primaryBtn, width: '100%', marginTop: '15px'}}>
-          توزيع مكافآت الـ XP على المتفوقين
-        </button>
-      </div>
-
-      {/* الميزة 35: تصحيح الأسئلة المقالية اليدوي */}
-      <div style={styles.fullCard}>
-        <h3>تصحيح الأسئلة المقالية (Manual Grading)</h3>
-        <div style={styles.gradingTable}>
-          <div style={styles.gradingRow}>
-            <span>الطالب: يوسف كمال</span>
-            <span>المادة: ميكانيكا 1</span>
-            <button style={styles.gradeBtn}>عرض صورة الحل وتصحيحه</button>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  );
-};const styles = {
-  // ... التنسيقات السابقة ...
-  radarBox: { flex: 1, background: '#1e293b', padding: '20px', borderRadius: '15px', textAlign: 'center', border: '1px solid #334155' },
-  progressBar: { width: '100%', height: '10px', background: '#0f172a', borderRadius: '5px', margin: '15px 0', overflow: 'hidden' },
-  progressFill: { height: '100%', transition: 'width 0.5s ease' },
-  ticketGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '15px', marginTop: '15px' },
-  ticketCard: { background: '#1e293b', padding: '15px', borderRadius: '12px', border: '1px solid #3b82f6' },
-  statusBadge: { background: '#10b98122', color: '#10b981', padding: '2px 8px', borderRadius: '5px', fontSize: '0.75rem' },
-  archiveBtn: { background: 'transparent', border: '1px solid #94a3b8', color: '#94a3b8', padding: '5px 10px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' },
-  leaderboard: { marginTop: '10px' },
-  leaderRow: { display: 'flex', justifyContent: 'space-between', padding: '12px', background: '#1e293b', borderRadius: '10px', marginBottom: '8px', alignItems: 'center' },
-  xpBadge: { background: '#3b82f622', color: '#3b82f6', padding: '2px 8px', borderRadius: '5px', fontWeight: 'bold' },
-  gradeBtn: { background: '#3b82f6', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '8px', cursor: 'pointer' },
-  toggleActive: { color: '#10b981', fontWeight: 'bold' },
-  controlRow: { display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #1e293b' }
-};
-
-
-const SecureVideoPlayer = ({ videoSrc, studentData, quizPoints }) => {
-  const [currentTime, setCurrentTime] = useState(0);
-  const [showQuiz, setShowQuiz] = useState(false);
-  const [watermarkPos, setWatermarkPos] = useState({ top: '10%', left: '10%' });
-
-  // الميزة 7: تحريك البصمة المائية عشوائياً لمنع التسجيل
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setWatermarkPos({
-        top: Math.random() * 80 + '%',
-        left: Math.random() * 80 + '%'
-      });
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // الميزة 27: إيقاف الفيديو لإظهار سؤال مفاجئ
-  const handleTimeUpdate = (e) => {
-    const time = Math.floor(e.target.currentTime);
-    setCurrentTime(time);
-    if (quizPoints.includes(time)) {
-      e.target.pause();
-      setShowQuiz(true);
-    }
-  };
-
-  return (
-    <div style={styles.playerContainer} onContextMenu={(e) => e.preventDefault()}>
-      {/* طبقة البصمة المائية (Watermark) */}
-      <div style={{ ...styles.watermark, ...watermarkPos }}>
-        {studentData.name} - {studentData.phone}
-      </div>
-
-      <video 
-        src={videoSrc} 
-        onTimeUpdate={handleTimeUpdate}
-        controlsList="nodownload" // منع التحميل المباشر
-        style={styles.videoElement}
-      />
-
-      {/* الميزة 27: واجهة السؤال وسط الفيديو */}
-      {showQuiz && (
-        <div style={styles.quizOverlay}>
-          <div style={styles.quizBox}>
-            <h3>سؤال سريع للتركيز 🧠</h3>
-            <p>ما هي وحدة قياس القوة في النظام الدولي؟</p>
-            <button onClick={() => setShowQuiz(false)} style={styles.quizBtn}>إجابة ومتابعة</button>
-          </div>
-        </div>
-      )}
-
-      {/* مؤشر حماية الفيديو */}
-      <div style={styles.securityBadge}>
-        <ShieldCheck size={14} /> محمي بواسطة Titan Security
-      </div>
-    </div>
-  );
-};
-
-const StudentHub = () => {
-  return (
-    <div style={styles.hubContainer}>
-      {/* ملخص إنجازات الطالب (Gamification) */}
-      <section style={styles.achievementSection}>
-        <div style={styles.statCard}>
-          <h4>نقاط الخبرة (XP)</h4>
-          <h2>2,450</h2>
-        </div>
-        <div style={styles.statCard}>
-          <h4>الأوسمة المكتسبة</h4>
-          <div style={styles.badgeRow}>
-            <span>🏆 ملك الفيزياء</span>
-            <span>🔥 الملتزم</span>
-          </div>
-        </div>
-        <div style={styles.statCard}>
-          <h4>الشهادات</h4>
-          <button style={styles.certBtn}>تحميل شهادة إتمام الدورة PDF</button>
-        </div>
-      </section>
-
-      {/* الميزة 40: مفكرة الطالب الذكية */}
-      <section style={styles.notesSection}>
-        <h3>ملاحظاتي على المحاضرة 📝</h3>
-        <textarea 
-          placeholder="اكتب ملاحظاتك هنا وسيتم حفظها تلقائياً مع توقيت الفيديو..." 
-          style={styles.notesArea}
-        />
-      </section>
-    </div>
-  );
-};
 export default AdminDash;
-
-
