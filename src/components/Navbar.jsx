@@ -3,20 +3,18 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { 
   School, BookOpen, Heart, 
   Library, ShieldCheck, LogOut, GraduationCap, 
-  Sparkles, LogIn, User, Wallet 
+  Sparkles, LogIn, User, Wallet, Info // أضفت أيقونة Info لقسم حولنا
 } from 'lucide-react';
 
-// المسارات المصححة للعمل من داخل مجلد components
-import { auth } from '../firebase'; // نقطتين للخروج للمجلد الرئيسي
+// المسارات المصححة
+import { auth } from '../firebase'; 
 import { signOut } from 'firebase/auth';
-import './Navbar.css'; // نقطة واحدة لأن الملف بجانبك تماماً
-
+import './Navbar.css'; 
 
 const Navbar = ({ userData, isAdmin }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  
   const handleLogout = () => {
     signOut(auth).then(() => {
       navigate('/login');
@@ -25,25 +23,26 @@ const Navbar = ({ userData, isAdmin }) => {
     });
   };
 
+  // أضفت قسم "حولنا" هنا في مصفوفة الروابط العامة
   const publicLinks = [
+    { name: 'الرئيسية', path: '/', icon: <Sparkles size={20}/> },
     { name: 'التعليم المنهجي', path: '/highschool', icon: <School size={20}/> },
     { name: 'المكتبة', path: '/library', icon: <Library size={20}/> },
     { name: 'الكورسات', path: '/all-courses', icon: <BookOpen size={20}/> },
     { name: 'الواحة', path: '/religious', icon: <Heart size={20}/> },
+    { name: 'حولنا', path: '/about', icon: <Info size={20}/> }, 
   ];
-
 
   const privateLinks = [
     { name: 'لوحة الطالب', path: '/student-dash', icon: <GraduationCap size={20} /> },
     { name: 'المحفظة', path: '/wallet', icon: <Wallet size={20} /> },
   ];
 
-  
   return (
     <nav className="super-nav neon-border">
       <div className="nav-container">
         
-        <div className="brand-section" onClick={() => navigate('/student-dash')}>
+        <div className="brand-section" onClick={() => navigate('/')}>
           <div className="logo-glow">
             <Sparkles size={20} color="#fff" />
           </div>
@@ -53,24 +52,30 @@ const Navbar = ({ userData, isAdmin }) => {
         <ul className="nav-hub">
           {publicLinks.map((link) => (
             <li key={link.path}>
-              <Link to={link.path} className={`nav-item-glow ${location?.pathname === link.path ? 'active' : ''}`}>
+              <Link 
+                to={link.path} 
+                className={`nav-item-glow ${location?.pathname === link.path ? 'active' : ''}`}
+              >
                 {link.icon}
                 <span>{link.name}</span>
               </Link>
             </li>
           ))}
 
-          {/* استخدام userData? للتأكد من وجود البيانات */}
+          {/* روابط خاصة تظهر فقط للمسجلين */}
           {userData && privateLinks.map((link) => (
             <li key={link.path}>
-              <Link to={link.path} className={`nav-item-glow ${location?.pathname === link.path ? 'active' : ''}`}>
+              <Link 
+                to={link.path} 
+                className={`nav-item-glow ${location?.pathname === link.path ? 'active' : ''}`}
+              >
                 {link.icon}
                 <span>{link.name}</span>
               </Link>
             </li>
           ))}
 
-          {/* تأمين شرط الأدمن */}
+          {/* لوحة الإدارة */}
           {Boolean(isAdmin) && (
             <li>
               <Link to="/admin" className="nav-item-glow admin-glow">
@@ -87,7 +92,7 @@ const Navbar = ({ userData, isAdmin }) => {
               <div className="profile-orb" onClick={() => navigate('/student-dash')}>
                  <User size={20} />
               </div>
-              <button className="logout-glass" onClick={handleLogout}>
+              <button className="logout-glass" onClick={handleLogout} title="تسجيل الخروج">
                 <LogOut size={20} />
               </button>
             </div>
@@ -104,7 +109,6 @@ const Navbar = ({ userData, isAdmin }) => {
 };
 
 export default Navbar;
-
 
 
 
