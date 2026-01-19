@@ -98,15 +98,12 @@ const NotificationsList = ({ items }) => (
       </div>
     )) : <p className="empty-msg">لا توجد تنبيهات جديدة</p>}
   </div>
-);
-
-const StudentDash = () => {
+);const StudentDash = () => {
   const navigate = useNavigate();
-  const auth = useMemo(() => getAuth(app), []);
-  const db = useMemo(() => getFirestore(app), []);
-  const storage = useMemo(() => getStorage(app), []);
-  const userRef = useRef(null);
+  // حذفنا أسطر useMemo بالكامل لأننا استوردنا المتغيرات جاهزة في الأعلى
+  const userRef = useRef(null); 
 
+  // ... باقي الحالات (States)
   
   // --- حالات الطالب (Profile State) ---
   const [user, setUser] = useState(null);
@@ -1089,6 +1086,7 @@ const goToActivation = () => {
 };
 
 export default StudentDash;
+
 
 
 
