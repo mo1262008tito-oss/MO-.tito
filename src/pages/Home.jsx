@@ -420,7 +420,7 @@ const Home = () => {
           </div>
         </div>
         <div className="footer-bottom-v4">
-          <p>© 2026 جميع الحقوق محفوظة لشركة NEBULA TECH | صُمم بشغف للمستقبل</p>
+          <p>© 2026 جميع الحقوق محفوظة لشركة MaFa | صُمم بشغف للمستقبل</p>
           <div className="f-status-v4">
             <span className="online-dot"></span> الخوادم تعمل بكفاءة 100%
           </div>
@@ -436,3 +436,4 @@ const FaClock = () => <FaChartLine style={{transform: 'rotate(90deg)'}} />;
 const FaCheckCircle = () => <div className="custom-check">✓</div>;
 
 export default Home;
+
