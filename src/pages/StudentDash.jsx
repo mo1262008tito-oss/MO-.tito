@@ -159,6 +159,19 @@ const goToActivation = () => {
   // بدلاً من الانتقال لصفحة تانية، هنفتح نافذة فوق الصفحة الحالية (أشيك بكتير)
   setShowActivationModal(true);
 };
+  useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    if (currentUser) {
+      setUser(currentUser);
+    } else {
+      navigate("/login");
+    }
+  });
+  return () => unsubscribe();
+}, []);
+
+// أضف هذا السطر قبل الـ return النهائي لضمان عدم وجود شاشة سوداء
+if (!user) return <div className="loading">جاري تحميل المنصة...</div>;
   // --- 1. إدارة الجلسة والتحقق من المستخدم ---
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
@@ -1086,6 +1099,7 @@ const goToActivation = () => {
 };
 
 export default StudentDash;
+
 
 
 
