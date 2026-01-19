@@ -32,8 +32,7 @@ const Navbar = ({ userData, isAdmin }) => {
     { name: 'الواحة', path: '/religious', icon: <Heart size={20}/> },
   ];
 
-    { name: 'حولنا', path: '/about', icon: <Heart size={20}/> },
-  ];
+
   const privateLinks = [
     { name: 'لوحة الطالب', path: '/student-dash', icon: <GraduationCap size={20} /> },
     { name: 'المحفظة', path: '/wallet', icon: <Wallet size={20} /> },
@@ -105,6 +104,7 @@ const Navbar = ({ userData, isAdmin }) => {
 };
 
 export default Navbar;
+
 
 
 
