@@ -6,6 +6,8 @@
   direction: rtl;
 }
 
+
+
 /* Sidebar */
 .admin-sidebar {
   width: 280px;
@@ -626,3 +628,4 @@ code { font-family: 'Courier New', monospace; color: #3b82f6; }
 ::-webkit-scrollbar-thumb:hover {
     background: rgba(59, 130, 246, 0.5);
 }
+
