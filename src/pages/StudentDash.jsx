@@ -22,6 +22,8 @@ import {
 import { auth, db, storage } from "../firebase"; 
 import "./StudentDash.css";
 
+
+
 // 1. مكون بطاقة الإحصائيات (StatCard)
 const StatCard = ({ title, value, icon, hint, trend }) => (
   <motion.div 
@@ -134,6 +136,7 @@ const NotificationsList = ({ items }) => (
   ]);
   const [mood, setMood] = useState("neutral");
 
+  
   // --- دوال المساعدة ---
   const formatTime = (sec) => {
     const m = Math.floor(sec / 60);
@@ -1122,6 +1125,7 @@ useEffect(() => {
 };
 
 export default StudentDash;
+
 
 
 
