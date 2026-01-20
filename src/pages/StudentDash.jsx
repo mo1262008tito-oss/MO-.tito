@@ -18,6 +18,7 @@ import {
   Pin, Trash2, User, Mail, Lock, Phone, UserPlus, AlertCircle, Shield, Zap, Star 
 } from 'lucide-react'; // تأكد من تثبيت lucide-react
 
+
 // استيراد الإعدادات المركزية (هذا السطر الأهم لمنع التكرار)
 import { auth, db, storage } from "../firebase"; 
 import "./StudentDash.css";
@@ -1129,6 +1130,7 @@ useEffect(() => {
 };
 
 export default StudentDash;
+
 
 
 
