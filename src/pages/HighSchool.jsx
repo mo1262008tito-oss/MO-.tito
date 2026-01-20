@@ -20,6 +20,10 @@ import { useNavigate } from 'react-router-dom';
 
 import './HighSchool.css'; 
 
+
+
+
+
 /**
  * @component MAFA_Universal_Portal_v2
  * @description نظام الإدارة التعليمي المتكامل - يدعم جميع المراحل التعليمية بتقنيات الهولوغرام
@@ -537,4 +541,5 @@ const HighSchool = () => {
 };
 
 export default HighSchool;
+
 
