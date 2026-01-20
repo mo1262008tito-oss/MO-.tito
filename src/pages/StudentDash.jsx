@@ -232,6 +232,7 @@ const goToActivation = () => {
     }
   };
 
+  
   // --- 4. إدارة المهام (CRUD To-Do) ---
   const addTodo = async (text) => {
     if (!text?.trim() || !user) return;
@@ -245,6 +246,7 @@ const goToActivation = () => {
     if (!currentStatus) accumulateXP(10, "todo_complete");
   };
 
+  
   // --- 5. نظام الـ Pomodoro المطور ---
   useEffect(() => {
     if (!pomodoro.running) return;
@@ -269,6 +271,8 @@ const goToActivation = () => {
     { id: 'skip_task', name: 'تخطي مهمة واحدة', price: 150, icon: '🎫' },
     { id: 'premium_avatar', name: 'إطار أفاتار ذهبي', price: 300, icon: '👑' }
   ]);
+
+  
 
   const buyItem = async (item) => {
     if (profile.balance < item.price) {
@@ -910,7 +914,7 @@ useEffect(() => {
                   </div>
                 </section>
 
-                {/* لوحة المتصدرين (Pro Leaderboard) */}
+                {/* لوحة المصدرين (Pro Leaderboard) */}
                 <section className="leaderboard-panel-v3 glass-card">
                   <div className="panel-header">
                     <h3 className="panel-title-v3">👑 أوائل الأسبوع</h3>
@@ -1125,6 +1129,7 @@ useEffect(() => {
 };
 
 export default StudentDash;
+
 
 
 
