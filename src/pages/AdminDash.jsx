@@ -747,7 +747,6 @@ const realTimeChartData = useMemo(() => {
                       ))}
                     </div>
                   </div>
-                  
                   <div className="chat-interface glass-card">
                     <div className="chat-header">
                       <div className="user-profile">
@@ -768,7 +767,6 @@ const realTimeChartData = useMemo(() => {
                       <button className="btn-send"><Send size={18}/></button>
                     </div>
                   </div>
-                </div>
               </motion.div>
             )}
 
@@ -918,5 +916,4 @@ const realTimeChartData = useMemo(() => {
 };
 
 export default AdminDash;
-
 
