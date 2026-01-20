@@ -15,6 +15,7 @@
     --transition-smooth: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+
 /* تخصيص الألوان حسب المرحلة */
 .stage-ثانوي { --accent-color: #00f2ff; --secondary-glow: rgba(0, 100, 255, 0.4); }
 .stage-اعدادي { --accent-color: #00ff88; --secondary-glow: rgba(0, 255, 100, 0.3); }
@@ -26,6 +27,7 @@
     padding: 0;
     font-family: 'Cairo', sans-serif; /* تأكد من استدعاء الخط في HTML */
 }
+
 
 body {
     background: #05070a;
@@ -563,4 +565,5 @@ body {
     0% { left: -100%; }
     100% { left: 200%; }
 }
+
 
