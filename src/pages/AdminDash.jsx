@@ -7,6 +7,7 @@ import {
 } from "firebase/firestore";
 import { ref, set, onValue, update, remove, push } from "firebase/database";
 import { ref as sRef, uploadBytes, getDownloadURL } from "firebase/storage";
+
 import { 
   // الأيقونات الأساسية
   ShieldCheck, Radio, BookOpen, Users, Key, BarChart3, Cpu, Search, 
@@ -34,6 +35,10 @@ import {
 import * as XLSX from 'xlsx'; 
 import axios from 'axios'; // إضافة استيراد أكسيوس
 import './AdminDash.css';
+
+
+
+
 
 /**
  * [1] TITAN CORE ENGINES
@@ -406,7 +411,9 @@ const realTimeChartData = useMemo(() => {
 
 
 // تأكد من إضافة unsubFinance(); داخل دالة الـ return في النهاية
-return (
+
+  
+  return (
   
   <div className={`titan-app ${isEmergency ? 'emergency-active' : ''}`}>
     
@@ -911,4 +918,5 @@ return (
 };
 
 export default AdminDash;
+
 
