@@ -8,7 +8,7 @@ import { getAnalytics } from "firebase/analytics"; // لمتابعة أداء ا
 const firebaseConfig = {
   apiKey: 'AIzaSyDhrGwUiLL_V8Wl2fceAE3rhonE4xQMJDg',
   authDomain: 'mafat-platform.firebaseapp.com',
-  // تأكد من إضافة databaseURL إذا كنت ستستخدم الـ Realtime Database
+  // جرب هذا الرابط، وإذا استمر الخطأ، انسخ الرابط المباشر من واجهة Firebase
   databaseURL: "https://mafat-platform-default-rtdb.firebaseio.com", 
   projectId: 'mafat-platform',
   storageBucket: 'mafat-platform.firebasestorage.app',
@@ -16,7 +16,6 @@ const firebaseConfig = {
   appId: '1:732155910926:web:2d1910cf2f9c108d6dd55f',
   measurementId: 'G-MQNKFEQ4BC'
 };
-
 // تشغيل التطبيق
 export const app = initializeApp(firebaseConfig); 
 
@@ -35,4 +34,5 @@ export const storage = getStorage(app);
 export const rtdb = getDatabase(app); 
 
 // 5. التحليلات (اختياري - لمتابعة نمو المنصة)
+
 export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
