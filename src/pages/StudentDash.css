@@ -1,0 +1,1644 @@
+/* StudentDash.css - الجزء الأول: الأساسيات والهوية البصرية */
+
+:root {
+  --primary-glow: #00f2ff;
+  --secondary-glow: #7000ff;
+  --accent-gold: #facc15;
+  --glass-bg: rgba(15, 15, 25, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --text-main: #ffffff;
+  --text-dim: #a1a1aa;
+}
+
+/* 1. الخلفية العامة للمنصة (Animated Cyber Background) */
+.student-dashboard-container {
+  background: radial-gradient(circle at top right, #0d0d1a, #000000);
+  min-height: 100vh;
+  padding: 2rem;
+  font-family: 'Cairo', sans-serif;
+  color: var(--text-main);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* إضافة كرات ضوئية متحركة في الخلفية */
+.student-dashboard-container::before {
+  content: '';
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: var(--primary-glow);
+  filter: blur(150px);
+  opacity: 0.1;
+  top: -100px;
+  left: -100px;
+  pointer-events: none;
+}
+
+/* 2. تأثير الـ Glass-v4 (التطوير الجديد للزجاج) */
+.glass-v4 {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.glass-v4::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+  transition: 0.5s;
+}
+
+.glass-v4:hover::after {
+  left: 100%;
+}
+
+/* 3. كروت الإحصائيات (Stat Cards) */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-icon-bg {
+  width: 50px;
+  height: 50px;
+  background: rgba(0, 242, 255, 0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--primary-glow);
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+}
+
+.card-value {
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(to right, #fff, var(--primary-glow));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.trend-tag.up { color: #4ade80; background: rgba(74, 222, 128, 0.1); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; }
+
+/* 4. نظام المهام (Todo Widget) */
+.todo-widget {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.todo-input-group {
+  display: flex;
+  gap: 10px;
+  background: rgba(255,255,255,0.05);
+  padding: 8px;
+  border-radius: 15px;
+}
+
+.todo-input-group input {
+  background: transparent;
+  border: none;
+  color: white;
+  flex: 1;
+  padding: 5px 10px;
+  outline: none;
+}
+
+.todo-input-group button {
+  background: var(--primary-glow);
+  border: none;
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  border: 1px solid transparent;
+}
+
+.todo-item:hover {
+  border-color: var(--glass-border);
+  background: rgba(255,255,255,0.05);
+}
+
+.todo-item.completed .todo-text {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+/* 5. لوحة الصدارة (Leaderboard) */
+.leader-row {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  margin-bottom: 10px;
+  border-radius: 15px;
+  background: rgba(255,255,255,0.02);
+  transition: 0.3s;
+}
+
+.leader-row.highlight {
+  background: linear-gradient(90deg, rgba(0, 242, 255, 0.1), transparent);
+  border-right: 4px solid var(--primary-glow);
+}
+
+.leader-rank {
+  width: 30px;
+  font-weight: bold;
+  color: var(--accent-gold);
+}
+
+.leader-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex: 1;
+}
+
+.leader-info img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--primary-glow);
+}
+
+.leader-xp {
+  font-family: 'monospace';
+  color: var(--primary-glow);
+  font-weight: bold;
+}
+
+/* 6. نظام الإشعارات (Notifications) */
+.notif-item {
+  display: flex;
+  gap: 15px;
+  padding: 1rem;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.notif-item.unread {
+  background: rgba(0, 242, 255, 0.03);
+}
+
+.notif-icon {
+  font-size: 1.2rem;
+}
+
+/* StudentDash.css - الجزء الثاني: الميزات المتقدمة والأنظمة التفاعلية */
+
+/* 1. وضع التركيز العميق (Deep Focus Overlay) */
+.focus-overlay-fixed {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, rgba(10, 10, 20, 0.95), #000);
+}
+
+.glass-heavy {
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid var(--primary-glow);
+  box-shadow: 0 0 50px rgba(0, 242, 255, 0.2);
+  padding: 3rem;
+  border-radius: 40px;
+  text-align: center;
+  max-width: 600px;
+  width: 90%;
+}
+
+.focus-timer-large {
+  font-size: 6rem;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--primary-glow);
+  text-shadow: 0 0 30px var(--primary-glow);
+  margin: 1.5rem 0;
+}
+
+.pulse-animation {
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+/* 2. الهيدر الذكي (Smart Nav) */
+.dash-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  margin-bottom: 2rem;
+  position: sticky;
+  top: 15px;
+  z-index: 900;
+}
+
+.nav-profile-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.avatar-wrapper {
+  position: relative;
+  cursor: pointer;
+}
+
+.nav-avatar {
+  width: 55px;
+  height: 55px;
+  border-radius: 18px;
+  border: 2px solid var(--primary-glow);
+  padding: 3px;
+}
+
+.level-badge {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  background: var(--secondary-glow);
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+/* 3. شريط الرصيد والـ XP */
+.xp-bar-container {
+  width: 120px;
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 5px;
+}
+
+.xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
+  box-shadow: 0 0 10px var(--primary-glow);
+}
+
+.nav-stat-item {
+  background: rgba(255,255,255,0.05);
+  padding: 8px 15px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.nav-stat-item:hover {
+  background: rgba(0, 242, 255, 0.1);
+  border-color: var(--primary-glow);
+}
+
+/* 4. مسار التعلم (Roadmap RPG Style) */
+.path-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  padding-left: 20px;
+}
+
+.path-step {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+}
+
+.step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  z-index: 2;
+}
+
+.path-step.completed .step-circle {
+  background: var(--primary-glow);
+  color: #000;
+  box-shadow: 0 0 15px var(--primary-glow);
+}
+
+.path-step.in-progress .step-circle {
+  border-color: var(--primary-glow);
+  animation: border-pulse 2s infinite;
+}
+
+@keyframes border-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.4); }
+  100% { box-shadow: 0 0 0 10px rgba(0, 242, 255, 0); }
+}
+
+/* 5. المتجر (Marketplace V2) */
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.store-card {
+  background: rgba(255,255,255,0.03);
+  padding: 15px;
+  border-radius: 20px;
+  text-align: center;
+  border: 1px solid var(--glass-border);
+  transition: 0.3s;
+}
+
+.store-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255,255,255,0.07);
+  border-color: var(--secondary-glow);
+}
+
+.item-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.buy-btn {
+  background: var(--secondary-glow);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  margin-top: 10px;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* 6. أدوات الحالة (Mood & Analytics) */
+.chart-placeholder-v2 {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 150px;
+  padding: 10px;
+}
+
+.bar-visual {
+  width: 12px;
+  background: linear-gradient(to top, var(--secondary-glow), var(--primary-glow));
+  border-radius: 10px;
+  position: relative;
+  transition: 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bar-tooltip {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  background: #000;
+  padding: 2px 5px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: 0.2s;
+}
+
+.bar-group:hover .bar-tooltip {
+  opacity: 1;
+}
+
+/* StudentDash.css - الجزء الثالث: الهيكل العام، الفوتر، واللمسات النهائية */
+
+/* 1. تقسيم الصفحة الرئيسي (Layout) */
+.dashboard-content-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr; /* عرض السايد بار */
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+/* 2. السايد بار (Sidebar Stylings) */
+.dash-sidebar {
+  padding: 1.5rem;
+  height: fit-content;
+  position: sticky;
+  top: 100px;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 2rem 0;
+}
+
+.menu-item {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  padding: 12px 15px;
+  border-radius: 12px;
+  text-align: right;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: 0.3s;
+  font-weight: 500;
+}
+
+.menu-item:hover, .menu-item.active {
+  background: rgba(0, 242, 255, 0.1);
+  color: var(--primary-glow);
+  transform: translateX(-5px);
+}
+
+.menu-item.highlight-gold {
+  border: 1px solid var(--accent-gold);
+  color: var(--accent-gold);
+  margin-top: 10px;
+}
+
+.menu-item.highlight-gold:hover {
+  background: var(--accent-gold);
+  color: #000;
+}
+
+/* 3. الهيدر الترحيبي (Welcome Banner) */
+.welcome-banner {
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(112, 0, 255, 0.1), rgba(0, 242, 255, 0.1));
+}
+
+.welcome-text h1 {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(to left, #fff, var(--primary-glow));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 4. شبكة المحتوى (Main Grid) */
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 350px; /* العمود الرئيسي والجانبي الداخلي */
+  gap: 2rem;
+}
+
+/* 5. جداول البيانات (Transactions Table) */
+.transactions-table-v2 {
+  margin-top: 1.5rem;
+}
+
+.table-header-v2, .table-row-v2 {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  padding: 15px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.table-header-v2 {
+  font-weight: bold;
+  color: var(--text-dim);
+  background: rgba(255,255,255,0.02);
+}
+
+.t-amount.red { color: #ff4d4d; }
+.t-amount.green { color: #4ade80; }
+
+/* 6. الملاحظات العائمة (Quick Notes) */
+.quick-notes-overlay {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  width: 280px;
+  padding: 1.5rem;
+  border-radius: 20px;
+  z-index: 800;
+}
+
+.notes-textarea {
+  width: 100%;
+  height: 120px;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  color: white;
+  padding: 10px;
+  margin: 10px 0;
+  resize: none;
+}
+
+/* 7. الفوتر الاحترافي (Footer) */
+.student-pro-footer {
+  margin-top: 5rem;
+  padding: 4rem 2rem 2rem;
+  border-radius: 40px 40px 0 0;
+}
+
+.footer-top-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3rem;
+}
+
+.brand-logo-v3 {
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+}
+
+.brand-logo-v3 span { color: var(--primary-glow); }
+
+.footer-links-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 150px);
+  gap: 2rem;
+}
+
+.footer-col h4 { color: var(--primary-glow); margin-bottom: 1rem; }
+.footer-col span { display: block; color: var(--text-dim); margin-bottom: 8px; cursor: pointer; }
+
+.footer-divider { border: 0; border-top: 1px solid var(--glass-border); margin: 2rem 0; }
+
+.footer-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.v-tag {
+  background: rgba(0, 242, 255, 0.1);
+  padding: 4px 10px;
+  border-radius: 5px;
+  color: var(--primary-glow);
+  margin-right: 10px;
+}
+
+/* 8. زر العودة للأعلى (Back to Top) */
+.back-to-top-v2 {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--primary-glow);
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 0 20px var(--primary-glow);
+  z-index: 1000;
+}
+
+/* 9. Responsive Design (Mobile) */
+@media (max-width: 1100px) {
+  .dashboard-content-layout, .dashboard-main-grid {
+    grid-template-columns: 1fr;
+  }
+  .dash-sidebar { display: none; } /* يفضل عمل همبرجر منيو للموبايل */
+}
+
+/* --- التكملة النهائية لملف StudentDash.css --- */
+
+/* 1. تنسيق قسم المتصدرين (Leaderboard) */
+.leaderboard-panel-v3 {
+  margin-top: 1.5rem;
+}
+
+.search-leaderboard-mini input {
+  width: 100%;
+  padding: 10px 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  color: white;
+  margin: 10px 0;
+  outline: none;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: 0.3s;
+}
+
+.leaderboard-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: scale(1.02);
+}
+
+.rank-number {
+  font-weight: bold;
+  color: var(--primary-glow);
+  width: 25px;
+}
+
+/* 2. قسم تحليل الأداء والبيانات (Analytics & Roadmap) */
+.analytics-roadmap-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.performance-section-v3 {
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.analytics-legend {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+}
+
+.legend-item i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-left: 5px;
+}
+
+.dot-blue { background: var(--primary-glow); box-shadow: 0 0 10px var(--primary-glow); }
+.dot-purple { background: var(--secondary-glow); box-shadow: 0 0 10px var(--secondary-glow); }
+
+/* 3. سجل المحفظة (Finance Log Section) */
+.finance-log-section {
+  margin-top: 2rem;
+  overflow-x: auto;
+}
+
+.top-up-btn-v2 {
+  background: linear-gradient(90deg, #f1c40f, #f39c12);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.top-up-btn-v2:hover {
+  box-shadow: 0 0 15px rgba(241, 196, 15, 0.5);
+  transform: translateY(-2px);
+}
+
+.empty-msg-v2 {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* 4. قسم الأوسمة (Badges) */
+.badges-grid-v3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 15px;
+  padding: 10px;
+}
+
+.badge-item-v3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.badge-icon-v3 {
+  font-size: 2rem;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+}
+
+.badge-name-v3 {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+
+/* 5. حالة النظام والـ Latency في الفوتر */
+.system-info-v3 {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.v-tag, .build-tag, .latency-tag {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.latency-tag { color: #4ade80; } /* اللون الأخضر يدل على سرعة النظام */
+
+/* 6. تأثيرات الزجاج الثقيل (Glass Heavy) */
+.glass-heavy {
+  background: rgba(15, 15, 25, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+/* 7. استعلامات الوسائط (Media Queries) للهواتف */
+@media (max-width: 992px) {
+  .analytics-roadmap-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .welcome-banner {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .welcome-stats {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .stats-dashboard-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .quick-notes-overlay {
+    width: calc(100% - 40px);
+    left: 20px;
+    bottom: 80px;
+  }
+
+  .footer-links-grid {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .footer-top-row {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
+
+/* 8. أنيميشن التحميل (Loading State) */
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 5px var(--primary-glow); }
+  50% { box-shadow: 0 0 20px var(--primary-glow); }
+  100% { box-shadow: 0 0 5px var(--primary-glow); }
+}
+
+.active-session-indicator {
+  width: 8px;
+  height: 8px;
+  background: #4ade80;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  animation: pulse-glow 2s infinite;
+}
+
+/* --- شبكة الأدوات الرئيسية --- */
+.student-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.tool-card {
+    border-radius: 24px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.tool-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+
+.tool-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.icon-badge {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 12px;
+}
+
+/* --- تصميم البرومودورو (Pomodoro UI) --- */
+.pomo-display {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 15px;
+}
+
+.pomo-svg { transform: rotate(-90deg); }
+.pomo-track { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 6; }
+.pomo-progress { 
+    fill: none; stroke: #ff4d4d; stroke-width: 6; 
+    stroke-linecap: round; transition: 0.3s;
+}
+
+.pomo-time {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.8rem; font-weight: 800;
+}
+
+.pomo-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.p-btn {
+    padding: 10px 25px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.p-btn.start { background: #ff4d4d; color: white; }
+.p-btn.reset { background: rgba(255,255,255,0.1); color: white; }
+
+/* --- الأوسمة (Achievements) --- */
+.badges-staircase {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+}
+
+.badge-item {
+    text-align: center;
+    opacity: 0.4;
+    filter: grayscale(1);
+}
+
+.badge-item.unlocked { opacity: 1; filter: grayscale(0); }
+
+.badge-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #ffd700, #ffae00);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    margin-bottom: 8px;
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+}
+
+/* --- الإشعارات والدعم (Notifications) --- */
+.comm-tabs {
+    display: flex;
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 15px;
+}
+
+.c-tab {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #888;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.c-tab.active { background: rgba(255,255,255,0.1); color: white; }
+
+.notifications-stream {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.notif-item {
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    background: rgba(255,255,255,0.03);
+    position: relative;
+}
+
+.notif-item.unread { border-right: 3px solid #ffd700; background: rgba(255,215,0,0.05); }
+
+.notif-dot {
+    position: absolute;
+    top: 10px; left: 10px;
+    width: 6px; height: 6px;
+    background: #ffd700;
+    border-radius: 50%;
+}
+/* --- الأوسمة (Badge Vault) --- */
+.achievements-card {
+    padding: 20px;
+    border-radius: 25px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+}
+
+.badges-flex-container {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    padding: 10px 5px;
+}
+
+.badge-vault {
+    min-width: 100px;
+    height: 130px;
+    border-radius: 20px;
+    background: rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.badge-vault.unlocked {
+    border-color: var(--primary-gold);
+    background: radial-gradient(circle at center, rgba(255,215,0,0.1), transparent);
+}
+
+.aura-effect {
+    position: absolute;
+    width: 60px; height: 60px;
+    background: var(--primary-gold);
+    filter: blur(30px);
+    opacity: 0.3;
+    z-index: 0;
+}
+
+.vault-icon { z-index: 1; margin-bottom: 8px; color: #666; }
+.unlocked .vault-icon { color: var(--primary-gold); }
+
+.lock-overlay {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    padding: 4px;
+}
+
+/* --- مركز الدعم (Support Hub) --- */
+.support-center-card {
+    padding: 20px;
+    border: 1px dashed rgba(255,255,255,0.2);
+    border-radius: 20px;
+}
+
+.support-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.chat-btn {
+    background: #25d366;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 15px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2);
+}
+
+/* --- البرومودورو (Pomo Engine) --- */
+.pomo-engine-card {
+    text-align: center;
+    padding: 25px;
+    background: rgba(0,0,0,0.4);
+}
+
+.pomo-timer-ring {
+    position: relative;
+    width: 180px; height: 180px;
+    margin: 20px auto;
+}
+
+.time-digital {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+}
+
+.ring-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 8; }
+.ring-fill { 
+    fill: none; stroke: var(--error-red); stroke-width: 8; 
+    stroke-linecap: round; stroke-dasharray: 534; stroke-dashoffset: 130;
+}
+
+.pomo-main-btn {
+    padding: 10px 30px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.pomo-main-btn.start {
+    background: white;
+    color: black;
+    font-weight: 800;
+
+}
+
+/* تنسيق تقسيم لوحة التحكم الأساسي */
+.dashboard-content-layout {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  margin-top: 80px; /* لترك مساحة للـ Nav الثابت */
+}
+
+.dash-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 100px;
+  height: calc(100vh - 120px);
+}
+
+.main-viewport {
+  flex-grow: 1;
+  min-width: 0; /* لمنع تمدد العناصر داخل الـ Flex */
+}
+
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr; /* تقسيم 60% للياسر و 40% لليمين */
+  gap: 20px;
+}
+
+/* استجابة الموبايل */
+@media (max-width: 1024px) {
+  .dashboard-main-grid {
+    grid-template-columns: 1fr;
+  }
+  .dash-sidebar {
+    display: none; /* أو تحويلها لقائمة جانبية منزلقة */
+  }
+}
+/* --- 1) تنسيق مؤقت الطماطم (Pomodoro V3) --- */
+.pomodoro-v3 {
+  text-align: center;
+  padding: 25px;
+  position: relative;
+  overflow: hidden;
+}
+
+.timer-display-v2 {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  margin: 20px auto;
+}
+
+.timer-svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.timer-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-width: 6;
+}
+
+.timer-progress {
+  fill: none;
+  stroke: var(--primary-neon);
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.timer-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 0 15px rgba(67, 233, 123, 0.3);
+}
+
+.timer-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.start-timer-btn {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  border: none;
+  padding: 10px 25px;
+  border-radius: 50px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #000;
+}
+
+.deep-focus-trigger {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--primary-neon);
+  color: var(--primary-neon);
+  padding: 10px 20px;
+  border-radius: 50px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* --- 2) لوحة المهام (Task Panel) --- */
+.todo-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.todo-input-group {
+  display: flex;
+  gap: 10px;
+}
+
+.todo-input-group input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  padding: 12px;
+  border-radius: 10px;
+  color: #fff;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  border-right: 4px solid var(--primary-neon);
+  transition: 0.3s;
+}
+
+.todo-item.completed {
+  opacity: 0.5;
+  border-right-color: #888;
+}
+
+.todo-item.completed .todo-text {
+  text-decoration: line-through;
+}
+
+.del-btn {
+  margin-right: auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  filter: grayscale(1);
+}
+
+/* --- 3) نظام الأوسمة (Badges) --- */
+.badges-grid-v3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 15px;
+  padding: 10px;
+}
+
+.badge-item-v3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.badge-icon-v3 {
+  width: 50px;
+  height: 50px;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.2) 0%, transparent 70%);
+  border: 1px solid gold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+}
+
+.badge-name-v3 {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+/* --- 4) الإشعارات (Notifications) --- */
+.notif-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-left: 5px;
+}
+
+.notif-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  margin-bottom: 10px;
+  border: 1px solid transparent;
+}
+
+.notif-item.unread {
+  background: rgba(67, 233, 123, 0.05);
+  border-color: rgba(67, 233, 123, 0.1);
+}
+
+.notif-text p {
+  font-size: 13px;
+  margin: 0;
+  color: #fff;
+}
+
+.notif-text small {
+  color: var(--text-dim);
+  font-size: 11px;
+}
+
+/* --- 5) البث الإداري (Admin Broadcasts) --- */
+.broadcast-mini-card {
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  border-right: 3px solid;
+}
+
+.broadcast-mini-card.high {
+  background: rgba(255, 71, 87, 0.1);
+  border-color: #ff4757;
+  color: #ff6b81;
+}
+
+.broadcast-mini-card.normal {
+  background: rgba(30, 144, 255, 0.1);
+  border-color: #1e90ff;
+  color: #70a1ff;
+}
+
+/* --- 6) تحليل الأداء (Performance Chart) --- */
+.chart-placeholder-v2 {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 150px;
+  padding-top: 20px;
+}
+
+.bar-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  width: 30px;
+}
+
+.bar-visual {
+  width: 100%;
+  background: linear-gradient(to top, var(--primary-neon), var(--secondary-neon));
+  border-radius: 5px 5px 0 0;
+  position: relative;
+  transition: height 1s ease-out;
+}
+
+.bar-tooltip {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #000;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  opacity: 0;
+  transition: 0.3s;
+}
+
+.bar-visual:hover .bar-tooltip {
+  opacity: 1;
+}
+
+.bar-label {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* --- 7) خريطة الطريق (Roadmap Path) --- */
+.path-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  padding: 10px 0;
+}
+
+.path-container::before {
+  content: '';
+  position: absolute;
+  right: 17px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.path-step {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  position: relative;
+  z-index: 1;
+}
+
+.step-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #1a1a2e;
+  border: 2px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: var(--text-dim);
+}
+
+.path-step.completed .step-circle {
+  background: var(--primary-neon);
+  color: #000;
+  border-color: var(--primary-neon);
+}
+
+.path-step.in-progress .step-circle {
+  border-color: var(--primary-neon);
+  box-shadow: 0 0 10px var(--primary-neon);
+}
+
+.step-content h4 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.step-content p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* =========================================
+   Q&A Panel & Support Interface (V3)
+   ========================================= */
+
+.grid-col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    padding: 20px;
+}
+
+/* الكرت الزجاجي الرئيسي */
+.qa-panel-v3 {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 30px;
+    padding: 25px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    position: relative;
+}
+
+/* رأس اللوحة مع علامة Live */
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.panel-title-v3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.badge-live {
+    background: rgba(255, 59, 48, 0.15);
+    color: var(--accent-red);
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255, 59, 48, 0.3);
+}
+
+.badge-live::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--accent-red);
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse-red 1.5s infinite;
+}
+
+@keyframes pulse-red {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(255, 59, 48, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
+}
+
+/* منطقة المدخلات */
+.qa-body {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.qa-input-wrapper {
+    position: relative;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    padding: 15px;
+    transition: 0.3s ease;
+}
+
+.qa-input-wrapper:focus-within {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 20px rgba(0, 122, 255, 0.1);
+}
+
+.qa-textarea-v2 {
+    width: 100%;
+    min-height: 100px;
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: none;
+    outline: none;
+    line-height: 1.6;
+}
+
+.qa-textarea-v2::placeholder {
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+
+/* زر الإرسال الاحترافي */
+.send-qa-btn-v2 {
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px;
+    background: var(--accent-blue);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.send-qa-btn-v2:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 122, 255, 0.3);
+    background: #0084ff;
+}
+
+.send-qa-btn-v2:active {
+    transform: scale(0.98);
+}
+
+/* النص السفلي */
+.recent-questions-mini {
+    padding: 10px 5px;
+    text-align: center;
+}
+
+.recent-questions-mini p.muted {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* تحسينات للشاشات الصغيرة */
+@media (max-width: 480px) {
+    .qa-panel-v3 {
+        padding: 15px;
+        border-radius: 20px;
+    }
+}
