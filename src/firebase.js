@@ -2,13 +2,17 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth'; 
 import { getStorage } from 'firebase/storage';
-import { getDatabase } from 'firebase/database'; // لدعم الإشعارات والبيانات اللحظية
-import { getAnalytics } from "firebase/analytics"; // لمتابعة أداء الطلاب
+import { getDatabase } from 'firebase/database'; 
+import { getAnalytics, isSupported } from "firebase/analytics"; 
 
+/**
+ * إعدادات الاتصال بمشروعك (Mafat Platform)
+ * هذه المفاتيح تربط الكود البرمجي بالسيرفرات السحابية
+ */
 const firebaseConfig = {
   apiKey: 'AIzaSyDhrGwUiLL_V8Wl2fceAE3rhonE4xQMJDg',
   authDomain: 'mafat-platform.firebaseapp.com',
-  // جرب هذا الرابط، وإذا استمر الخطأ، انسخ الرابط المباشر من واجهة Firebase
+  // ملاحظة: تأكد من تطابق هذا الرابط مع الرابط في Realtime Database داخل لوحة Firebase
   databaseURL: "https://mafat-platform-default-rtdb.firebaseio.com", 
   projectId: 'mafat-platform',
   storageBucket: 'mafat-platform.firebasestorage.app',
@@ -16,23 +20,28 @@ const firebaseConfig = {
   appId: '1:732155910926:web:2d1910cf2f9c108d6dd55f',
   measurementId: 'G-MQNKFEQ4BC'
 };
-// تشغيل التطبيق
-export const app = initializeApp(firebaseConfig); 
 
-// --- تصدير الخدمات ---
+// 1. تشغيل التطبيق الأساسي
+const app = initializeApp(firebaseConfig); 
 
-// 1. قاعدة بيانات Firestore (للكورسات، الامتحانات، بيانات الطلاب)
+// 2. تصدير الخدمات لربطها بالأجزاء العشرة من المنصة
+
+// قاعدة بيانات Firestore (تخزين الطلاب، الكورسات، المذكرات، والنتائج)
 export const db = getFirestore(app);
 
-// 2. نظام المصادقة (تسجيل دخول الطلاب والأساتذة)
+// نظام المصادقة (إدارة دخول الأدمن والطلاب)
 export const auth = getAuth(app);
 
-// 3. التخزين (لرفع صور المكتبة، ملفات الـ PDF، وفيديوهات الكورسات)
+// التخزين السحابي (رفع ملفات الـ PDF، الصور، وأغلفة الكتب)
 export const storage = getStorage(app);
 
-// 4. قاعدة البيانات اللحظية (للإشعارات، حالة الطالب "اونلاين"، والنتائج الفورية)
+// قاعدة البيانات اللحظية (محرك الرادار، التنبيهات الفورية، وحالة الأونلاين)
 export const rtdb = getDatabase(app); 
 
-// 5. التحليلات (اختياري - لمتابعة نمو المنصة)
+// نظام التحليلات (لمراقبة نشاط المنصة بشكل عام)
+export const analytics = typeof window !== 'undefined' 
+  ? isSupported().then(yes => yes ? getAnalytics(app) : null) 
+  : null;
 
-export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+// تصدير التطبيق كافتراضي
+export default app;
