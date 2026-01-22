@@ -36,10 +36,6 @@ import { ref, set, onValue, update, remove, push, child, get, onDisconnect } fro
 import { ref as sRef, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import './AdminDash.css';
 
- * [TITAN ENTERPRISE OS - v5.0.0]
- * الجزء الأول: محرك الحماية الفدرالي ونظام إدارة الهوية
- */
-
 export default function AdminDash() {
   // --- أنظمة الحالة المتقدمة (State Management) ---
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -2013,5 +2009,6 @@ export default function AdminDash() {
     </div>
   );
 }
+
 
 
