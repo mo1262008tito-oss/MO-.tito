@@ -13,7 +13,7 @@ const firebaseConfig = {
   apiKey: 'AIzaSyDhrGwUiLL_V8Wl2fceAE3rhonE4xQMJDg',
   authDomain: 'mafat-platform.firebaseapp.com',
   // ملاحظة: تأكد من تطابق هذا الرابط مع الرابط في Realtime Database داخل لوحة Firebase
-databaseURL: "https://mafat-platform.europe-west1.firebasedatabase.app", 
+databaseURL: "https://mafat-platform-default-rtdb.firebaseio.com",
   projectId: 'mafat-platform',
   storageBucket: 'mafat-platform.firebasestorage.app',
   messagingSenderId: '732155910926',
@@ -45,4 +45,5 @@ export const analytics = typeof window !== 'undefined'
 
 // تصدير التطبيق كافتراضي
 export default app;
+
 
