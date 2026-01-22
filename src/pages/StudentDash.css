@@ -1641,4 +1641,356 @@
         padding: 15px;
         border-radius: 20px;
     }
+
+}
+
+/* --- Student OS Pro: Full Stylesheet --- */
+
+:root {
+  --primary-bg: #050a18;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --accent-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+  --text-main: #ffffff;
+  --text-muted: #94a3b8;
+  --card-border: rgba(255, 255, 255, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--primary-bg);
+  color: var(--text-main);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  direction: rtl; /* لضمان التنسيق العربي الصحيح */
+}
+
+/* 1. الحاوية الرئيسية */
+.student-dash-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* 2. الهيدر العلوي */
+.dash-nav {
+  height: 70px;
+  background: rgba(10, 15, 30, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  border-bottom: 1px solid var(--card-border);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* 3. توزيع المحتوى (Layout) */
+.dashboard-content-layout {
+  display: flex;
+  padding: 20px;
+  gap: 20px;
+  flex: 1;
+}
+
+/* 4. منطقة المحتوى الوسطى (الأهم) */
+.main-viewport {
+  flex: 1; /* تأخذ المساحة الوسطى كاملة */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0; /* لمنع تمدد العناصر خارج الشاشة */
+}
+
+/* 5. السايد بار (القائمة اليمنى في صورتك) */
+.dash-sidebar {
+  width: 280px;
+  background: var(--glass-bg);
+  border-radius: 20px;
+  padding: 20px;
+  border: 1px solid var(--card-border);
+  height: fit-content;
+  position: sticky;
+  top: 90px;
+}
+
+/* 6. الملاحظات (القائمة اليسرى في صورتك) */
+.quick-notes-overlay {
+  width: 260px;
+  background: rgba(20, 25, 40, 0.9);
+  border-radius: 20px;
+  padding: 15px;
+  border: 1px solid var(--card-border);
+  height: fit-content;
+  position: sticky;
+  top: 90px;
+}
+
+/* 7. صف كروت الإحصائيات (Stats Row) */
+.stats-dashboard-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.stat-card-v2 {
+  background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+  padding: 20px;
+  border-radius: 15px;
+  border: 1px solid var(--card-border);
+  text-align: center;
+  transition: 0.3s;
+}
+
+.stat-card-v2:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent-blue);
+}
+
+/* 8. الشبكة الرئيسية (Grid System) */
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr; /* عمود أكبر للمهام */
+  gap: 20px;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 9. لوحات المهام والمؤقت (Glass Cards) */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  padding: 25px;
+  border: 1px solid var(--card-border);
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* 10. جدول المعاملات المالية */
+.finance-log-section {
+  margin-top: 20px;
+}
+
+.transactions-table-v2 {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.table-row-v2 {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  padding: 15px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 10px;
+  align-items: center;
+}
+
+/* 11. الفوتر (Footer) */
+.student-pro-footer {
+  padding: 40px;
+  background: rgba(5, 10, 24, 0.9);
+  border-top: 1px solid var(--card-border);
+  margin-top: 40px;
+}
+
+/* ألوان الحالة */
+.red { color: #ff4d4d; }
+.green { color: #00ff88; }
+.muted { color: var(--text-muted); font-size: 0.9rem; }
+/* --- Titan OS: Full Dashboard Professional Stylesheet --- */
+
+:root {
+  --primary-bg: #050a18;
+  --secondary-bg: #0a0f1d;
+  --glass-card: rgba(255, 255, 255, 0.03);
+  --accent: #3b82f6;
+  --accent-glow: rgba(59, 130, 246, 0.5);
+  --text-main: #ffffff;
+  --text-muted: #94a3b8;
+  --border: rgba(255, 255, 255, 0.08);
+  --success: #10b981;
+  --danger: #ef4444;
+}
+
+/* الإعدادات العامة */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--primary-bg);
+  color: var(--text-main);
+  font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+  direction: rtl;
+}
+
+/* 1. الحاوية الجذرية */
+.student-dash-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* 2. توزيع المحتوى (Layout) */
+.dashboard-content-layout {
+  display: flex;
+  flex: 1;
+  padding: 25px;
+  gap: 25px;
+  align-items: flex-start; /* لضمان عدم تمدد السايد بار طولياً بشكل مشوه */
+}
+
+/* 3. منطقة المحتوى الوسطى (Main Viewport) */
+.main-viewport {
+  flex: 2; /* تأخذ المساحة الأكبر في المنتصف */
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  min-width: 0; /* ضروري جداً لمنع انهيار الـ Flexbox */
+}
+
+/* 4. السايد بار والملاحظات (Sidebar & Notes) */
+.dash-sidebar, .quick-notes-overlay {
+  width: 300px;
+  background: var(--glass-card);
+  backdrop-filter: blur(12px);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  padding: 20px;
+  position: sticky;
+  top: 100px; /* لتبقى ثابتة عند التمرير */
+}
+
+/* 5. شبكة الإحصائيات (Stats Grid) */
+.stats-dashboard-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+/* 6. الشبكة الرئيسية للمحتوى (Main Grid) */
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1.2fr; /* تقسيم المهام والتركيز مقابل المتصدرين والأسئلة */
+  gap: 25px;
+}
+
+@media (max-width: 1200px) {
+  .dashboard-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 7. تصميم الكروت الزجاجية (Glass Card Effect) */
+.glass-card {
+  background: var(--glass-card);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 25px;
+  border: 1px solid var(--border);
+  transition: transform 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* 8. مؤقت الطماطم (Pomodoro Timer) */
+.timer-display-v2 {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 20px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.timer-text {
+  position: absolute;
+  font-size: 2.5rem;
+  font-weight: 800;
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* 9. جدول المعاملات المالية (Finance Table) */
+.transactions-table-v2 {
+  margin-top: 15px;
+}
+
+.table-header-v2, .table-row-v2 {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  padding: 15px;
+  border-bottom: 1px solid var(--border);
+}
+
+.table-row-v2:last-child { border: none; }
+
+.t-amount.red { color: var(--danger); }
+.t-amount.green { color: var(--success); }
+
+/* 10. الفوتر (Footer) */
+.student-pro-footer {
+  margin-top: 60px;
+  padding: 50px 5%;
+  background: var(--secondary-bg);
+  border-top: 1px solid var(--border);
+}
+
+.footer-top-row {
+  display: grid;
+  grid-template-columns: 1.5fr repeat(3, 1fr);
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+/* 11. الملاحظات السريعة (Quick Notes Style) */
+.notes-textarea {
+  width: 100%;
+  height: 180px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: white;
+  padding: 12px;
+  resize: none;
+  margin-top: 15px;
+}
+
+/* 12. أزرار التحكم */
+.send-qa-btn-v2, .start-timer-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.send-qa-btn-v2:hover {
+  background: #2563eb;
+  box-shadow: 0 0 15px var(--accent-glow);
 }
