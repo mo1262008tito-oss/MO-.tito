@@ -40,20 +40,20 @@ import './AdminDash.css';
 
 export default function AdminDash() {
   // --- أنظمة الحالة المتقدمة (State Management) ---
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [academyCategory, setAcademyCategory] = useState('high-school'); // (high-school, religious, educational, coding)
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const [isLiveMode, setIsLiveMode] = useState(true);
-  
-  // بيانات الطلاب
-  const [students, setStudents] = useState([]);
-  const [selectedStudent, setSelectedStudent] = useState(null);
-  
-  // بيانات الأكاديمية
-  const [courses, setCourses] = useState([]);
-  const [books, setBooks] = useState([]);
-  const [editingItem, setEditingItem] = useState(null);
-  
+  // أضف هذه السطور في بداية مكون AdminDashboard
+const [transactions, setTransactions] = useState([]);
+const [students, setStudents] = useState([]);
+const [activeChat, setActiveChat] = useState(null);
+const [stats, setStats] = useState({ totalRevenue: 0 });
+const [radarStats, setRadarStats] = useState({ online: 0 });
+const [securityLogs, setSecurityLogs] = useState([]);
+
+// تأكد من تعريف المكونات الفارغة إذا لم تكن كتبتها بعد
+const StudentsManagerUI = () => <div>واجهة الطلاب</div>;
+const AcademyUI = () => <div>واجهة الأكاديمية</div>;
+const FinanceVaultUI = () => <div>واجهة الخزنة</div>;
+const ForensicModal = () => null;
+
   // الرادار واللوجز
   const [radarStats, setRadarStats] = useState({ 
     online: 0, 
@@ -2011,6 +2011,7 @@ export default function AdminDash() {
     </div>
   );
 }
+
 
 
 
