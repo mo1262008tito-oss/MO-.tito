@@ -17,6 +17,7 @@ import {
   LogOut, Menu, Check, X
 } from 'lucide-react';
 
+
 // 2. استيراد مكتبات الرسم البياني (Recharts)
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
@@ -2012,4 +2013,5 @@ export default function AdminDash() {
     </div>
   );
 }
+
 
