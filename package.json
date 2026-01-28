@@ -23,7 +23,8 @@
     "react-firebase-hooks": "^5.1.1",
     "clsx": "^2.1.0",
     "tailwind-merge": "^2.2.1",
-    "prop-types": "^15.8.1"
+    "prop-types": "^15.8.1",
+    "react-hot-toast": "^2.4.1" 
   },
   "devDependencies": {
     "@types/react": "^18.2.56",
