@@ -806,3 +806,43 @@ body {
     gap: 8px;
   }
 }
+
+/* --- الإصلاح الجذري للسكرول --- */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    /* حذف أي overflow: hidden كان موجود هنا */
+    overflow-x: hidden; 
+    overflow-y: auto !important; 
+    height: auto !important;
+    background: #05070a;
+}
+
+.portal-container {
+    width: 100%;
+    min-height: 100vh;
+    height: auto !important; /* السماح للحاوية بالتمدد حسب المحتوى */
+    display: block; /* نغيرها من flex لـ block لضمان انسيابية العناصر تحت بعض */
+    position: relative;
+    overflow-y: visible !important; /* السماح بظهور المحتوى الخارج عن الشاشة */
+    overflow-x: hidden;
+    background: radial-gradient(circle at 50% 0%, var(--secondary-glow) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, var(--primary-glow) 0%, transparent 50%);
+}
+
+/* إصلاح مشكلة العناصر اللي بتغطي الشاشة وتمنع اللمس */
+.security-overlay, 
+.hero-bg-effects, 
+.hologram-effect {
+    pointer-events: none !important; /* السكرول هيعدي من فوقهم عادي */
+    z-index: 1;
+}
+
+/* تأكد إن الـ Content Area مش واخدة height ثابت */
+.content-area {
+    position: relative;
+    height: auto !important;
+    min-height: 500px;
+    padding-bottom: 100px; /* مساحة عشان الفوتر والـ Nav */
+}
