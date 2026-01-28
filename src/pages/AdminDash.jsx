@@ -26,7 +26,7 @@ import {
 } from 'recharts';
 
 // 3. استيراد خدمات Firebase (تأكد من وجود ملف firebase.js)
-import { db, rtdb, auth, storage } from "./firebase";
+import { db, rtdb, auth, storage } from "../firebase";
 import { 
   collection, query, where, getDocs, getDoc, doc, updateDoc, 
   addDoc, setDoc, increment, writeBatch, serverTimestamp, 
@@ -1999,6 +1999,7 @@ const [loadingProgress, setLoadingProgress] = useState(0);
     </div>
   );
 }
+
 
 
 
