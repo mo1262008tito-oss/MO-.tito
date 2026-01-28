@@ -39,21 +39,9 @@ import './AdminDash.css';
 
 
 export default function AdminDash() {
-  // --- أنظمة الحالة المتقدمة (State Management) ---
-  // أضف هذه السطور في بداية مكون AdminDashboard
-const [transactions, setTransactions] = useState([]);
-const [students, setStudents] = useState([]);
-const [activeChat, setActiveChat] = useState(null);
-const [stats, setStats] = useState({ totalRevenue: 0 });
-const [radarStats, setRadarStats] = useState({ online: 0 });
-const [securityLogs, setSecurityLogs] = useState([]);
-
-// تأكد من تعريف المكونات الفارغة إذا لم تكن كتبتها بعد
-const StudentsManagerUI = () => <div>واجهة الطلاب</div>;
-const AcademyUI = () => <div>واجهة الأكاديمية</div>;
-const FinanceVaultUI = () => <div>واجهة الخزنة</div>;
-const ForensicModal = () => null;
-
+const [courses, setCourses] = useState([]);
+const [academyCategory, setAcademyCategory] = useState('high-school');
+const [loadingProgress, setLoadingProgress] = useState(0);
   // الرادار واللوجز
   const [radarStats, setRadarStats] = useState({ 
     online: 0, 
@@ -2011,6 +1999,7 @@ const ForensicModal = () => null;
     </div>
   );
 }
+
 
 
 
