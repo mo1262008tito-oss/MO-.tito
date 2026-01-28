@@ -10,7 +10,7 @@ import {
   Cpu, MousePointer2, Zap, CloudLightning, Terminal, Languages,
   History, Smartphone, Database, Key, Layout
 } from 'lucide-react';
-
+import { Toaster } from 'react-hot-toast';
 // Firebase & Analytics
 import { auth, db } from '../firebase';
 import { 
@@ -823,5 +823,6 @@ const Login = () => {
     </div>
   );
 };
+
 
 export default Login;
