@@ -1,0 +1,544 @@
+/* --- Titan OS: Global Login Styles --- */
+:root {
+  --primary-glow: conic-gradient(from 180deg at 50% 50%, #16abff33 0deg, #0885ff33 55deg, #54d6ff33 120deg, #0071ff33 160deg, transparent 360deg);
+  --accent: #3b82f6;
+  --accent-glow: rgba(59, 130, 246, 0.5);
+  --bg-dark: #020617;
+  --card-bg: rgba(15, 23, 42, 0.7);
+  --input-bg: rgba(30, 41, 59, 0.5);
+  --text-main: #f8fafc;
+  --text-dim: #94a3b8;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-dark);
+  font-family: 'Cairo', sans-serif;
+  overflow: hidden;
+  position: relative;
+  direction: rtl;
+}
+
+/* الخلفية المضيئة المتحركة */
+.bg-glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: var(--primary-glow);
+  filter: blur(80px);
+  border-radius: 50%;
+  z-index: 0;
+  animation: pulse-glow 10s infinite alternate;
+}
+
+@keyframes pulse-glow {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+  100% { transform: translate(20%, 20%) scale(1.5); opacity: 0.8; }
+}
+
+.login-container {
+  z-index: 10;
+  width: 100%;
+  max-width: 450px;
+  padding: 20px;
+}
+
+.login-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* الهيدر واللوجو */
+.card-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.logo-box {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.icon-neon {
+  color: white;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+}
+
+.card-header h2 {
+  color: var(--text-main);
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.card-header p {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+/* اختيار الرتبة (Role Selector) */
+.role-selector-v2 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 25px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 5px;
+  border-radius: 12px;
+}
+
+.role-selector-v2 button {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-family: 'Cairo';
+}
+
+.role-selector-v2 button.active {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* الحقول (Input Groups) */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  right: 15px;
+  color: var(--text-dim);
+  pointer-events: none;
+}
+
+.input-group input, .input-group select {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 12px 45px 12px 15px;
+  color: white;
+  font-family: 'Cairo';
+  transition: 0.3s;
+}
+
+.input-group input:focus, .input-group select:focus {
+  border-color: var(--accent);
+  outline: none;
+  background: rgba(30, 41, 59, 0.8);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* الأزرار */
+.btn-primary {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -5px var(--accent-glow);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-google {
+  background: white;
+  color: #1e293b;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.btn-google:hover {
+  background: #f1f5f9;
+}
+
+/* الفواصل والروابط */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.divider span { padding: 0 10px; }
+
+.toggle-text {
+  text-align: center;
+  margin-top: 20px;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.toggle-text span {
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 700;
+  margin-right: 5px;
+}
+
+/* واجهة إكمال الملف الشخصي (Profile Complete) */
+.profile-complete {
+  text-align: center;
+}
+
+.user-badge {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+}
+
+.user-badge img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 3px solid var(--accent);
+  padding: 3px;
+}
+
+.badge-icon {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: var(--accent);
+  color: white;
+  border-radius: 50%;
+  padding: 4px;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--bg-dark);
+}
+
+/* الـ Loader داخل الزر */
+.loader {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* تحسينات الموبايل */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 25px 20px;
+  }
+  
+  .card-header h2 { font-size: 20px; }
+  
+  .role-selector-v2 { gap: 5px; }
+}
+
+/* --- Titan OS: Advanced Global Enhancements --- */
+
+/* 1. نمط شبكة تقني في الخلفية */
+.login-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+  background-size: 30px 30px;
+  mask-image: radial-gradient(ellipse at center, black, transparent 80%);
+  pointer-events: none;
+}
+
+/* 2. تحسين حقل الاختيار (Custom Select) */
+select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: left 1rem center;
+  background-size: 1em;
+}
+
+/* 3. تأثير النيون للأزرار عند التحميل والحالة النشطة */
+.btn-primary.loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary.loading::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+/* 4. تحسين أزرار الأدوار (Role Buttons) */
+.role-selector-v2 button {
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.role-selector-v2 button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(59, 130, 246, 0.2) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.role-selector-v2 button:hover::before {
+  opacity: 1;
+}
+
+/* 5. تنسيق الـ Tooltip والتنبيهات بشكل احترافي */
+.input-group:focus-within .input-icon {
+  color: var(--accent);
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+}
+
+/* 6. تأثير الزجاج عند تحريك الماوس على الكارت */
+.login-card {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+.login-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.7), 0 0 20px rgba(59, 130, 246, 0.1);
+}
+
+/* 7. تنسيق الـ Scrollbar (للنوافذ الطويلة) */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* 8. تأثير النبض للأيقونة الرئيسية (Logo Box Pulse) */
+.logo-box {
+  animation: logo-pulse 4s ease-in-out infinite;
+}
+
+@keyframes logo-pulse {
+  0%, 100% { box-shadow: 0 0 20px var(--accent-glow); }
+  50% { box-shadow: 0 0 40px var(--accent-glow), 0 0 60px rgba(59, 130, 246, 0.2); }
+}
+
+/* 9. تحسين نصوص الـ Placeholder */
+::placeholder {
+  color: rgba(148, 163, 184, 0.5);
+  font-size: 13px;
+}
+
+/* 10. واجهة "إكمال البيانات" الفاخرة */
+.profile-complete h3 {
+  background: linear-gradient(to left, #fff, var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 28px;
+  margin-top: 10px;
+}
+
+.profile-complete .input-group {
+  animation: slide-up 0.5s ease-out forwards;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Titan OS: Universal Screen Optimizer --- */
+
+/* 1. ضبط الصفحة لتشغل كامل مساحة الرؤية ومنع التمرير العشوائي */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.login-page {
+  min-height: 100vh;
+  min-height: -webkit-fill-available; /* حل لمشكلة ارتفاع المتصفحات على الموبايل */
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom);
+}
+
+/* 2. شاشات الكمبيوتر الكبيرة جداً (Ultra Wide) */
+@media (min-width: 1440px) {
+  .login-container {
+    max-width: 500px; /* تكبير بسيط للكارت ليتناسب مع المساحة */
+  }
+  .bg-glow {
+    width: 700px;
+    height: 700px;
+  }
+}
+
+/* 3. الأجهزة اللوحية (Tablets / iPads) */
+@media (max-width: 1024px) {
+  .login-card {
+    padding: 35px;
+    border-radius: 20px;
+  }
+}
+
+/* 4. الهواتف الذكية (Mobile Phones) */
+@media (max-width: 480px) {
+  .login-container {
+    padding: 10px;
+    margin-top: -20px; /* لرفع الكارت قليلاً للأعلى */
+  }
+
+  .login-card {
+    padding: 25px 20px;
+    border-radius: 20px;
+    border: none; /* إزالة الحدود في الموبايل ليعطي شكل Flat عصري */
+    background: rgba(15, 23, 42, 0.9); /* تقليل الشفافية لزيادة وضوح النصوص */
+  }
+
+  .card-header h2 {
+    font-size: 20px;
+  }
+
+  /* جعل الأزرار أكبر لسهولة اللمس بالأصابع */
+  .btn-primary, .btn-google {
+    padding: 16px;
+    font-size: 15px;
+  }
+
+  /* تعديل شبكة الأدوار لتصبح أسهل في الضغط */
+  .role-selector-v2 {
+    gap: 8px;
+  }
+  
+  .role-selector-v2 button {
+    padding: 12px 5px;
+    font-size: 11px;
+  }
+
+  .input-group input, .input-group select {
+    font-size: 16px; /* منع الـ Zoom التلقائي في آيفون عند التركيز */
+    padding: 14px 45px 14px 15px;
+  }
+}
+
+/* 5. وضع الشاشات الصغيرة جداً (مثل iPhone SE) */
+@media (max-height: 670px) {
+  .login-card {
+    padding: 20px;
+  }
+  .card-header {
+    margin-bottom: 15px;
+  }
+  .logo-box {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 10px;
+  }
+  .divider {
+    margin: 10px 0;
+  }
+}
+
+/* 6. تحسين تجربة الـ Landscape (تدوير الموبايل) */
+@media (max-height: 500px) and (orientation: landscape) {
+  .login-page {
+    align-items: flex-start;
+    padding: 40px 20px;
+    overflow-y: auto;
+  }
+  .login-card {
+    margin: 20px auto;
+  }
+}
