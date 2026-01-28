@@ -562,4 +562,247 @@ body {
 @keyframes sweep {
     0% { left: -100%; }
     100% { left: 200%; }
+
+}
+
+
+/* --- الإعدادات العامة والمتغيرات --- */
+:root {
+  --primary-glow: #00f2ff;
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom);
+}
+
+.portal-container {
+  overflow-x: hidden;
+  max-width: 100vw;
+  direction: rtl;
+}
+
+/* --- الهيدر (Header) - التعديل للموبايل --- */
+.main-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding: 10px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.logo-text {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.logo-text span {
+  display: none; /* إخفاء كلمة أكاديمي في الموبايلات الصغيرة جداً لتوفير مساحة */
+}
+
+@media (min-width: 768px) {
+  .logo-text span { display: inline; }
+}
+
+/* --- اختيار المرحلة (Stage Selector) --- */
+.stage-selector {
+  display: flex;
+  gap: 5px;
+  padding: 5px;
+  border-radius: 20px;
+  background: var(--glass-bg);
+}
+
+.stage-selector button {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  border-radius: 15px;
+  white-space: nowrap;
+}
+
+/* --- الهيرو (Hero Section) --- */
+.hero-section {
+  padding: 20px 15px;
+  margin-top: 10px;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* طولي في الموبايل */
+  gap: 25px;
+}
+
+@media (min-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: 1.5fr 1fr; /* عرضي في اللاب */
+  }
+}
+
+.hero-welcome h1 {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+}
+
+/* شريط البحث في الموبايل */
+.hero-search-bar {
+  display: flex;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 50px;
+}
+
+.hero-search-bar input {
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+.hero-search-bar .btn-primary {
+  padding: 8px 15px;
+  font-size: 0.8rem;
+}
+
+/* --- لوحة الصدارة (Leaderboard) في الموبايل --- */
+.hero-leaderboard {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+/* --- الفلترة (Tabs & Filters) --- */
+.content-filters {
+  display: flex;
+  flex-direction: column; /* طولي للموبايل */
+  gap: 15px;
+  padding: 15px;
+}
+
+@media (min-width: 768px) {
+  .content-filters {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+.tabs {
+  display: flex;
+  overflow-x: auto; /* التمرير العرضي للتبويبات في الموبايل */
+  padding-bottom: 5px;
+  gap: 10px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tabs::-webkit-scrollbar { display: none; } /* إخفاء السكرول بار */
+
+.tabs button {
+  white-space: nowrap;
+  padding: 8px 20px;
+  font-size: 0.9rem;
+}
+
+/* --- شبكة الكورسات (Courses Grid) - الأهم --- */
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* يتكيف تلقائياً */
+  gap: 20px;
+  padding: 15px;
+}
+
+@media (max-width: 480px) {
+  .courses-grid {
+    grid-template-columns: 1fr; /* كارت واحد بعرض الشاشة في الموبايلات الصغيرة */
+    gap: 15px;
+  }
+  
+  .course-card-premium {
+    margin: 0 5px;
+  }
+}
+
+/* --- الأدوات (Mega Tools) --- */
+.mega-tools-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* طولي */
+  gap: 15px;
+  padding: 15px;
+}
+
+@media (min-width: 768px) {
+  .mega-tools-grid {
+    grid-template-columns: repeat(3, 1fr); /* عرضي */
+  }
+}
+
+.mega-tool {
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* --- السايد بار (Sidebar) --- */
+.portal-sidebar {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 80%; /* يأخذ معظم الشاشة في الموبايل */
+  height: 100vh;
+  z-index: 2000;
+}
+
+@media (min-width: 768px) {
+  .portal-sidebar {
+    width: 300px;
+  }
+}
+
+/* --- الفوتر (Footer) --- */
+.f-content {
+  display: grid;
+  grid-template-columns: 1fr; /* طولي */
+  gap: 30px;
+  padding: 30px 20px;
+}
+
+@media (min-width: 1024px) {
+  .f-content {
+    grid-template-columns: 1.5fr 2fr;
+  }
+}
+
+.f-links-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* عمودين في الموبايل */
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .f-links-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* --- إضافات خاصة لتجربة الـ App --- */
+.security-overlay {
+  pointer-events: none;
+  font-size: 10px;
+  opacity: 0.3;
+}
+
+/* حالة الـ Loading */
+.loader-content p {
+  font-size: 0.9rem;
+  margin-top: 15px;
+}
+
+/* زر العودة للأعلى أو الـ Bottom Navigation (اختياري) */
+@media (max-width: 768px) {
+  .user-stats span {
+    font-size: 0.7rem;
+  }
+  
+  .header-right {
+    gap: 8px;
+  }
 }
