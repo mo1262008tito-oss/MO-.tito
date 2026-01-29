@@ -1,1121 +1,673 @@
-/* HighSchool.css - The Ultimate Futuristic Portal Style */
+/* HighSchool.css - The Floating Future UI 
+   Designed for: MAFA ACADEMY (High-End Education)
+*/
+
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
 
 :root {
-    --primary: #00f2ff;
-    --secondary: #7000ff;
-    --accent: #ff007a;
-    --bg-dark: #05070a;
+    /* الألوان الافتراضية (الثانوي) */
+    --primary: #00f2fe;
+    --secondary: #4facfe;
+    --accent: #f1c40f;
+    --bg-main: #06090f;
     --glass: rgba(255, 255, 255, 0.03);
     --glass-border: rgba(255, 255, 255, 0.08);
-    --text-main: #e0e0e0;
-    --text-dim: #b0b0b0;
-    --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* --- نظام الألوان المتغير حسب المرحلة --- */
+.stage-ثانوي { --primary: #00f2fe; --secondary: #4facfe; }
+.stage-اعدادي { --primary: #ffca28; --secondary: #ff8f00; }
+.stage-ابتدائي { --primary: #4ade80; --secondary: #22c55e; }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Cairo', sans-serif;
-    scroll-behavior: smooth;
 }
 
 body {
-    background-color: var(--bg-dark);
-    color: var(--text-main);
+    background-color: var(--bg-main);
+    color: #fff;
     overflow-x: hidden;
     direction: rtl;
 }
 
-/* --- Utility Classes --- */
-.glass {
-    background: var(--glass);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
-    border-radius: 16px;
-}
-
-.glass-premium {
-    background: rgba(10, 15, 25, 0.7);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(0, 242, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-}
-
-/* --- 1. Main Layout & Progress Bar --- */
+/* --- الخلفية العائمة المتحركة --- */
 .portal-container {
     min-height: 100vh;
-    padding-top: 80px;
-}
-
-.scroll-progress {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(to right, var(--secondary), var(--primary));
-    transform-origin: 0%;
-    z-index: 1001;
-}
-
-/* --- 2. Security Overlay (Watermark) --- */
-.security-overlay {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0.04;
+    padding: 100px 5% 50px 5%;
+    position: relative;
+    background: radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 90% 80%, rgba(79, 172, 254, 0.05) 0%, transparent 50%);
     display: flex;
-    justify-content: space-between;
-    padding: 50px;
-    font-size: 12px;
-    color: #fff;
-    user-select: none;
+    flex-direction: column;
+    gap: 40px;
 }
 
-/* --- 3. Header & Navigation --- */
+/* --- الـ Navbar (ثابت وشفاف) --- */
 .main-header {
     position: fixed;
-    top: 0;
-    width: 100%;
-    height: 75px;
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    height: 70px;
+    background: rgba(10, 14, 20, 0.7);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 5%;
-    z-index: 1000;
+    padding: 0 25px;
+    box-shadow: var(--shadow);
 }
 
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-}
-
-.logo-icon {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    padding: 8px;
-    border-radius: 12px;
-    color: white;
-}
-
-.logo-text {
-    font-weight: 900;
-    font-size: 1.4rem;
-    letter-spacing: 1px;
-}
-
-.logo-text span {
-    color: var(--primary);
-}
-
-.stage-selector {
-    display: flex;
-    gap: 5px;
-    padding: 5px;
-}
-
-.stage-selector button {
-    background: transparent;
-    border: none;
-    color: var(--text-dim);
-    padding: 8px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: var(--transition);
-    font-weight: 600;
-}
-
-.stage-selector button.active {
-    background: var(--primary);
-    color: #000;
-    box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
-}
-
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.user-stats {
-    display: flex;
-    gap: 15px;
-    padding: 8px 15px;
-}
-
-.stat {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.9rem;
-}
-
-.profile-trigger img {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    border: 2px solid var(--primary);
-    padding: 2px;
-    cursor: pointer;
-}
-
-/* --- 4. Hero Section --- */
+/* --- قسم الهيرو (Modern Stack) --- */
 .hero-section {
-    padding: 60px 5%;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 40px;
+    padding: 60px 30px;
+    text-align: center;
     position: relative;
+    overflow: hidden;
 }
 
-.hero-grid {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr;
-    gap: 40px;
-    align-items: center;
-}
-
-.hero-welcome h1 {
-    font-size: 3.5rem;
-    margin: 15px 0;
-    line-height: 1.2;
-}
-
-.name-gradient {
-    background: linear-gradient(to left, var(--primary), var(--secondary));
+.hero-section h1 {
+    font-size: clamp(2rem, 6vw, 4rem);
+    font-weight: 900;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #fff 30%, var(--primary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-.hero-search-bar {
-    margin-top: 30px;
-    display: flex;
+/* --- شريط البحث المتطور --- */
+.search-box-v2 {
+    max-width: 600px;
+    margin: 30px auto 0;
+    background: rgba(255,255,255,0.05);
     padding: 8px;
-    gap: 10px;
+    border-radius: 20px;
+    display: flex;
+    border: 1px solid var(--glass-border);
+    transition: var(--transition);
 }
 
-.hero-search-bar input {
+.search-box-v2:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.2);
+}
+
+.search-box-v2 input {
     flex: 1;
     background: transparent;
     border: none;
-    outline: none;
     color: white;
-    padding: 10px;
+    padding: 12px 20px;
+    outline: none;
+    font-size: 1.1rem;
 }
 
-.btn-primary {
-    background: var(--primary);
-    color: #000;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: var(--transition);
+/* --- شبكة الإحصائيات (Stats Float) --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
 }
 
-.btn-primary:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(0, 242, 255, 0.3);
-}
-
-/* --- 5. Leaderboard Card --- */
-.hero-leaderboard {
-    padding: 25px;
-}
-
-.l-head {
+.stat-item {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    padding: 30px;
+    border-radius: 30px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 10px;
-    margin-bottom: 20px;
-}
-
-.l-row {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 12px;
-    border-bottom: 1px solid var(--glass-border);
     transition: var(--transition);
 }
 
-.l-row:hover {
-    background: rgba(255, 255, 255, 0.05);
-    transform: scale(1.02);
+.stat-item:hover {
+    transform: translateY(-10px);
+    background: rgba(255,255,255,0.06);
+    border-color: var(--primary);
 }
 
-.l-row img {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-}
-
-.rank {
+.stat-item .icon-circle {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
     font-weight: bold;
-    color: var(--primary);
-    width: 30px;
 }
 
-/* --- 6. Courses Grid & Premium Card --- */
-.content-area {
-    padding: 40px 5%;
-}
-
-.content-filters {
+/* --- شبكة الكورسات (The Vertical Matrix) --- */
+.content-section {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
-}
-
-.tabs {
-    display: flex;
-    padding: 6px;
-}
-
-.tabs button {
-    padding: 10px 25px;
-    border: none;
-    background: transparent;
-    color: var(--text-dim);
-    cursor: pointer;
-    position: relative;
-}
-
-.tabs button.active {
-    color: var(--primary);
-}
-
-.underline {
-    position: absolute;
-    bottom: 0;
-    left: 20%;
-    right: 20%;
-    height: 3px;
-    background: var(--primary);
-    border-radius: 10px;
-}
-
-.courses-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    flex-direction: column;
     gap: 25px;
 }
 
-.course-card-premium {
+.section-title {
+    font-size: 1.8rem;
+    padding-right: 15px;
+    border-right: 5px solid var(--primary);
+}
+
+.courses-vertical-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 30px;
+}
+
+.premium-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 35px;
     overflow: hidden;
     transition: var(--transition);
-    cursor: pointer;
+    display: flex;
+    flex-direction: column;
 }
 
-.course-card-premium:hover {
-    transform: translateY(-10px);
+.premium-card:hover {
+    transform: scale(1.02);
     border-color: var(--primary);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.4);
 }
 
-.card-thumb {
+.card-img-wrapper {
+    width: 100%;
+    height: 220px;
     position: relative;
-    height: 200px;
 }
 
-.card-thumb img {
+.card-img-wrapper img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.play-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: 0.3s;
-    color: white;
-}
-
-.course-card-premium:hover .play-overlay {
-    opacity: 1;
-}
-
-.card-info {
-    padding: 20px;
-}
-
-.inst-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.8rem;
-    margin-bottom: 10px;
-    color: var(--text-dim);
-}
-
-.inst-meta img {
-    width: 25px;
-    border-radius: 50%;
-}
-
-.stats-row {
-    display: flex;
-    justify-content: space-between;
-    margin: 15px 0;
-    font-size: 0.85rem;
-}
-
-.star-icon { color: #ffca28; }
-
-.prog-bar {
-    height: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    margin-top: 8px;
-    overflow: hidden;
-}
-
-.prog-fill {
-    height: 100%;
-    background: linear-gradient(to left, var(--primary), var(--secondary));
-}
-
-.card-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.enroll-btn {
-    flex: 1;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--glass-border);
-    color: white;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.enroll-btn:hover {
-    background: var(--primary);
-    color: #000;
-}
-
-/* --- 7. Mega Tools --- */
-.mega-tools-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-top: 50px;
-}
-
-.mega-tool {
-    display: flex;
-    gap: 20px;
+.card-content {
     padding: 25px;
-    transition: var(--transition);
 }
 
-.mega-tool:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: var(--primary);
+.card-content h3 {
+    font-size: 1.4rem;
+    margin-bottom: 10px;
 }
 
-.tool-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+/* --- المكونات المتجاوبة (Responsive) --- */
 
-/* --- 8. Portal Footer --- */
-.portal-footer {
-    margin-top: 80px;
-    padding: 60px 5% 20px;
-    background: rgba(5, 7, 10, 0.95);
-}
-
-.f-content {
-    display: grid;
-    grid-template-columns: 1.5fr 2fr;
-    gap: 50px;
-    margin-bottom: 50px;
-}
-
-.f-links-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-}
-
-.link-col h4 {
-    margin-bottom: 20px;
-    color: var(--primary);
-}
-
-.link-col a {
-    display: block;
-    color: var(--text-dim);
-    text-decoration: none;
-    margin-bottom: 12px;
-    transition: 0.3s;
-}
-
-.link-col a:hover {
-    color: var(--primary);
-    padding-right: 5px;
-}
-
-.f-bottom {
-    border-top: 1px solid var(--glass-border);
-    padding-top: 20px;
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    color: var(--text-dim);
-}
-
-.dev-name {
-    color: var(--accent);
-    font-weight: bold;
-}
-
-/* --- 9. Mafa Loader --- */
-.mafa-loader-v2 {
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-dark);
-}
-
-.loader-content {
-    text-align: center;
-}
-
-.main-icon {
-    color: var(--primary);
-    margin-bottom: 20px;
-    filter: drop-shadow(0 0 15px var(--primary));
-}
-
-.loading-bar {
-    width: 200px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    overflow: hidden;
-    margin: 15px auto;
-}
-
-/* --- Responsive Design --- */
 @media (max-width: 1024px) {
-    .hero-grid { grid-template-columns: 1fr; }
-    .hero-leaderboard { display: none; }
-    .mega-tools-grid { grid-template-columns: 1fr; }
-    .f-content { grid-template-columns: 1fr; }
+    .portal-container { padding-top: 100px; }
 }
 
 @media (max-width: 768px) {
-    .hero-welcome h1 { font-size: 2.2rem; }
-    .main-header { padding: 0 15px; }
-    .stage-selector { display: none; } /* يفضل عملها كـ Menu في الموبايل */
-    .courses-grid { grid-template-columns: 1fr; }
+    .main-header {
+        top: 0; left: 0; right: 0; border-radius: 0;
+        height: 60px; padding: 0 15px;
+    }
+
+    .portal-container { padding: 80px 15px 30px; gap: 25px; }
+
+    .hero-section { padding: 40px 20px; border-radius: 30px; }
+
+    .stats-grid { grid-template-columns: 1fr 1fr; } /* إحصائيتين في الصف للموبايل */
+
+    .courses-vertical-grid {
+        grid-template-columns: 1fr; /* كورس واحد تحت بعض للموبايل */
+    }
+
+    .premium-card { border-radius: 25px; }
+    
+    .search-box-v2 { border-radius: 15px; }
 }
 
-/* --- 10. Sidebar (Portal Navigation) --- */
-.portal-sidebar {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 280px;
-    height: 100vh;
-    z-index: 2000;
-    padding: 30px 20px;
+@media (max-width: 480px) {
+    .stats-grid { grid-template-columns: 1fr; } /* عنصر واحد في الشاشات الصغيرة جداً */
+    .hero-section h1 { font-size: 1.8rem; }
+}
+
+/* --- تأثيرات إضافية --- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+/* --- 7. Stage Switcher (مبدل المراحل المتطور) --- */
+.stage-tabs-container {
     display: flex;
-    flex-direction: column;
-    box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
 }
 
-.sidebar-header {
+.stage-tab {
+    padding: 12px 25px;
+    border-radius: 15px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stage-tab.active {
+    background: var(--primary);
+    color: #000;
+    border-color: var(--primary);
+    box-shadow: 0 10px 25px rgba(0, 242, 254, 0.3);
+    transform: translateY(-3px);
+}
+
+/* --- 8. Notification & User Actions --- */
+.header-actions {
     display: flex;
     align-items: center;
     gap: 15px;
-    margin-bottom: 40px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--glass-border);
 }
 
-.sidebar-nav {
-    flex: 1;
-}
-
-.nav-group {
-    margin-bottom: 25px;
-}
-
-.nav-group span {
-    display: block;
-    font-size: 0.75rem;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    letter-spacing: 1px;
-}
-
-.nav-group button {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    background: transparent;
-    border: none;
-    color: var(--text-main);
-    cursor: pointer;
-    border-radius: 10px;
-    transition: var(--transition);
-    font-size: 0.95rem;
-    margin-bottom: 5px;
-}
-
-.nav-group button:hover {
-    background: rgba(0, 242, 255, 0.1);
-    color: var(--primary);
-    padding-right: 20px;
-}
-
-.nav-group button.active {
-    background: linear-gradient(to left, var(--primary), var(--secondary));
-    color: #000;
-    font-weight: bold;
-}
-
-.sidebar-footer {
-    padding-top: 20px;
-    border-top: 1px solid var(--glass-border);
-}
-
-.logout-btn {
-    width: 100%;
+.icon-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 12px;
-    background: rgba(255, 0, 122, 0.1);
-    border: 1px solid rgba(255, 0, 122, 0.2);
-    color: #ff4d94;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.logout-btn:hover {
-    background: #ff007a;
-    color: white;
-}
-
-/* --- 11. Notification Badge & Panel --- */
-.notification-bell {
     position: relative;
     cursor: pointer;
-    padding: 8px;
-    border-radius: 50%;
-    background: var(--glass);
-    transition: 0.3s;
+    transition: var(--transition);
 }
 
-.notification-bell:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: rotate(15deg);
+.icon-btn:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
-.notification-bell .badge {
+.notif-badge {
     position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 10px;
-    height: 10px;
-    background: var(--accent);
+    top: -5px;
+    right: -5px;
+    width: 18px;
+    height: 18px;
+    background: #ff4d4d;
     border-radius: 50%;
-    box-shadow: 0 0 10px var(--accent);
-}
-
-/* --- 12. Empty State (No Data) --- */
-.no-data-state {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 60px;
+    font-size: 0.7rem;
     display: flex;
-    flex-direction: column;
     align-items: center;
+    justify-content: center;
+    color: white;
+    border: 2px solid var(--bg-main);
+}
+
+/* --- 9. Mega Tools Grid (أدوات الطالب الذكية) --- */
+.mega-tools-wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 20px;
+    margin-top: 20px;
 }
 
-.no-data-state h2 {
-    color: var(--primary);
-}
-
-.btn-secondary {
-    background: transparent;
-    border: 1px solid var(--primary);
-    color: var(--primary);
-    padding: 10px 25px;
-    border-radius: 8px;
+.tool-card {
+    background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+    border: 1px solid var(--glass-border);
+    padding: 25px;
+    border-radius: 25px;
+    text-align: center;
+    transition: var(--transition);
     cursor: pointer;
-    transition: 0.3s;
 }
 
-.btn-secondary:hover {
+.tool-card:hover {
+    background: var(--glass);
+    border-color: var(--secondary);
+    transform: translateY(-5px) scale(1.03);
+}
+
+.tool-card svg {
+    margin-bottom: 15px;
+    color: var(--primary);
+}
+
+/* --- 10. Floating Background Blobs (فقاعات الألوان الخلفية) --- */
+.bg-blob {
+    position: absolute;
+    width: 500px;
+    height: 500px;
     background: var(--primary);
-    color: #000;
-}
-
-/* --- 13. Dynamic Background Blobs --- */
-.hero-bg-effects {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    overflow: hidden;
-}
-
-.blob {
-    position: absolute;
-    width: 400px;
-    height: 400px;
-    filter: blur(80px);
+    filter: blur(150px);
     border-radius: 50%;
-    opacity: 0.15;
-    animation: move 20s infinite alternate;
+    z-index: -1;
+    opacity: 0.1;
+    pointer-events: none;
+    animation: floating-blob 20s infinite alternate;
 }
 
-.blob-1 {
-    background: var(--primary);
-    top: -100px;
-    right: -100px;
+.blob-1 { top: -100px; right: -100px; }
+.blob-2 { bottom: -100px; left: -100px; background: var(--secondary); }
+
+@keyframes floating-blob {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(100px, 50px) scale(1.2); }
 }
 
-.blob-2 {
-    background: var(--secondary);
-    bottom: -100px;
-    left: -100px;
-    animation-delay: -5s;
+/* --- 11. Empty & Loading States --- */
+.loading-shimmer {
+    width: 100%;
+    height: 300px;
+    background: linear-gradient(90deg, var(--glass) 25%, rgba(255,255,255,0.08) 50%, var(--glass) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 30px;
 }
 
-@keyframes move {
-    from { transform: translate(0, 0); }
-    to { transform: translate(100px, 50px); }
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
-/* --- 14. Stage Specific Colors (Optional) --- */
-.stage-ثانوي .name-gradient { color: var(--primary); }
-.stage-اعدادي .name-gradient { color: #ffca28; }
-.stage-ابتدائي .name-gradient { color: #4ade80; }
-
-/* --- 15. Scrollbar Styling --- */
-::-webkit-scrollbar {
-    width: 8px;
+/* --- 12. Footer Glass --- */
+.footer-glass {
+    margin-top: auto;
+    padding: 40px;
+    background: var(--glass);
+    border-top: 1px solid var(--glass-border);
+    border-radius: 40px 40px 0 0;
+    text-align: center;
 }
 
-::-webkit-scrollbar-track {
-    background: var(--bg-dark);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--glass-border);
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--primary);
-}
-
-/* =============================================
-   MOBILE & TABLET OPTIMIZATION (Responsive)
-   ============================================= */
-
-/* 1. الشاشات الكبيرة جداً (Ultra Wide) */
-@media (min-width: 1440px) {
-    .hero-grid {
-        gap: 100px;
+/* --- تحسينات الموبايل الإضافية --- */
+@media (max-width: 768px) {
+    .stage-tabs-container {
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding-bottom: 10px;
     }
-    .courses-grid {
+    
+    .stage-tab {
+        flex-shrink: 0;
+        padding: 10px 15px;
+    }
+
+    .mega-tools-wrapper {
+        grid-template-columns: 1fr 1fr; /* أداتين في الصف للموبايل */
+    }
+}
+
+
+/* --- 13. Advanced Responsive Engine (Grid & Flex Tuning) --- */
+
+/* الشاشات العريضة جداً (Ultra-Wide) */
+@media (min-width: 1400px) {
+    .portal-container {
+        padding-left: 10%;
+        padding-right: 10%;
+    }
+    .courses-vertical-grid {
         grid-template-columns: repeat(4, 1fr); /* 4 كورسات في الصف */
     }
 }
 
-/* 2. شاشات اللابتوب والتابلت العريض (Laptop/Tablets - 1024px) */
-@media (max-width: 1024px) {
-    .hero-grid {
-        grid-template-columns: 1fr; /* جعل الهيرو واللوحة تحت بعض */
-        text-align: center;
+/* شاشات اللابتوب المتوسطة (Tablets Landscape) */
+@media (max-width: 1200px) {
+    .courses-vertical-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
-
-    .hero-welcome h1 {
-        font-size: 2.8rem;
-    }
-
-    .hero-search-bar {
-        max-width: 600px;
-        margin: 30px auto;
-    }
-
-    .quick-info {
-        justify-content: center;
-    }
-
-    .hero-leaderboard {
-        max-width: 600px;
-        margin: 0 auto;
-    }
-
-    .mega-tools-grid {
-        grid-template-columns: repeat(2, 1fr); /* أداتين في الصف */
+    .mega-tools-wrapper {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
-/* 3. التابلت الصغير (Small Tablets - 768px) */
+/* أجهزة التابلت (Tablets Portrait) */
+@media (max-width: 992px) {
+    .hero-section h1 {
+        font-size: 2.5rem;
+    }
+    .courses-vertical-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .stat-item {
+        padding: 20px;
+    }
+}
+
+/* الهواتف الذكية (Mobile Optimization) */
 @media (max-width: 768px) {
+    /* ضمان عدم اختفاء الناف بار وتداخل المحتوى معه */
     .main-header {
+        top: 0;
+        left: 0;
+        right: 0;
+        border-radius: 0 0 20px 20px;
+        height: 65px;
         padding: 0 15px;
     }
 
-    .stage-selector {
-        display: none; /* إخفاء المبدل العلوي وتعويضه في القائمة الجانبية */
-    }
-
-    .header-right .user-stats span {
-        display: none; /* إخفاء النص وإبقاء الأيقونات في الموبايل لتوفير مساحة */
-    }
-
-    .hero-welcome h1 {
-        font-size: 2rem;
-    }
-
-    .content-filters {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .tabs {
-        overflow-x: auto; /* السماح بالتمرير الأفقي للفلاتر */
-        white-space: nowrap;
-        padding-bottom: 10px;
-    }
-
-    .courses-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    }
-
-    .f-content {
-        grid-template-columns: 1fr;
-        text-align: center;
-    }
-
-    .f-links-grid {
-        grid-template-columns: 1fr;
-        gap: 30px;
-    }
-
-    .f-brand .logo {
-        justify-content: center;
-    }
-
-    .social-links {
-        justify-content: center;
-    }
-}
-
-/* 4. الهواتف الذكية (Small Phones - 480px) */
-@media (max-width: 480px) {
     .portal-container {
-        padding-top: 70px;
+        padding-top: 85px; /* مساحة كافية تحت الناف بار */
+        gap: 20px;
     }
 
-    .hero-welcome h1 {
-        font-size: 1.6rem;
-    }
-
-    .hero-search-bar {
-        flex-direction: column;
-        background: transparent;
-        border: none;
-        backdrop-filter: none;
-    }
-
-    .hero-search-bar input {
-        background: var(--glass);
-        border: 1px solid var(--glass-border);
-        border-radius: 12px;
-        margin-bottom: 10px;
-        width: 100%;
-        padding: 15px;
-    }
-
-    .btn-primary {
-        width: 100%;
-    }
-
-    .course-card-premium {
+    .hero-section {
+        padding: 40px 15px;
         margin: 0 5px;
     }
 
-    .mega-tools-grid {
-        grid-template-columns: 1fr; /* أداة واحدة في الصف */
+    /* جعل الأزرار سهلة الضغط بالأصابع */
+    .stage-tab {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+        flex: 1; /* توزيع الأزرار بالتساوي */
+        justify-content: center;
     }
 
-    .f-bottom {
-        flex-direction: column;
-        gap: 15px;
-        text-align: center;
+    /* تحويل البحث ليكون بكامل العرض */
+    .search-box-v2 {
+        width: 100%;
+        margin-top: 20px;
     }
 
-    .portal-sidebar {
-        width: 100%; /* القائمة تأخذ الشاشة كاملة في الموبايل الصغير */
+    /* ترتيب الكورسات عمودياً وبشكل جذاب */
+    .courses-vertical-grid {
+        grid-template-columns: 1fr;
+        padding: 0 10px;
+    }
+
+    .premium-card {
+        margin-bottom: 10px;
+    }
+
+    .card-img-wrapper {
+        height: 180px;
     }
 }
 
-/* 5. تحسين تجربة اللمس (Touch Devices) */
+/* --- 14. Performance & Touch Improvements --- */
+
+/* تحسين استجابة اللمس على الموبايل */
 @media (hover: none) {
-    .course-card-premium:hover {
-        transform: none; /* إلغاء الـ Hover في الشاشات التي لا تدعم الماوس لمنع التهنيج */
+    .premium-card:active {
+        transform: scale(0.98);
+        background: rgba(255, 255, 255, 0.08);
     }
     
-    .play-overlay {
-        opacity: 1;
-        background: rgba(0,0,0,0.2); /* إظهار زر التشغيل بشكل دائم خفيف */
+    .stat-item:active {
+        background: var(--primary);
+        color: #000;
     }
 }
-/* HighSchool.css - Clean & Vertical Professional Layout */
 
-:root {
-    --primary: #00f2fe;
-    --secondary: #4facfe;
-    --bg-dark: #0a0e14;
-    --card-bg: rgba(255, 255, 255, 0.03);
-    --border: rgba(255, 255, 255, 0.08);
-    --text-main: #ffffff;
-    --text-dim: #94a3b8;
-    --section-gap: 60px; /* مسافة ثابتة بين الأقسام */
+/* منع تداخل النصوص في الشاشات الصغيرة جداً */
+@media (max-width: 380px) {
+    .hero-section h1 {
+        font-size: 1.5rem;
+    }
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    .header-actions .icon-btn {
+        width: 38px;
+        height: 38px;
+    }
 }
 
-body {
-    background-color: var(--bg-dark);
-    color: var(--text-main);
-    line-height: 1.6;
+/* --- 15. Global Utilities (خفة وسلاسة) --- */
+
+.floating-shadow {
+    filter: drop-shadow(0 10px 15px rgba(0, 242, 254, 0.2));
 }
 
-/* --- 1. Container - تنظيم المساحة الكلية --- */
-.portal-container {
-    max-width: 1300px;
-    margin: 0 auto;
-    padding: 100px 20px 50px 20px;
-    display: flex;
-    flex-direction: column; /* جعل كل الأقسام تحت بعضها */
-    gap: var(--section-gap);
+.blur-bg {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
-/* --- 2. Hero Section - قسم الترحيب المريح --- */
-.hero-vertical-stack {
-    text-align: center;
-    padding: 40px 0;
-    background: radial-gradient(circle at center, rgba(0, 242, 254, 0.05) 0%, transparent 70%);
+/* أنيميشن دخول العناصر عند تحميل الصفحة */
+.fade-in-up {
+    animation: fadeInUp 0.6s ease forwards;
 }
 
-.hero-vertical-stack h1 {
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    font-weight: 900;
-    margin-bottom: 20px;
-    background: linear-gradient(to bottom, #fff, var(--secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.hero-vertical-stack p {
-    color: var(--text-dim);
-    font-size: 1.1rem;
-    max-width: 700px;
-    margin: 0 auto 30px;
+/* --- 16. 3D Floating Perspective (تأثير المنظور ثلاثي الأبعاد) --- */
+.courses-vertical-grid {
+    perspective: 1000px; /* يعطي عمقاً للعناصر التي بداخله */
 }
 
-/* --- 3. Stats Row - شريط الإحصائيات (موزع بشكل جميل) --- */
-.stats-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    width: 100%;
-}
-
-.stat-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    padding: 25px;
-    border-radius: 20px;
-    text-align: center;
-    transition: 0.3s ease;
-}
-
-.stat-card:hover {
-    border-color: var(--primary);
-    transform: translateY(-5px);
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.stat-card strong {
-    display: block;
-    font-size: 1.8rem;
-    color: var(--primary);
-    margin-bottom: 5px;
-}
-
-/* --- 4. Content Sections - الأقسام الرئيسية (الكورسات، الأدوات) --- */
-.section-wrapper {
-    width: 100%;
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    border-right: 4px solid var(--primary);
-    padding-right: 15px;
-}
-
-.section-header h2 {
-    font-size: 1.6rem;
-    letter-spacing: 1px;
-}
-
-/* شبكة الكورسات - موزعة بشكل عمودي متوازن */
-.vertical-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 30px;
-}
-
-.course-card-premium {
-    background: var(--card-bg);
-    border-radius: 25px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    display: flex;
-    flex-direction: column; /* محتويات الكرت تحت بعض */
-}
-
-.course-image-box {
-    width: 100%;
-    height: 200px;
-    background-color: #000;
+.premium-card {
     position: relative;
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), 
+                box-shadow 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.course-image-box img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0.8;
+/* تأثير الطفو والبريق عند التمرير */
+.premium-card:hover {
+    transform: translateY(-15px) rotateX(5deg) rotateY(-2deg);
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(0, 242, 254, 0.2); /* هالة ضوئية بلون المرحلة */
 }
 
-.course-info-box {
-    padding: 25px;
-}
-
-.course-info-box h3 {
-    margin-bottom: 15px;
-    font-size: 1.3rem;
-    color: #fff;
-}
-
-/* --- 5. Mega Tools - أدوات الطالب (تحت بعض بشكل شبكي) --- */
-.tools-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-}
-
-.tool-item {
-    background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
-    padding: 30px;
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 15px;
-    border: 1px solid var(--border);
+/* --- 17. Advanced Hover Overlay (تأثير الطبقة العلوية) --- */
+.card-img-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    opacity: 0.6;
     transition: 0.3s;
 }
 
-.tool-item:hover {
+.premium-card:hover .card-img-wrapper::after {
+    opacity: 0.3;
+}
+
+/* زر "شاهد الآن" العائم الذي يظهر عند الهوفر */
+.floating-play-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0) translateZ(50px);
+    width: 60px;
+    height: 60px;
     background: var(--primary);
-    color: #000;
-}
-
-.tool-item svg {
-    width: 40px;
-    height: 40px;
-}
-
-/* --- 6. Responsive (تعديلات الموبايل واللابتوب) --- */
-
-/* للابتوب الصغير */
-@media (max-width: 1024px) {
-    .portal-container {
-        padding-top: 80px;
-        gap: 40px;
-    }
-}
-
-/* للموبايل - جعل كل شيء يأخذ العرض الكامل */
-@media (max-width: 768px) {
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .vertical-grid {
-        grid-template-columns: 1fr; /* كورس واحد في الصف */
-    }
-
-    .stats-container {
-        grid-template-columns: 1fr 1fr; /* إحصائيتين في الصف */
-    }
-
-    .hero-vertical-stack h1 {
-        font-size: 1.8rem;
-    }
-}
-
-/* تحسين شكل البحث */
-.search-wrapper-vertical {
-    width: 100%;
-    max-width: 600px;
-    margin: 20px auto;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--border);
-    border-radius: 50px;
-    padding: 10px 25px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
-    gap: 15px;
+    justify-content: center;
+    color: #000;
+    box-shadow: 0 0 30px var(--primary);
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 5;
 }
 
-.search-wrapper-vertical input {
-    background: transparent;
-    border: none;
-    color: #fff;
+.premium-card:hover .floating-play-btn {
+    transform: translate(-50%, -50%) scale(1) translateZ(50px);
+}
+
+/* --- 18. Card Content Floating Details --- */
+.card-content {
+    transform: translateZ(30px); /* جعل النصوص تبدو بارزة للأمام */
+}
+
+.card-content h3 {
+    text-shadow: 0 5px 10px rgba(0,0,0,0.3);
+}
+
+/* --- 19. Magnetic Effect for Stats (تأثير مغناطيسي خفيف) --- */
+.stat-item {
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-item::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    transform: scale(0);
+    transition: 0.5s;
+    pointer-events: none;
+}
+
+.stat-item:hover::before {
+    transform: scale(1);
+}
+
+/* --- 20. Glass Morphism Extra Polish (لمسات الزجاج النهائية) --- */
+.premium-card {
+    background: linear-gradient(
+        135deg, 
+        rgba(255, 255, 255, 0.05) 0%, 
+        rgba(255, 255, 255, 0.01) 100%
+    );
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* خط التزيين المضيء في أسفل الكرت */
+.card-glow-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: var(--primary);
+    box-shadow: 0 0 15px var(--primary);
+    transition: 0.5s ease;
+}
+
+.premium-card:hover .card-glow-line {
     width: 100%;
-    height: 40px;
-    outline: none;
-    font-size: 1rem;
 }
