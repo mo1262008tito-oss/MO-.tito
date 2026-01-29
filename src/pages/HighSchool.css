@@ -22,6 +22,8 @@ body {
     direction: rtl;
 }
 
+
+
 .portal-container {
     min-height: 100vh;
     padding: 100px 5% 40px;
@@ -624,3 +626,4 @@ body {
 }
 
 .back-to-top:hover { transform: translateY(-5px); }
+
