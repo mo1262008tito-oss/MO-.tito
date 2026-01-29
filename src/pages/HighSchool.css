@@ -894,3 +894,228 @@ body {
         background: rgba(0,0,0,0.2); /* إظهار زر التشغيل بشكل دائم خفيف */
     }
 }
+/* HighSchool.css - Clean & Vertical Professional Layout */
+
+:root {
+    --primary: #00f2fe;
+    --secondary: #4facfe;
+    --bg-dark: #0a0e14;
+    --card-bg: rgba(255, 255, 255, 0.03);
+    --border: rgba(255, 255, 255, 0.08);
+    --text-main: #ffffff;
+    --text-dim: #94a3b8;
+    --section-gap: 60px; /* مسافة ثابتة بين الأقسام */
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    line-height: 1.6;
+}
+
+/* --- 1. Container - تنظيم المساحة الكلية --- */
+.portal-container {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 100px 20px 50px 20px;
+    display: flex;
+    flex-direction: column; /* جعل كل الأقسام تحت بعضها */
+    gap: var(--section-gap);
+}
+
+/* --- 2. Hero Section - قسم الترحيب المريح --- */
+.hero-vertical-stack {
+    text-align: center;
+    padding: 40px 0;
+    background: radial-gradient(circle at center, rgba(0, 242, 254, 0.05) 0%, transparent 70%);
+}
+
+.hero-vertical-stack h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 900;
+    margin-bottom: 20px;
+    background: linear-gradient(to bottom, #fff, var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-vertical-stack p {
+    color: var(--text-dim);
+    font-size: 1.1rem;
+    max-width: 700px;
+    margin: 0 auto 30px;
+}
+
+/* --- 3. Stats Row - شريط الإحصائيات (موزع بشكل جميل) --- */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    width: 100%;
+}
+
+.stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    padding: 25px;
+    border-radius: 20px;
+    text-align: center;
+    transition: 0.3s ease;
+}
+
+.stat-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.stat-card strong {
+    display: block;
+    font-size: 1.8rem;
+    color: var(--primary);
+    margin-bottom: 5px;
+}
+
+/* --- 4. Content Sections - الأقسام الرئيسية (الكورسات، الأدوات) --- */
+.section-wrapper {
+    width: 100%;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-right: 4px solid var(--primary);
+    padding-right: 15px;
+}
+
+.section-header h2 {
+    font-size: 1.6rem;
+    letter-spacing: 1px;
+}
+
+/* شبكة الكورسات - موزعة بشكل عمودي متوازن */
+.vertical-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 30px;
+}
+
+.course-card-premium {
+    background: var(--card-bg);
+    border-radius: 25px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column; /* محتويات الكرت تحت بعض */
+}
+
+.course-image-box {
+    width: 100%;
+    height: 200px;
+    background-color: #000;
+    position: relative;
+}
+
+.course-image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.8;
+}
+
+.course-info-box {
+    padding: 25px;
+}
+
+.course-info-box h3 {
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    color: #fff;
+}
+
+/* --- 5. Mega Tools - أدوات الطالب (تحت بعض بشكل شبكي) --- */
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.tool-item {
+    background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+    padding: 30px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 15px;
+    border: 1px solid var(--border);
+    transition: 0.3s;
+}
+
+.tool-item:hover {
+    background: var(--primary);
+    color: #000;
+}
+
+.tool-item svg {
+    width: 40px;
+    height: 40px;
+}
+
+/* --- 6. Responsive (تعديلات الموبايل واللابتوب) --- */
+
+/* للابتوب الصغير */
+@media (max-width: 1024px) {
+    .portal-container {
+        padding-top: 80px;
+        gap: 40px;
+    }
+}
+
+/* للموبايل - جعل كل شيء يأخذ العرض الكامل */
+@media (max-width: 768px) {
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .vertical-grid {
+        grid-template-columns: 1fr; /* كورس واحد في الصف */
+    }
+
+    .stats-container {
+        grid-template-columns: 1fr 1fr; /* إحصائيتين في الصف */
+    }
+
+    .hero-vertical-stack h1 {
+        font-size: 1.8rem;
+    }
+}
+
+/* تحسين شكل البحث */
+.search-wrapper-vertical {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 10px 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.search-wrapper-vertical input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    width: 100%;
+    height: 40px;
+    outline: none;
+    font-size: 1rem;
+}
