@@ -665,3 +665,64 @@ a {
     border-color: var(--primary);
     box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
+
+/* --- 1. إصلاح الهيكل العام (Container) --- */
+.portal-container {
+    display: flex;
+    flex-direction: column; /* جعل كل الأقسام تحت بعضها عمودياً */
+    gap: 40px; /* مسافة كبيرة بين الهيرو، الكورسات، والفوتر */
+    padding: 100px 5% 50px;
+    max-width: 1400px;
+    margin: 0 auto;
+    background: #05070a; /* لون خلفية عميق وفخم */
+}
+
+/* --- 2. إصلاح الهيرو (أهلاً بك يا طالبنا) --- */
+.hero-section {
+    display: flex;
+    flex-direction: column; /* ترتيب النصوص عمودياً */
+    align-items: center;
+    text-align: center;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* --- 3. إصلاح شبكة الكورسات (The Grid) --- */
+.courses-grid {
+    display: grid;
+    /* كورس واحد للموبايل، واثنان للتابلت، وثلاثة للابتوب */
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    width: 100%;
+}
+
+/* --- 4. تأثير الكرت العائم والثري دي (Floating 3D) --- */
+.course-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transform-style: preserve-3d;
+    overflow: hidden;
+}
+
+.course-card:hover {
+    transform: translateY(-15px) rotateX(5deg) rotateY(-2deg);
+    border-color: var(--primary);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+}
+
+/* --- 5. تنظيف الروابط والنصوص (Typography Clean-up) --- */
+a {
+    text-decoration: none !important; /* إلغاء الخط تحت الرابط */
+    color: inherit; /* جعل الرابط يأخذ لون النص المحيط به */
+}
+
+.card-body h3 {
+    margin: 15px 0;
+    font-size: 1.4rem;
+    color: #fff;
+}
