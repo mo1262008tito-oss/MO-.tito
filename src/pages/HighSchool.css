@@ -1,61 +1,44 @@
-/* HighSchool.css - The Floating Future UI 
-   Designed for: MAFA ACADEMY (High-End Education)
-*/
-
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
+/* HighSchool.css - The Ultimate Visual Experience 2026 */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
 
 :root {
-    /* الألوان الافتراضية (الثانوي) */
     --primary: #00f2fe;
     --secondary: #4facfe;
     --accent: #f1c40f;
-    --bg-main: #06090f;
+    --bg: #05070a;
     --glass: rgba(255, 255, 255, 0.03);
     --glass-border: rgba(255, 255, 255, 0.08);
-    --shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-    --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --card-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    --font-cairo: 'Cairo', sans-serif;
 }
 
-/* --- نظام الألوان المتغير حسب المرحلة --- */
-.stage-ثانوي { --primary: #00f2fe; --secondary: #4facfe; }
-.stage-اعدادي { --primary: #ffca28; --secondary: #ff8f00; }
-.stage-ابتدائي { --primary: #4ade80; --secondary: #22c55e; }
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Cairo', sans-serif;
-}
-
+/* --- الأساسيات وخلفية الفضاء العائمة --- */
 body {
-    background-color: var(--bg-main);
+    background: var(--bg);
     color: #fff;
+    font-family: var(--font-cairo);
+    margin: 0;
     overflow-x: hidden;
     direction: rtl;
 }
 
-/* --- الخلفية العائمة المتحركة --- */
 .portal-container {
     min-height: 100vh;
-    padding: 100px 5% 50px 5%;
-    position: relative;
-    background: radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 90% 80%, rgba(79, 172, 254, 0.05) 0%, transparent 50%);
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
+    padding: 100px 5% 40px;
+    background: 
+        radial-gradient(circle at 10% 10%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(79, 172, 254, 0.08) 0%, transparent 40%);
 }
 
-/* --- الـ Navbar (ثابت وشفاف) --- */
+/* --- الهيدر العائم (Fixed & Glossy) --- */
 .main-header {
     position: fixed;
     top: 15px;
-    left: 15px;
-    right: 15px;
+    left: 20px;
+    right: 20px;
     height: 70px;
-    background: rgba(10, 14, 20, 0.7);
-    backdrop-filter: blur(15px);
+    background: rgba(10, 14, 20, 0.75);
+    backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
     border-radius: 20px;
     z-index: 1000;
@@ -63,611 +46,581 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 0 25px;
-    box-shadow: var(--shadow);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-/* --- قسم الهيرو (Modern Stack) --- */
-.hero-section {
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    border-radius: 40px;
-    padding: 60px 30px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.hero-section h1 {
-    font-size: clamp(2rem, 6vw, 4rem);
-    font-weight: 900;
-    margin-bottom: 20px;
-    background: linear-gradient(135deg, #fff 30%, var(--primary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-/* --- شريط البحث المتطور --- */
-.search-box-v2 {
-    max-width: 600px;
-    margin: 30px auto 0;
-    background: rgba(255,255,255,0.05);
-    padding: 8px;
-    border-radius: 20px;
-    display: flex;
-    border: 1px solid var(--glass-border);
-    transition: var(--transition);
-}
-
-.search-box-v2:focus-within {
-    border-color: var(--primary);
-    box-shadow: 0 0 20px rgba(0, 242, 254, 0.2);
-}
-
-.search-box-v2 input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: white;
-    padding: 12px 20px;
-    outline: none;
-    font-size: 1.1rem;
-}
-
-/* --- شبكة الإحصائيات (Stats Float) --- */
-.stats-grid {
+/* --- كروت الكورسات (3D & Floating Concept) --- */
+.courses-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 35px;
+    perspective: 1500px; /* لتمكين الـ 3D الحقيقي */
+    padding: 20px 0;
 }
 
-.stat-item {
+.course-card {
+    position: relative;
     background: var(--glass);
     border: 1px solid var(--glass-border);
-    padding: 30px;
     border-radius: 30px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    transition: var(--transition);
-}
-
-.stat-item:hover {
-    transform: translateY(-10px);
-    background: rgba(255,255,255,0.06);
-    border-color: var(--primary);
-}
-
-.stat-item .icon-circle {
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #000;
-    font-weight: bold;
-}
-
-/* --- شبكة الكورسات (The Vertical Matrix) --- */
-.content-section {
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-}
-
-.section-title {
-    font-size: 1.8rem;
-    padding-right: 15px;
-    border-right: 5px solid var(--primary);
-}
-
-.courses-vertical-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 30px;
-}
-
-.premium-card {
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    border-radius: 35px;
     overflow: hidden;
-    transition: var(--transition);
-    display: flex;
-    flex-direction: column;
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    transform-style: preserve-3d;
+    cursor: pointer;
 }
 
-.premium-card:hover {
-    transform: scale(1.02);
+/* الهوفر الثري دي الرهيب */
+.course-card:hover {
+    transform: translateY(-15px) rotateX(8deg) rotateY(-5deg);
     border-color: var(--primary);
-    box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 
+        -15px 20px 40px rgba(0, 0, 0, 0.6),
+        0 0 20px rgba(0, 242, 254, 0.15);
 }
 
-.card-img-wrapper {
-    width: 100%;
-    height: 220px;
+.card-visual {
     position: relative;
+    height: 200px;
+    overflow: hidden;
+    transform: translateZ(20px); /* يخرج الصورة للأمام */
 }
 
-.card-img-wrapper img {
+.card-visual img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: 0.5s;
 }
 
-.card-content {
+.course-card:hover .card-visual img {
+    transform: scale(1.1);
+}
+
+/* زر البدء العائم داخل الكرت */
+.play-btn-float {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    background: var(--primary);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    box-shadow: 0 10px 20px rgba(0, 242, 254, 0.4);
+    transform: translateZ(40px) scale(0.8);
+    opacity: 0;
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.course-card:hover .play-btn-float {
+    opacity: 1;
+    transform: translateZ(40px) scale(1);
+}
+
+.card-body {
     padding: 25px;
+    transform: translateZ(30px); /* يبرز النص للأمام */
 }
 
-.card-content h3 {
+.card-body h3 {
     font-size: 1.4rem;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    font-weight: 700;
+    text-shadow: 0 5px 15px rgba(0,0,0,0.4);
 }
 
-/* --- المكونات المتجاوبة (Responsive) --- */
+/* --- الإحصائيات (Glass Pills) --- */
+.stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 50px;
+}
+
+.stat-pill {
+    flex: 1;
+    min-width: 150px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+}
+
+.stat-pill strong {
+    display: block;
+    font-size: 1.8rem;
+    color: var(--primary);
+    text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+}
+
+/* --- الريسبونسيف الاحترافي (Mobile Optimization) --- */
 
 @media (max-width: 1024px) {
-    .portal-container { padding-top: 100px; }
+    .courses-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
     .main-header {
-        top: 0; left: 0; right: 0; border-radius: 0;
-        height: 60px; padding: 0 15px;
-    }
-
-    .portal-container { padding: 80px 15px 30px; gap: 25px; }
-
-    .hero-section { padding: 40px 20px; border-radius: 30px; }
-
-    .stats-grid { grid-template-columns: 1fr 1fr; } /* إحصائيتين في الصف للموبايل */
-
-    .courses-vertical-grid {
-        grid-template-columns: 1fr; /* كورس واحد تحت بعض للموبايل */
-    }
-
-    .premium-card { border-radius: 25px; }
-    
-    .search-box-v2 { border-radius: 15px; }
-}
-
-@media (max-width: 480px) {
-    .stats-grid { grid-template-columns: 1fr; } /* عنصر واحد في الشاشات الصغيرة جداً */
-    .hero-section h1 { font-size: 1.8rem; }
-}
-
-/* --- تأثيرات إضافية --- */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
-
-/* --- 7. Stage Switcher (مبدل المراحل المتطور) --- */
-.stage-tabs-container {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.stage-tab {
-    padding: 12px 25px;
-    border-radius: 15px;
-    border: 1px solid var(--glass-border);
-    background: var(--glass);
-    color: var(--text-dim);
-    cursor: pointer;
-    transition: var(--transition);
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.stage-tab.active {
-    background: var(--primary);
-    color: #000;
-    border-color: var(--primary);
-    box-shadow: 0 10px 25px rgba(0, 242, 254, 0.3);
-    transform: translateY(-3px);
-}
-
-/* --- 8. Notification & User Actions --- */
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.icon-btn {
-    width: 45px;
-    height: 45px;
-    border-radius: 12px;
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.icon-btn:hover {
-    background: rgba(255,255,255,0.1);
-    border-color: var(--primary);
-    color: var(--primary);
-}
-
-.notif-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    width: 18px;
-    height: 18px;
-    background: #ff4d4d;
-    border-radius: 50%;
-    font-size: 0.7rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    border: 2px solid var(--bg-main);
-}
-
-/* --- 9. Mega Tools Grid (أدوات الطالب الذكية) --- */
-.mega-tools-wrapper {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.tool-card {
-    background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
-    border: 1px solid var(--glass-border);
-    padding: 25px;
-    border-radius: 25px;
-    text-align: center;
-    transition: var(--transition);
-    cursor: pointer;
-}
-
-.tool-card:hover {
-    background: var(--glass);
-    border-color: var(--secondary);
-    transform: translateY(-5px) scale(1.03);
-}
-
-.tool-card svg {
-    margin-bottom: 15px;
-    color: var(--primary);
-}
-
-/* --- 10. Floating Background Blobs (فقاعات الألوان الخلفية) --- */
-.bg-blob {
-    position: absolute;
-    width: 500px;
-    height: 500px;
-    background: var(--primary);
-    filter: blur(150px);
-    border-radius: 50%;
-    z-index: -1;
-    opacity: 0.1;
-    pointer-events: none;
-    animation: floating-blob 20s infinite alternate;
-}
-
-.blob-1 { top: -100px; right: -100px; }
-.blob-2 { bottom: -100px; left: -100px; background: var(--secondary); }
-
-@keyframes floating-blob {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(100px, 50px) scale(1.2); }
-}
-
-/* --- 11. Empty & Loading States --- */
-.loading-shimmer {
-    width: 100%;
-    height: 300px;
-    background: linear-gradient(90deg, var(--glass) 25%, rgba(255,255,255,0.08) 50%, var(--glass) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-    border-radius: 30px;
-}
-
-@keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-
-/* --- 12. Footer Glass --- */
-.footer-glass {
-    margin-top: auto;
-    padding: 40px;
-    background: var(--glass);
-    border-top: 1px solid var(--glass-border);
-    border-radius: 40px 40px 0 0;
-    text-align: center;
-}
-
-/* --- تحسينات الموبايل الإضافية --- */
-@media (max-width: 768px) {
-    .stage-tabs-container {
-        overflow-x: auto;
-        justify-content: flex-start;
-        padding-bottom: 10px;
-    }
-    
-    .stage-tab {
-        flex-shrink: 0;
-        padding: 10px 15px;
-    }
-
-    .mega-tools-wrapper {
-        grid-template-columns: 1fr 1fr; /* أداتين في الصف للموبايل */
-    }
-}
-
-
-/* --- 13. Advanced Responsive Engine (Grid & Flex Tuning) --- */
-
-/* الشاشات العريضة جداً (Ultra-Wide) */
-@media (min-width: 1400px) {
-    .portal-container {
-        padding-left: 10%;
-        padding-right: 10%;
-    }
-    .courses-vertical-grid {
-        grid-template-columns: repeat(4, 1fr); /* 4 كورسات في الصف */
-    }
-}
-
-/* شاشات اللابتوب المتوسطة (Tablets Landscape) */
-@media (max-width: 1200px) {
-    .courses-vertical-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    .mega-tools-wrapper {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/* أجهزة التابلت (Tablets Portrait) */
-@media (max-width: 992px) {
-    .hero-section h1 {
-        font-size: 2.5rem;
-    }
-    .courses-vertical-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .stat-item {
-        padding: 20px;
-    }
-}
-
-/* الهواتف الذكية (Mobile Optimization) */
-@media (max-width: 768px) {
-    /* ضمان عدم اختفاء الناف بار وتداخل المحتوى معه */
-    .main-header {
-        top: 0;
-        left: 0;
-        right: 0;
-        border-radius: 0 0 20px 20px;
-        height: 65px;
-        padding: 0 15px;
+        top: 0; left: 0; right: 0; border-radius: 0 0 20px 20px;
+        height: 65px; padding: 0 15px;
     }
 
     .portal-container {
-        padding-top: 85px; /* مساحة كافية تحت الناف بار */
+        padding: 85px 15px 30px;
+    }
+
+    /* في الموبايل، نخفف الـ 3D قليلاً لتسهيل التصفح باللمس */
+    .course-card:hover {
+        transform: translateY(-8px);
+    }
+
+    .courses-grid {
+        grid-template-columns: 1fr; /* كورس واحد بعرض الشاشة */
         gap: 20px;
     }
 
-    .hero-section {
-        padding: 40px 15px;
-        margin: 0 5px;
+    .stat-pill {
+        min-width: 45%; /* عنصرين بجانب بعض في الموبايل */
     }
 
-    /* جعل الأزرار سهلة الضغط بالأصابع */
-    .stage-tab {
-        padding: 10px 12px;
-        font-size: 0.85rem;
-        flex: 1; /* توزيع الأزرار بالتساوي */
-        justify-content: center;
-    }
-
-    /* تحويل البحث ليكون بكامل العرض */
-    .search-box-v2 {
-        width: 100%;
-        margin-top: 20px;
-    }
-
-    /* ترتيب الكورسات عمودياً وبشكل جذاب */
-    .courses-vertical-grid {
-        grid-template-columns: 1fr;
-        padding: 0 10px;
-    }
-
-    .premium-card {
-        margin-bottom: 10px;
-    }
-
-    .card-img-wrapper {
+    .card-visual {
         height: 180px;
     }
 }
 
-/* --- 14. Performance & Touch Improvements --- */
-
-/* تحسين استجابة اللمس على الموبايل */
-@media (hover: none) {
-    .premium-card:active {
-        transform: scale(0.98);
-        background: rgba(255, 255, 255, 0.08);
-    }
-    
-    .stat-item:active {
-        background: var(--primary);
-        color: #000;
-    }
-}
-
-/* منع تداخل النصوص في الشاشات الصغيرة جداً */
-@media (max-width: 380px) {
-    .hero-section h1 {
-        font-size: 1.5rem;
-    }
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-    .header-actions .icon-btn {
-        width: 38px;
-        height: 38px;
-    }
-}
-
-/* --- 15. Global Utilities (خفة وسلاسة) --- */
-
-.floating-shadow {
-    filter: drop-shadow(0 10px 15px rgba(0, 242, 254, 0.2));
-}
-
-.blur-bg {
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-/* أنيميشن دخول العناصر عند تحميل الصفحة */
-.fade-in-up {
-    animation: fadeInUp 0.6s ease forwards;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* --- 16. 3D Floating Perspective (تأثير المنظور ثلاثي الأبعاد) --- */
-.courses-vertical-grid {
-    perspective: 1000px; /* يعطي عمقاً للعناصر التي بداخله */
-}
-
-.premium-card {
+/* --- شريط البحث العائم (Floating Search) --- */
+.search-container {
+    max-width: 700px;
+    margin: 0 auto 60px;
     position: relative;
-    transform-style: preserve-3d;
-    will-change: transform;
-    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), 
-                box-shadow 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-/* تأثير الطفو والبريق عند التمرير */
-.premium-card:hover {
-    transform: translateY(-15px) rotateX(5deg) rotateY(-2deg);
-    box-shadow: 
-        0 20px 40px rgba(0, 0, 0, 0.4),
-        0 0 20px rgba(0, 242, 254, 0.2); /* هالة ضوئية بلون المرحلة */
-}
-
-/* --- 17. Advanced Hover Overlay (تأثير الطبقة العلوية) --- */
-.card-img-wrapper::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-    opacity: 0.6;
+    transform: translateY(0);
     transition: 0.3s;
 }
 
-.premium-card:hover .card-img-wrapper::after {
-    opacity: 0.3;
+.search-container:focus-within {
+    transform: translateY(-5px);
 }
 
-/* زر "شاهد الآن" العائم الذي يظهر عند الهوفر */
-.floating-play-btn {
+.search-input {
+    width: 100%;
+    padding: 18px 30px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 50px;
+    color: #fff;
+    font-size: 1.1rem;
+    outline: none;
+    backdrop-filter: blur(10px);
+}
+
+.search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.15);
+}
+
+/* --- تحسين شريط التمرير --- */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { 
+    background: linear-gradient(var(--primary), var(--secondary)); 
+    border-radius: 10px;
+}
+
+/* --- 16. Dynamic Background Glow (أنوار خلفية متحركة) --- */
+.portal-container::before, 
+.portal-container::after {
+    content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0) translateZ(50px);
-    width: 60px;
-    height: 60px;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    filter: blur(120px);
+    z-index: -1;
+    opacity: 0.15;
+    animation: glow-move 10s infinite alternate;
+}
+
+.portal-container::before {
+    background: var(--primary);
+    top: 20%;
+    left: 10%;
+}
+
+.portal-container::after {
+    background: var(--secondary);
+    bottom: 20%;
+    right: 10%;
+    animation-delay: -5s;
+}
+
+@keyframes glow-move {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(100px, 100px) scale(1.3); }
+}
+
+/* --- 17. Mega Tools Section (أدوات الطالب العائمة) --- */
+.student-tools {
+    margin-top: 50px;
+}
+
+.tools-flex {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto; /* سحب أفقي للموبايل */
+    padding: 20px 5px;
+    scrollbar-width: none;
+}
+
+.tool-item {
+    min-width: 160px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    padding: 25px 15px;
+    border-radius: 25px;
+    text-align: center;
+    transition: 0.4s;
+    cursor: pointer;
+}
+
+.tool-item:hover {
+    background: var(--primary);
+    color: #000;
+    transform: translateY(-10px);
+}
+
+.tool-item svg {
+    font-size: 2rem;
+    margin-bottom: 15px;
+}
+
+/* --- 18. Course Badges (أوسمة التميز) --- */
+.badge-v4 {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 900;
+    z-index: 2;
+    text-transform: uppercase;
+    backdrop-filter: blur(5px);
+}
+
+.badge-new { background: rgba(0, 242, 254, 0.2); color: var(--primary); border: 1px solid var(--primary); }
+.badge-popular { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; border: 1px solid #ff4d4d; }
+
+/* --- 19. Course Info Footer (بيانات الكورس الصغيرة) --- */
+.card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--glass-border);
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* --- 20. Glass Footer (تذييل الصفحة) --- */
+.footer-section {
+    margin-top: 100px;
+    padding: 60px 20px;
+    text-align: center;
+    background: linear-gradient(to bottom, transparent, var(--glass));
+    border-top: 1px solid var(--glass-border);
+    border-radius: 50px 50px 0 0;
+}
+
+/* --- 21. Mobile Specific Enhancements (تحسينات الموبايل النهائية) --- */
+@media (max-width: 768px) {
+    /* جعل العنوان يبدو كأنه قطعة واحدة مع الخلفية */
+    .hero-section {
+        background: transparent;
+        border: none;
+    }
+    
+    /* منع الكروت من الالتصاق بالحواف */
+    .courses-grid {
+        padding: 10px;
+        gap: 20px;
+    }
+
+    /* تكبير الأزرار لتسهيل اللمس */
+    .play-btn-float {
+        width: 60px;
+        height: 60px;
+        opacity: 1; /* إظهار الزر دائماً في الموبايل لعدم وجود هوفر */
+        transform: translateZ(40px) scale(1);
+    }
+    
+    /* شريط الأدوات يظهر بشكل مرتب */
+    .tools-flex {
+        padding: 10px;
+    }
+}
+
+/* --- 22. Smooth Entrance Animation (أنيميشن الدخول) --- */
+.reveal {
+    animation: reveal-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes reveal-up {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 23. Intelligent Interaction Feedback (تفاعلات ذكية) --- */
+
+/* تأثير الوميض عند الضغط على الكورس */
+.course-card:active {
+    transform: scale(0.95) rotateX(0) rotateY(0);
+    transition: 0.1s;
+}
+
+/* طبقة الإضاءة المتغيرة التي تتبع الماوس (اختياري عبر JS أو CSS ثابتة) */
+.course-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), 
+        rgba(255, 255, 255, 0.06), 
+        transparent 40%
+    );
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+.course-card:hover::before {
+    opacity: 1;
+}
+
+/* --- 24. Advanced Progress Tracking (مؤشر التقدم العائم) --- */
+.progress-container-v4 {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    margin-top: 15px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    box-shadow: 0 0 10px var(--primary);
+    border-radius: 10px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- 25. High-End Typography & Accents (زخرفة الخطوط) --- */
+.card-category {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--primary);
+    margin-bottom: 8px;
+    display: block;
+    font-weight: 900;
+}
+
+.course-instructor {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.course-instructor img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--primary);
+}
+
+.course-instructor span {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+}
+
+/* --- 26. Screen-Specific Cleanups (تصفية نهائية للشاشات) --- */
+
+/* تحسين العرض على الشاشات الكبيرة جداً */
+@media (min-width: 1920px) {
+    .courses-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+/* معالجة النوافذ المنبثقة (Modals) في الموبايل */
+.custom-modal-v4 {
+    backdrop-filter: blur(25px);
+    background: rgba(5, 7, 10, 0.8);
+    border: 1px solid var(--glass-border);
+    border-radius: 30px 30px 0 0; /* تفتح من الأسفل في الموبايل */
+}
+
+@media (max-width: 768px) {
+    .custom-modal-v4 {
+        height: 90vh;
+        margin-top: 10vh;
+    }
+}
+
+/* --- 27. Accessibility & Utility (سهولة الوصول) --- */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* تأثير "النبض" للأزرار الهامة */
+.pulse-btn {
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(0, 242, 254, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 242, 254, 0); }
+}
+
+
+   /* --- 28. Smart Theme Switcher (نظام تغيير الهوية التلقائي) --- */
+
+/* عند تغيير كلاس الحاوية الأب في React إلى (stage-primary, stage-prep, stage-basic)
+   ستتغير ألوان الموقع بالكامل ونوع "التوهج" (Glow) فوراً
+*/
+
+/* المرحلة الثانوية (اللون الفيروزي - Turbo) */
+.stage-secondary {
+    --primary: #00f2fe;
+    --secondary: #4facfe;
+    --accent-glow: rgba(0, 242, 254, 0.4);
+}
+
+/* المرحلة الإعدادية (اللون البنفسجي المضيء - Cyber) */
+.stage-prep {
+    --primary: #bf5af2;
+    --secondary: #5e5ce6;
+    --accent-glow: rgba(191, 90, 242, 0.4);
+}
+
+/* المرحلة الابتدائية (اللون الأخضر الحيوي - Nature) */
+.stage-basic {
+    --primary: #32d74b;
+    --secondary: #66d1ff;
+    --accent-glow: rgba(50, 215, 75, 0.4);
+}
+
+/* تطبيق التوهج الديناميكي بناءً على الثيم */
+.course-card {
+    box-shadow: 0 10px 30px -10px var(--accent-glow);
+}
+
+/* --- 29. Ultra-Responsive Layout (التجاوب المطلق) --- */
+
+/* الشاشات العريضة جداً (2K & 4K Monitors) */
+@media (min-width: 2000px) {
+    .portal-container { padding: 120px 15% 60px; }
+    .courses-grid { grid-template-columns: repeat(6, 1fr); gap: 50px; }
+    :root { font-size: 18px; } /* تكبير الخط نسبياً للشاشات الضخمة */
+}
+
+/* أجهزة التابلت (iPad Pro & Surface) */
+@media (max-width: 1024px) {
+    .courses-grid { grid-grow: 1; grid-template-columns: repeat(2, 1fr); gap: 25px; }
+    .hero-section h1 { font-size: 3rem; }
+}
+
+/* الهواتف القابلة للطي والمتوسطة (Foldables & Plus Models) */
+@media (max-width: 600px) {
+    .main-header {
+        height: 60px;
+        top: 0; left: 0; right: 0; border-radius: 0 0 15px 15px;
+    }
+    
+    .search-container { margin-bottom: 30px; }
+    
+    .course-card {
+        border-radius: 20px;
+        margin: 0 5px; /* ترك مسافة بسيطة من الجوانب */
+    }
+
+    .card-body h3 { font-size: 1.2rem; }
+    
+    .stats-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+}
+
+/* الهواتف الصغيرة جداً (iPhone SE & Mini) */
+@media (max-width: 360px) {
+    .hero-section h1 { font-size: 1.8rem; }
+    .stat-pill strong { font-size: 1.4rem; }
+    .courses-grid { gap: 15px; }
+}
+
+/* --- 30. Visual Polish & Anti-Aliasing (اللمسة الجمالية الأخيرة) --- */
+
+/* تنعيم حواف العناصر أثناء الحركة */
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* تأثير "الزجاج المكسور" الخفيف في الخلفية لإضافة تفاصيل */
+.portal-container::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3%3Ffilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.02; /* ضوضاء بصرية خفيفة جداً تعطي فخامة للماتيريال */
+    pointer-events: none;
+    z-index: 100;
+}
+
+/* زر "الرجوع للأعلى" العائم في الموبايل */
+.back-to-top {
+    position: fixed;
+    bottom: 85px; /* فوق المنيو السفلي */
+    right: 20px;
+    width: 45px;
+    height: 45px;
     background: var(--primary);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 5px 15px var(--accent-glow);
+    z-index: 999;
+    cursor: pointer;
+    border: none;
     color: #000;
-    box-shadow: 0 0 30px var(--primary);
-    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    z-index: 5;
+    transition: 0.3s;
 }
 
-.premium-card:hover .floating-play-btn {
-    transform: translate(-50%, -50%) scale(1) translateZ(50px);
-}
-
-/* --- 18. Card Content Floating Details --- */
-.card-content {
-    transform: translateZ(30px); /* جعل النصوص تبدو بارزة للأمام */
-}
-
-.card-content h3 {
-    text-shadow: 0 5px 10px rgba(0,0,0,0.3);
-}
-
-/* --- 19. Magnetic Effect for Stats (تأثير مغناطيسي خفيف) --- */
-.stat-item {
-    position: relative;
-    overflow: hidden;
-}
-
-.stat-item::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-    transform: scale(0);
-    transition: 0.5s;
-    pointer-events: none;
-}
-
-.stat-item:hover::before {
-    transform: scale(1);
-}
-
-/* --- 20. Glass Morphism Extra Polish (لمسات الزجاج النهائية) --- */
-.premium-card {
-    background: linear-gradient(
-        135deg, 
-        rgba(255, 255, 255, 0.05) 0%, 
-        rgba(255, 255, 255, 0.01) 100%
-    );
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* خط التزيين المضيء في أسفل الكرت */
-.card-glow-line {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 3px;
-    background: var(--primary);
-    box-shadow: 0 0 15px var(--primary);
-    transition: 0.5s ease;
-}
-
-.premium-card:hover .card-glow-line {
-    width: 100%;
-}
+.back-to-top:hover { transform: translateY(-5px); }
