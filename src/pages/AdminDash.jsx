@@ -36,12 +36,17 @@ import { ref, set, onValue, update, remove, push, child, get, onDisconnect } fro
 import { ref as sRef, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import './AdminDash.css';
 
-
-
 export default function AdminDash() {
-const [courses, setCourses] = useState([]);
-const [academyCategory, setAcademyCategory] = useState('high-school');
-const [loadingProgress, setLoadingProgress] = useState(0);
+  const [courses, setCourses] = useState([]);
+  const [academyCategory, setAcademyCategory] = useState('high-school');
+  const [loadingProgress, setLoadingProgress] = useState(0);
+
+  // --- السطور الناقصة اللي مسببة الشاشة السوداء ---
+  const [students, setStudents] = useState([]); // سطر الحياة لإصلاح خطأ students is not defined
+  const [transactions, setTransactions] = useState([]); // لضمان عمل واجهة الخزينة
+  const [activeChat, setActiveChat] = useState(null); // لدعم نظام الرسائل
+  // ---------------------------------------------
+
   // الرادار واللوجز
   const [radarStats, setRadarStats] = useState({ 
     online: 0, 
@@ -55,6 +60,7 @@ const [loadingProgress, setLoadingProgress] = useState(0);
   // محرك البحث والفرز
   const [globalSearch, setGlobalSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState('all');
+
 
   /**
    * [1] FEDERAL SECURITY ENGINE (FSE)
@@ -1999,6 +2005,7 @@ const [loadingProgress, setLoadingProgress] = useState(0);
     </div>
   );
 }
+
 
 
 
