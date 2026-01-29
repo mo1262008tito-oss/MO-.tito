@@ -60,7 +60,7 @@ export default function AdminDash() {
   // محرك البحث والفرز
   const [globalSearch, setGlobalSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState('all');
-
+const [activeTab, setActiveTab] = useState('someDefaultValue');
 
   /**
    * [1] FEDERAL SECURITY ENGINE (FSE)
@@ -2005,6 +2005,7 @@ export default function AdminDash() {
     </div>
   );
 }
+
 
 
 
