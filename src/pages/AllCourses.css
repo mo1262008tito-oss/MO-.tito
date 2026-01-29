@@ -662,3 +662,182 @@ img {
     backdrop-filter: blur(5px);
     will-change: transform; /* إخبار المتصفح بالاستعداد للحركة لزيادة الخفة */
 }
+
+/* AllCourses.css - Mobile Optimized Edition 2026 */
+
+:root {
+    --primary-neon: #00f2fe;
+    --secondary-neon: #4facfe;
+    --bg-dark: #080a0f;
+    --glass-heavy: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --safe-area: 20px;
+}
+
+/* 1. هيكلة الصفحة - مرونة كاملة */
+.courses-super-app {
+    display: flex;
+    flex-direction: column; /* الموبايل الأساس */
+    min-height: 100vh;
+    background: var(--bg-dark);
+    direction: rtl;
+}
+
+/* 2. الناف بار العلوي (ثابت ورفيع) */
+.main-action-bar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    height: 70px;
+    background: rgba(8, 10, 15, 0.8);
+    backdrop-filter: blur(15px);
+    display: flex;
+    align-items: center;
+    padding: 0 var(--safe-area);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.search-engine-box {
+    flex: 1;
+    background: var(--glass-heavy);
+    border-radius: 15px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+}
+
+.search-engine-box input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    width: 100%;
+    margin-right: 10px;
+}
+
+/* 3. شبكة الكورسات - نظام الأوتو-أدابت (الخفة القصوى) */
+.content-scroll-v4 {
+    padding: var(--safe-area);
+}
+
+.courses-dynamic-grid {
+    display: grid;
+    /* كورس واحد للموبايل، واثنان للتابلت، وأربعة للابتوب */
+    grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); 
+    gap: 25px;
+}
+
+@media (min-width: 600px) {
+    .courses-dynamic-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1200px) {
+    .courses-dynamic-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* 4. كرت الكورس - تصميم الـ Stack */
+.course-card-v4 {
+    background: var(--glass-heavy);
+    border: 1px solid var(--glass-border);
+    border-radius: 25px;
+    overflow: hidden;
+    transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.card-top {
+    position: relative;
+    aspect-ratio: 16 / 9; /* الحفاظ على نسبة الفيديو */
+}
+
+.card-top img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-bottom {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-bottom h3 {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    line-height: 1.4;
+    color: #fff;
+}
+
+/* 5. الفلترة السريعة (Horizontal Scroll) */
+.filters-row {
+    display: flex;
+    overflow-x: auto; /* يسمح بالسحب يميناً ويساراً في الموبايل */
+    gap: 12px;
+    padding: 15px 0;
+    scrollbar-width: none; /* إخفاء السكرول بار */
+}
+
+.f-tab {
+    white-space: nowrap; /* منع النص من النزول لسطر جديد */
+    background: var(--glass-heavy);
+    padding: 10px 20px;
+    border-radius: 50px;
+    color: var(--primary-neon);
+    border: 1px solid var(--glass-border);
+    font-size: 0.9rem;
+}
+
+.f-tab.active {
+    background: var(--primary-neon);
+    color: #000;
+}
+
+/* 6. المنيو السفلي للموبايل (App-like Experience) */
+.app-sidebar-v4 {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: rgba(10, 14, 20, 0.95);
+    backdrop-filter: blur(20px);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid var(--glass-border);
+    z-index: 2000;
+}
+
+/* إخفاء السايد بار في اللابتوب وإظهار القائمة التقليدية */
+@media (min-width: 1024px) {
+    .courses-super-app { flex-direction: row-reverse; }
+    .app-sidebar-v4 {
+        position: sticky;
+        top: 0;
+        width: 280px;
+        height: 100vh;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 40px 20px;
+    }
+}
+
+/* 7. تأثيرات اللمس (Touch Logic) */
+.course-card-v4:active {
+    transform: scale(0.97);
+}
+
+.badge-hot {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ff4d4d;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
