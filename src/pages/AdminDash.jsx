@@ -60,8 +60,6 @@ export default function AdminDash() {
   await AcademyManager.createComplexCourse(data, finalCover, finalTeacher);
 };
   
-  
-  
   const [activeChat, setActiveChat] = useState(null); // لدعم نظام الرسائل
   // ---------------------------------------------
 // --- حل أخطاء التعريف (Fixing Reference Errors) ---
@@ -233,7 +231,31 @@ useEffect(() => {
    * الأقسام: (HIGH_SCHOOL, RELIGIOUS, EDUCATIONAL, CODING)
    */
   const AcademyManager = {
+// أضف هذه الدالة داخل كائن AcademyManager
+async adjustStudentBalance(studentId, amount, type = 'add') {
+  try {
+    const studentRef = doc(db, "users", studentId);
+    const studentSnap = await getDoc(studentRef);
 
+    if (!studentSnap.exists()) throw new Error("الطالب غير موجود");
+
+    const currentBalance = studentSnap.data().balance || 0;
+    const newBalance = type === 'add' ? currentBalance + amount : currentBalance - amount;
+
+    if (newBalance < 0) throw new Error("الرصيد لا يكفي للخصم");
+
+    await updateDoc(studentRef, {
+      balance: newBalance,
+      lastBalanceUpdate: serverTimestamp()
+    });
+
+    setTerminalLogs(prev => [...prev, `[SYSTEM] تم ${type === 'add' ? 'شحن' : 'خصم'} رصيد الطالب: ${amount} EGP`]);
+    return newBalance;
+  } catch (error) {
+    console.error("Balance Error:", error);
+    throw error;
+  }
+},
     
 
     // داخل AcademyManager
@@ -2358,6 +2380,7 @@ async addLectureToCourse(courseId, lectureData) {
     </div>
   );
 }
+
 
 
 
