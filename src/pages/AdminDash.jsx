@@ -4,6 +4,7 @@ import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import * as XLSX from 'xlsx';
 import axios from 'axios';
 
+
 // 1. استيراد جميع الأيقونات المستخدمة في الـ 10 أجزاء
 import { 
   ShieldCheck, Radio, BookOpen, Users, Key, BarChart3, Cpu, Search, 
@@ -17,6 +18,7 @@ import {
   UserCheck, CreditCard as CardIcon, DollarSign, Calendar, Clock, Edit3, Save,
   LogOut, Menu, Check, X
 } from 'lucide-react';
+
 
 
 // 2. استيراد مكتبات الرسم البياني (Recharts)
@@ -2380,6 +2382,7 @@ async addLectureToCourse(courseId, lectureData) {
     </div>
   );
 }
+
 
 
 
