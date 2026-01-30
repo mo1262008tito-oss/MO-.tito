@@ -523,34 +523,25 @@ async addLectureToCourse(courseId, lectureData) {
         />
     </div>
 </div>
-
-      <button 
+<button 
     type="button" 
     className="titan-btn primary w-full mt-4" 
     onClick={async () => {
         try {
             const form = document.getElementById('courseForm');
             
-            // جلب الملفات (إن وجدت)
+            // 1. جلب المدخلات (هجين: ملف أو رابط)
             const coverFile = document.getElementById('courseCoverFile')?.files[0];
-            const teacherFile = document.getElementById('teacherImgFile')?.files[0];
-            
-            // جلب الروابط النصية (إن وجدت)
             const coverUrl = document.getElementById('courseCoverUrl')?.value;
+            const teacherFile = document.getElementById('teacherImgFile')?.files[0];
             const teacherUrl = document.getElementById('teacherImgUrl')?.value;
 
-            // تحديد المصدر النهائي: الملف له الأولوية، وإذا لم يوجد نأخذ الرابط
             const finalCover = coverFile || coverUrl;
             const finalTeacher = teacherFile || teacherUrl;
 
-            // 1. تحقق من المدخلات الأساسية (وفقاً لشروط عام 2026) [cite: 2026-01-22]
-            if (!form.courseTitle.value) {
-                alert("⚠️ عذراً، يجب إدخال عنوان الكورس.");
-                return;
-            }
-            if (!finalCover) {
-                alert("⚠️ يجب رفع صورة الغلاف أو وضع رابط مباشر لها.");
-                return;
+            // التحقق الأساسي (2026 Ready)
+            if (!form.courseTitle.value || !finalCover) {
+                return alert("⚠️ يرجى إدخال عنوان الكورس وصورة الغلاف على الأقل.");
             }
 
             // 2. تجميع البيانات
@@ -563,10 +554,10 @@ async addLectureToCourse(courseId, lectureData) {
                 category: academyCategory 
             };
 
-            // 3. استدعاء المحرك الهجين (الذي يتعامل مع الملف والرابط)
+            // 3. استدعاء المحرك
             const newCourseId = await AcademyManager.createComplexCourse(data, finalCover, finalTeacher);
 
-            // 4. تحديث قائمة الكورسات في الواجهة فوراً
+            // 4. تحديث الواجهة فوراً
             const newCourseItem = {
                 id: newCourseId,
                 ...data,
@@ -575,14 +566,13 @@ async addLectureToCourse(courseId, lectureData) {
             };
             setCourses(prev => [newCourseItem, ...prev]);
 
-            alert("✅ تم تدشين الكورس بنجاح في النظام!");
+            alert("✅ تم تدشين الكورس بنجاح!");
             form.reset();
             
         } catch (error) {
             console.error("خطأ أثناء التدشين:", error);
-            // تنبيه في حال كان الخطأ بسبب الـ Storage (البطاقة البنكية)
             if (error.code === 'storage/retry-limit-exceeded') {
-                alert("❌ فشل الرفع للسيرفر: يرجى استخدام 'الروابط النصية' للصور حالياً.");
+                alert("❌ فشل الرفع: يرجى استخدام 'الروابط النصية' للصور حالياً.");
             } else {
                 alert("❌ حدث خطأ: " + error.message);
             }
@@ -591,42 +581,6 @@ async addLectureToCourse(courseId, lectureData) {
 >
     <Zap size={16} /> فحص وتدشين الكورس في السيرفر
 </button>
-            
-        const data = {
-            title: form.courseTitle.value,
-            teacher: form.teacherName.value,
-            price: Number(form.fullPrice.value), // تحويل السعر لرقم
-            salesModel: form.salesModel.value,
-            description: form.desc.value,
-            category: academyCategory 
-        };
-
-        // 2. استدعاء المحرك لرفع البيانات للسيرفر
-        const newCourseId = await AcademyManager.createComplexCourse(data, cover, teacher);
-
-        // 3. تحديث قائمة الكورسات في الواجهة فوراً (بدون ريفريش)
-        // نقوم بإضافة الكورس الجديد للـ state لكي يظهر أمامك في الحال
-        const newCourseItem = {
-            id: newCourseId,
-            ...data,
-            thumbnail: URL.createObjectURL(cover), // عرض صورة مؤقتة حتى يكتمل الرفع
-            lecturesCount: 0
-        };
-        setCourses(prev => [newCourseItem, ...prev]);
-
-        alert("✅ تم نشر الكورس وتأمينه بنجاح في قسم " + academyCategory);
-        
-        // 4. تفريغ النموذج بعد النجاح
-        form.reset();
-        
-    } catch (error) {
-        console.error("خطأ أثناء التدشين:", error);
-        alert("❌ فشل رفع الكورس: " + error.message);
-    }
-}}>
-    <Zap size={16} /> فحص وتدشين الكورس في السيرفر
-</button>
-            
           </form>
         </motion.div>
 
@@ -2383,6 +2337,7 @@ async addLectureToCourse(courseId, lectureData) {
     </div>
   );
 }
+
 
 
 
