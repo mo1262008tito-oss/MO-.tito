@@ -626,3 +626,217 @@ body {
     to { background-position: -200% 0; }
 }
 
+/* MAFA ACADEMY - COMPLEMENTARY GLOBAL FIX
+  هذا الملف يكمل الملف الأساسي ويصلح تداخل العناصر 
+*/
+
+/* 1. إصلاح الهيكل العام لمنع التداخل (Layout Reset) */
+.portal-container {
+    display: flex !important;
+    flex-direction: column !important; /* يضمن أن العناصر تتدفق تحت بعضها */
+    min-height: 100vh;
+    overflow-x: hidden;
+    gap: 0 !important;
+}
+
+/* 2. نظام الثيمات المتغير لكل صف (Dynamic Stage Themes) */
+/* ثانوي: أزرق سيان */
+.stage-ثانوي {
+    --primary-glow: #00f2ff;
+    --accent-gradient: linear-gradient(135deg, #00f2ff 0%, #7000ff 100%);
+}
+/* إعدادي: أخضر زمردي */
+.stage-اعدادي {
+    --primary-glow: #00ff88;
+    --accent-gradient: linear-gradient(135deg, #00ff88 0%, #0066ff 100%);
+}
+/* ابتدائي: برتقالي دافئ */
+.stage-ابتدائي {
+    --primary-glow: #ffaa00;
+    --accent-gradient: linear-gradient(135deg, #ffaa00 0%, #ff4400 100%);
+}
+
+/* تطبيق التوهج على النصوص بناءً على المرحلة */
+.stage-ثانوي .name-gradient, .stage-اعدادي .name-gradient, .stage-ابتدائي .name-gradient {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 10px var(--primary-glow));
+}
+
+/* 3. إصلاح الهيدر والقائمة (Header & Stage Switcher) */
+.main-header {
+    position: sticky !important;
+    top: 0;
+    z-index: 1000;
+    background: rgba(2, 6, 23, 0.8) !important;
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    height: auto !important;
+    padding: 15px 5% !important;
+}
+
+.stage-selector {
+    display: flex !important;
+    background: rgba(255,255,255,0.05);
+    padding: 5px;
+    border-radius: 50px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.stage-selector button.active {
+    background: var(--accent-gradient) !important;
+    box-shadow: 0 0 15px var(--primary-glow);
+    color: white !important;
+}
+
+/* 4. إصلاح قسم الهيرو والترحيب (Hero Section Flow) */
+.hero-section {
+    position: relative;
+    padding: 60px 5% !important;
+    width: 100%;
+    margin-top: 0 !important; /* إزالة أي إزاحة سالبة قديمة */
+}
+
+.hero-grid {
+    display: grid !important;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 40px;
+    align-items: center;
+}
+
+/* 5. شبكة الكورسات 3D (Floating Courses Grid) */
+.courses-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+    gap: 25px !important;
+    padding: 40px 5% !important;
+    width: 100%;
+}
+
+.course-card-premium {
+    transform-style: preserve-3d;
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+.course-card-premium:hover {
+    transform: translateY(-15px) rotateX(5deg) rotateY(-2deg) !important;
+    border-color: var(--primary-glow) !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+
+/* 6. ريسبونسيف كامل للموبايل (Mobile App Experience) */
+@media (max-width: 768px) {
+    .hero-grid {
+        grid-template-columns: 1fr !important; /* جعل العناصر تحت بعضها */
+        text-align: center;
+    }
+
+    .hero-welcome h1 {
+        font-size: 2.2rem !important;
+    }
+
+    .hero-leaderboard {
+        width: 100%;
+        max-width: 100% !important;
+    }
+
+    .courses-grid {
+        grid-template-columns: 1fr !important; /* كورس واحد بعرض الشاشة */
+    }
+
+    .main-header {
+        flex-direction: column; /* ترتيب الهيدر عمودياً في الموبايل الصغير جداً */
+        gap: 15px;
+    }
+}
+
+/* 7. القائمة الجانبية (Sidebar) */
+.portal-sidebar {
+    background: rgba(2, 6, 23, 0.98) !important;
+    backdrop-filter: blur(25px);
+    box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+    border-left: 1px solid var(--primary-glow);
+}
+
+/* 8. أدوات الأدوات المساعدة (Mega Tools) */
+.mega-tools-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 40px 5%;
+}
+
+/* --- 1. تأثير اللمعان المتحرك (Dynamic Shine) --- */
+.course-card-premium::after {
+    content: '';
+    position: absolute;
+    top: -100%; left: -100%;
+    width: 300%; height: 300%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.05), transparent);
+    transition: 0.5s;
+    pointer-events: none;
+}
+
+.course-card-premium:hover::after {
+    top: -50%; left: -50%;
+}
+
+/* --- 2. شريط التنقل السفلي للموبايل (Mobile Bottom App Bar) --- */
+@media (max-width: 600px) {
+    .mobile-nav-bar {
+        position: fixed;
+        bottom: 0; left: 0;
+        width: 100%;
+        height: 65px;
+        background: rgba(2, 6, 23, 0.8);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid var(--glass-border);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 2000;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    /* تأكد من إضافة padding-bottom للحاوية الرئيسية لكي لا يغطي الشريط آخر عنصر */
+    .portal-container {
+        padding-bottom: 80px !important;
+    }
+}
+
+/* --- 3. تحسينات النصوص "المريحة" للعين (Typography UX) --- */
+p {
+    line-height: 1.8;
+    color: var(--text-dim);
+    font-size: 0.95rem;
+}
+
+h1, h2, h3 {
+    letter-spacing: -0.5px;
+}
+
+/* --- 4. تأثير "النبض" للأزرار الهامة (Call to Action Pulse) --- */
+.enroll-btn {
+    animation: btn-pulse 3s infinite;
+}
+
+@keyframes btn-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(var(--primary-glow-rgb), 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(var(--primary-glow-rgb), 0); }
+    100% { box-shadow: 0 0 0 0 rgba(var(--primary-glow-rgb), 0); }
+}
+
+/* --- 5. نظام الـ "Skeleton Screen" أثناء التحميل (Smooth Loading) --- */
+.is-loading .glass-premium {
+    background: linear-gradient(90deg, #1e1b4b 25%, #2d2a5d 50%, #1e1b4b 75%);
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.5s infinite;
+    border: none;
+}
+
+@keyframes loading-shimmer {
+    to { background-position: -200% 0; }
+}
