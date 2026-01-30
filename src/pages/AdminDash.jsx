@@ -44,6 +44,24 @@ export default function AdminDash() {
 
   const [students, setStudents] = useState([]); // سطر الحياة لإصلاح خطأ students is not defined
   const [transactions, setTransactions] = useState([]); // لضمان عمل واجهة الخزينة
+ const handleDeploy = async () => {
+  const coverFile = document.getElementById('courseCoverFile').files[0];
+  const coverUrl = document.getElementById('courseCoverUrl').value;
+  
+  const teacherFile = document.getElementById('teacherImgFile').files[0];
+  const teacherUrl = document.getElementById('teacherImgUrl').value;
+
+  // الأولوية للملف، إذا لم يوجد نرسل الرابط
+  const finalCover = coverFile || coverUrl;
+  const finalTeacher = teacherFile || teacherUrl;
+
+  if (!finalCover) return alert("يرجى اختيار ملف أو وضع رابط للغلاف");
+
+  await AcademyManager.createComplexCourse(data, finalCover, finalTeacher);
+};
+  
+  
+  
   const [activeChat, setActiveChat] = useState(null); // لدعم نظام الرسائل
   // ---------------------------------------------
 // --- حل أخطاء التعريف (Fixing Reference Errors) ---
@@ -216,6 +234,8 @@ useEffect(() => {
    */
   const AcademyManager = {
 
+    
+
     // داخل AcademyManager
 async removeLectureFromCourse(courseId, lectureId) {
   try {
@@ -241,85 +261,82 @@ async removeLectureFromCourse(courseId, lectureId) {
     alert("❌ فشل حذف المحاضرة: " + error.message);
   }
 },
-    // إعداد كورس جديد بهيكل معقد
-    async createComplexCourse(courseData, coverFile, teacherFile) {
-      try {
-        setLoadingProgress(10);
-        let coverUrl = "";
-        let teacherUrl = "";
+    async createComplexCourse(courseData, coverInput, teacherInput) {
+  try {
+    setLoadingProgress(10);
+    let finalCoverUrl = "";
+    let finalTeacherUrl = "";
 
-        // 1. رفع غلاف الكورس
-        if (coverFile) {
-          const coverRef = sRef(storage, `academy/courses/covers/${Date.now()}_${coverFile.name}`);
-          const uploadTask = await uploadBytesResumable(coverRef, coverFile);
-          coverUrl = await getDownloadURL(uploadTask.ref);
-        }
-        setLoadingProgress(40);
+    // 1. معالجة غلاف الكورس (ملف أو رابط)
+    if (coverInput instanceof File) {
+      // إذا كان المدخل ملفاً، نقوم بالرفع (سيفشل حالياً حتى تفعل البطاقة)
+      const coverRef = sRef(storage, `academy/covers/${Date.now()}_${coverInput.name}`);
+      const uploadTask = await uploadBytesResumable(coverRef, coverInput);
+      finalCoverUrl = await getDownloadURL(uploadTask.ref);
+    } else {
+      // إذا كان المدخل نصاً، نعتبره رابطاً مباشراً
+      finalCoverUrl = coverInput;
+    }
+    setLoadingProgress(50);
 
-        // 2. رفع صورة المدرس
-        if (teacherFile) {
-          const teacherRef = sRef(storage, `academy/teachers/${Date.now()}_${teacherFile.name}`);
-          const uploadTask = await uploadBytesResumable(teacherRef, teacherFile);
-          teacherUrl = await getDownloadURL(uploadTask.ref);
-        }
-        setLoadingProgress(70);
+    // 2. معالجة صورة المدرس (ملف أو رابط)
+    if (teacherInput instanceof File) {
+      const teacherRef = sRef(storage, `academy/teachers/${Date.now()}_${teacherInput.name}`);
+      const uploadTask = await uploadBytesResumable(teacherRef, teacherInput);
+      finalTeacherUrl = await getDownloadURL(uploadTask.ref);
+    } else {
+      finalTeacherUrl = teacherInput;
+    }
 
-        // 3. بناء وثيقة الكورس في Firestore
-        const finalDoc = {
-          ...courseData,
-          thumbnail: coverUrl,
-          teacherImage: teacherUrl,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          enrolledCount: 0,
-          rating: 5.0,
-          lecturesCount: 0,
-          isPublic: true,
-          // نظام البيع: FULL = الكورس كله بكود / SINGLE = كل محاضرة بسعر
-          salesModel: courseData.salesModel || 'FULL', 
-          sections: [], // هيكل المحاضرات
-          totalDuration: 0
-        };
+    // 3. بناء الوثيقة النهائية في Firestore
+    const finalDoc = {
+      ...courseData,
+      thumbnail: finalCoverUrl,
+      teacherImage: finalTeacherUrl,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      enrolledCount: 0,
+      lecturesCount: 0,
+      sections: [],
+      salesModel: courseData.salesModel || 'FULL'
+    };
 
-        const docRef = await addDoc(collection(db, "courses"), finalDoc);
-        setLoadingProgress(100);
-        setTerminalLogs(prev => [...prev, `[ACADEMY] New Course Deployed: ${courseData.title} ID: ${docRef.id}`]);
-        return docRef.id;
-      } catch (error) {
-        console.error("Course Deployment Failed:", error);
-        throw error;
-      }
-    },
+    const docRef = await addDoc(collection(db, "courses"), finalDoc);
+    setLoadingProgress(100);
+    setTerminalLogs(prev => [...prev, `[ACADEMY] Deployment Success (Hybrid Mode)`]);
+    return docRef.id;
 
-    // إضافة محاضرة (درس) داخل كورس معين مع تحديد سعرها المنفرد
-    async addLectureToCourse(courseId, lectureData) {
-      try {
-        const courseRef = doc(db, "courses", courseId);
-        const newLecture = {
-          id: push(ref(rtdb)).key, // ID فريد للمحاضرة
-          title: lectureData.title,
-          videoUrl: lectureData.videoUrl,
-          description: lectureData.description,
-          price: Number(lectureData.price) || 0, // سعر المحاضرة إذا كانت منفردة
-          isFree: lectureData.isFree || false,
-          attachments: lectureData.attachments || [],
-          duration: lectureData.duration || 0,
-          createdAt: new Date().toISOString()
-        };
+  } catch (error) {
+    setLoadingProgress(0);
+    // إذا فشل الرفع بسبب الـ Storage، سننبه المستخدم
+    if (error.code === 'storage/retry-limit-exceeded') {
+      alert("⚠️ فشل الرفع: يبدو أن خدمة الـ Storage غير مفعلة. يرجى استخدام 'روابط نصية' حالياً.");
+    } else {
+      alert("❌ خطأ: " + error.message);
+    }
+    throw error;
+  }
+}// أضف هذا داخل AcademyManager
+async addLectureToCourse(courseId, lectureData) {
+  try {
+    const courseRef = doc(db, "courses", courseId);
+    const lectureWithId = {
+      ...lectureData,
+      id: `lec_${Date.now()}`, // توليد معرف فريد للمحاضرة
+      createdAt: new Date().toISOString()
+    };
 
-        await updateDoc(courseRef, {
-          sections: arrayUnion(newLecture),
-          lecturesCount: increment(1),
-          totalDuration: increment(newLecture.duration),
-          updatedAt: serverTimestamp()
-        });
-
-        setTerminalLogs(prev => [...prev, `[ACADEMY] Lecture '${lectureData.title}' bound to Course ${courseId}`]);
-      } catch (error) {
-        console.error("Lecture Addition Failed:", error);
-      }
-    },
-
+    await updateDoc(courseRef, {
+      sections: arrayUnion(lectureWithId),
+      lecturesCount: increment(1),
+      updatedAt: serverTimestamp()
+    });
+    
+    return lectureWithId;
+  } catch (error) {
+    throw error;
+  }
+},
     // نظام "الكود الموحد": توليد كود يفتح كورس بالكامل بكل محتوياته
     async generateMasterCourseCode(courseId, count, value, prefix) {
       const batch = writeBatch(db);
@@ -450,30 +467,106 @@ async removeLectureFromCourse(courseId, lectureId) {
               <label>وصف الكورس الشامل</label>
               <textarea name="desc" rows="4" placeholder="اكتب تفاصيل الكورس، المميزات، وعدد الساعات..."></textarea>
             </div>
+<div className="upload-grid grid grid-cols-1 md:grid-cols-2 gap-4">
+    {/* قسم غلاف الكورس */}
+    <div className="upload-box flex flex-col gap-2 p-3 bg-white/5 rounded-xl border border-white/10">
+        <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+            <Video size={14} className="text-blue-400"/> غلاف الكورس
+        </label>
+        <input type="file" id="courseCoverFile" accept="image/*" className="text-xs text-gray-500" />
+        <div className="text-[10px] text-gray-500 text-center">--- أو ---</div>
+        <input 
+            type="text" 
+            id="courseCoverUrl" 
+            placeholder="ضع رابط الصورة هنا..." 
+            className="w-full bg-black/40 border border-white/10 p-2 rounded text-xs outline-none focus:border-blue-500" 
+        />
+    </div>
 
-            <div className="upload-grid">
-               <div className="upload-box">
-                  <label><Video size={14}/> غلاف الكورس</label>
-                  <input type="file" id="courseCover" accept="image/*" />
-               </div>
-               <div className="upload-box">
-                  <label><Users size={14}/> صورة المدرس</label>
-                  <input type="file" id="teacherImg" accept="image/*" />
-               </div>
-            </div>
+    {/* قسم صورة المدرس */}
+    <div className="upload-box flex flex-col gap-2 p-3 bg-white/5 rounded-xl border border-white/10">
+        <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+            <Users size={14} className="text-green-400"/> صورة المدرس
+        </label>
+        <input type="file" id="teacherImgFile" accept="image/*" className="text-xs text-gray-500" />
+        <div className="text-[10px] text-gray-500 text-center">--- أو ---</div>
+        <input 
+            type="text" 
+            id="teacherImgUrl" 
+            placeholder="ضع رابط الصورة هنا..." 
+            className="w-full bg-black/40 border border-white/10 p-2 rounded text-xs outline-none focus:border-blue-500" 
+        />
+    </div>
+</div>
 
-         <button type="button" className="titan-btn primary w-full mt-4" onClick={async () => {
-    try {
-        const form = document.getElementById('courseForm');
-        const cover = document.getElementById('courseCover').files[0];
-        const teacher = document.getElementById('teacherImg').files[0];
+      <button 
+    type="button" 
+    className="titan-btn primary w-full mt-4" 
+    onClick={async () => {
+        try {
+            const form = document.getElementById('courseForm');
+            
+            // جلب الملفات (إن وجدت)
+            const coverFile = document.getElementById('courseCoverFile')?.files[0];
+            const teacherFile = document.getElementById('teacherImgFile')?.files[0];
+            
+            // جلب الروابط النصية (إن وجدت)
+            const coverUrl = document.getElementById('courseCoverUrl')?.value;
+            const teacherUrl = document.getElementById('teacherImgUrl')?.value;
 
-        // 1. تحقق من المدخلات الأساسية قبل البدء
-        if (!form.courseTitle.value || !cover) {
-            alert("⚠️ عذراً، يجب إدخال عنوان الكورس وصورة الغلاف.");
-            return;
+            // تحديد المصدر النهائي: الملف له الأولوية، وإذا لم يوجد نأخذ الرابط
+            const finalCover = coverFile || coverUrl;
+            const finalTeacher = teacherFile || teacherUrl;
+
+            // 1. تحقق من المدخلات الأساسية (وفقاً لشروط عام 2026) [cite: 2026-01-22]
+            if (!form.courseTitle.value) {
+                alert("⚠️ عذراً، يجب إدخال عنوان الكورس.");
+                return;
+            }
+            if (!finalCover) {
+                alert("⚠️ يجب رفع صورة الغلاف أو وضع رابط مباشر لها.");
+                return;
+            }
+
+            // 2. تجميع البيانات
+            const data = {
+                title: form.courseTitle.value,
+                teacher: form.teacherName.value,
+                price: Number(form.fullPrice.value),
+                salesModel: form.salesModel.value,
+                description: form.desc.value,
+                category: academyCategory 
+            };
+
+            // 3. استدعاء المحرك الهجين (الذي يتعامل مع الملف والرابط)
+            const newCourseId = await AcademyManager.createComplexCourse(data, finalCover, finalTeacher);
+
+            // 4. تحديث قائمة الكورسات في الواجهة فوراً
+            const newCourseItem = {
+                id: newCourseId,
+                ...data,
+                thumbnail: coverFile ? URL.createObjectURL(coverFile) : coverUrl,
+                lecturesCount: 0
+            };
+            setCourses(prev => [newCourseItem, ...prev]);
+
+            alert("✅ تم تدشين الكورس بنجاح في النظام!");
+            form.reset();
+            
+        } catch (error) {
+            console.error("خطأ أثناء التدشين:", error);
+            // تنبيه في حال كان الخطأ بسبب الـ Storage (البطاقة البنكية)
+            if (error.code === 'storage/retry-limit-exceeded') {
+                alert("❌ فشل الرفع للسيرفر: يرجى استخدام 'الروابط النصية' للصور حالياً.");
+            } else {
+                alert("❌ حدث خطأ: " + error.message);
+            }
         }
-
+    }}
+>
+    <Zap size={16} /> فحص وتدشين الكورس في السيرفر
+</button>
+            
         const data = {
             title: form.courseTitle.value,
             teacher: form.teacherName.value,
@@ -537,62 +630,77 @@ async removeLectureFromCourse(courseId, lectureId) {
           <X className="text-gray-400 hover:text-white" />
         </button>
       </div>
+{/* Form Content */}
+<div className="p-6 space-y-6">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-2">
+      <label htmlFor="lecTitle" className="text-xs text-gray-400 mr-2">عنوان المحاضرة</label>
+      <input id="lecTitle" className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:border-blue-500 outline-none transition-all" placeholder="مثلاً: المحاضرة الأولى" />
+    </div>
+    <div className="space-y-2">
+      <label htmlFor="lecPrice" className="text-xs text-gray-400 mr-2">سعر المحاضرة (0 = مجانية)</label>
+      <input id="lecPrice" type="number" className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:border-blue-500 outline-none" placeholder="0.00 EGP" />
+    </div>
+  </div>
 
-      {/* Form Content */}
-      <div className="p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label htmlFor="lecTitle" className="text-xs text-gray-400 mr-2">عنوان المحاضرة</label>
-            <input id="lecTitle" className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:border-blue-500 outline-none transition-all" placeholder="مثلاً: مقدمة في علم الفيزياء" />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="lecPrice" className="text-xs text-gray-400 mr-2">سعر المحاضرة (0 = مجانية)</label>
-            <input id="lecPrice" type="number" className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:border-blue-500 outline-none" placeholder="0.00 EGP" />
-          </div>
-        </div>
+  {/* نظام الفيديو الهجين */}
+  <div className="space-y-2">
+    <label htmlFor="lecUrl" className="text-xs text-blue-400 mr-2">رابط الفيديو (YouTube / Vimeo / Direct Link)</label>
+    <div className="relative">
+      <input 
+        id="lecUrl" 
+        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 pr-10 text-white focus:border-blue-500 outline-none" 
+        placeholder="https://www.youtube.com/watch?v=..." 
+      />
+      <Globe size={16} className="absolute right-3 top-4 text-gray-500" />
+    </div>
+    <p className="text-[10px] text-gray-500 italic px-2">* يمكنك استخدام روابط خارجية حالياً لتجاوز قيود التخزين.</p>
+  </div>
 
-        <div className="space-y-2">
-          <label htmlFor="lecUrl" className="text-xs text-gray-400 mr-2">رابط الفيديو (Vimeo/YouTube/S3)</label>
-          <input id="lecUrl" className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:border-blue-500 outline-none" placeholder="https://..." />
-        </div>
+  <button
+    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95"
+    onClick={async () => {
+      const title = document.getElementById('lecTitle').value;
+      const price = Number(document.getElementById('lecPrice').value);
+      const url = document.getElementById('lecUrl').value;
 
-        <button
-          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 transition-all active:scale-95"
-          onClick={async () => {
-            const lectureData = {
-              title: document.getElementById('lecTitle').value,
-              price: Number(document.getElementById('lecPrice').value),
-              videoUrl: document.getElementById('lecUrl').value,
-              duration: 45, // يمكن إضافة حقل للمدة أيضاً
-              isFree: document.getElementById('lecPrice').value === '0'
-            };
+      if (!title || !url) {
+        return alert("⚠️ يرجى إكمال العنوان ورابط الفيديو.");
+      }
 
-            if (!lectureData.title || !lectureData.videoUrl) {
-              return alert("⚠️ يرجى إكمال عنوان المحاضرة ورابط الفيديو.");
-            }
+      try {
+        const lectureData = {
+          title: title,
+          price: price,
+          videoUrl: url,
+          duration: 0, // يمكن تحديثها لاحقاً
+          isFree: price === 0
+        };
 
-            try {
-              await AcademyManager.addLectureToCourse(editingItem.id, lectureData);
-              alert("✅ تم ربط المحاضرة بالكورس بنجاح");
-              // تحديث قائمة المحاضرات بعد الإضافة
-              const docRef = doc(db, "courses", editingItem.id);
-              const docSnap = await getDoc(docRef);
-              if (docSnap.exists()) {
-                setLectures(docSnap.data().sections || []);
-              }
-              document.getElementById('lecTitle').value = '';
-              document.getElementById('lecPrice').value = '';
-              document.getElementById('lecUrl').value = '';
-            } catch (error) {
-              console.error("فشل إضافة المحاضرة:", error);
-              alert("❌ فشل إضافة المحاضرة: " + error.message);
-            }
-          }}
-        >
-          <PlusSquare size={20} /> تثبيت المحاضرة في السيرفر
-        </button>
-      </div>
+        // استدعاء المحرك
+        await AcademyManager.addLectureToCourse(editingItem.id, lectureData);
+        
+        alert("✅ تم إضافة المحاضرة!");
+        
+        // إعادة ضبط الحقول
+        document.getElementById('lecTitle').value = '';
+        document.getElementById('lecUrl').value = '';
+        
+        // تحديث الواجهة (جلب البيانات الجديدة)
+        const docRef = doc(db, "courses", editingItem.id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setLectures(docSnap.data().sections || []);
+        }
 
+      } catch (error) {
+        alert("❌ فشل الإضافة: " + error.message);
+      }
+    }}
+  >
+    <PlusSquare size={20} /> تثبيت المحاضرة في الكورس
+  </button>
+</div>
       {/* قائمة المحاضرات الحالية */}
       <div className="p-6 border-t border-white/10">
         <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
@@ -2250,6 +2358,7 @@ async removeLectureFromCourse(courseId, lectureId) {
     </div>
   );
 }
+
 
 
 
