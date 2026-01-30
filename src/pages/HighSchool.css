@@ -928,3 +928,127 @@ button:active {
     transform: scale(0.95) !important;
     transition: 0.1s;
 }
+
+/* --- 1. إصلاح قسم الهيرو (The Epic Hero Fix) --- */
+.hero-section {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 60vh !important;
+    text-align: center !important;
+    padding-top: 100px !important;
+    background: transparent !important;
+}
+
+/* تحسين النص الترحيبي مع أنيميشن */
+.hero-welcome h1 {
+    font-size: clamp(2.5rem, 8vw, 5rem) !important;
+    font-weight: 900 !important;
+    background: var(--accent-gradient) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    animation: hero-pulse 3s ease-in-out infinite alternate !important;
+}
+
+@keyframes hero-pulse {
+    from { filter: drop-shadow(0 0 10px var(--primary-glow)); transform: scale(1); }
+    to { filter: drop-shadow(0 0 30px var(--primary-glow)); transform: scale(1.02); }
+}
+
+/* --- 2. أزرار المراحل (Animated Stage Buttons) --- */
+.stage-selector {
+    display: flex !important;
+    gap: 15px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    padding: 10px 20px !important;
+    border-radius: 50px !important;
+    border: 1px solid var(--glass-border) !important;
+    backdrop-filter: blur(15px) !important;
+}
+
+.stage-selector button {
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    color: #fff !important;
+    padding: 10px 25px !important;
+    border-radius: 30px !important;
+    cursor: pointer !important;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+/* هوفر الأزرار غير النشطة */
+.stage-selector button:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: var(--primary-glow) !important;
+    transform: translateY(-5px) !important;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3) !important;
+}
+
+/* الزر النشط (التدرج والأنيميشن) */
+.stage-selector button.active {
+    background: var(--accent-gradient) !important;
+    color: white !important;
+    font-weight: bold !important;
+    box-shadow: 0 0 25px var(--primary-glow) !important;
+    border: none !important;
+    animation: active-glow 2s infinite alternate !important;
+}
+
+@keyframes active-glow {
+    from { box-shadow: 0 0 10px var(--primary-glow); }
+    to { box-shadow: 0 0 30px var(--primary-glow), 0 0 50px rgba(255,255,255,0.2); }
+}
+
+/* --- 3. زر الاشتراك الكبير (The Ultra Button) --- */
+.enroll-btn {
+    background: var(--accent-gradient) !important;
+    padding: 15px 40px !important;
+    border-radius: 15px !important;
+    font-size: 1.2rem !important;
+    border: none !important;
+    color: white !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: 0.5s !important;
+}
+
+.enroll-btn:hover {
+    transform: translateY(-5px) scale(1.05) !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px var(--primary-glow) !important;
+}
+
+/* تأثير اللمعان المتحرك على الزر */
+.enroll-btn::after {
+    content: '' !important;
+    position: absolute !important;
+    top: -50% !important;
+    left: -150% !important;
+    width: 200% !important;
+    height: 200% !important;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.6), transparent) !important;
+    transform: rotate(45deg) !important;
+    transition: 0.8s !important;
+}
+
+.enroll-btn:hover::after {
+    left: 150% !important;
+}
+
+/* --- 4. ريسبونسيف الموبايل (Mobile App Style) --- */
+@media (max-width: 768px) {
+    .hero-section {
+        padding-top: 150px !important;
+    }
+    
+    .stage-selector {
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        border-radius: 20px !important;
+    }
+    
+    .stage-selector button {
+        padding: 8px 15px !important;
+        font-size: 0.9rem !important;
+    }
+}
