@@ -340,7 +340,8 @@ async removeLectureFromCourse(courseId, lectureId) {
     }
     throw error;
   }
-}// أضف هذا داخل AcademyManager
+    },
+    // أضف هذا داخل AcademyManager
 async addLectureToCourse(courseId, lectureData) {
   try {
     const courseRef = doc(db, "courses", courseId);
@@ -2382,6 +2383,7 @@ async addLectureToCourse(courseId, lectureData) {
     </div>
   );
 }
+
 
 
 
