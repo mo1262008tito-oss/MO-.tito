@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { writeBatch, doc, serverTimestamp, collection } from "firebase/firestore";
+
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import * as XLSX from 'xlsx';
 import axios from 'axios';
@@ -132,6 +132,22 @@ const [activeTab, setActiveTab] = useState('someDefaultValue');
     }
   };
 
+  useEffect(() => {
+  const q = query(collection(db, "courses"), orderBy("createdAt", "desc"));
+  
+  // استخدام onSnapshot يجعل الواجهة تتحدث تلقائياً لحظة إضافة أي كورس أو محاضرة
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    const coursesData = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    setCourses(coursesData);
+  }, (error) => {
+    console.error("خطأ في جلب الكورسات:", error);
+  });
+
+  return () => unsubscribe();
+}, []);
   /**
    * [2] REAL-TIME RADAR INITIALIZATION
    * مراقبة السيرفر والطلاب في هذه اللحظة
@@ -2234,6 +2250,7 @@ async removeLectureFromCourse(courseId, lectureId) {
     </div>
   );
 }
+
 
 
 
