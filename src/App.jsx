@@ -18,8 +18,8 @@ import AllCourses from './pages/AllCourses.jsx';
 import HighSchool from './pages/HighSchool.jsx';
 import Religious from './pages/Religious.jsx';
 import ActivationPage from './pages/ActivationPage.jsx';
-import ActivationPage from './pages/About.jsx';
-import ActivationPage from './pages/Library.jsx';
+import About from './pages/About.jsx';
+import Library from './pages/Library.jsx';
 
 // استيراد التنسيقات العامة
 import './Global.css';
@@ -135,3 +135,4 @@ function App() {
 
 
 export default App;
+
