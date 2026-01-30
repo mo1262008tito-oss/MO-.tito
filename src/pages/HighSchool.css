@@ -840,3 +840,91 @@ h1, h2, h3 {
 @keyframes loading-shimmer {
     to { background-position: -200% 0; }
 }
+
+/* --- نظام تفاعل الأزرار الشامل (Universal Button Interactions) --- */
+
+/* 1. أزرار تبديل المراحل (Stage Switcher Buttons) */
+.stage-selector button {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+}
+
+/* تأثير التوهج عند التمرير (Hover) */
+.stage-selector button:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    color: var(--primary-glow);
+}
+
+/* تأثير الزر النشط (Active/Selected) */
+.stage-selector button.active {
+    background: var(--accent-gradient) !important;
+    color: #000 !important;
+    font-weight: 800;
+    box-shadow: 0 0 20px var(--primary-glow), 
+                0 0 40px rgba(var(--primary-glow-rgb), 0.3);
+}
+
+/* 2. زر الاشتراك/الدخول (Enroll & Action Buttons) */
+.enroll-btn {
+    position: relative;
+    background: var(--accent-gradient);
+    border: none;
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+.enroll-btn:hover {
+    transform: scale(1.05) translateY(-3px);
+    filter: brightness(1.2);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4), 
+                0 0 15px var(--primary-glow);
+}
+
+/* إضافة لمعة برقية تمر فوق الزر عند الهوفر */
+.enroll-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: 0.5s;
+}
+
+.enroll-btn:hover::before {
+    left: 100%;
+}
+
+/* 3. أزرار القائمة الجانبية (Sidebar Nav Buttons) */
+.nav-group button {
+    border-right: 3px solid transparent;
+    transition: 0.3s;
+}
+
+.nav-group button:hover {
+    background: var(--glass-bg);
+    padding-right: 25px !important; /* حركة دفع لليمين */
+    color: var(--primary-glow);
+    border-right-color: var(--primary-glow);
+}
+
+/* 4. أزرار الفلاتر (Filter Tabs) */
+.tabs button {
+    border: 1px solid var(--glass-border);
+    background: transparent;
+    transition: 0.3s;
+}
+
+.tabs button:hover {
+    border-color: var(--primary-glow);
+    background: rgba(var(--primary-glow-rgb), 0.05);
+    box-shadow: inset 0 0 10px rgba(var(--primary-glow-rgb), 0.2);
+}
+
+/* 5. تأثير الضغطة (Click/Active State) لجميع الأزرار */
+button:active {
+    transform: scale(0.95) !important;
+    transition: 0.1s;
+}
