@@ -46,6 +46,16 @@ export default function AdminDash() {
   const [transactions, setTransactions] = useState([]); // لضمان عمل واجهة الخزينة
   const [activeChat, setActiveChat] = useState(null); // لدعم نظام الرسائل
   // ---------------------------------------------
+// --- حل أخطاء التعريف (Fixing Reference Errors) ---
+const [stats, setStats] = useState({
+  totalStudents: 0,
+  activeCourses: 0,
+  revenue: 0,
+  securityAlerts: 0
+}); // هذا سيصلح خطأ stats is not defined
+
+const [selectedStudent, setSelectedStudent] = useState(null); // هذا سيصلح خطأ selectedStudent is not defined
+
 
   // الرادار واللوجز
   const [radarStats, setRadarStats] = useState({ 
@@ -2005,6 +2015,7 @@ const [activeTab, setActiveTab] = useState('someDefaultValue');
     </div>
   );
 }
+
 
 
 
