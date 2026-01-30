@@ -56,7 +56,19 @@ const [stats, setStats] = useState({
 
 const [selectedStudent, setSelectedStudent] = useState(null); // هذا سيصلح خطأ selectedStudent is not defined
 
+useEffect(() => {
+  // جلب إحصائيات الطلاب حية (Real-time)
+  const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
+    setStats(prev => ({
+      ...prev,
+      totalStudents: snapshot.size // يحسب عدد المستخدمين في قاعدة البيانات
+    }));
+  }, (error) => {
+    console.error("Firebase Permission Error:", error);
+  });
 
+  return () => unsubscribe();
+}, []);
   // الرادار واللوجز
   const [radarStats, setRadarStats] = useState({ 
     online: 0, 
@@ -2015,6 +2027,7 @@ const [activeTab, setActiveTab] = useState('someDefaultValue');
     </div>
   );
 }
+
 
 
 
