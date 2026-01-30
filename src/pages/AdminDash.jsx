@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { writeBatch, doc, serverTimestamp, collection } from "firebase/firestore";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import * as XLSX from 'xlsx';
 import axios from 'axios';
@@ -41,7 +42,6 @@ export default function AdminDash() {
   const [academyCategory, setAcademyCategory] = useState('high-school');
   const [loadingProgress, setLoadingProgress] = useState(0);
 
-  // --- السطور الناقصة اللي مسببة الشاشة السوداء ---
   const [students, setStudents] = useState([]); // سطر الحياة لإصلاح خطأ students is not defined
   const [transactions, setTransactions] = useState([]); // لضمان عمل واجهة الخزينة
   const [activeChat, setActiveChat] = useState(null); // لدعم نظام الرسائل
@@ -54,6 +54,11 @@ const [stats, setStats] = useState({
   securityAlerts: 0
 }); // هذا سيصلح خطأ stats is not defined
 
+// في منطقة تعريف الـ states، أضف هذا:
+const [editingItem, setEditingItem] = useState(null); // الكورس الذي يتم تعديل محاضراته
+const [lectures, setLectures] = useState([]); // قائمة المحاضرات الخاصة بالـ editingItem
+const [isLectureLoading, setIsLectureLoading] = useState(false); // حالة التحميل للمحاضرات
+  
 const [selectedStudent, setSelectedStudent] = useState(null); // هذا سيصلح خطأ selectedStudent is not defined
 
 useEffect(() => {
@@ -162,7 +167,30 @@ const [activeTab, setActiveTab] = useState('someDefaultValue');
    * إدارة الكورسات، المحاضرات، والكتب
    */
 
-
+useEffect(() => {
+  if (editingItem) {
+    const fetchLectures = async () => {
+      setIsLectureLoading(true);
+      try {
+        const docRef = doc(db, "courses", editingItem.id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setLectures(docSnap.data().sections || []);
+        } else {
+          setLectures([]);
+        }
+      } catch (error) {
+        console.error("Error fetching lectures:", error);
+        alert("فشل جلب المحاضرات: " + error.message);
+      } finally {
+        setIsLectureLoading(false);
+      }
+    };
+    fetchLectures();
+  } else {
+    setLectures([]); // تفريغ المحاضرات عند إغلاق النافذة
+  }
+}, [editingItem]); // هذا الـ Effect سيعمل كلما تغير الكورس المختار
 
 
   /**
@@ -171,6 +199,32 @@ const [activeTab, setActiveTab] = useState('someDefaultValue');
    * الأقسام: (HIGH_SCHOOL, RELIGIOUS, EDUCATIONAL, CODING)
    */
   const AcademyManager = {
+
+    // داخل AcademyManager
+async removeLectureFromCourse(courseId, lectureId) {
+  try {
+    const courseRef = doc(db, "courses", courseId);
+    const courseSnap = await getDoc(courseRef);
+    if (!courseSnap.exists()) throw new Error("Course not found!");
+
+    const currentSections = courseSnap.data().sections || [];
+    const updatedSections = currentSections.filter(lec => lec.id !== lectureId);
+    
+    // تحديث في Firestore
+    await updateDoc(courseRef, {
+      sections: updatedSections,
+      lecturesCount: updatedSections.length, // تحديث العدد
+      updatedAt: serverTimestamp()
+    });
+
+    alert("✅ تم حذف المحاضرة بنجاح!");
+    setLectures(updatedSections); // تحديث الواجهة فوراً
+    setTerminalLogs(prev => [...prev, `[ACADEMY] Lecture ${lectureId} removed from Course ${courseId}`]);
+  } catch (error) {
+    console.error("Failed to remove lecture:", error);
+    alert("❌ فشل حذف المحاضرة: " + error.message);
+  }
+},
     // إعداد كورس جديد بهيكل معقد
     async createComplexCourse(courseData, coverFile, teacherFile) {
       try {
@@ -392,28 +446,181 @@ const [activeTab, setActiveTab] = useState('someDefaultValue');
                </div>
             </div>
 
-            <button type="button" className="titan-btn primary w-full mt-4" onClick={async () => {
-              const form = document.getElementById('courseForm');
-              const cover = document.getElementById('courseCover').files[0];
-              const teacher = document.getElementById('teacherImg').files[0];
-              
-              const data = {
-                title: form.courseTitle.value,
-                teacher: form.teacherName.value,
-                price: form.fullPrice.value,
-                salesModel: form.salesModel.value,
-                description: form.desc.value,
-                category: academyCategory // القسم المختار حالياً
-              };
-              
-              await AcademyManager.createComplexCourse(data, cover, teacher);
-              alert("تم نشر الكورس وتأمينه في قسم " + academyCategory);
-            }}>
-              <Zap size={16} /> فحص وتدشين الكورس في السيرفر
-            </button>
+         <button type="button" className="titan-btn primary w-full mt-4" onClick={async () => {
+    try {
+        const form = document.getElementById('courseForm');
+        const cover = document.getElementById('courseCover').files[0];
+        const teacher = document.getElementById('teacherImg').files[0];
+
+        // 1. تحقق من المدخلات الأساسية قبل البدء
+        if (!form.courseTitle.value || !cover) {
+            alert("⚠️ عذراً، يجب إدخال عنوان الكورس وصورة الغلاف.");
+            return;
+        }
+
+        const data = {
+            title: form.courseTitle.value,
+            teacher: form.teacherName.value,
+            price: Number(form.fullPrice.value), // تحويل السعر لرقم
+            salesModel: form.salesModel.value,
+            description: form.desc.value,
+            category: academyCategory 
+        };
+
+        // 2. استدعاء المحرك لرفع البيانات للسيرفر
+        const newCourseId = await AcademyManager.createComplexCourse(data, cover, teacher);
+
+        // 3. تحديث قائمة الكورسات في الواجهة فوراً (بدون ريفريش)
+        // نقوم بإضافة الكورس الجديد للـ state لكي يظهر أمامك في الحال
+        const newCourseItem = {
+            id: newCourseId,
+            ...data,
+            thumbnail: URL.createObjectURL(cover), // عرض صورة مؤقتة حتى يكتمل الرفع
+            lecturesCount: 0
+        };
+        setCourses(prev => [newCourseItem, ...prev]);
+
+        alert("✅ تم نشر الكورس وتأمينه بنجاح في قسم " + academyCategory);
+        
+        // 4. تفريغ النموذج بعد النجاح
+        form.reset();
+        
+    } catch (error) {
+        console.error("خطأ أثناء التدشين:", error);
+        alert("❌ فشل رفع الكورس: " + error.message);
+    }
+}}>
+    <Zap size={16} /> فحص وتدشين الكورس في السيرفر
+</button>
+            
           </form>
         </motion.div>
 
+        {editingItem && (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+  >
+    <motion.div
+      initial={{ y: -50, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: -50, opacity: 0 }}
+      className="glass-card w-full max-w-3xl overflow-hidden rounded-3xl border border-white/10 bg-[#0a0a0a]/90 shadow-2xl"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-white/10 p-6 bg-gradient-to-r from-white/5 to-transparent">
+        <div>
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <Video className="text-blue-400" /> إدارة محتويات: {editingItem.title}
+          </h2>
+          <p className="text-sm text-gray-400">إضافة دروس ومحاضرات جديدة لهذا الكورس</p>
+        </div>
+        <button onClick={() => setEditingItem(null)} className="p-2 hover:bg-white/10 rounded-full transition-all">
+          <X className="text-gray-400 hover:text-white" />
+        </button>
+      </div>
+
+      {/* Form Content */}
+      <div className="p-6 space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label htmlFor="lecTitle" className="text-xs text-gray-400 mr-2">عنوان المحاضرة</label>
+            <input id="lecTitle" className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:border-blue-500 outline-none transition-all" placeholder="مثلاً: مقدمة في علم الفيزياء" />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="lecPrice" className="text-xs text-gray-400 mr-2">سعر المحاضرة (0 = مجانية)</label>
+            <input id="lecPrice" type="number" className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:border-blue-500 outline-none" placeholder="0.00 EGP" />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="lecUrl" className="text-xs text-gray-400 mr-2">رابط الفيديو (Vimeo/YouTube/S3)</label>
+          <input id="lecUrl" className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white focus:border-blue-500 outline-none" placeholder="https://..." />
+        </div>
+
+        <button
+          className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 transition-all active:scale-95"
+          onClick={async () => {
+            const lectureData = {
+              title: document.getElementById('lecTitle').value,
+              price: Number(document.getElementById('lecPrice').value),
+              videoUrl: document.getElementById('lecUrl').value,
+              duration: 45, // يمكن إضافة حقل للمدة أيضاً
+              isFree: document.getElementById('lecPrice').value === '0'
+            };
+
+            if (!lectureData.title || !lectureData.videoUrl) {
+              return alert("⚠️ يرجى إكمال عنوان المحاضرة ورابط الفيديو.");
+            }
+
+            try {
+              await AcademyManager.addLectureToCourse(editingItem.id, lectureData);
+              alert("✅ تم ربط المحاضرة بالكورس بنجاح");
+              // تحديث قائمة المحاضرات بعد الإضافة
+              const docRef = doc(db, "courses", editingItem.id);
+              const docSnap = await getDoc(docRef);
+              if (docSnap.exists()) {
+                setLectures(docSnap.data().sections || []);
+              }
+              document.getElementById('lecTitle').value = '';
+              document.getElementById('lecPrice').value = '';
+              document.getElementById('lecUrl').value = '';
+            } catch (error) {
+              console.error("فشل إضافة المحاضرة:", error);
+              alert("❌ فشل إضافة المحاضرة: " + error.message);
+            }
+          }}
+        >
+          <PlusSquare size={20} /> تثبيت المحاضرة في السيرفر
+        </button>
+      </div>
+
+      {/* قائمة المحاضرات الحالية */}
+      <div className="p-6 border-t border-white/10">
+        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <BookOpen size={18} className="text-gray-500" /> المحاضرات الحالية ({lectures.length})
+        </h3>
+        {isLectureLoading ? (
+          <div className="text-center text-gray-400 py-4 flex items-center justify-center gap-2">
+            <svg className="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            جاري تحميل المحاضرات...
+          </div>
+        ) : lectures.length === 0 ? (
+          <p className="text-gray-500 text-center py-4">لا توجد محاضرات لهذا الكورس بعد.</p>
+        ) : (
+          <ul className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar pr-2">
+            {lectures.map((lecture, index) => (
+              <li key={lecture.id || index} className="flex items-center justify-between bg-white/5 border border-white/10 p-3 rounded-lg text-white">
+                <div className="flex items-center gap-3">
+                  <Video size={18} className="text-green-400" />
+                  <div>
+                    <p className="font-medium">{lecture.title}</p>
+                    <p className="text-xs text-gray-400">{lecture.price > 0 ? `${lecture.price} EGP` : 'مجانية'}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={async () => {
+                    if (window.confirm(`هل أنت متأكد من حذف محاضرة "${lecture.title}"؟`)) {
+                      await AcademyManager.removeLectureFromCourse(editingItem.id, lecture.id);
+                    }
+                  }}
+                  className="p-2 text-red-400 hover:bg-white/10 rounded-full transition-all"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </motion.div>
+  </motion.div>
+)}
         {/* عرض الكورسات الحالية للقسم المختار */}
         <div className="courses-display-section">
           <div className="section-header">
@@ -2027,6 +2234,7 @@ const [activeTab, setActiveTab] = useState('someDefaultValue');
     </div>
   );
 }
+
 
 
 
