@@ -1336,4 +1336,101 @@ h3, h4, p, span, button {
     padding: 12px 15px;
   }
   .scrolling-text { display: none; }
+
+}
+
+/* تصميم بطاقة الصلاة */
+.prayer-card.glass-morph {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 20px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.h-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin-bottom: 20px;
+}
+
+.next-p {
+  background: linear-gradient(135deg, rgba(67, 233, 123, 0.2), rgba(56, 249, 215, 0.1));
+  padding: 15px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+  border: 1px solid rgba(67, 233, 123, 0.2);
+}
+
+.next-p-label {
+  font-size: 0.75rem;
+  color: #43e97b;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+}
+
+.next-p h4 {
+  font-size: 1.4rem;
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.p-time {
+  font-family: 'monospace';
+  color: #fff;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.prayer-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  margin-bottom: 12px;
+  opacity: 0.9;
+}
+
+.status-dot.pulse {
+  width: 8px;
+  height: 8px;
+  background: #43e97b;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #43e97b;
+  animation: pulse-animation 2s infinite;
+}
+
+.location-tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+/* أنيميشن الدوران البطيء للأيقونة */
+.spin-slow {
+  animation: spin 8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-animation {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(67, 233, 123, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(67, 233, 123, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(67, 233, 123, 0); }
 }
