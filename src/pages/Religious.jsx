@@ -46,6 +46,49 @@ const Religious = ({ user }) => {
   const [nextPrayer, setNextPrayer] = useState({ name: 'جاري التحميل...', time: '' });
   const [city] = useState('Cairo');
 
+// 1. حالة الأدعية
+const [prayers, setPrayers] = useState([]);
+
+// 2. جلب آخر 3 أدعية من Firestore بشكل حي
+useEffect(() => {
+  const prayersRef = collection(db, 'social_prayers');
+  const q = query(prayersRef, orderBy('createdAt', 'desc'), limit(3));
+
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    const data = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    setPrayers(data);
+  });
+
+  return () => unsubscribe();
+}, []);
+
+// 3. دالة إضافة دعاء جديد
+const handleAddDuaa = async () => {
+  const text = prompt("اكتب دعاءك ليؤمن عليه الإخوة:");
+  if (!text) return;
+
+  try {
+    await addDoc(collection(db, 'social_prayers'), {
+      u: user?.displayName || "مستخدم",
+      d: text,
+      a: 0,
+      createdAt: serverTimestamp()
+    });
+  } catch (err) {
+    console.error("Error adding duaa:", err);
+  }
+};
+
+// 4. دالة التأمين (آمين)
+const handleAmen = async (id) => {
+  const docRef = doc(db, 'social_prayers', id);
+  await updateDoc(docRef, { a: increment(1) });
+};
+
+    
   // 3. أضف هنا الـ useEffect الخاص بالمواقيت
   useEffect(() => {
     const fetchPrayers = async () => {
@@ -598,32 +641,46 @@ const Religious = ({ user }) => {
           </div>
         </div>
       </div>
+<div className="social-duaa-wall glass">
+  <div className="wall-header">
+    <Users size={18} /> <span>دعوات المسلمين الآن</span>
+    <div className="live-indicator">
+      <span className="dot"></span> مباشر
+    </div>
+  </div>
 
-      {/* 4. نظام الدعاء الاجتماعي */}
-      <div className="social-duaa-wall glass">
-        <div className="wall-header">
-          <Users size={18} /> <span>دعوات المسلمين الآن</span>
-        </div>
-        <div className="duaa-cards-container">
-          {[
-            { u: "أحمد م.", d: "اللهم وفقني في امتحانات الثانوية العامة", a: 124 },
-            { u: "سارة ع.", d: "اللهم اشفِ مرضانا ومرضى المسلمين", a: 310 },
-            { u: "مستخدم", d: "اللهم ارزقنا زيارة بيتك الحرام", a: 89 }
-          ].map((post, pi) => (
-            <motion.div key={pi} className="duaa-post-card">
-              <p>"{post.d}"</p>
-              <div className="duaa-actions">
-                <button className="amen-btn">
-                  <Heart size={14} /> تأمين ({post.a})
-                </button>
-                <small>منذ {pi + 2} دقائق</small>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-        <button className="write-duaa-trigger"><Plus /> اطلب دعاءً من الإخوة</button>
-      </div>
-
+  <div className="duaa-cards-container">
+    <AnimatePresence mode='popLayout'>
+      {prayers.map((post) => (
+        <motion.div 
+          key={post.id} 
+          layout
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          className="duaa-post-card glass-v2"
+        >
+          <div className="duaa-user-info">
+             <div className="u-avatar">{post.u[0]}</div>
+             <small>{post.u}</small>
+          </div>
+          <p>"{post.d}"</p>
+          <div className="duaa-actions">
+            <button className="amen-btn" onClick={() => handleAmen(post.id)}>
+              <Heart size={14} className={post.a > 0 ? "filled" : ""} /> 
+              آمين ({post.a})
+            </button>
+            <small>منذ قليل</small>
+          </div>
+        </motion.div>
+      ))}
+    </AnimatePresence>
+  </div>
+  
+  <button className="write-duaa-trigger" onClick={handleAddDuaa}>
+    <Plus /> اطلب دعاءً من الإخوة
+  </button>
+</div>
       {/* 5. بوابات الخدمات */}
       <AnimatePresence>
         {activePortal && (
@@ -694,3 +751,4 @@ const Religious = ({ user }) => {
 
 
 export default Religious;
+
