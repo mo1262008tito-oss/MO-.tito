@@ -19,7 +19,7 @@ import HighSchool from './pages/HighSchool.jsx';
 import Religious from './pages/Religious.jsx';
 import ActivationPage from './pages/ActivationPage.jsx';
 import About from './pages/About.jsx';
-import Library from './pages/Library.jsx';
+import library from './pages/library.jsx';
 
 // استيراد التنسيقات العامة
 import './Global.css';
@@ -100,7 +100,7 @@ function App() {
 <Route path="/about" element={<About />} />
 
 {/* وهنا أيضاً: نستخدم <Library /> */}
-<Route path="/library" element={<Library />} />
+<Route path="/library" element={<library />} />
             <Route path="/student-dash" element={<StudentDash userData={userData} />} />
             <Route path="/wallet" element={<Wallet userData={userData} />} />
             <Route path="/activation" element={<ActivationPage userData={userData} />} />
@@ -139,5 +139,6 @@ function App() {
 
 
 export default App;
+
 
 
