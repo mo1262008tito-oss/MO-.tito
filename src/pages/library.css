@@ -1,278 +1,771 @@
-/* --- إعدادات الخطوط والأساس --- */
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap');
+:root {
+  --primary-gold: #FFD700;
+  --accent-blue: #00d2ff;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --text-main: #ffffff;
+  --text-muted: #b0b0b0;
+  --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --sepia-bg: #f4ecd8;
+  --sepia-text: #5b4636;
+}
 
-.library-root {
+/* 1. الحاوية الرئيسية والأنماط (Modes) */
+.titan-lib-container {
   min-height: 100vh;
-  background: #020408;
-  color: #e6edf3;
-  direction: rtl;
-  padding-bottom: 100px; /* مساحة للقائمة السفلية في الموبايل */
+  padding: 20px;
+  background: radial-gradient(circle at top right, #1a1a2e, #16213e);
+  color: var(--text-main);
   font-family: 'Cairo', sans-serif;
-  overflow-x: hidden;
+  transition: all 0.4s ease;
 }
 
-/* --- الهيدر (البطل) --- */
-.lib-hero {
-  padding: 120px 20px 50px;
-  background: radial-gradient(circle at top, rgba(0, 242, 255, 0.1), transparent);
-  text-align: center;
+.titan-lib-container.mode-sepia {
+  background: var(--sepia-bg);
+  color: var(--sepia-text);
 }
 
-.hero-content h1 {
-  font-size: clamp(1.8rem, 5vw, 2.8rem);
-  font-weight: 900;
-  margin-bottom: 10px;
-  background: linear-gradient(to bottom, #fff, #00f2ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 15px rgba(0, 242, 255, 0.4));
+.titan-lib-container.mode-sepia .glass {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: var(--sepia-text);
 }
 
-.hero-content p {
-  color: #8b949e;
-  font-size: 0.95rem;
-  margin-bottom: 35px;
+/* 2. الهيدر الفائق (Header) */
+.lib-header-v8 {
+  border-radius: 24px;
+  padding: 30px;
+  margin-bottom: 30px;
+  border: 1px solid var(--glass-border);
 }
 
-/* --- شريط البحث المتطور (Vortex Search) --- */
-.search-vortex-input {
-  max-width: 500px;
-  margin: 0 auto;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(0, 242, 255, 0.2);
-  border-radius: 50px;
-  padding: 14px 25px;
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.brand {
   display: flex;
   align-items: center;
   gap: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.pulse-orb {
+  width: 50px;
+  height: 50px;
+  background: var(--primary-gold);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+  animation: pulse 2s infinite;
+}
+
+.xp-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  background: rgba(255, 215, 0, 0.2);
+  color: var(--primary-gold);
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-top: 5px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.reading-modes-switch {
+  display: flex;
+  background: var(--glass-bg);
+  padding: 5px;
+  border-radius: 12px;
+  gap: 5px;
+}
+
+.reading-modes-switch button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 8px;
   transition: 0.3s;
 }
 
-.search-vortex-input:focus-within {
-  border-color: #00f2ff;
-  box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+.reading-modes-switch button:hover {
+  background: rgba(255,255,255,0.1);
 }
 
-.search-vortex-input input {
-  background: transparent;
+.request-btn {
+  background: linear-gradient(45deg, var(--accent-blue), #3a7bd5);
   border: none;
-  color: #fff;
-  width: 100%;
-  outline: none;
-  font-weight: 600;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
 }
 
-.s-icon { color: #00f2ff; }
-
-/* --- عرض الكتب (The Shelf) --- */
-.books-shelf {
-  max-width: 1200px;
-  margin: 40px auto;
-  padding: 0 20px;
-}
-
-.shelf-label {
+/* 3. محرك البحث (Search) */
+.search-engine-v8 {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 30px;
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #f1f1f1;
+  gap: 15px;
+  padding: 15px 25px;
+  border-radius: 15px;
+  background: rgba(255,255,255,0.08);
 }
 
-.modern-books-grid {
+.search-engine-v8 input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.1rem;
+  outline: none;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 15px;
+  border-left: 1px solid var(--glass-border);
+  padding-left: 15px;
+  color: var(--text-muted);
+}
+
+.view-toggle svg { cursor: pointer; transition: 0.3s; }
+.view-toggle svg.active { color: var(--primary-gold); }
+
+/* 4. التخطيط الرئيسي (Layout) */
+.lib-main-layout {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: 280px 1fr;
+  gap: 30px;
+}
+
+/* 5. الشريط الجانبي (Sidebar) */
+.lib-sidebar-v8 .sb-group {
+  margin-bottom: 30px;
+}
+
+.cat-btn {
+  width: 100%;
+  text-align: right;
+  padding: 12px 15px;
+  margin-bottom: 8px;
+  background: var(--glass-bg);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: 0.3s;
+}
+
+.cat-btn.active {
+  background: rgba(0, 210, 255, 0.1);
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+.sb-stats {
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--glass-bg);
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+
+.progress-mini {
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 10px 0;
+}
+
+.p-bar {
+  height: 100%;
+  background: var(--primary-gold);
+  box-shadow: 0 0 10px var(--primary-gold);
+}
+
+/* 6. شبكة الكتب (Grid) */
+.lib-grid-v8 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 25px;
 }
 
-/* --- بطاقة الكتاب العالمية (Futuristic Card) --- */
-.futuristic-book-card {
-  background: rgba(13, 17, 23, 0.7);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 30px;
-  padding: 25px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.futuristic-book-card:hover {
-  transform: translateY(-12px);
-  border-color: #00f2ff;
-  background: rgba(13, 17, 23, 0.9);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 242, 255, 0.1);
-}
-
-.card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.icon-box {
-  background: linear-gradient(135deg, rgba(0, 242, 255, 0.1), rgba(112, 0, 255, 0.1));
-  color: #00f2ff;
-  padding: 15px;
+.book-card-v8 {
   border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.file-tag {
-  background: rgba(0, 242, 255, 0.15);
-  color: #00f2ff;
-  font-size: 0.65rem;
-  font-weight: 900;
-  padding: 5px 12px;
-  border-radius: 50px;
-  border: 1px solid rgba(0, 242, 255, 0.3);
-}
-
-.card-mid h3 {
-  font-size: 1.15rem;
-  font-weight: 800;
-  margin-bottom: 12px;
-  line-height: 1.4;
-}
-
-.meta-info {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  font-size: 0.8rem;
-  color: #8b949e;
-}
-
-.meta-info span {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* --- الأزرار التفاعلية --- */
-.card-actions {
-  margin-top: 30px;
-  display: flex;
-  gap: 12px;
-}
-
-.read-now {
-  flex: 1;
-  background: #00f2ff;
-  color: #000;
-  border: none;
-  padding: 12px;
-  border-radius: 15px;
-  font-weight: 800;
-  font-size: 0.9rem;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
   transition: 0.3s;
-  box-shadow: 0 8px 15px rgba(0, 242, 255, 0.2);
 }
 
-.read-now:hover {
-  background: #fff;
-  transform: scale(1.02);
+.card-cover {
+  position: relative;
+  height: 280px;
 }
 
-.icon-only-download {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
-  width: 45px;
-  height: 45px;
-  border-radius: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: 0.3s;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.icon-only-download:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #00f2ff;
-}
-
-/* --- وضع القارئ المدمج (The Reader Interface) --- */
-.reader-mode {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background: #0d1117;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-}
-
-.reader-header {
-  padding: 15px 20px;
-  background: rgba(22, 27, 34, 0.95);
-  backdrop-filter: blur(10px);
+.card-badges {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.back-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
-  padding: 8px 18px;
-  border-radius: 12px;
-  cursor: pointer;
+.b-type {
+  background: #ff4757;
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.b-fav {
+  background: rgba(0,0,0,0.5);
+  border: none;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-weight: 600;
-  font-size: 0.85rem;
+  justify-content: center;
+  backdrop-filter: blur(5px);
 }
 
-.reader-header h2 {
+.card-content {
+  padding: 15px;
+}
+
+.c-tag {
+  color: var(--accent-blue);
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.card-content h3 {
   font-size: 1rem;
-  max-width: 50%;
+  margin: 5px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #00f2ff;
 }
 
-.pdf-viewer-container {
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.f-stats { display: flex; gap: 10px; }
+
+/* 7. مودال التفاصيل (Mega Modal) */
+.mega-modal-v8 {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.modal-body-v8 {
+  width: 100%;
+  max-width: 1000px;
+  max-height: 90vh;
+  border-radius: 30px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modal-top-section {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 40px;
+  padding: 40px;
+}
+
+.m-visual img {
+  width: 100%;
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+.main-dl-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 15px;
+  border: none;
+  background: linear-gradient(45deg, #FFD700, #FFA500);
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.comments-section {
+  margin-top: 30px;
+  border-top: 1px solid var(--glass-border);
+  padding-top: 20px;
+}
+
+.comment-bubble {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 15px;
+  margin-bottom: 10px;
+}
+
+.comment-bubble img {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+}
+
+.comment-input {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.comment-input input {
   flex: 1;
-  background: #020408;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: 10px 15px;
+  border-radius: 10px;
+  color: white;
+}
+
+/* الأنميشن */
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+}
+
+/* الموبايل */
+@media (max-width: 768px) {
+  .lib-main-layout { grid-template-columns: 1fr; }
+  .modal-top-section { grid-template-columns: 1fr; }
+  .lib-sidebar-v8 { order: 2; }
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-heavy {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 8. تحسين شريط التمرير (Scrollbar) ليصبح مخفيًا واحترافيًا */
+.modal-body-v8::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-body-v8::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-body-v8::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 10px;
+}
+
+/* 9. تأثير الـ 3D للكروت عند التحويم (Card Hover Effects) */
+.book-card-v8 {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.book-card-v8:hover .card-cover img {
+  transform: scale(1.1) rotateY(-5deg);
+  filter: brightness(0.8);
+}
+
+.card-cover img {
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 10. تأثير التوهج للكتب المميزة (Golden Glow) */
+.book-card-v8:nth-child(even):hover {
+  box-shadow: 0 0 30px rgba(0, 210, 255, 0.2);
+  border-color: var(--accent-blue);
+}
+
+.book-card-v8:nth-child(odd):hover {
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+  border-color: var(--primary-gold);
+}
+
+/* 11. تصميم نظام التعليقات المتقدم (Comments UI) */
+.comments-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.comment-bubble {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  position: relative;
+  transition: 0.3s;
+}
+
+.comment-bubble:hover {
+  background: rgba(255, 255, 255, 0.07);
+  transform: translateX(-5px);
+}
+
+.comment-bubble header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  font-size: 0.85rem;
+}
+
+.comment-bubble header b {
+  color: var(--primary-gold);
+}
+
+/* 12. تحسينات مودال طلب الكتب (Request Modal) */
+.request-form {
+  width: 90%;
+  max-width: 500px;
+  padding: 40px;
+  border-radius: 30px;
+  border: 1px solid var(--primary-gold);
+  box-shadow: 0 0 50px rgba(255, 215, 0, 0.1);
+  text-align: center;
+}
+
+.request-form h2 {
+  color: var(--primary-gold);
+  margin-bottom: 15px;
+}
+
+.request-form input, 
+.request-form textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 15px;
+  color: white;
+  font-family: inherit;
+}
+
+.form-btns {
+  display: flex;
+  gap: 10px;
+}
+
+.form-btns button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
   border: none;
 }
 
-/* --- استجابة الموبايل (Mobile Optimization) --- */
-@media (max-width: 768px) {
-  .lib-hero { padding-top: 80px; }
-  .modern-books-grid { grid-template-columns: 1fr; }
-  .futuristic-book-card { padding: 20px; }
-  .reader-header h2 { font-size: 0.85rem; }
-  .back-btn span { display: none; } /* إخفاء النص في الموبايل وترك السهم */
+.form-btns .submit {
+  background: var(--primary-gold);
+  color: #000;
 }
 
-/* تأثير النجوم المتطايرة في الخلفية */
-.library-root::after {
-  content: "";
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background-image: radial-gradient(circle, #fff 1px, transparent 1px);
-  background-size: 100px 100px;
-  opacity: 0.05;
-  pointer-events: none;
-  z-index: -1;
+.form-btns .cancel {
+  background: transparent;
+  color: white;
+  border: 1px solid var(--glass-border);
+}
+
+/* 13. تأثيرات الكتابة (Skeleton Loading Animation) */
+.skeleton-v8 {
+  height: 350px;
+  border-radius: 20px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* 14. زر التحميل العملاق (Download Glow) */
+.primary-download-btn {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.primary-download-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+.primary-download-btn:hover::before {
+  left: 100%;
+}
+
+/* 15. الوضع الورقي (Paper Mode) للتنمية البشرية والكتب الدينية */
+.mode-sepia .book-card-v8 {
+  background: #fff;
+  border-color: #e0d7c1;
+}
+
+.mode-sepia .card-content h3 {
+  color: #5b4636;
+}
+
+/* ============================================================
+   MOBILE APP EXPERIENCE (التحويل إلى نمط التطبيق)
+   ============================================================ */
+
+@media (max-width: 768px) {
+  /* 1. ضبط الحاوية العامة للهاتف */
+  .titan-lib-container {
+    padding: 10px;
+    padding-bottom: 90px; /* مساحة لشريط التنقل السفلي */
+  }
+
+  /* 2. الهيدر في الموبايل */
+  .lib-header-v8 {
+    padding: 15px;
+    border-radius: 0 0 20px 20px;
+    margin: -10px -10px 20px -10px; /* ملء الشاشة عرضياً */
+    border-top: none;
+  }
+
+  .brand h1 {
+    font-size: 1.2rem;
+  }
+
+  /* 3. شريط البحث المدمج للموبايل */
+  .search-engine-v8 {
+    padding: 10px 15px;
+  }
+
+  .search-engine-v8 input {
+    font-size: 0.9rem;
+  }
+
+  .view-toggle {
+    display: none; /* إخفاء تغيير العرض في الموبايل لتوحيد التجربة */
+  }
+
+  /* 4. تحويل الفلاتر إلى شريط أفقي قابل للسحب (Scrollable Chips) */
+  .lib-sidebar-v8 {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: transparent;
+    margin-bottom: 20px;
+  }
+
+  .lib-sidebar-v8 .sb-group {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 0;
+  }
+
+  .lib-sidebar-v8 h3 {
+    display: none; /* إخفاء كلمة "الأقسام" لتوفير مساحة */
+  }
+
+  .cat-btn {
+    white-space: nowrap;
+    width: auto;
+    padding: 8px 18px;
+    font-size: 0.85rem;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+
+  .sb-stats {
+    display: none; /* إخفاء الإحصائيات في الصفحة الرئيسية للموبايل لتجنب الزحام */
+  }
+
+  /* 5. شبكة الكتب في الموبايل (نظام العمودين) */
+  .lib-grid-v8 {
+    grid-template-columns: repeat(2, 1fr); /* كتابين في كل صف */
+    gap: 12px;
+  }
+
+  .book-card-v8 {
+    border-radius: 15px;
+  }
+
+  .card-cover {
+    height: 180px; /* تصغير الغلاف ليناسب العرض */
+  }
+
+  .card-content h3 {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .card-footer {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  /* 6. المودال العملاق (تعديل ليظهر كـ Bottom Sheet في الموبايل) */
+  .mega-modal-v8 {
+    align-items: flex-end; /* يبدأ من الأسفل */
+    padding: 0;
+  }
+
+  .modal-body-v8 {
+    border-radius: 30px 30px 0 0;
+    max-height: 95vh;
+    animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .modal-top-section {
+    grid-template-columns: 1fr;
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .m-visual {
+    width: 160px; /* تصغير صورة الغلاف في المودال */
+    margin: 0 auto;
+  }
+
+  .m-info h2 {
+    font-size: 1.3rem;
+    text-align: center;
+  }
+
+  .m-meta-grid {
+    grid-template-columns: repeat(3, 1fr);
+    font-size: 0.75rem;
+  }
+
+  /* 7. أزرار التحكم السفلي في المودال */
+  .modal-actions-v8 {
+    position: sticky;
+    bottom: 0;
+    background: rgba(20, 20, 30, 0.95);
+    padding: 15px;
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--glass-border);
+  }
+
+  /* 8. شريط التنقل السفلي (الميزة الأهم للتطبيقات) */
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: rgba(26, 26, 46, 0.95);
+    backdrop-filter: blur(20px);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid var(--glass-border);
+    z-index: 999;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    text-decoration: none;
+  }
+
+  .nav-item.active {
+    color: var(--primary-gold);
+  }
+
+  .nav-item svg {
+    margin-bottom: 4px;
+  }
+}
+
+/* أنميشن فتح المودال من الأسفل */
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* تحسين تجربة الضغط (Touch Feedback) */
+.book-card-v8:active {
+  transform: scale(0.95);
+  transition: 0.1s;
+}
+
+.cat-btn:active {
+  background: var(--primary-gold);
+  color: black;
 }
