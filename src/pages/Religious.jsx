@@ -491,8 +491,7 @@ const handleAmen = async (id) => {
               <div className="a-footer">كلما زاد اللون خضرة زاد نورك وإنجازك</div>
            </div>
         </main>
-
-        <aside className="rel-tasks-panel">
+<aside className="rel-tasks-panel">
             <div className="task-card glass">
                <div className="h-title"><ListTodo /> أورادي اليومية</div>
                <div className="task-list">
@@ -514,7 +513,7 @@ const handleAmen = async (id) => {
                   <button><Plus size={16}/></button>
                </div>
             </div>
-
+        </aside> {/* <--- هذا السطر هو الذي كان ينقصك ويسبب فشل الـ Build */}
             <aside className="religious-sidebar">
   <div className="prayer-card glass-morph">
     <div className="h-title">
@@ -751,3 +750,4 @@ const handleAmen = async (id) => {
 }; // إغلاق المكون Religious
 
 export default Religious;
+
