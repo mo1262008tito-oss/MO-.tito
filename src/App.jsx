@@ -96,13 +96,17 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={!user ? <Login /> : <Navigate to="/student-dash" />} />
           <Route path="/all-courses" element={<AllCourses />} />
-          <Route path="/about" element={<div style={{color:'white', padding:'100px'}}>صفحة حولنا</div>} />
+        {/* هنا التصحيح: نستخدم اسم المكون <About /> بدلاً من الـ div */}
+<Route path="/about" element={<About />} />
+
+{/* وهنا أيضاً: نستخدم <Library /> */}
+<Route path="/library" element={<Library />} />
             <Route path="/student-dash" element={<StudentDash userData={userData} />} />
             <Route path="/wallet" element={<Wallet userData={userData} />} />
             <Route path="/activation" element={<ActivationPage userData={userData} />} />
             <Route path="/highschool" element={<HighSchool />} />
             <Route path="/religious" element={<Religious />} />
-            <Route path="/library" element={<div style={{color:'white', padding:'100px'}}>المكتبة</div>} />
+           
             <Route path="/quizsystem" element={<div style={{color:'white', padding:'100px'}}>الاختبارات</div>} />
 
           {/* مسارات محمية (للطالب فقط) */}
@@ -135,4 +139,5 @@ function App() {
 
 
 export default App;
+
 
