@@ -139,7 +139,7 @@ const Home = () => {
           <motion.div className="brand-v4" whileHover={{ scale: 1.05 }}>
             <div className="logo-glitch-wrapper">
               <FaSatellite className="main-logo-icon" />
-              <span className="logo-text">NEBULA <small>PRO</small></span>
+              <span className="logo-text">MaFa <small>Technology ⚙ </small></span>
             </div>
           </motion.div>
 
@@ -394,7 +394,7 @@ const Home = () => {
       <footer className="footer-v4">
         <div className="footer-top-v4">
           <div className="f-col-v4 brand">
-            <h3>NEBULA <small>PRO</small></h3>
+            <h3>MaFa <small>Tec</small></h3>
             <p>نحن لا نبيع كورسات، نحن نصنع جيلاً قادراً على غزو المستقبل الرقمي بوعي وعلم وقوة تقنية.</p>
             <div className="social-row-v4">
               <FaDiscord /><FaGithub /><FaYoutube /><FaTwitter />
@@ -416,7 +416,7 @@ const Home = () => {
           </div>
           <div className="f-col-v4">
             <h4>تم بناء هذه المنصه بواسطة</h4>
-            <p>محمود طه محمود &فتحي وائل <br />  </p>
+            <p>محمود طه محمود & فتحي وائل <br />  </p>
           </div>
         </div>
         <div className="footer-bottom-v4">
@@ -437,3 +437,4 @@ const FaCheckCircle = () => <div className="custom-check">✓</div>;
 
 
 export default Home;
+
