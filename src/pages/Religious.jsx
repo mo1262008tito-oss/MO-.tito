@@ -745,9 +745,22 @@ const handleAmen = async (id) => {
           </button>
         </div>
       </footer>
-    </div> // إغلاق الحاوية الرئيسية religious-root
-  ); // إغلاق الـ return
-}; // إغلاق المكون Religious
+        {/* نهاية محتوى الصفحة */}
+        <aside className="rel-tasks-panel">
+            <div className="task-card glass">
+               {/* محتوى المهام */}
+            </div> 
+        </aside> {/* إغلاق الـ aside الأول */}
+
+        {/* أي مكونات أخرى مثل النافبار السفلي */}
+        <footer className="smart-bottom-nav">
+           <div className="nav-container-pro glass">
+              {/* أزرار التنقل */}
+           </div>
+        </footer>
+
+    </div> {/* إغلاق الـ div الرئيسي (religious-root) */}
+  ); {/* إغلاق قوس الـ return */}
+}; {/* إغلاق الدالة Religious */}
 
 export default Religious;
-
