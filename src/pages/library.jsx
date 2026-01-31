@@ -18,7 +18,7 @@ import {
   Bookmark, Share2, Info, CheckCircle2, Filter, 
   HardDrive, Layers, Globe, ArrowDownToLine
 } from 'lucide-react';
-import './Library.css';
+import './library.css';
 
 const Library = () => {
   // --- 1. State Management (إدارة حالات المكتبة) ---
@@ -265,3 +265,4 @@ const filteredResults = useMemo(() => {
 
 
 export default Library;
+
