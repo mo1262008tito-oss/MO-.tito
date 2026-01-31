@@ -266,9 +266,9 @@ const Home = () => {
       {/* 📊 Live Statistics Strip */}
       <section className="stats-v4">
         {[
-          { label: "كورس تفاعلي", val: "850+", icon: <FaBook /> },
-          { label: "ساعة محتوى", val: "12,000+", icon: <FaClock /> },
-          { label: "جوائز وزعت", val: "$45,000", icon: <FaGem /> },
+          { label: "كورس تفاعلي", val: "150+", icon: <FaBook /> },
+          { label: "ساعة محتوى", val: "200+", icon: <FaClock /> },
+          { label: "جوائز وزعت", val: "$10000", icon: <FaGem /> },
           { label: "معدل النجاح", val: "99.2%", icon: <FaChartLine /> }
         ].map((s, i) => (
           <div key={i} className="stat-unit-v4">
@@ -415,8 +415,8 @@ const Home = () => {
             <a href="#">الأسئلة الشائعة</a>
           </div>
           <div className="f-col-v4">
-            <h4>المكتب الرئيسي</h4>
-            <p>القاهرة، مصر - مدينة نصر <br /> برج الطالب الذكي - الدور 40</p>
+            <h4>تم بناء هذه المنصه بواسطة</h4>
+            <p>محمود طه محمود &فتحي وائل <br />  </p>
           </div>
         </div>
         <div className="footer-bottom-v4">
@@ -434,5 +434,6 @@ const Home = () => {
 // مكونات أيقونات مفقودة لضمان التشغيل
 const FaClock = () => <FaChartLine style={{transform: 'rotate(90deg)'}} />;
 const FaCheckCircle = () => <div className="custom-check">✓</div>;
+
 
 export default Home;
