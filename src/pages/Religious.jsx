@@ -681,7 +681,8 @@ const handleAmen = async (id) => {
     <Plus /> اطلب دعاءً من الإخوة
   </button>
 </div>
-      {/* 5. بوابات الخدمات */}
+
+          {/* 5. بوابات الخدمات */}
       <AnimatePresence>
         {activePortal && (
           <motion.div 
@@ -745,10 +746,8 @@ const handleAmen = async (id) => {
           </button>
         </div>
       </footer>
-    </div>
-  );
-};
-
+    </div> // إغلاق الحاوية الرئيسية religious-root
+  ); // إغلاق الـ return
+}; // إغلاق المكون Religious
 
 export default Religious;
-
