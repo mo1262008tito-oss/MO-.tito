@@ -38,19 +38,8 @@ const Library = () => {
     const q = activeFilter === 'الكل' 
       ? query(booksRef, orderBy('createdAt', 'desc'))
       : query(booksRef, where('category', '==', activeFilter), orderBy('createdAt', 'desc'));
-// التعديل المقترح داخل الـ useEffect
-const q = activeFilter === 'الكل' 
-  ? query(booksRef) 
-  : query(booksRef, where('category', '==', activeFilter));
 
-const unsubscribe = onSnapshot(q, (snapshot) => {
-  const data = snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  })).sort((a, b) => b.createdAt?.seconds - a.createdAt?.seconds); // الترتيب هنا بدلاً من الاستعلام
-  setBooks(data);
-  setLoading(false);
-});
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -273,5 +262,6 @@ const filteredResults = useMemo(() => {
     </div>
   );
 };
+
 
 export default Library;
