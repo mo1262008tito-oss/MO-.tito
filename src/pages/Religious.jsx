@@ -716,8 +716,7 @@ const handleAmen = async (id) => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* 6. نافبار سفلي */}
+{/* 6. نافبار سفلي - نسخة واحدة فقط سليم */}
       <footer className="smart-bottom-nav">
         <div className="nav-container-pro glass">
           <div className="nav-blob"></div>
@@ -745,22 +744,9 @@ const handleAmen = async (id) => {
           </button>
         </div>
       </footer>
-        {/* نهاية محتوى الصفحة */}
-        <aside className="rel-tasks-panel">
-            <div className="task-card glass">
-               {/* محتوى المهام */}
-            </div> 
-        </aside> {/* إغلاق الـ aside الأول */}
 
-        {/* أي مكونات أخرى مثل النافبار السفلي */}
-        <footer className="smart-bottom-nav">
-           <div className="nav-container-pro glass">
-              {/* أزرار التنقل */}
-           </div>
-        </footer>
-
-    </div> {/* إغلاق الـ div الرئيسي (religious-root) */}
-  ); {/* إغلاق قوس الـ return */}
-}; {/* إغلاق الدالة Religious */}
+    </div> /* إغلاق الـ rel-master-root */
+  ); /* إغلاق الـ return */
+}; /* إغلاق المكون Religious */
 
 export default Religious;
