@@ -39,6 +39,47 @@ const Religious = ({ user }) => {
   // --- [2] نظام الختمة الشامل (Comprehensive Quran System) ---
   const [hifz, setHifz] = useState(() => {
     const saved = JSON.parse(localStorage.getItem('hifz_v2'));
+
+
+  // 2. أضف هنا حالات مواقيت الصلاة (الجديدة)
+  const [prayerTimes, setPrayerTimes] = useState(null);
+  const [nextPrayer, setNextPrayer] = useState({ name: 'جاري التحميل...', time: '' });
+  const [city] = useState('Cairo');
+
+  // 3. أضف هنا الـ useEffect الخاص بالمواقيت
+  useEffect(() => {
+    const fetchPrayers = async () => {
+      try {
+        const res = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=Egypt&method=5`);
+        const data = await res.json();
+        const timings = data.data.timings;
+        setPrayerTimes(timings);
+        calculateNextPrayer(timings);
+      } catch (err) { console.error(err); }
+    };
+
+    const calculateNextPrayer = (timings) => {
+      const prayers = [
+        { name: 'الفجر', time: timings.Fajr },
+        { name: 'الظهر', time: timings.Dhuhr },
+        { name: 'العصر', time: timings.Asr },
+        { name: 'المغرب', time: timings.Maghrib },
+        { name: 'العشاء', time: timings.Isha },
+      ];
+      const now = new Date();
+      const currentTime = now.getHours() * 60 + now.getMinutes();
+      const next = prayers.find(p => {
+        const [h, m] = p.time.split(':');
+        return (parseInt(h) * 60 + parseInt(m)) > currentTime;
+      });
+      setNextPrayer(next || prayers[0]);
+    };
+
+    fetchPrayers();
+  }, [city]);
+
+
+
     
     // الهيكل الافتراضي الكامل
     const defaultState = {
@@ -431,17 +472,36 @@ const Religious = ({ user }) => {
                </div>
             </div>
 
-            <div className="prayer-card glass">
-               <div className="h-title"><Clock /> مواقيت الصلاة</div>
-               <div className="next-p">
-                  <small>الصلاة القادمة</small>
-                  <h4>{nextPrayer.name} {nextPrayer.time}</h4>
-               </div>
-               <div className="location-tag"><MapPin size={12}/> القاهرة، مصر</div>
-            </div>
-        </aside>
-      </div>
+            <aside className="religious-sidebar">
+  <div className="prayer-card glass-morph">
+    <div className="h-title">
+      <Clock className="spin-slow" /> 
+      <span>مواقيت الصلاة</span>
+    </div>
+    
+    <div className="next-p">
+      <div className="next-p-label">الصلاة القادمة</div>
+      <motion.h4 
+        key={nextPrayer.name}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        {nextPrayer.name} <span className="p-time">{nextPrayer.time}</span>
+      </motion.h4>
+    </div>
 
+    {/* شريط عرض حالة الصلاة الحالية */}
+    <div className="prayer-status-bar">
+      <div className="status-dot pulse"></div>
+      <span>مدينة {city === 'Cairo' ? 'القاهرة' : city}</span>
+    </div>
+
+    <div className="location-tag">
+      <MapPin size={14} /> 
+      <span>مصر، المنطقة الزمنية (+2)</span>
+    </div>
+  </div>
+</aside>
       {/* 1. نظام الأوسمة */}
       <section className="badges-showcase glass-effect">
         <div className="section-title">
@@ -631,5 +691,6 @@ const Religious = ({ user }) => {
     </div>
   );
 };
+
 
 export default Religious;
