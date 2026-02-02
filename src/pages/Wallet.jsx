@@ -26,7 +26,7 @@ const SYSTEM_VERSION = "4.0.2-PLATINUM";
 const MIN_TRANSFER_AMOUNT = 10;
 const POINT_TO_CASH_RATIO = 100; // 100 points = 1 EGP
 const RECHARGE_METHODS = {
-  VODA: { id: 'voda', name: 'فودافون كاش', color: '#e60000', number: '010XXXXXXXX' },
+  VODA: { id: 'voda', name: 'فودافون كاش ', color: '#e60000', number: '010XXXXXXXX' },
   INSTA: { id: 'insta', name: 'InstaPay', color: '#442266', handle: 'mafa@instapay' },
   FOWRY: { id: 'fawry', name: 'فوري', color: '#ffc107', code: '99821' }
 };
@@ -147,7 +147,23 @@ const Wallet = () => {
               setTransactions(transList);
               calculateAnalytics(transList);
             });
-
+// أضف هذا الجزء داخل مكون Wallet ليعمل سجل العمليات
+  const renderTransactionItem = (item) => (
+    <div key={item.id} className="transaction-item">
+      <div className="trans-info">
+        <div className={`trans-icon ${item.type}`}>
+          {item.type === 'deposit' ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
+        </div>
+        <div className="trans-text">
+          <h5>{item.title}</h5>
+          <p>{item.date?.toDate().toLocaleDateString('ar-EG')}</p>
+        </div>
+      </div>
+      <div className={`trans-amount ${item.type === 'deposit' ? 'positive' : 'negative'}`}>
+        {item.type === 'deposit' ? '+' : '-'}{item.amount} ج.م
+      </div>
+    </div>
+  );
             // 5. مزامنة الإشعارات غير المقروءة
             const qNotifs = query(
               collection(db, 'notifications'),
@@ -528,31 +544,70 @@ const Wallet = () => {
               value={user?.fullName || ''}
             />
             <input 
-              type="tel" placeholder="رقم الهاتف (فودافون كاش)" 
+              type="tel" placeholder="رقم الهاتف (رقم هاتفك الاساسي )" 
               onChange={(e) => setUser({...user, phone: e.target.value})}
               value={user?.phone || ''}
             />
             <button onClick={() => setOnboardingStep(2)} className="next-btn">التالي</button>
           </motion.div>
         )}
+{onboardingStep === 2 && (
+  <motion.div initial={{ x: 20 }} animate={{ x: 0 }} className="step-content">
+    <h3>اختيار السنة الدراسية</h3>
+    <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: '15px' }}>اختر صفك الدراسي من القائمة التالية</p>
+    
+    <div className="levels-scroll-area">
+      {[
+        // المرحلة الابتدائية
+        { title: 'المرحلة الابتدائية', type: 'header' },
+        { id: 'p1', title: 'الصف الأول الابتدائي', icon: '👶' },
+        { id: 'p2', title: 'الصف الثاني الابتدائي', icon: '🎨' },
+        { id: 'p3', title: 'الصف الثالث الابتدائي', icon: '📚' },
+        { id: 'p4', title: 'الصف الرابع الابتدائي', icon: '✏️' },
+        { id: 'p5', title: 'الصف الخامس الابتدائي', icon: '🧠' },
+        { id: 'p6', title: 'الصف السادس الابتدائي', icon: '🌟' },
 
-        {onboardingStep === 2 && (
-          <motion.div initial={{ x: 20 }} animate={{ x: 0 }} className="step-content">
-            <h3>المستوى الدراسي</h3>
-            <div className="level-grid">
-              {['الأول الثانوي', 'الثاني الثانوي', 'الثالث الثانوي'].map(level => (
-                <div 
-                  key={level} 
-                  className={`level-card ${user?.studentLevel === level ? 'selected' : ''}`}
-                  onClick={() => setUser({...user, studentLevel: level})}
-                >
-                  {level}
-                </div>
-              ))}
+        // المرحلة الإعدادية
+        { title: 'المرحلة الإعدادية', type: 'header' },
+        { id: 'm1', title: 'الصف الأول الإعدادي', icon: '🧪' },
+        { id: 'm2', title: 'الصف الثاني الإعدادي', icon: '📐' },
+        { id: 'm3', title: 'الصف الثالث الإعدادي', icon: '🌍' },
+
+        // المرحلة الثانوية
+        { title: 'المرحلة الثانوية', type: 'header' },
+        { id: 's1', title: 'الصف الأول الثانوي', icon: '⚡' },
+        { id: 's2', title: 'الصف الثاني الثانوي', icon: '🎯' },
+        { id: 's3', title: 'الصف الثالث الثانوي', icon: '🎓' }
+      ].map((item, index) => (
+        item.type === 'header' ? (
+          <div key={`header-${index}`} className="level-section-header">{item.title}</div>
+        ) : (
+          <div 
+            key={item.id} 
+            className={`level-row-item ${user?.studentLevel === item.title ? 'selected' : ''}`}
+            onClick={() => setUser({...user, studentLevel: item.title})}
+          >
+            <div className="level-row-icon-emoji">{item.icon}</div>
+            <div className="level-row-info">
+              <h4>{item.title}</h4>
             </div>
-            <button onClick={() => setOnboardingStep(3)} className="next-btn">التالي</button>
-          </motion.div>
-        )}
+            <div className="level-row-radio">
+              <div className={`radio-circle ${user?.studentLevel === item.title ? 'checked' : ''}`}></div>
+            </div>
+          </div>
+        )
+      ))}
+    </div>
+
+    <button 
+      onClick={() => user?.studentLevel ? setOnboardingStep(3) : alert('يرجى اختيار صفك الدراسي')} 
+      className={`next-btn ${!user?.studentLevel ? 'disabled' : ''}`}
+      style={{ marginTop: '20px' }}
+    >
+      التالي
+    </button>
+  </motion.div>
+)}
 
         {onboardingStep === 3 && (
           <motion.div initial={{ x: 20 }} animate={{ x: 0 }} className="step-content">
@@ -1046,3 +1101,4 @@ const styles = `
 export default Wallet;
   
   
+
