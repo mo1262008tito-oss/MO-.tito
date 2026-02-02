@@ -154,31 +154,40 @@ const HighSchool = () => {
     };
   }, []);
 
-  // -----------------------------------------------------------------
-  // 6. مزامنة البيانات السحابية (Firebase Cloud Sync)
-  // -----------------------------------------------------------------
-  useEffect(() => {
-    let unsubUser, unsubCourses, unsubStats, unsubNotif, unsubLeaders;
 
-    const initializeDataSync = async () => {
-      const user = auth.currentUser;
-      if (!user) {
-        navigate('/login');
+  useEffect(() => {
+    let unsubUser;
+
+    const user = auth.currentUser;
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    // مراقبة بيانات المستخدم
+    unsubUser = onSnapshot(doc(db, "users", user.uid), (snap) => {
+      if (!snap.exists()) {
+        // إذا كان المستخدم مسجل بجوجل لكن ليس له بيانات في الداتابيز
+        navigate('/complete-profile');
         return;
       }
+      
+      const data = snap.data();
+      
+      // التحقق من الشروط التي طلبتها
+      if (!data.profileCompleted) {
+        navigate('/complete-profile');
+      } else if (!data.isActivated) {
+        navigate('/activation-pending');
+      } else {
+        // إذا كان كل شيء تمام، قم بتخزين البيانات في الـ State
+        setUserData({ id: snap.id, ...data });
+        setAuthLoading(false); // هنا تفتح الصفحة
+      }
+    });
 
-      // ميزة: التحقق من إكمال البيانات (من Saved Info الخاص بك)
-      unsubUser = onSnapshot(doc(db, "users", user.uid), (snap) => {
-        if (!snap.exists()) {
-          navigate('/complete-profile'); // التوجيه لصفحة إكمال البيانات
-          return;
-        }
-        const data = snap.data();
-        
-        // منع الدخول إذا لم يتم التفعيل أو لم تكتمل البيانات
-        if (!data.profileCompleted || !data.isActivated) {
-          navigate('/activation-pending'); 
-        }
+    return () => unsubUser?.();
+  }, [navigate]);
 
         setUserData({ id: snap.id, ...data });
         setEducationStage(data.stage || 'ثانوي');
@@ -1099,3 +1108,4 @@ const HighSchool = () => {
 };
 
 export default HighSchool;
+
