@@ -1,1029 +1,1562 @@
-/* MAFA ACADEMY - HIGH SCHOOL PREMIUM STYLESHEET
-    Version: 4.0.0
-    Developer: TITo-TEC
-    Description: 3D High-End Interface with Mobile-First Priority
+
+/* MAFA ACADEMY - GLOBAL STYLESHEET V3.0
+  Design System: Futuristic Dark UI
+  Author: TITo-TEC 
 */
 
-/* -----------------------------------------------------------------
-   1. المتغيرات والأساسيات (Global Variables & Root)
-   ----------------------------------------------------------------- */
 :root {
-    /* الوان الأساس (Dark Mode High-End) */
-    --bg-deep: #050505;
-    --bg-card: rgba(20, 20, 20, 0.7);
-    --bg-glass: rgba(255, 255, 255, 0.03);
-    
-    /* الألوان الأساسية (تتغير ديناميكياً من React ولكن نضع الأساس هنا) */
-    --primary: #f87171; /* الافتراضي لثانوية عامة */
-    --primary-glow: rgba(248, 113, 113, 0.4);
-    --secondary: #1a1a1a;
-    --accent: #ffd700;
-    
-    /* ألوان النصوص */
-    --text-main: #ffffff;
-    --text-dim: #9ca3af;
-    --text-muted: #6b7280;
-    
-    /* إعدادات الـ 3D والظلال */
-    --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-    --glow-shadow: 0 0 25px var(--primary-glow);
-    --transition-smooth: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    --3d-transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
-    --3d-hover: perspective(1000px) rotateX(2deg) rotateY(-2deg) translateZ(15px);
-    
-    /* المسافات */
-    --safe-area: 20px;
-    --nav-height: 80px;
-    --border-radius-xl: 35px;
-    --border-radius-lg: 20px;
+  /* الألوان الأساسية - سيتم تجاوزها ديناميكياً من React */
+  --primary: #3b82f6;
+  --primary-glow: rgba(59, 130, 246, 0.3);
+  --bg-dark: #050505;
+  --card-bg: #111111;
+  --text-main: #ffffff;
+  --text-dim: #9ca3af;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(255, 255, 255, 0.03);
 }
 
-/* -----------------------------------------------------------------
-   2. تصفير الإعدادات والخطوط (Reset & Typography)
-   ----------------------------------------------------------------- */
+/* 1. Reset & Base Styles */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent; /* تحسين الموبايل */
-}
-
-html {
-    scroll-behavior: smooth;
-    font-size: 16px; /* الأساس */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-    background-color: var(--bg-deep);
-    color: var(--text-main);
-    font-family: 'Cairo', sans-serif;
-    line-height: 1.6;
-    overflow-x: hidden;
-    direction: rtl; /* اتجاه عربي */
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: 'Cairo', sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+  direction: rtl; /* اتجاه الكتابة للمنصة العربية */
 }
 
-/* تخصيص السكرول بار (Scrollbar) */
+/* 2. Scrollbar Customization */
 ::-webkit-scrollbar {
-    width: 6px;
+  width: 6px;
 }
+
 ::-webkit-scrollbar-track {
-    background: var(--bg-deep);
+  background: var(--bg-dark);
 }
+
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(to bottom, transparent, var(--primary), transparent);
-    border-radius: 10px;
+  background: var(--border-color);
+  border-radius: 10px;
 }
 
-/* -----------------------------------------------------------------
-   3. الأنيميشن العامة (Global Animations)
-   ----------------------------------------------------------------- */
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-15px); }
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
 }
 
-@keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 20px var(--primary-glow); }
-    50% { box-shadow: 0 0 40px var(--primary-glow); }
-}
-
-@keyframes slide-in-bottom {
-    from { transform: translateY(50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes spin-slow {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* -----------------------------------------------------------------
-   4. الهيدر والتنقل (Navigation - Mobile Optimized)
-   ----------------------------------------------------------------- */
-.glass-nav {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    background: rgba(5, 5, 5, 0.85);
-    backdrop-filter: blur(25px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    height: var(--nav-height);
-    transition: var(--transition-smooth);
-}
-
-.nav-content {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 var(--safe-area);
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-/* الموبايل: تصغير الشعار وإخفاء القوائم */
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-}
-
-.logo-icon {
-    width: 45px;
-    height: 45px;
-    background: var(--primary);
-    border-radius: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    box-shadow: var(--glow-shadow);
-    transform: rotate(-5deg);
-}
-
-.logo h1 {
-    font-size: 1.5rem;
-    font-weight: 900;
-    letter-spacing: -1px;
-}
-
-.logo h1 span {
-    color: var(--primary);
-    font-size: 0.8rem;
-    display: block;
-    letter-spacing: 2px;
-    margin-top: -8px;
-}
-
-/* -----------------------------------------------------------------
-   5. شاشة الهيرو (Hero Section - 3D Perspective)
-   ----------------------------------------------------------------- */
-.hero-v2 {
-    padding: 40px var(--safe-area);
-    position: relative;
-    overflow: hidden;
-}
-
-.hero-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 40px;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-/* تحويل الهيرو للاب توب */
-@media (min-width: 1024px) {
-    .hero-grid {
-        grid-template-columns: 1.5fr 1fr;
-        align-items: center;
-        padding: 80px 0;
-    }
-}
-
-.hero-info h1 {
-    font-size: 2.5rem;
-    font-weight: 900;
-    line-height: 1.2;
-    margin-bottom: 20px;
-}
-
-.name-grad {
-    background: linear-gradient(45deg, var(--primary), #fff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-/* شريط البحث العملاق */
-.search-mega-bar {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 8px;
-    border-radius: 25px;
-    display: flex;
-    align-items: center;
-    margin: 30px 0;
-    transition: var(--transition-smooth);
-}
-
-.search-mega-bar:focus-within {
-    border-color: var(--primary);
-    box-shadow: 0 0 20px rgba(var(--primary-glow), 0.2);
-    background: rgba(255, 255, 255, 0.07);
-}
-
-.search-mega-bar input {
-    background: transparent;
-    border: none;
-    outline: none;
-    color: white;
-    padding: 15px 20px;
-    flex: 1;
-    font-size: 1rem;
-    font-family: 'Cairo';
-}
-
-.search-btn {
-    padding: 15px 30px;
-    border-radius: 20px;
-    border: none;
-    font-weight: 900;
-    cursor: pointer;
-    transition: var(--transition-smooth);
-}
-
-/* -----------------------------------------------------------------
-   6. كروت الكورسات (The 3D Course Cards)
-   ----------------------------------------------------------------- */
-.courses-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 25px;
-    padding: 20px 0;
-}
-
-/* تصميم الكارت - المطلب الأساسي */
-.course-card-premium {
-    position: relative;
-    background: var(--bg-card);
-    border-radius: var(--border-radius-lg);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    overflow: hidden;
-    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-    transform-style: preserve-3d; /* تفعيل الـ 3D */
-    cursor: pointer;
-}
-
-/* تأثير الخروج للأمام Hover */
-.course-card-premium:hover {
-    transform: translateY(-15px) scale(1.02) rotateX(5deg);
-    border-color: var(--primary);
-    box-shadow: 
-        0 30px 60px rgba(0, 0, 0, 0.8),
-        0 0 30px var(--primary-glow);
-    z-index: 10;
-}
-
-.card-thumb {
-    position: relative;
-    height: 180px;
-    overflow: hidden;
-}
-
-.card-thumb img {
-    width: 100%;
-    height: 100%;
-    object-cover: cover;
-    transition: transform 0.8s ease;
-}
-
-.course-card-premium:hover .card-thumb img {
-    transform: scale(1.1) rotate(2deg);
-}
-
-/* طبقة التشغيل عند الهوفر */
-.play-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    backdrop-filter: blur(5px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: var(--transition-smooth);
-    transform: translateZ(50px); /* يخرج للأمام أكثر في الـ 3D */
-}
-
-.course-card-premium:hover .play-overlay {
-    opacity: 1;
-}
-
-.card-info {
-    padding: 20px;
-    transform: translateZ(30px); /* لجعل النص يبدو طافياً */
-}
-
-.card-info h3 {
-    font-size: 1.1rem;
-    font-weight: 800;
-    margin: 15px 0;
-    height: 50px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-/* شارات الأسعار */
-.badge-type {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    padding: 6px 15px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 900;
-    z-index: 2;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-
-/* -----------------------------------------------------------------
-   7. شريط تقدم الطالب (Progress Bar)
-   ----------------------------------------------------------------- */
-.card-progress {
-    margin-top: 20px;
-    background: rgba(255,255,255,0.05);
-    padding: 12px;
-    border-radius: 15px;
-}
-
-.p-text {
-    display: flex;
-    justify-content: space-between;
-    font-size: 10px;
-    font-weight: 800;
-    color: var(--text-dim);
-    margin-bottom: 5px;
-}
-
-.p-bar {
-    height: 6px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.p-bar div {
-    height: 100%;
-    border-radius: 10px;
-    box-shadow: 0 0 10px var(--primary);
-}
-
-/* -----------------------------------------------------------------
-   8. المحفظة والمودال (Wallet & Modals - Application Style)
-   ----------------------------------------------------------------- */
-.wallet-pill {
-    background: linear-gradient(135deg, #1a1a1a, #000);
-    padding: 8px 20px;
-    border-radius: 50px;
-    border: 1px solid rgba(255,255,255,0.1);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    transition: var(--transition-smooth);
-}
-
-.wallet-pill:hover {
-    background: var(--primary);
-    transform: scale(1.05);
-}
-
-.wallet-pill span {
-    font-weight: 900;
-    font-size: 0.9rem;
-}
-
-/* -----------------------------------------------------------------
-   9. الموبايل (Mobile Priority Design)
-   ----------------------------------------------------------------- */
-@media (max-width: 768px) {
-    /* تحويل المنيو العلوية لشكل التطبيق */
-    .glass-nav {
-        height: 70px;
-    }
-
-    .stage-selector-pill {
-        display: none; /* إخفاؤه من الهيدر ووضعه في مكان آخر */
-    }
-
-    .hero-info h1 {
-        font-size: 1.8rem;
-    }
-
-    /* جعل الكروت تأخذ مساحة أكبر قليلاً */
-    .courses-grid {
-        grid-template-columns: 1fr; /* كارت واحد عريض للموبايل */
-        padding: 10px;
-    }
-
-    .course-card-premium {
-        border-radius: 25px;
-    }
-
-    /* شريط تنقل سفلي مثل التطبيقات (Bottom Nav) */
-    .mobile-bottom-nav {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 70px;
-        background: rgba(10, 10, 10, 0.9);
-        backdrop-filter: blur(20px);
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        z-index: 2000;
-        border-top: 1px solid rgba(255,255,255,0.1);
-    }
-}
-
-/* -----------------------------------------------------------------
-   10. لوحة الأوائل (Leaderboard 3D Card)
-   ----------------------------------------------------------------- */
-.leaderboard-card {
-    background: linear-gradient(145deg, rgba(30,30,30,0.9), rgba(10,10,10,0.9));
-    border-radius: 40px;
-    padding: 30px;
-    border: 1px solid rgba(255,255,255,0.05);
-    box-shadow: 20px 20px 60px #030303, -20px -20px 60px #0d0d0d;
-}
-
-.leader-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 15px;
-    margin-bottom: 10px;
-    background: rgba(255,255,255,0.02);
-    border-radius: 20px;
-    transition: var(--transition-smooth);
-}
-
-.leader-item:hover {
-    background: rgba(255,255,255,0.05);
-    transform: translateX(-10px);
-}
-
-.leader-item img {
-    width: 45px;
-    height: 45px;
-    border-radius: 12px;
-    border: 2px solid var(--primary);
-}
-
-/* -----------------------------------------------------------------
-   11. الفوتر العملاق (The Mega Footer)
-   ----------------------------------------------------------------- */
-.mega-footer {
-    background: #030303;
-    padding: 80px var(--safe-area) 20px;
-    margin-top: 100px;
-    border-top: 1px solid rgba(255,255,255,0.05);
-}
-
-.footer-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 40px;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.f-col h4 {
-    font-size: 1.2rem;
-    margin-bottom: 25px;
-    position: relative;
-    padding-bottom: 10px;
-}
-
-.f-col h4::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 30px;
-    height: 3px;
-    background: var(--primary);
-}
-
-.f-col a {
-    display: block;
-    color: var(--text-dim);
-    text-decoration: none;
-    margin-bottom: 12px;
-    transition: var(--transition-smooth);
-}
-
-.f-col a:hover {
-    color: var(--primary);
-    padding-right: 10px;
-}
-
-/* -----------------------------------------------------------------
-   12. العلامة المائية والديكور (Decorative Elements)
-   ----------------------------------------------------------------- */
-.dynamic-watermark {
-    position: fixed;
-    z-index: 9999;
-    opacity: 0.05;
-    pointer-events: none;
-    font-weight: 900;
-    color: white;
-    text-transform: uppercase;
-    font-size: 12px;
-}
-
-/* زر التحميل العائم (Back to Top) */
-.back-to-top {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    width: 50px;
-    height: 50px;
-    background: var(--primary);
-    border-radius: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: var(--glow-shadow);
-    z-index: 1000;
-}
-
-/* -----------------------------------------------------------------
-   13. حالات التفاعل (States & Utilities)
-   ----------------------------------------------------------------- */
-.security-blur {
-    filter: blur(40px) grayscale(100%);
-    pointer-events: none;
-    user-select: none;
-}
-
-.gradient-text {
-    background: linear-gradient(90deg, var(--primary), #fff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-/* -----------------------------------------------------------------
-   14. تخصيصات إضافية (Extended Details - 1000+ lines logic)
-   ----------------------------------------------------------------- */
-
-/* تكبير أزرار الاشتراك */
-.enroll-btn {
-    width: 100%;
-    padding: 18px;
-    border-radius: 18px;
-    border: none;
-    font-family: 'Cairo';
-    font-weight: 900;
-    font-size: 1rem;
-    cursor: pointer;
-    background: var(--primary);
-    color: white;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-    transition: var(--transition-smooth);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.enroll-btn:hover {
-    transform: scale(1.03);
-    box-shadow: var(--glow-shadow);
-    background: #fff;
-    color: #000;
-}
-
-/* شكل التبويبات (Tabs) */
-.tabs-row {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    padding: 10px 0;
-    no-scrollbar: hidden;
-}
-
-.tabs-row button {
-    white-space: nowrap;
-    padding: 12px 25px;
-    border-radius: 50px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.03);
-    color: var(--text-dim);
-    font-family: 'Cairo';
-    font-weight: 700;
-    cursor: pointer;
-    transition: var(--transition-smooth);
-}
-
-.tabs-row button.active {
-    background: white;
-    color: black;
-    border-color: white;
-}
-
-/* -----------------------------------------------------------------
-   15. تفاصيل السنتر والأدوات (Center Details)
-   ----------------------------------------------------------------- */
-.center-card {
-    background: linear-gradient(45deg, #111, #1a1a1a);
-    border-radius: 30px;
-    padding: 40px;
-    text-align: center;
-    border: 1px solid rgba(255,255,255,0.05);
-}
-
-.center-card .icon-box {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 20px;
-    background: var(--primary-glow);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--primary);
-}
-
-/* -----------------------------------------------------------------
-   16. الميديا كويري المتخصصة (Ultra-Responsive)
-   ----------------------------------------------------------------- */
-
-/* الشاشات الكبيرة جداً (Ultra Wide) */
-@media (min-width: 1600px) {
-    .courses-grid {
-        grid-template-columns: repeat(5, 1fr);
-    }
-}
-
-/* التابلت */
-@media (min-width: 769px) and (max-width: 1024px) {
-    .courses-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-/* الموبايل الصغير جداً */
-@media (max-width: 380px) {
-    .logo h1 { font-size: 1.2rem; }
-    .hero-info h1 { font-size: 1.5rem; }
-}
-
-/* -----------------------------------------------------------------
-   17. الإضافات البصرية العالية (Final Touches)
-   ----------------------------------------------------------------- */
-.promo-banner {
-    box-shadow: 0 5px 20px rgba(245, 158, 11, 0.3);
-    z-index: 1100;
-    position: relative;
-}
-
-/* إخفاء السكرول بار للمواد */
 .no-scrollbar::-webkit-scrollbar {
-    display: none;
-}
-.no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  display: none;
 }
 
-/* نهاية الكود الضخم */
-
-/* -----------------------------------------------------------------
-   18. نظام الإضاءة المحيطية (Ambient Lighting System)
-   ----------------------------------------------------------------- 
-   هذا الجزء مسؤول عن توزيع الإضاءة خلف الكروت لتعطي شعور الـ 3D الحقيقي
-*/
-
-.courses-grid::before {
-    content: '';
-    position: absolute;
-    width: 300px;
-    height: 300px;
-    background: var(--primary);
-    filter: blur(150px);
-    opacity: 0.1;
-    top: 10%;
-    left: -100px;
-    z-index: -1;
-    animation: spin-slow 20s linear infinite;
+/* 3. Typography & Gradients */
+h1, h2, h3, h4, .font-black {
+  font-weight: 900;
+  letter-spacing: -0.02em;
 }
 
-/* -----------------------------------------------------------------
-   19. برمجة كروت الكورسات (The Ultra 3D Card Engine)
-   ----------------------------------------------------------------- 
-*/
-
-.course-card-premium {
-    perspective: 2000px; /* لزيادة عمق الـ 3D */
-    background: linear-gradient(145deg, rgba(25, 25, 25, 0.9), rgba(10, 10, 10, 0.95));
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-    transform-origin: center center;
-    backface-visibility: hidden;
+.text-gradient {
+  background: linear-gradient(to right, var(--primary), #ffffff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* تأثير "الخروج من الشاشة" عند الهوفر */
-.course-card-premium:hover {
-    transform: translateY(-20px) rotateX(10deg) rotateY(-5deg) scale(1.05);
-    box-shadow: 
-        -10px 20px 50px rgba(0, 0, 0, 0.8),
-        0 0 20px var(--primary-glow);
+/* 4. Layout & Containers */
+.container-mafa {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
 }
 
-/* تفاصيل الصورة (The Parallax Effect) */
-.card-thumb::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.8));
-    z-index: 1;
+/* 5. Header & Navigation */
+header {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.course-card-premium:hover .card-thumb img {
-    transform: scale(1.15) translateY(-10px);
-    filter: brightness(1.1) contrast(1.1);
+/* 6. Hero Section Background */
+.hero-glow {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 600px;
+  filter: blur(120px);
+  z-index: -10;
+  opacity: 0.6;
 }
 
-/* -----------------------------------------------------------------
-   20. برمجة الهوية البصرية للمواد (Subject Identity Colors)
-   ----------------------------------------------------------------- 
-*/
-
-/* تخصيص ألوان ذكية للمواد تظهر تلقائياً */
-[data-subject="الفيزياء"] { --subject-color: #3b82f6; }
-[data-subject="الكيمياء"] { --subject-color: #10b981; }
-[data-subject="الأحياء"] { --subject-color: #f43f5e; }
-[data-subject="الرياضيات"] { --subject-color: #8b5cf6; }
-
-.subject-tag {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    background: var(--subject-color, var(--primary));
-    color: white;
-    padding: 5px 15px;
-    border-radius: 10px;
-    font-size: 10px;
-    font-weight: 900;
-    z-index: 5;
-    transform: translateZ(40px); /* يبرز للأمام فوق الصورة */
+/* 7. Components - Course Cards */
+.course-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 40px;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  overflow: hidden;
 }
 
-/* -----------------------------------------------------------------
-   21. نظام الموبايل المتقدم (Native Mobile App Logic)
-   ----------------------------------------------------------------- 
-*/
+.course-card:hover {
+  transform: translateY(-10px);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
 
+.course-card img {
+  transition: transform 0.8s ease;
+}
+
+.course-card:hover img {
+  transform: scale(1.1);
+}
+
+/* 8. Buttons & Interactivity */
+.btn-mafa {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 1.25rem;
+  font-weight: 800;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+  overflow: hidden;
+}
+
+.btn-mafa-primary {
+  background: #ffffff;
+  color: #000000;
+}
+
+.btn-mafa-primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(255,255,255,0.2);
+}
+
+/* 9. Glassmorphism Effects */
+.glass-effect {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--border-color);
+}
+
+/* 10. Notifications Panel */
+.notif-panel {
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 11. Modal Styles (Wallet & Sidebar) */
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+}
+
+.sidebar-aside {
+  box-shadow: -10px 0 50px rgba(0,0,0,0.5);
+}
+
+/* 12. Input Fields */
+input[type="text"], select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: border 0.3s ease;
+}
+
+input:focus {
+  border-color: var(--primary) !important;
+  outline: none;
+}
+
+/* 13. Leaderboard Styles */
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  font-weight: 900;
+}
+
+/* 14. Responsive Grid System */
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+/* 15. Smart Tools Section */
+.tool-card {
+  position: relative;
+  z-index: 1;
+}
+
+.tool-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--primary-glow), transparent);
+  z-index: -1;
+  border-radius: 50px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.tool-card:hover::before {
+  opacity: 1;
+}
+
+/* 16. Footer Styles */
+footer li {
+  list-style: none;
+  transition: all 0.3s ease;
+}
+
+footer li:hover {
+  padding-right: 8px;
+  color: white;
+}
+
+/* 17. Animations */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0px); }
+}
+
+/* 18. Wallet Specifics */
+.wallet-balance-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+  box-shadow: inset 0 0 20px rgba(255,255,255,0.02);
+}
+
+/* 19. Media Queries */
 @media (max-width: 768px) {
-    /* إلغاء الـ Hover الثقيل في الموبايل لزيادة الأداء */
-    .course-card-premium:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
-
-    /* تحويل الكروت المربعة إلى كروت تطبيق (Horizontal Scroll Options) */
-    .mobile-app-layout .courses-grid {
-        display: flex;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        gap: 15px;
-        padding: 20px;
-        no-scrollbar: hidden;
-    }
-
-    .mobile-app-layout .course-card-premium {
-        min-width: 85vw;
-        scroll-snap-align: center;
-    }
-
-    /* تصميم الـ Header في الموبايل ليصبح Dynamic */
-    .nav-content {
-        padding: 0 15px;
-    }
-
-    .wallet-pill {
-        padding: 5px 12px;
-        font-size: 12px;
-    }
-
-    /* شريط سفلي (Tab Bar) للموبايل */
-    .mobile-nav-bar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 75px;
-        background: rgba(10, 10, 10, 0.85);
-        backdrop-filter: blur(30px);
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        border-top: 1px solid rgba(255,255,255,0.05);
-        z-index: 2000;
-        padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    .nav-item-mobile {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 5px;
-        color: var(--text-dim);
-        font-size: 10px;
-        font-weight: 700;
-    }
-
-    .nav-item-mobile.active {
-        color: var(--primary);
-    }
+  .text-6xl { font-size: 3rem; }
+  .sidebar-aside { width: 100% !important; }
+  .p-12 { padding: 1.5rem; }
+  .course-grid { grid-template-columns: 1fr; }
 }
 
-/* -----------------------------------------------------------------
-   22. نظام الإشعارات العائمة (Floating Notification UI)
-   ----------------------------------------------------------------- 
-*/
+/* 20. High Precision Utilities */
+.z-max { z-index: 9999; }
+.tracking-tightest { letter-spacing: -0.05em; }
+.blur-soft { filter: blur(4px); }
 
-.notification-toast {
-    position: fixed;
-    top: 90px;
-    left: 20px;
-    background: rgba(25, 25, 25, 0.95);
-    border: 1px solid var(--primary);
-    padding: 15px 25px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-    z-index: 3000;
-    animation: slide-in-bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+/* 21. Dynamic Theme Engine (الربط مع مراحل الدراسة) */
+.theme-high-1 { --primary: #3b82f6; --primary-glow: rgba(59, 130, 246, 0.2); }
+.theme-high-2 { --primary: #8b5cf6; --primary-glow: rgba(139, 92, 246, 0.2); }
+.theme-high-3 { --primary: #ef4444; --primary-glow: rgba(239, 68, 68, 0.2); }
+
+/* 22. Advanced Background Gradients (تأثيرات الخلفية السينمائية) */
+.bg-mesh {
+  background-image: 
+    radial-gradient(at 0% 0%, var(--primary-glow) 0, transparent 50%),
+    radial-gradient(at 50% 0%, rgba(255, 255, 255, 0.02) 0, transparent 50%),
+    radial-gradient(at 100% 0%, var(--primary-glow) 0, transparent 50%);
+  background-attachment: fixed;
 }
 
-/* -----------------------------------------------------------------
-   23. برمجة التأثير الزجاجي العميق (Frosted Glass Logic)
-   ----------------------------------------------------------------- 
-*/
-
-.glass-heavy {
-    background: rgba(255, 255, 255, 0.02) !important;
-    backdrop-filter: blur(40px) saturate(150%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+/* 23. Interactive Course Grid (تنسيق شبكة الكورسات المتقدم) */
+.course-card-overlay {
+  background: linear-gradient(0deg, var(--card-bg) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
-/* -----------------------------------------------------------------
-   24. برمجة النماذج (Forms & Inputs - Modern Style)
-   ----------------------------------------------------------------- 
-*/
-
-.mega-input-group {
-    position: relative;
-    margin-bottom: 25px;
+.course-card:hover .course-card-overlay {
+  opacity: 1;
 }
 
-.mega-input-group input {
-    width: 100%;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.05);
-    padding: 20px;
-    border-radius: 20px;
-    color: white;
-    font-family: 'Cairo';
-    transition: var(--transition-smooth);
-}
-
-.mega-input-group input:focus {
-    background: rgba(255,255,255,0.07);
-    border-color: var(--primary);
-    box-shadow: 0 0 20px var(--primary-glow);
-}
-
-/* -----------------------------------------------------------------
-   25. نظام الطباعة والتقارير (Print Optimization)
-   ----------------------------------------------------------------- 
-*/
-
-@media print {
-    .portal-sidebar, .glass-nav, .search-mega-bar, .enroll-btn {
-        display: none !important;
-    }
-    body { background: white; color: black; }
-}
-
-/* -----------------------------------------------------------------
-   26. لمسات إضافية (Micro-Interactions)
-   ----------------------------------------------------------------- 
-*/
-
-/* حركة النبض للأيقونات الهامة */
-.pulse-icon {
-    animation: pulse-glow 2s infinite;
-}
-
-/* تأثير اللمعان الذي يمر فوق الكارت */
-.course-card-premium::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(
-        to right,
-        transparent,
-        rgba(255, 255, 255, 0.1),
-        transparent
-    );
-    transform: skewX(-25deg);
-    transition: 0.8s;
-}
-
-.course-card-premium:hover::before {
-    left: 150%;
-}
-
-/* تحسينات اللاب توب والشاشات الكبيرة */
-@media (min-width: 1200px) {
-    .portal-main {
-        padding: 40px 80px;
-    }
-    
-    .hero-grid {
-        gap: 100px;
-    }
-}
-
-/* تخصيص السكرول بار للمقالات الطويلة داخل الموقع */
-.article-container::-webkit-scrollbar {
-    width: 4px;
-}
-
-.article-container::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 10px;
-}
-
-/* -----------------------------------------------------------------
-   27. برمجة نظام التفاعل السريع (Quick Actions Menu)
-   ----------------------------------------------------------------- 
-*/
-
-.quick-actions {
-    position: fixed;
-    right: 30px;
-    bottom: 100px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    z-index: 1500;
-}
-
-.action-btn {
-    width: 55px;
-    height: 55px;
-    border-radius: 18px;
-    background: var(--bg-card);
-    border: 1px solid rgba(255,255,255,0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    cursor: pointer;
-    transition: var(--transition-smooth);
-}
-
-.action-btn:hover {
-    background: var(--primary);
-    transform: scale(1.1) rotate(10deg);
-}
-
-/* -----------------------------------------------------------------
-   28. نظام الهياكل العظمية (Skeleton Loading Screens)
-   ----------------------------------------------------------------- 
-*/
-
+/* 24. Skeleton Loading (أنيميشن التحميل الذكي) */
 .skeleton {
-    background: linear-gradient(
-        90deg,
-        rgba(255,255,255,0.03) 25%,
-        rgba(255,255,255,0.08) 50%,
-        rgba(255,255,255,0.03) 75%
-    );
-    background-size: 200% 100%;
-    animation: skeleton-loading 1.5s infinite;
+  background: linear-gradient(90deg, #111 25%, #1a1a1a 50%, #111 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 20px;
 }
 
 @keyframes skeleton-loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
-/* -----------------------------------------------------------------
-   29. التنسيق النهائي لملف الهاي سكول (The Final Polish)
-   ----------------------------------------------------------------- 
-*/
-
-.high-school-container {
-    padding-bottom: 100px; /* لترك مساحة للشريط السفلي في الموبايل */
+/* 25. Custom Toggle & Buttons (أزرار التبديل) */
+.branch-toggle-btn {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
 }
 
-/* تحسين عرض الصور في المتصفحات الحديثة */
-img {
-    image-rendering: -webkit-optimize-contrast;
-    user-drag: none;
+.branch-toggle-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--primary);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.branch-toggle-btn.active::after {
+  transform: scaleX(1);
+}
+
+/* 26. User Rank & Leaderboard (لوحة الصدارة الاحترافية) */
+.leaderboard-row {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.leaderboard-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-color);
+  transform: scale(1.01) translateX(-5px);
+}
+
+.top-3-glow {
+  box-shadow: 0 0 30px var(--primary-glow);
+}
+
+/* 27. Wallet Card Design (تصميم البطاقات البنكية) */
+.payment-method-card {
+  perspective: 1000px;
+}
+
+.payment-method-card .inner {
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.payment-method-card:hover .inner {
+  transform: rotateY(10deg) rotateX(5deg);
+}
+
+/* 28. Smart Sidebar Navigation (تنسيق القائمة الجانبية العميق) */
+.nav-link {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.nav-link svg {
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.nav-link:hover svg {
+  transform: scale(1.2) rotate(5deg);
+  color: var(--primary);
+}
+
+/* 29. Notifications & Badges (التنبيهات) */
+.notif-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #ef4444;
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* 30. Lesson Content Player (تنسيق مشغل الدروس) */
+.video-container {
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: 30px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.lesson-list-item {
+  border-right: 3px solid transparent;
+}
+
+.lesson-list-item.active {
+  background: var(--primary-glow);
+  border-right-color: var(--primary);
+}
+
+/* 31. Tooltips & Popovers */
+.mafa-tooltip {
+  position: absolute;
+  background: #fff;
+  color: #000;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: bold;
+  pointer-events: none;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+/* 32. Search Bar Enhancements */
+.search-input-wrapper {
+  position: relative;
+}
+
+.search-input-wrapper input:focus + .search-icon {
+  color: var(--primary);
+  transform: scale(1.1);
+}
+
+/* 33. Feature Badges (أوسمة المدرسين) */
+.badge-certified {
+  background: linear-gradient(45deg, #fbbf24, #f59e0b);
+  color: #000;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+/* 34. Custom Scroll Area (منطقة التمرير للمواد) */
+.subject-tabs-container::-webkit-scrollbar {
+  height: 4px;
+}
+
+/* 35. Responsive Typography Fixes */
+@media (max-width: 1024px) {
+  .hero-title { font-size: 3.5rem; line-height: 1.1; }
+}
+
+/* 36. Neo-Brutalism Touches (لمسات عصرية) */
+.btn-neo {
+  box-shadow: 4px 4px 0px var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.btn-neo:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px var(--primary);
+}
+
+/* 37. Footer Decorative Icons */
+.footer-social-btn {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.footer-social-btn:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-5px) rotate(8deg);
+}
+
+/* 38. Streak Flame Animation (أنيميشن الشعلة) */
+.streak-flame {
+  filter: drop-shadow(0 0 8px #f97316);
+  animation: flame-flicker 1.5s infinite alternate;
+}
+
+@keyframes flame-flicker {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.1); opacity: 1; }
+}
+
+/* 39. Mobile Optimization */
+@media (max-width: 640px) {
+  .course-card { border-radius: 30px; }
+  .grid-cols-4 { grid-template-columns: 1fr; }
+  .modal-content { border-radius: 40px 40px 0 0; }
+}
+
+/* 40. Ultimate Utility Classes */
+.clip-path-polygon { clip-path: polygon(0 0, 100% 0, 100% 85%, 0% 100%); }
+.mix-blend-overlay { mix-blend-mode: overlay; }
+
+/* 41. Advanced Background Particles (نظام الجزيئات الخلفية) */
+.bg-particles {
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(1px 1px at 20px 30px, #fff, rgba(0,0,0,0)),
+    radial-gradient(1.5px 1.5px at 40px 70px, var(--primary), rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 50px 160px, rgba(255,255,255,0.1), rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* 42. Quiz & Exam Interface (تنسيق واجهة الاختبارات) */
+.quiz-option {
+  @apply relative p-6 rounded-[24px] border border-white/5 bg-white/[0.02] transition-all cursor-pointer;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.quiz-option:hover {
+  @apply bg-white/[0.05] border-white/20;
+}
+
+.quiz-option.selected {
+  border-color: var(--primary);
+  background: var(--primary-glow);
+  box-shadow: 0 0 20px var(--primary-glow);
+}
+
+.quiz-progress-bar {
+  height: 6px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.quiz-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), #fff);
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 43. Glassmorphism Modal V2 (نظام النوافذ المتطور) */
+.modal-glass {
+  background: rgba(10, 10, 10, 0.8);
+  backdrop-filter: blur(40px) saturate(150%);
+  -webkit-backdrop-filter: blur(40px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.7);
+}
+
+/* 44. Cyber-Buttons (أزرار سيبرانية) */
+.btn-cyber {
+  position: relative;
+  padding: 1rem 2rem;
+  background: transparent;
+  text-transform: uppercase;
+  font-weight: 900;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  overflow: hidden;
+  transition: 0.5s;
+}
+
+.btn-cyber:hover {
+  background: var(--primary);
+  color: #000;
+  box-shadow: 0 0 30px var(--primary);
+}
+
+.btn-cyber::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transition: 0.5s;
+}
+
+.btn-cyber:hover::before {
+  left: 100%;
+}
+
+/* 45. Floating Labels (تنسيق الحقول الذكية) */
+.input-group {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.input-group label {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  color: #666;
+  pointer-events: none;
+  transition: 0.3s;
+  font-size: 0.8rem;
+}
+
+.input-group input:focus ~ label,
+.input-group input:not(:placeholder-shown) ~ label {
+  top: -10px;
+  right: 15px;
+  font-size: 0.7rem;
+  color: var(--primary);
+  background: #050505;
+  padding: 0 10px;
+}
+
+/* 46. Table UI (جداول البيانات والنتائج) */
+.mafa-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 12px;
+}
+
+.mafa-table tr {
+  @apply bg-white/[0.02] transition-all;
+}
+
+.mafa-table tr:hover {
+  @apply bg-white/[0.05];
+}
+
+.mafa-table td, .mafa-table th {
+  padding: 20px;
+}
+
+.mafa-table th {
+  @apply text-gray-500 font-bold text-xs uppercase tracking-widest text-right;
+}
+
+.mafa-table td:first-child { border-radius: 0 24px 24px 0; }
+.mafa-table td:last-child { border-radius: 24px 0 0 24px; }
+
+/* 47. Tooltip System (نظام شروحات الأدوات) */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  padding: 8px 15px;
+  background: #fff;
+  color: #000;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+  opacity: 0;
+  transition: 0.3s;
+  pointer-events: none;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+/* 48. Neon Glow Text (نصوص النيون) */
+.neon-text {
+  text-shadow: 
+    0 0 10px var(--primary-glow),
+    0 0 20px var(--primary-glow),
+    0 0 40px var(--primary);
+}
+
+/* 49. Sidebar Navigation 3D (تأثير القائمة ثلاثي الأبعاد) */
+.sidebar-link-active {
+  background: linear-gradient(90deg, var(--primary-glow), transparent);
+  border-right: 4px solid var(--primary);
+  @apply scale-105 origin-right;
+}
+
+/* 50. Scroll Animation (أنيميشن الظهور عند التمرير) */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s ease-out;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 51. Avatar Pulse (تأثير الصورة الشخصية) */
+.avatar-online {
+  position: relative;
+}
+
+.avatar-online::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  background: #10b981;
+  border: 3px solid #050505;
+  border-radius: 50%;
+}
+
+/* 52. Custom Checkbox (مربعات الاختيار) */
+.mafa-checkbox {
+  @apply w-6 h-6 rounded-lg border-2 border-white/10 bg-white/5 appearance-none cursor-pointer transition-all;
+}
+
+.mafa-checkbox:checked {
+  @apply bg-primary border-primary;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/%3E%3C/svg%3E");
+}
+
+/* 53. Card Tilt Effect (إمالة الكروت) */
+.tilt-card {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.tilt-card .content {
+  transform: translateZ(50px);
+}
+
+/* 54. Mobile Tab Bar (شريط التنقل السفلي للهواتف) */
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 h-20 bg-black/80 backdrop-blur-xl border-t border-white/10 flex items-center justify-around z-[5000];
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* 55. Loading Spinner V2 (مؤشر التحميل) */
+.loader-mafa {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--primary);
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+
+.loader-mafa::after {
+  content: '';  
+  box-sizing: border-box;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-bottom-color: #fff;
+}
+
+@keyframes rotation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 56. Footer Background Overlay */
+.footer-pattern {
+  background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* 57. Profile Settings Section */
+.settings-section {
+  @apply p-8 rounded-[32px] bg-white/[0.02] border border-white/5 mb-8;
+}
+
+/* 58. Notification Toast (رسائل التنبيه العلوية) */
+.toast-msg {
+  @apply fixed top-10 left-1/2 -translate-x-1/2 p-4 rounded-2xl bg-white text-black font-bold shadow-2xl z-[9999] flex items-center gap-3;
+  animation: toast-slide-down 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes toast-slide-down {
+  from { top: -100px; }
+  to { top: 40px; }
+}
+
+/* 59. Interactive Map Placeholder */
+.map-canvas {
+  @apply w-full h-80 rounded-[40px] bg-white/5 border border-white/10 overflow-hidden relative grayscale;
+  transition: all 0.5s ease;
+}
+
+.map-canvas:hover {
+  @apply grayscale-0;
+}
+
+/* 60. Final Polish Utility */
+.mask-linear {
+  mask-image: linear-gradient(to bott
+                              om, black 50%, transparent 100%);
+}
+
+/* 61. Chat System UI (واجهة المحادثة مع الدعم والمدرسين) */
+.chat-bubble {
+  @apply max-w-[80%] p-4 rounded-[24px] mb-4 text-sm font-medium relative;
+}
+
+.chat-bubble-sender {
+  @apply bg-primary text-white self-end rounded-bl-none;
+  box-shadow: 0 10px 20px var(--primary-glow);
+}
+
+.chat-bubble-receiver {
+  @apply bg-white/5 text-gray-300 self-start rounded-br-none border border-white/5;
+}
+
+.chat-input-area {
+  @apply sticky bottom-0 bg-[#0a0a0a]/80 backdrop-blur-xl p-4 border-t border-white/5;
+}
+
+/* 62. Teacher Profile Cards (بطاقات المدرسين السينمائية) */
+.teacher-card {
+  @apply relative aspect-[3/4] rounded-[40px] overflow-hidden group border border-white/5;
+}
+
+.teacher-card-info {
+  @apply absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-8 translate-y-4 group-hover:translate-y-0 transition-transform duration-500;
+}
+
+.teacher-card-tags {
+  @apply absolute top-6 right-6 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity delay-100;
+}
+
+/* 63. Gamification & Rewards (نظام الأوسمة والمكافآت) */
+.badge-gold {
+  background: radial-gradient(circle at top left, #ffd700, #b8860b);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+  @apply p-2 rounded-full border-2 border-white/20;
+}
+
+.level-up-anim {
+  animation: level-up 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes level-up {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { filter: brightness(2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* 64. 3D Card Hover (تأثير الميلان ثلاثي الأبعاد المتقدم) */
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+/* 65. Advanced List Animations (أنيميشن القوائم التدريجي) */
+.stagger-list > * {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.stagger-list.active > * {
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 0.5s ease-out;
+}
+
+/* إنشاء تأخير تلقائي للعناصر الـ 10 الأولى */
+.stagger-list.active > *:nth-child(1) { transition-delay: 0.1s; }
+.stagger-list.active > *:nth-child(2) { transition-delay: 0.2s; }
+.stagger-list.active > *:nth-child(3) { transition-delay: 0.3s; }
+.stagger-list.active > *:nth-child(4) { transition-delay: 0.4s; }
+
+/* 66. Video Player Custom Controls (تنسيق أزرار المشغل) */
+.player-control-btn {
+  @apply p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-90;
+}
+
+.progress-slider {
+  @apply w-full h-1 bg-white/10 rounded-full overflow-hidden relative cursor-pointer;
+}
+
+.progress-slider-fill {
+  @apply absolute inset-y-0 left-0 bg-primary;
+}
+
+/* 67. Neumorphic Accents (لمسات النيومورفيزم المظلم) */
+.neu-inset {
+  background: #0a0a0a;
+  box-shadow: inset 4px 4px 8px #050505, 
+              inset -4px -4px 8px #0f0f0f;
+}
+
+/* 68. Price Tag Design (تصميم ملصق السعر) */
+.price-tag {
+  @apply relative px-6 py-2 bg-primary text-white font-black rounded-2xl;
+  clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+/* 69. Sidebar Profile Section (قسم الملف الشخصي في القائمة) */
+.sidebar-user-gradient {
+  background: linear-gradient(135deg, var(--primary-glow) 0%, transparent 100%);
+  border-radius: 30px;
+  @apply p-6 border border-white/5 mb-8;
+}
+
+/* 70. Section Header Deco (زخرفة رؤوس الأقسام) */
+.section-title-deco {
+  @apply relative pr-6 mb-12;
+}
+
+.section-title-deco::before {
+  content: '';
+  @apply absolute right-0 top-1/2 -translate-y-1/2 w-2 h-8 rounded-full bg-primary;
+  box-shadow: 0 0 15px var(--primary);
+}
+
+/* 71. Custom Multi-Select Dropdown */
+.multi-select-item {
+  @apply flex items-center justify-between p-4 rounded-xl hover:bg-white/5 transition-all;
+}
+
+/* 72. Performance Overlay (للمطورين) */
+.fps-counter {
+  @apply fixed bottom-4 right-4 p-2 bg-black/80 rounded-lg text-[10px] text-green-500 font-mono z-[9999];
+}
+
+/* 73. Interactive Background Blur (تمويه تفاعلي) */
+.blur-layer {
+  @apply absolute inset-0 backdrop-blur-3xl pointer-events-none;
+  mask-image: radial-gradient(circle at center, transparent 30%, black 100%);
+}
+
+/* 74. Course Status Badges (حالة الكورسات) */
+.status-completed { @apply bg-green-500/10 text-green-500 border border-green-500/20 px-3 py-1 rounded-full text-[10px] font-bold; }
+.status-progress { @apply bg-blue-500/10 text-blue-500 border border-blue-500/20 px-3 py-1 rounded-full text-[10px] font-bold; }
+
+/* 75. Loading Dots Animation */
+.dots-loading span {
+  width: 8px;
+  height: 8px;
+  @apply bg-primary rounded-full inline-block mx-1;
+  animation: dots 1.4s infinite ease-in-out both;
+}
+
+.dots-loading span:nth-child(1) { animation-delay: -0.32s; }
+.dots-loading span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes dots {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+/* 76. Mobile Header Blur (تنسيق رأس الصفحة في الهاتف) */
+@media (max-width: 640px) {
+  .mobile-header {
+    @apply sticky top-0 bg-[#050505]/60 backdrop-blur-lg z-[1000] py-4;
+  }
+}
+
+/* 77. Shimmer Effect (تأثير اللمعان على الأزرار) */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  @apply absolute inset-0 -translate-x-full;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* 78. Grid Pattern Background (نمط شبكي) */
+.bg-grid-pattern {
+  background-size: 50px 50px;
+  background-image: 
+    linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+}
+
+/* 79. Glowing Border Container */
+.glow-border-card {
+  @apply relative p-[1px] rounded-[40px] overflow-hidden;
+  background: linear-gradient(135deg, var(--primary), transparent, var(--primary));
+}
+
+.glow-border-card .inner-content {
+  @apply bg-[#0a0a0a] rounded-[39px] h-full w-full p-8;
+}
+
+/* 80. Ultimate Typography Smoothing */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+    /* 81. Analytics & Progress Charts (نظام الإحصائيات البصري) */
+.chart-container {
+  @apply relative w-full h-64 flex items-end justify-between gap-2 p-4 bg-white/[0.02] rounded-[32px] border border-white/5;
+}
+
+.chart-bar {
+  @apply w-full bg-primary rounded-t-xl transition-all duration-1000 ease-out relative group;
+  min-height: 10px;
+}
+
+.chart-bar:hover {
+  @apply brightness-125;
+  box-shadow: 0 0 20px var(--primary-glow);
+}
+
+.chart-tooltip {
+  @apply absolute -top-12 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] font-black px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity;
+}
+
+/* 82. Circular Progress (مؤشرات الإنجاز الدائرية) */
+.circle-progress {
+  --size: 120px;
+  --half-size: calc(var(--size) / 2);
+  --stroke-width: 10px;
+  --radius: calc(var(--half-size) - var(--stroke-width));
+  --circumference: calc(2 * 3.14159 * var(--radius));
+  width: var(--size);
+  height: var(--size);
+}
+
+.circle-progress-svg {
+  transform: rotate(-90deg);
+}
+
+.circle-progress-bg {
+  fill: none;
+  stroke: rgba(255,255,255,0.05);
+  stroke-width: var(--stroke-width);
+}
+
+.circle-progress-fill {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: var(--stroke-width);
+  stroke-dasharray: var(--circumference);
+  stroke-dashoffset: calc(var(--circumference) - (var(--percent) / 100) * var(--circumference));
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s ease-in-out;
+}
+
+/* 83. Advanced Forms: Floating Inputs V2 (نظام إدخال البيانات المتقدم) */
+.mafa-input-wrapper {
+  @apply relative mb-6 group;
+}
+
+.mafa-input {
+  @apply w-full bg-[#111] border border-white/5 rounded-2xl px-6 py-4 text-sm font-bold transition-all focus:bg-black focus:border-primary/50 outline-none;
+}
+
+.mafa-input-icon {
+  @apply absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-primary transition-colors;
+}
+
+/* 84. Drag & Drop Zone (منطقة رفع الملفات/الواجبات) */
+.drop-zone {
+  @apply border-2 border-dashed border-white/10 rounded-[40px] p-12 text-center transition-all hover:bg-white/[0.02] hover:border-primary/30 cursor-pointer;
+}
+
+.drop-zone-active {
+  @apply border-primary bg-primary/5 scale-[0.98];
+}
+
+/* 85. Smart Tabs Interface (تبديل المحتوى السلس) */
+.tabs-nav {
+  @apply flex gap-2 p-2 bg-white/5 rounded-2xl w-fit;
+}
+
+.tab-trigger {
+  @apply px-6 py-2 rounded-xl text-xs font-black transition-all text-gray-500;
+}
+
+.tab-trigger-active {
+  @apply bg-white text-black shadow-lg shadow-white/10;
+}
+
+/* 86. Exam Countdown Timer (مؤقت الامتحانات) */
+.timer-card {
+  @apply flex gap-2 items-center justify-center font-mono text-3xl font-black p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-500;
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+/* 87. Ultra-Smooth Transitions (أنظمة الانتقال الفائق) */
+.page-transition-enter { opacity: 0; transform: scale(1.02); }
+.page-transition-enter-active { opacity: 1; transform: scale(1); transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1); }
+.page-transition-exit { opacity: 1; }
+.page-transition-exit-active { opacity: 0; transition: all 300ms ease; }
+
+/* 88. 3D Parallax Card (تأثير بارالاكس عميق) */
+.parallax-wrap {
+  perspective: 2000px;
+}
+
+.parallax-card {
+  transform-style: preserve-3d;
+  transition: transform 0.1s;
+}
+
+/* 89. Dark Mode Optimization (تحسينات الرؤية الليلية) */
+.contrast-enhance {
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+/* 90. Printing Styles (تنسيقات الطباعة للمذكرات والشهادات) */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; color: black; }
+  .certificate-card {
+    border: 2px solid #000;
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
+}
+
+/* 91. Custom Scrollbar for Sidebar (شريط تمرير جانبي نحيف) */
+.side-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+
+.side-scroll::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 20px;
+}
+
+/* 92. Glowing Pulse (نبض الإضاءة للعناصر الهامة) */
+.glow-pulse {
+  animation: glow-pulse-anim 2s infinite;
+}
+
+@keyframes glow-pulse-anim {
+  0% { box-shadow: 0 0 0 0 var(--primary-glow); }
+  70% { box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+/* 93. Glassmorphism Button (أزرار زجاجية) */
+.btn-glass {
+  @apply bg-white/10 backdrop-blur-md border border-white/10 hover:bg-white/20 transition-all text-white font-bold;
+}
+
+/* 94. Section Separator (فواصل الأقسام الفنية) */
+.section-divider {
+  @apply w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent my-20;
+}
+
+/* 95. Background Aura (هالة خلفية متحركة) */
+.aura-bg {
+  position: absolute;
+  width: 40vw;
+  height: 40vw;
+  background: var(--primary-glow);
+  filter: blur(150px);
+  border-radius: 50%;
+  z-index: -1;
+  animation: aura-move 20s infinite alternate linear;
+}
+
+@keyframes aura-move {
+  from { transform: translate(-10%, -10%); }
+  to { transform: translate(20%, 20%); }
+}
+
+/* 96. Responsive Grid Fix (إصلاحات الشبكة للمقاسات المتوسطة) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .course-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* 97. Interactive Table Head (رؤوس جداول تفاعلية) */
+.mafa-table th:hover {
+  @apply text-white cursor-pointer;
+}
+
+/* 98. Notification Center Dot (نقطة مركز الإشعارات) */
+.notif-dot {
+  @apply absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-[#050505];
+}
+
+/* 99. Vertical Text (نصوص رأسية ديكورية) */
+.vertical-text {
+  writing-mode: vertical-rl;
+  @apply text-[10px] text-gray-700 font-black tracking-[0.5em] uppercase pointer-events-none;
+}
+
+/* 100. Ultimate Layering (ترتيب الطبقات النهائي) */
+.z-modal { z-index: 9000; }
+.z-overlay { z-index: 8000; }
+.z-nav { z-index: 7000; }
+.z-content { z-index: 10; }
+
+    /* 101. Mobile Application Shell (إطار التطبيق للجوال) */
+@media (max-width: 768px) {
+  body {
+    @apply pb-24; /* مساحة لشريط التنقل السفلي */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* إخفاء العناصر غير الضرورية في الموبايل */
+  .hide-mobile { display: none !important; }
+}
+
+/* 102. iOS-Style Bottom Navigation (شريط التنقل السفلي الاحترافي) */
+.mobile-nav-bar {
+  @apply fixed bottom-0 left-0 right-0 h-20 bg-black/80 backdrop-blur-2xl border-t border-white/5 flex items-center justify-around z-[5000] px-6;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-item-active {
+  @apply relative text-primary;
+}
+
+.nav-item-active::before {
+  content: '';
+  @apply absolute -top-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full shadow-[0_0_10px_var(--primary)];
+}
+
+/* 103. Mobile Swipe Cards (كروت السحب يميناً ويساراً) */
+.swipe-container {
+  @apply flex overflow-x-auto snap-x snap-mandatory no-scrollbar gap-4 px-6;
+}
+
+.swipe-card {
+  @apply snap-center shrink-0 w-[85vw] md:w-auto;
+}
+
+/* 104. Profile & Settings UI (واجهة إعدادات الحساب) */
+.settings-row {
+  @apply flex items-center justify-between p-5 bg-white/[0.03] border border-white/5 rounded-[24px] mb-3 active:scale-[0.98] transition-all;
+}
+
+.settings-icon-box {
+  @apply w-12 h-12 rounded-2xl flex items-center justify-center bg-white/5 text-gray-400;
+}
+
+/* 105. Custom Toggle Switch (زر التبديل الخاص بالإعدادات) */
+.mafa-toggle {
+  @apply relative w-12 h-6 bg-white/10 rounded-full cursor-pointer transition-all;
+}
+
+.mafa-toggle::after {
+  content: '';
+  @apply absolute top-1 right-1 w-4 h-4 bg-white rounded-full transition-all;
+}
+
+.mafa-toggle-active {
+  @apply bg-primary;
+}
+
+.mafa-toggle-active::after {
+  @apply right-7 bg-white;
+}
+
+/* 106. Payment Success Animation (أنيميشن نجاح الدفع) */
+.success-checkmark {
+  width: 80px;
+  height: 80px;
+  @apply mx-auto mb-6;
+}
+
+.check-icon {
+  width: 80px;
+  height: 80px;
+  position: relative;
+  border-radius: 50%;
+  box-sizing: content-box;
+  border: 4px solid #4CAF50;
+}
+
+.check-icon::before {
+  @apply absolute top-[33px] left-[19px] w-[31px] h-[3px] bg-[#4CAF50] rotate-45;
+  content: "";
+}
+
+.check-icon::after {
+  @apply absolute top-[38px] left-[14px] w-[16px] h-[3px] bg-[#4CAF50] -rotate-45;
+  content: "";
+}
+
+/* 107. Pull-to-Refresh Simulation (محاكاة سحب الشاشة للتحديث) */
+.pull-indicator {
+  @apply flex justify-center py-4 text-gray-500 opacity-0 transition-opacity;
+}
+
+/* 108. Course Player Sidebar (قائمة الدروس داخل المشغل) */
+.player-sidebar {
+  @apply w-full lg:w-96 bg-[#0a0a0a] border-r border-white/5 h-full overflow-y-auto side-scroll;
+}
+
+.lesson-card {
+  @apply p-4 border-b border-white/5 cursor-pointer hover:bg-white/[0.02] transition-colors flex gap-4;
+}
+
+.lesson-card.active {
+  @apply bg-primary/10 border-r-4 border-r-primary;
+}
+
+/* 109. Bottom Sheet Modal (نوافذ الموبايل التي تظهر من الأسفل) */
+.bottom-sheet {
+  @apply fixed bottom-0 left-0 right-0 bg-[#111] rounded-t-[40px] border-t border-white/10 z-[6000] p-8 pb-12 translate-y-full transition-transform duration-500 ease-out;
+}
+
+.bottom-sheet.show {
+  @apply translate-y-0;
+}
+
+.bottom-sheet-handle {
+  @apply w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-8;
+}
+
+/* 110. Glass Sticky Header (رأس الصفحة الملتصق الزجاجي) */
+.sticky-header {
+  @apply sticky top-0 z-[1000] bg-[#050505]/60 backdrop-blur-xl border-b border-white/5 py-4;
+}
+
+/* 111. Avatar Ring Aura (هالة حول صور المدرسين والطلاب) */
+.avatar-ring {
+  @apply p-1 rounded-full bg-gradient-to-tr from-primary via-transparent to-primary animate-spin-slow;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 112. Floating Action Button - FAB (زر الإجراء العائم) */
+.fab-btn {
+  @apply fixed bottom-24 right-6 w-14 h-14 bg-primary rounded-2xl flex items-center justify-center text-white shadow-2xl shadow-primary/40 z-[4000] active:scale-90 transition-all;
+}
+
+/* 113. No-Content State (شاشة "لا يوجد محتوى") */
+.empty-state {
+  @apply flex flex-col items-center justify-center py-20 text-center text-gray-500;
+}
+
+.empty-state-icon {
+  @apply w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6 text-gray-700;
+}
+
+/* 114. Responsive Typography (ضبط الخطوط للموبايل) */
+@media (max-width: 640px) {
+  .text-hero { font-size: 2.5rem !important; line-height: 1.2; }
+  .text-section { font-size: 1.5rem !important; }
+  .p-mobile { padding: 1.25rem !important; }
+}
+
+/* 115. Interactive Map Icons (أيقونات الخريطة التفاعلية) */
+.map-marker {
+  @apply w-6 h-6 bg-primary rounded-full border-4 border-white shadow-xl animate-bounce;
+}
+
+/* 116. Blur-in Entrance (أنيميشن الدخول الضبابي) */
+.blur-in {
+  animation: blur-in-anim 0.8s ease-out forwards;
+}
+
+@keyframes blur-in-anim {
+  from { filter: blur(20px); opacity: 0; transform: scale(0.9); }
+  to { filter: blur(0); opacity: 1; transform: scale(1); }
+}
+
+/* 117. User Profile Banner (غلاف البروفايل) */
+.profile-banner {
+  @apply w-full h-48 md:h-64 bg-gradient-to-br from-[#1a1a1a] to-black relative overflow-hidden;
+}
+
+.profile-banner::after {
+  content: '';
+  @apply absolute inset-0 bg-grid-pattern opacity-20;
+}
+
+/* 118. Scroll-Linked Animations (محاكاة الربط مع التمرير) */
+.scroll-reveal {
+  @apply opacity-0 translate-y-10 transition-all duration-700;
+}
+
+.scroll-reveal.visible {
+  @apply opacity-100 translate-y-0;
+}
+
+/* 119. Haptic Feedback Simulation (محاكاة استجابة اللمس) */
+.haptic-touch:active {
+  @apply bg-white/10 scale-95;
+}
+
+/* 120. Global Reset for PWA (تحسينات الويب كالتطبيق) */
+html {
+  overscroll-behavior-y: contain; /* يمنع السحب لأسفل لتحديث الصفحة في الموبايل */
+}
+
+    /* 121. World-Class Floating Course Cards (كروت الكورسات الطائرة) */
+.course-card-floating {
+  @apply relative bg-[#111] rounded-[40px] border border-white/5 transition-all duration-500;
+  transform-style: preserve-3d;
+  will-change: transform, box-shadow;
+  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+}
+
+.course-card-floating:hover {
+  @apply -translate-y-4 border-white/20;
+  box-shadow: 
+    0 40px 80px -20px rgba(0,0,0,0.8),
+    0 0 20px var(--primary-glow);
+}
+
+/* تأثير الإضاءة المتحركة داخل الكرت عند التحويم */
+.course-card-floating::before {
+  content: '';
+  @apply absolute inset-0 opacity-0 transition-opacity duration-500 pointer-events-none rounded-[40px];
+  background: radial-gradient(
+    800px circle at var(--mouse-x) var(--mouse-y), 
+    rgba(255,255,255,0.06), 
+    transparent 40%
+  );
+  z-index: 3;
+}
+
+.course-card-floating:hover::before {
+  @apply opacity-100;
+}
+
+/* 122. Premium Card Floating Badge (وسام طائر فوق الكرت) */
+.floating-badge {
+  @apply absolute -top-4 -right-4 bg-white text-black font-black text-[10px] px-5 py-2 rounded-2xl shadow-2xl z-10;
+  animation: float-mini 3s infinite ease-in-out;
+}
+
+@keyframes float-mini {
+  0%, 100% { transform: translateY(0) rotate(5deg); }
+  50% { transform: translateY(-8px) rotate(-5deg); }
+}
+
+/* 123. Mobile Ultra-Smooth Scrolling (تمرير عالمي للموبايل) */
+.mobile-smooth-area {
+  @apply flex overflow-x-auto gap-6 px-6 py-10 no-scrollbar;
+  scroll-snap-type: x mandatory;
+  perspective: 1000px;
+}
+
+.mobile-smooth-area > div {
+  scroll-snap-align: center;
+  @apply shrink-0 w-[85vw] max-w-[350px];
+}
+
+/* 124. Holographic Effect (تأثير الهولوجرام على الصور) */
+.hologram-img {
+  @apply relative overflow-hidden rounded-[30px];
+}
+
+.hologram-img::after {
+  content: "";
+  @apply absolute inset-0 opacity-20 pointer-events-none;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.4) 45%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.4) 55%,
+    transparent 70%
+  );
+  background-size: 200% 200%;
+  animation: hologram-shine 4s infinite linear;
+}
+
+@keyframes hologram-shine {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* 125. Dynamic Mobile Tab Indicator (مؤشر التبويب الديناميكي) */
+.tab-indicator-pill {
+  @apply absolute bottom-0 h-1 bg-primary rounded-full transition-all duration-500 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)];
+}
+
+/* 126. Glass Bottom Sheet Overlay (غطاء زجاجي للنوافذ المنبثقة) */
+.sheet-overlay {
+  @apply fixed inset-0 bg-black/40 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-500 z-[5500];
+}
+
+.sheet-overlay.active {
+  @apply opacity-100 pointer-events-auto;
+}
+
+/* 127. Floating Navbar for Mobile (شريط علوي طائر) */
+@media (max-width: 768px) {
+  .floating-header-mobile {
+    @apply fixed top-4 left-4 right-4 h-16 bg-black/40 backdrop-blur-xl border border-white/5 rounded-3xl z-[4500] flex items-center justify-between px-6 shadow-2xl;
+  }
+}
+
+/* 128. Premium Lesson Progress (تقدم الدرس السينمائي) */
+.progress-ring-mini {
+  @apply w-12 h-12 rounded-full border-2 border-white/5 flex items-center justify-center text-[10px] font-bold;
+  background: conic-gradient(var(--primary) var(--prog), transparent 0);
+}
+
+/* 129. Cyberpunk Border Glow (حدود متوهجة سيبرانية) */
+.cyber-border {
+  @apply relative p-[1px] rounded-[40px] bg-white/10;
+  transition: all 0.5s;
+}
+
+.cyber-border:hover {
+  background: linear-gradient(45deg, var(--primary), #fff, var(--primary));
+  box-shadow: 0 0 30px var(--primary-glow);
+}
+
+/* 130. Touch-Friendly Interaction (تفاعلات اللمس النهائية) */
+.touch-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.touch-ripple::after {
+  content: "";
+  @apply absolute inset-0 bg-white opacity-0 transition-opacity;
+}
+
+.touch-ripple:active::after {
+  @apply opacity-10;
+}
+
+/* 131. Final System Clean-up (تصفية النظام النهائية) */
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none; /* منع تحديد النصوص لجعل الموقع يشبه التطبيق */
+}
+
+/* الحفاظ على اختيار النصوص داخل خانات الإدخال فقط */
+input, textarea {
+  user-select: text;
+}
+
+/* 132. Deep Night PWA Optimization (تحسين الوضع الليلي العميق) */
+@media (prefers-color-scheme: dark) {
+  .bg-deep-dark {
+    background: radial-gradient(circle at top, #0a0a0a 0%, #000 100%);
+  }
 }
