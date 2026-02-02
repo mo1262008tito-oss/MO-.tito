@@ -1070,8 +1070,10 @@ return (
             </motion.div>
           )}
         </AnimatePresence>
-
+{/* 4. إغلاق الأنيميشن الخاص بالتابات */}
+     
         {/* --- عناصر إضافية تظهر في Dashboard فقط --- */}
+        {/* ملاحظة: تم نقلها هنا لتكون داخل الـ main ولكن خارج الـ AnimatePresence إذا كانت لا تحتاج أنيميشن انتقال */}
         {activeTab === 'dashboard' && (
           <div className="extra-dash-content">
             {/* شريط تقدم المستوى (Level Progress) */}
@@ -1117,7 +1119,7 @@ return (
             </div>
           </div>
         )}
-      </main>
+      </main> {/* إغلاق الـ main هنا هو المفتاح لحل خطأ Vercel */}
 
       {/* شاشة التنبيه بالحساب غير المفعل */}
       {!user?.isActivated && isDataComplete && (
@@ -1819,6 +1821,7 @@ const styles = `
 export default Wallet;
   
   
+
 
 
 
