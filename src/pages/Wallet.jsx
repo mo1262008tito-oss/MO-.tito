@@ -248,7 +248,26 @@ const [selectedTransaction, setSelectedTransaction] = useState(null);
   // =========================================================================
 // [ SECTION 5: FINANCIAL OPERATIONS LOGIC (P2P & VAULT) ]
 // =========================================================================
+const RECHARGE_METHODS = {
+  WALLET: { id: 'wallet', name: 'تحويل رقمي (فودافون كاش...)', type: 'upload' },
+  CENTER_CODE: { id: 'center', name: 'كود السنتر / الموزع', type: 'code' },
+  ADMIN_DIRECT: { id: 'admin', name: 'شحن عبر الدعم الفني', type: 'contact' }
+};
 
+// إضافة دالة للتعامل مع كود السنتر
+const handleCenterCodeRedeem = async (code) => {
+  setActionLoading(true);
+  // هنا يتم إرسال الكود للباك إيند للتأكد من صلاحيته
+  // إذا كان الكود صحيحاً يتم إضافة الرصيد فوراً
+  showAlert("شحن الكود", "جاري التحقق من الكود...", "info");
+  // محاكاة استجابة السيرفر
+  setTimeout(() => {
+    setActionLoading(false);
+    showAlert("نجاح", "تم شحن الرصيد بنجاح عبر الكود", "success");
+  }, 2000);
+};
+
+  
   /**
    * ميزة 5: نظام البحث الذكي عن المستلم
    * يقوم بالتحقق من وجود الطالب في قاعدة البيانات واسترجاع حالته الأمنية
@@ -758,31 +777,32 @@ const shareReceipt = async () => {
       <p>جاري فحص بروتوكولات الأمان...</p>
     </div>
   );
-
-  return (
+return (
     <div className="wallet-master-container">
-      {/* 1. نظام الحماية: منع الدخول إلا بعد إكمال البيانات */}
+      {/* 1. نظام الحماية الذكي */}
       {!isDataComplete && <OnboardingScreen />}
 
-      {/* 2. نظام التنبيهات الذكي (Alerts) */}
-      <AnimatePresence>
-        {systemAlert && (
-          <motion.div 
-            className={`system-toast ${systemAlert.type}`}
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 20 }}
-            exit={{ opacity: 0, y: -50 }}
-          >
-            {systemAlert.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
-            <div className="toast-text">
-              <h5>{systemAlert.title}</h5>
-              <p>{systemAlert.message}</p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* 2. نظام التنبيهات (Toasts) */}
+      <div className="toast-container">
+        <AnimatePresence>
+          {systemAlert && (
+            <motion.div 
+              className={`system-toast ${systemAlert.type}`}
+              initial={{ opacity: 0, y: -50, x: '-50%' }}
+              animate={{ opacity: 1, y: 20, x: '-50%' }}
+              exit={{ opacity: 0, y: -50, x: '-50%' }}
+            >
+              {systemAlert.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
+              <div className="toast-text">
+                <h5>{systemAlert.title}</h5>
+                <p>{systemAlert.message}</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
-      {/* 3. الهيدر (Navbar) */}
+      {/* 3. الهيدر (Navbar) - تم تثبيته لمنع التداخل */}
       <nav className="platinum-nav">
         <div className="nav-profile-section">
           <div className="avatar-group">
@@ -791,7 +811,7 @@ const shareReceipt = async () => {
           </div>
           <div className="nav-user-meta">
             <h4>{user?.fullName || "جاري التحميل..."}</h4>
-            <div className="rank-badge">{user?.rank}</div>
+            <div className="rank-badge">{user?.rank || 'برونزي'}</div>
           </div>
         </div>
         <div className="nav-actions">
@@ -803,78 +823,91 @@ const shareReceipt = async () => {
         </div>
       </nav>
 
-      {/* 4. محتوى التابات (Main Tabs) */}
+      {/* 4. محتوى التابات (Main Viewport) */}
       <main className="wallet-main-viewport">
         <AnimatePresence mode="wait">
           {activeTab === 'dashboard' && (
-            <motion.div key="dash" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              {/* البطاقة البلاتينية */}
+            <motion.div 
+              key="dash" 
+              initial={{ opacity: 0, y: 10 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              exit={{ opacity: 0, y: -10 }}
+              className="tab-content-wrapper"
+            >
               <PlatinumCard />
-              
-              {/* أزرار الوصول السريع */}
               <QuickActions />
 
-              {/* ميزة النقاط (اللوجيك ميزة 9) */}
+              {/* بطاقة النقاط المحدثة */}
               <div className="loyalty-card">
                 <div className="loyalty-content">
                   <div className="star-ring"><Star fill="#FFD700" color="#FFD700" /></div>
                   <div className="loyalty-info">
                     <h3>{user?.points || 0} نقطة ولاء</h3>
-                    <p>يمكنك تحويلها إلى {(user?.points / POINT_TO_CASH_RATIO).toFixed(2)} ج.م</p>
+                    <p>تساوي {(user?.points / (POINT_TO_CASH_RATIO || 100)).toFixed(2)} ج.م</p>
                   </div>
                 </div>
                 <button 
                   className="convert-points-btn" 
                   onClick={convertLoyaltyPoints}
-                  disabled={actionLoading}
+                  disabled={actionLoading || (user?.points < 100)}
                 >
-                  {actionLoading ? <RefreshCw className="spin" /> : "استبدال الآن"}
+                  {actionLoading ? <RefreshCw className="spin" /> : "استبدال"}
                 </button>
               </div>
 
-              {/* ميزة الإحصائيات (اللوجيك ميزة 4) */}
+              {/* الإحصائيات */}
               <div className="analytics-preview">
-                <div className="stat-item">
-                  <ArrowDownLeft color="#10b981" />
+                <div className="stat-item income">
+                  <ArrowDownLeft size={18} />
                   <div><span>دخل الشهر</span><p>{analytics.monthlyIncome} ج.م</p></div>
                 </div>
-                <div className="stat-item">
-                  <ArrowUpRight color="#ef4444" />
+                <div className="stat-item spending">
+                  <ArrowUpRight size={18} />
                   <div><span>مصروف الشهر</span><p>{analytics.monthlySpending} ج.م</p></div>
                 </div>
               </div>
 
-              {/* سجل العمليات المصغر */}
+              {/* النشاط الأخير */}
               <div className="section-header">
                 <h3>النشاط الأخير</h3>
-                <button onClick={() => setActiveTab('history')}>عرض الكل</button>
+                <button className="text-btn" onClick={() => setActiveTab('history')}>عرض الكل</button>
               </div>
               <div className="mini-transactions">
-                {transactions.slice(0, 5).map(renderTransactionItem)}
+                {transactions?.length > 0 ? (
+                  transactions.slice(0, 5).map(renderTransactionItem)
+                ) : (
+                  <p className="empty-msg">لا توجد عمليات مؤخراً</p>
+                )}
               </div>
             </motion.div>
           )}
 
-          {/* ميزة الخزنة (اللوجيك ميزة 7) */}
+          {/* واجهة الخزنة المحدثة */}
           {activeTab === 'vault' && (
-            <motion.div key="vault" className="vault-interface" initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
+            <motion.div 
+              key="vault" 
+              className="vault-interface" 
+              initial={{ opacity: 0, scale: 0.95 }} 
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+            >
               <div className="vault-safe-box">
-                <Lock size={50} className="lock-icon" />
+                <div className="vault-icon-glow"><Lock size={40} /></div>
                 <h2>خزنة MAFA الآمنة</h2>
                 <div className="vault-balance-card">
                   <span>الرصيد المحمي</span>
-                  <h1>{user?.vaultBalance?.toLocaleString()} <small>EGP</small></h1>
+                  <h1>{user?.vaultBalance?.toLocaleString() || 0} <small>EGP</small></h1>
                 </div>
                 <div className="vault-inputs">
                   <input 
                     type="number" 
-                    placeholder="المبلغ..." 
+                    placeholder="أدخل المبلغ..." 
                     value={vaultState.actionAmount}
                     onChange={(e) => setVaultState({...vaultState, actionAmount: e.target.value})}
                   />
                   <div className="vault-btn-row">
-                    <button onClick={() => manageVault('deposit')} className="v-btn-in">إيداع للخزنة</button>
-                    <button onClick={() => manageVault('withdraw')} className="v-btn-out">سحب للمحفظة</button>
+                    <button onClick={() => manageVault('deposit')} className="v-btn-in">إيداع</button>
+                    <button onClick={() => manageVault('withdraw')} className="v-btn-out">سحب</button>
                   </div>
                 </div>
               </div>
@@ -883,74 +916,76 @@ const shareReceipt = async () => {
         </AnimatePresence>
       </main>
 
-      {/* 5. نظام المودالات (اللوجيك ميزات 5, 6, 8) */}
-      <AnimatePresence>
-        {activeModal && (
-          <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <motion.div className="modal-sheet" initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}>
-              <div className="sheet-handle" onClick={() => setActiveModal(null)}></div>
-              {/* مودال التحويل المالي المطور والوحيد */}
-
-              
+      {/* مودال التحويل المالي: النسخة الشاملة (بدون أي اختصار) */}
 {activeModal === 'transfer' && (
-  <div className="modal-body">
+  <div className="modal-body modern-modal-design">
+    {/* 1. الهيدر (العنوان) */}
     <div className="modal-header-modern">
-      <ArrowUpRight className="header-icon-anim" />
+      <div className="header-icon-wrap">
+        <ArrowUpRight className="header-icon-anim" />
+      </div>
       <h3>تحويل مالي آمن</h3>
       <p>أرسل الأموال فوراً وبأمان تام</p>
     </div>
 
-    {/* منطقة البحث الذكي */}
+    {/* 2. منطقة البحث الذكي عن المستلم */}
     <div className="recipient-search-area">
-      <label><Search size={16} /> ابحث عن المستلم</label>
+      <label className="input-label"><Search size={16} /> ابحث عن المستلم</label>
       <div className="input-with-spinner">
         <input 
           type="text" 
           placeholder="أدخل MAFA ID المستلم..." 
+          className="modern-input"
           onChange={(e) => handleRecipientSearch(e.target.value)} 
         />
         {actionLoading && <RefreshCw className="spin-loader" size={18} />}
       </div>
 
-      {/* عرض نتيجة البحث الذكي */}
-      {searchResult && (
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }} 
-          animate={{ opacity: 1, scale: 1 }}
-          className={`search-result-card ${searchResult === 'not_found' ? 'error' : 'success'}`}
-        >
-          {searchResult === 'not_found' ? (
-            <div className="res-error"><AlertCircle size={20} /> المستخدم غير موجود</div>
-          ) : searchResult === 'self' ? (
-            <div className="res-error"><UserCheck size={20} /> لا يمكنك التحويل لنفسك</div>
-          ) : (
-            <div className="res-success-content">
-              <img src={searchResult.avatar} alt="Avatar" className="res-avatar" />
-              <div className="res-info">
-                <h5>{searchResult.name}</h5>
-                <span>{searchResult.level} • {searchResult.mafaId}</span>
+      {/* عرض نتيجة البحث الذكي بناءً على اللوجيك */}
+      <AnimatePresence mode="wait">
+        {searchResult && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }} 
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className={`search-result-card ${searchResult === 'not_found' || searchResult === 'self' ? 'error' : 'success'}`}
+          >
+            {searchResult === 'not_found' ? (
+              <div className="res-error"><AlertCircle size={20} /> المستخدم غير موجود</div>
+            ) : searchResult === 'self' ? (
+              <div className="res-error"><UserCheck size={20} /> لا يمكنك التحويل لنفسك</div>
+            ) : (
+              <div className="res-success-content">
+                <img src={searchResult.avatar} alt="Avatar" className="res-avatar" />
+                <div className="res-info">
+                  <h5>{searchResult.name}</h5>
+                  <span>{searchResult.level} • {searchResult.mafaId}</span>
+                </div>
+                <CheckCircle2 className="verified-icon" size={20} />
               </div>
-              <CheckCircle2 className="verified-icon" size={20} />
-            </div>
-          )}
-        </motion.div>
-      )}
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
 
-    {/* تفاصيل المبلغ والأمان */}
+    {/* 3. تفاصيل المبلغ والـ PIN المطور */}
     <div className="secure-pin-section">
       <div className="amount-input-box">
-        <span>المبلغ المراد تحويله</span>
-        <input 
-          type="number" 
-          placeholder="0.00 EGP" 
-          value={transferData.amount}
-          onChange={(e) => setTransferData({...transferData, amount: e.target.value})}
-        />
+        <label className="input-label">المبلغ المراد تحويله</label>
+        <div className="amount-field-wrap">
+          <input 
+            type="number" 
+            placeholder="0.00" 
+            value={transferData.amount}
+            onChange={(e) => setTransferData({...transferData, amount: e.target.value})}
+          />
+          <span className="currency-tag">EGP</span>
+        </div>
       </div>
 
       <div className="pin-code-box">
-        <label>رمز PIN الأمني (4 أرقام)</label>
+        <label className="input-label">رمز PIN الأمني (4 أرقام)</label>
         <div className="pin-inputs-wrapper">
           <input 
             type="password" 
@@ -961,11 +996,13 @@ const shareReceipt = async () => {
           />
           <Lock size={18} className="pin-lock-icon" />
         </div>
+        <p className="pin-hint">لا تشارك رمز الأمان مع أي شخص 🛡️</p>
       </div>
 
+      {/* زر التنفيذ المربوط باللوجيك - تم تعديل الشرط ليكون أدق */}
       <button 
         className="execute-transfer-btn"
-        disabled={!searchResult || searchResult === 'not_found' || !transferData.pin || actionLoading}
+        disabled={!searchResult || searchResult === 'not_found' || searchResult === 'self' || !transferData.pin || !transferData.amount || actionLoading}
         onClick={executeSecureTransfer}
       >
         {actionLoading ? <RefreshCw className="spin" /> : "تأكيد التحويل الآن"}
@@ -973,327 +1010,148 @@ const shareReceipt = async () => {
     </div>
   </div>
 )}
-              
-{/* مودال التحويل المالي - جزء البحث */}
-<div className="recipient-search-area">
-  <label><Search size={16} /> ابحث عن المستلم</label>
-  <div className="input-with-spinner">
-    <input 
-      type="text" 
-      placeholder="أدخل MAFA ID المستلم..." 
-      onChange={(e) => handleRecipientSearch(e.target.value)} 
-    />
-    {actionLoading && <RefreshCw className="spin-loader" size={18} />}
-  </div>
 
-  {/* عرض نتيجة البحث الذكي */}
-  {searchResult && (
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.9 }} 
-      animate={{ opacity: 1, scale: 1 }}
-      className={`search-result-card ${searchResult === 'not_found' ? 'error' : 'success'}`}
-    >
-      {searchResult === 'not_found' ? (
-        <div className="res-error"><AlertCircle size={20} /> المستخدم غير موجود</div>
-      ) : searchResult === 'self' ? (
-        <div className="res-error"><UserCheck size={20} /> لا يمكنك التحويل لنفسك</div>
-      ) : (
-        <div className="res-success-content">
-          <img src={searchResult.avatar} alt="Avatar" className="res-avatar" />
-          <div className="res-info">
-            <h5>{searchResult.name}</h5>
-            <span>{searchResult.level} • {searchResult.mafaId}</span>
-          </div>
-          <CheckCircle2 className="verified-icon" size={20} />
-        </div>
-      )}
-    </motion.div>
-  )}
-</div>
+      {/* --- تابع محتوى التابات (Main Viewport Continued) --- */}
 
-              <div className="secure-pin-section">
-  <div className="amount-input-box">
-    <span>المبلغ المراد تحويله</span>
-    <input 
-      type="number" 
-      placeholder="0.00 EGP" 
-      value={transferData.amount}
-      onChange={(e) => setTransferData({...transferData, amount: e.target.value})}
-    />
-  </div>
-
-  <div className="pin-code-box">
-    <label>رمز PIN الأمني (4 أرقام)</label>
-    <div className="pin-inputs-wrapper">
-      <input 
-        type="password" 
-        maxLength="4" 
-        placeholder="••••"
-        className="pin-input-field"
-        onChange={(e) => setTransferData({...transferData, pin: e.target.value})}
-      />
-      <Lock size={18} className="pin-lock-icon" />
-    </div>
-    <p className="pin-hint">لا تشارك الرمز السري مع أحد</p>
-  </div>
-
-  <button 
-    className="execute-transfer-btn"
-    disabled={!searchResult || searchResult === 'not_found' || !transferData.pin}
-    onClick={executeSecureTransfer}
-  >
-    {actionLoading ? <RefreshCw className="spin" /> : "تأكيد التحويل الآن"}
-  </button>
-</div>
-
-              <div className="recharge-upload-container">
-  <h3>تأكيد عملية الشحن</h3>
-  <div className="method-selector">
-    {Object.values(RECHARGE_METHODS).map(method => (
-      <div 
-        key={method.id}
-        className={`method-card ${rechargeData.method === method.id ? 'active' : ''}`}
-        onClick={() => setRechargeData({...rechargeData, method: method.id})}
-      >
-        <div className="method-dot" />
-        <span>{method.name}</span>
-      </div>
-    ))}
-  </div>
-
-  {/* منطقة رفع الملفات والمعاينة */}
-  <div 
-    className="upload-dropzone"
-    onClick={() => document.getElementById('receipt-input').click()}
-  >
-    {rechargeData.previewUrl ? (
-      <div className="preview-wrapper">
-        <img src={rechargeData.previewUrl} alt="Receipt Preview" />
-        <div className="change-photo-overlay"><RefreshCw /> تغيير الصورة</div>
-      </div>
-    ) : (
-      <div className="upload-placeholder">
-        <ImageIcon size={40} />
-        <p>اضغط لرفع صورة إيصال الدفع</p>
-        <span>يدعم JPG, PNG (حد أقصى 5MB)</span>
-      </div>
-    )}
-    <input 
-      id="receipt-input" 
-      type="file" 
-      hidden 
-      accept="image/*"
-      onChange={handleFileChange} 
-    />
-  </div>
-
-  <button 
-    className="submit-recharge-btn"
-    disabled={!rechargeData.receiptFile || actionLoading}
-    onClick={handleRechargeSubmission}
-  >
-    {actionLoading ? "جاري الرفع..." : "إرسال الطلب للمراجعة"}
-  </button>
-</div>
-
-              <div className="vault-master-card">
-  <div className="vault-header">
-    <div className="vault-title-group">
-      <PiggyBank className="vault-icon" />
-      <div>
-        <h4>الخزنة الذكية</h4>
-        <p>رصيد مدخر بعيداً عن العمليات اليومية</p>
-      </div>
-    </div>
-    <div className="vault-badge-status">محمي</div>
-  </div>
-
-  <div className="vault-balance-display">
-    <small>إجمالي المدخرات</small>
-    <h2>{user?.vaultBalance?.toLocaleString() || 0} <span>EGP</span></h2>
-  </div>
-
-  <div className="vault-quick-actions">
-    <div className="vault-input-wrap">
-      <input 
-        type="number" 
-        placeholder="أدخل المبلغ..." 
-        value={vaultState.actionAmount}
-        onChange={(e) => setVaultState({...vaultState, actionAmount: e.target.value})}
-      />
-    </div>
-    <div className="vault-buttons">
-      <button onClick={() => manageVault('deposit')} className="btn-v-deposit">إيداع</button>
-      <button onClick={() => manageVault('withdraw')} className="btn-v-withdraw">سحب</button>
-    </div>
-  </div>
-</div>
-{/* ميزة التفاعل: المهام اليومية لكسب النقاط */}
-<div className="daily-quests-section">
-  <div className="section-header">
-    <h3>مهامك اليومية</h3>
-    <div className="points-badge">+{user?.dailyBonusPoints || 0} اليوم</div>
-  </div>
-  
-  <div className="quests-scroll">
-    <div className={`quest-card ${user?.dailyLogin ? 'completed' : ''}`}>
-      <div className="quest-icon"><CalendarCheck size={20} /></div>
-      <div className="quest-info">
-        <h5>تسجيل الدخول اليومي</h5>
-        <p>احصل على 10 نقاط</p>
-      </div>
-      {user?.dailyLogin ? <CheckCircle2 className="text-success" /> : <ChevronLeft />}
-    </div>
-
-    <div className="quest-card">
-      <div className="quest-icon"><Share2 size={20} /></div>
-      <div className="quest-info">
-        <h5>حول لصديق</h5>
-        <p>احصل على 50 نقطة</p>
-      </div>
-      <button className="quest-action-btn">تنفيذ</button>
-    </div>
-  </div>
-</div>
-              {/* مودال الإشعارات التفصيلي */}
-{activeTab === 'notifications' && (
-  <motion.div className="notifications-page" initial={{ x: '100%' }} animate={{ x: 0 }}>
-    <header className="page-header">
-      <ArrowRight onClick={() => setActiveTab('dashboard')} />
-      <h2>التنبيهات</h2>
-      <button className="clear-all">مسح الكل</button>
-    </header>
-
-    <div className="notifications-list">
-      {notifications.length > 0 ? (
-        notifications.map(notif => (
-          <div key={notif.id} className={`notif-item ${!notif.read ? 'unread' : ''}`}>
-            <div className={`notif-type-icon ${notif.type}`}>
-              {notif.type === 'receive' ? <ArrowDownLeft /> : <Bell />}
-            </div>
-            <div className="notif-content">
-              <p>{notif.message}</p>
-              <span>{notif.time}</span>
-            </div>
-            {!notif.read && <div className="unread-dot" />}
-          </div>
-        ))
-      ) : (
-        <div className="empty-notif">
-          <BellOff size={50} />
-          <p>لا توجد إشعارات جديدة</p>
-        </div>
-      )}
-    </div>
-  </motion.div>
-)}
-              {/* واجهة السجل مع الفلترة الذكية */}
-<div className="history-filter-bar">
-  <div className="search-box">
-    <Search size={18} />
-    <input 
-      type="text" 
-      placeholder="ابحث عن عملية..." 
-      onChange={(e) => setFilterQuery(e.target.value)}
-    />
-  </div>
-  <div className="filter-chips">
-    <button className="f-chip active">الكل</button>
-    <button className="f-chip">شحن</button>
-    <button className="f-chip">تحويل</button>
-    <button className="f-chip">سحب</button>
-  </div>
-</div>
-              {/* شاشة التنبيه بالحساب غير المفعل */}
-{!user?.isActivated && isDataComplete && (
-  <div className="activation-warning-overlay">
-    <div className="warning-card">
-      <ShieldAlert size={60} className="text-gold" />
-      <h2>حسابك قيد المراجعة</h2>
-      <p>محفظتك جاهزة، لكنها تنتظر التفعيل من قبل الإدارة لتتمكن من إرسال واستقبال الأموال.</p>
-      <div className="support-contact">
-        <span>هل تواجه مشكلة؟</span>
-        <button onClick={() => window.open('https://wa.me/yournumber')}>تواصل مع الدعم</button>
-      </div>
-    </div>
-  </div>
-)}
-              {/* 1. تطوير حقل الـ PIN مع الملاحظات */}
-<div className="transfer-note-area">
-  <label>ملاحظة (اختياري)</label>
-  <textarea 
-    placeholder="اكتب سبب التحويل هنا..."
-    onChange={(e) => setTransferData({...transferData, note: e.target.value})}
-  />
-</div>
-
-{/* 2. شريط تقدم المستوى (Level Progress) */}
-<div className="level-progress-card">
-  <div className="level-info">
-    <span>المستوى {user?.level}</span>
-    <span>{user?.exp} / 1000 XP</span>
-  </div>
-  <div className="progress-bar-bg">
-    <motion.div 
-      className="progress-bar-fill"
-      initial={{ width: 0 }}
-      animate={{ width: `${(user?.exp / 1000) * 100}%` }}
-    />
-  </div>
-  <p className="next-level-hint">باقي لك {1000 - user?.exp} نقطة للوصول للمستوى التالي!</p>
-</div>
-           {/* مودال تفاصيل العملية عند الضغط عليها في السجل */}
-{selectedTransaction && (
-  <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-    <div className="receipt-card-modal">
-      <div className="receipt-header">
-        <div className="status-badge-big success">عملية ناجحة</div>
-        <h2>{selectedTransaction.amount} EGP</h2>
-        <p>{selectedTransaction.type === 'send' ? 'تحويل مالي' : 'استلام أموال'}</p>
-      </div>
-      <div className="receipt-body">
-        <div className="r-row"><span>المستلم:</span> <strong>{selectedTransaction.toName}</strong></div>
-        <div className="r-row"><span>التاريخ:</span> <strong>{selectedTransaction.date}</strong></div>
-        <div className="r-row"><span>رقم العملية:</span> <small>{selectedTransaction.id}</small></div>
-      </div>
-      <button className="share-receipt-btn" onClick={shareReceipt}>مشاركة الإيصال</button>
-      <button className="close-receipt" onClick={() => setSelectedTransaction(null)}>إغلاق</button>
-    </div>
-  </motion.div>
-)}   
-              
-              
-              
-              {/* مودال الشحن (الميزة 8) */}
-              {activeModal === 'recharge' && (
-                <div className="modal-body">
-                  <h3>شحن الرصيد</h3>
-                  <div className="methods-grid">
-                    {Object.values(RECHARGE_METHODS).map(m => (
-                      <div 
-                        key={m.id} 
-                        className={`m-item ${rechargeData.method === m.id ? 'active' : ''}`}
-                        onClick={() => setRechargeData({...rechargeData, method: m.id})}
-                      >
-                        {m.name}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="upload-section" onClick={() => document.getElementById('file-up').click()}>
-                    {rechargeData.previewUrl ? (
-                      <img src={rechargeData.previewUrl} className="receipt-preview" />
-                    ) : (
-                      <><ImageIcon size={30} /><p>ارفع صورة الإيصال</p></>
-                    )}
-                    <input id="file-up" type="file" hidden onChange={(e) => {
-                      const file = e.target.files[0];
-                      setRechargeData({...rechargeData, receiptFile: file, previewUrl: URL.createObjectURL(file)});
-                    }} />
-                  </div>
-                  <button className="main-action-btn" onClick={handleRechargeSubmission}>إرسال الطلب</button>
+          {/* واجهة السجل مع الفلترة الذكية */}
+          {activeTab === 'history' && (
+            <motion.div key="history" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="history-page">
+              <div className="history-filter-bar">
+                <div className="search-box">
+                  <Search size={18} />
+                  <input 
+                    type="text" 
+                    placeholder="ابحث عن عملية..." 
+                    onChange={(e) => setFilterQuery(e.target.value)}
+                  />
                 </div>
-              )}
+                <div className="filter-chips">
+                  <button className="f-chip active">الكل</button>
+                  <button className="f-chip">شحن</button>
+                  <button className="f-chip">تحويل</button>
+                  <button className="f-chip">سحب</button>
+                </div>
+              </div>
+              <div className="full-transactions-list">
+                {transactions.map(renderTransactionItem)}
+              </div>
             </motion.div>
+          )}
+
+          {/* مودال الإشعارات التفصيلي */}
+          {activeTab === 'notifications' && (
+            <motion.div className="notifications-page" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}>
+              <header className="page-header">
+                <ArrowRight onClick={() => setActiveTab('dashboard')} />
+                <h2>التنبيهات</h2>
+                <button className="clear-all">مسح الكل</button>
+              </header>
+              <div className="notifications-list">
+                {notifications.length > 0 ? (
+                  notifications.map(notif => (
+                    <div key={notif.id} className={`notif-item ${!notif.read ? 'unread' : ''}`}>
+                      <div className={`notif-type-icon ${notif.type}`}>
+                        {notif.type === 'receive' ? <ArrowDownLeft /> : <Bell />}
+                      </div>
+                      <div className="notif-content">
+                        <p>{notif.message}</p>
+                        <span>{notif.time}</span>
+                      </div>
+                      {!notif.read && <div className="unread-dot" />}
+                    </div>
+                  ))
+                ) : (
+                  <div className="empty-notif">
+                    <BellOff size={50} />
+                    <p>لا توجد إشعارات جديدة</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* --- عناصر إضافية تظهر في Dashboard فقط --- */}
+        {activeTab === 'dashboard' && (
+          <div className="extra-dash-content">
+            {/* شريط تقدم المستوى (Level Progress) */}
+            <div className="level-progress-card">
+              <div className="level-info">
+                <span>المستوى {user?.level}</span>
+                <span>{user?.exp} / 1000 XP</span>
+              </div>
+              <div className="progress-bar-bg">
+                <motion.div 
+                  className="progress-bar-fill"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(user?.exp / 1000) * 100}%` }}
+                />
+              </div>
+              <p className="next-level-hint">باقي لك {1000 - user?.exp} نقطة للوصول للمستوى التالي!</p>
+            </div>
+
+            {/* المهام اليومية */}
+            <div className="daily-quests-section">
+              <div className="section-header">
+                <h3>مهامك اليومية</h3>
+                <div className="points-badge">+{user?.dailyBonusPoints || 0} اليوم</div>
+              </div>
+              <div className="quests-scroll">
+                <div className={`quest-card ${user?.dailyLogin ? 'completed' : ''}`}>
+                  <div className="quest-icon"><CalendarCheck size={20} /></div>
+                  <div className="quest-info">
+                    <h5>تسجيل الدخول اليومي</h5>
+                    <p>احصل على 10 نقاط</p>
+                  </div>
+                  {user?.dailyLogin ? <CheckCircle2 className="text-success" /> : <ChevronLeft />}
+                </div>
+                <div className="quest-card">
+                  <div className="quest-icon"><Share2 size={20} /></div>
+                  <div className="quest-info">
+                    <h5>حول لصديق</h5>
+                    <p>احصل على 50 نقطة</p>
+                  </div>
+                  <button className="quest-action-btn">تنفيذ</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* شاشة التنبيه بالحساب غير المفعل */}
+      {!user?.isActivated && isDataComplete && (
+        <div className="activation-warning-overlay">
+          <div className="warning-card">
+            <ShieldAlert size={60} className="text-gold" />
+            <h2>حسابك قيد المراجعة</h2>
+            <p>محفظتك جاهزة، لكنها تنتظر التفعيل من قبل الإدارة لتتمكن من إرسال واستقبال الأموال.</p>
+            <div className="support-contact">
+              <span>هل تواجه مشكلة؟</span>
+              <button onClick={() => window.open('https://wa.me/yournumber')}>تواصل مع الدعم</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* مودال تفاصيل العملية (Receipt) */}
+      <AnimatePresence>
+        {selectedTransaction && (
+          <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <div className="receipt-card-modal">
+              <div className="receipt-header">
+                <div className="status-badge-big success">عملية ناجحة</div>
+                <h2>{selectedTransaction.amount} EGP</h2>
+                <p>{selectedTransaction.type === 'send' ? 'تحويل مالي' : 'استلام أموال'}</p>
+              </div>
+              <div className="receipt-body">
+                <div className="r-row"><span>المستلم:</span> <strong>{selectedTransaction.toName}</strong></div>
+                <div className="r-row"><span>التاريخ:</span> <strong>{selectedTransaction.date}</strong></div>
+                <div className="r-row"><span>رقم العملية:</span> <small>{selectedTransaction.id}</small></div>
+              </div>
+              <button className="share-receipt-btn" onClick={shareReceipt}>مشاركة الإيصال</button>
+              <button className="close-receipt" onClick={() => setSelectedTransaction(null)}>إغلاق</button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1306,7 +1164,7 @@ const shareReceipt = async () => {
         <div className={`nav-tab ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
           <History /><span>النشاط</span>
         </div>
-        <div className="nav-tab-center" onClick={() => secureOpenModal('transfer')}>
+        <div className="nav-tab-center" onClick={() => setActiveModal('transfer')}>
           <div className="fab-plus"><Plus size={30} /></div>
         </div>
         <div className={`nav-tab ${activeTab === 'vault' ? 'active' : ''}`} onClick={() => setActiveTab('vault')}>
@@ -1961,6 +1819,7 @@ const styles = `
 export default Wallet;
   
   
+
 
 
 
