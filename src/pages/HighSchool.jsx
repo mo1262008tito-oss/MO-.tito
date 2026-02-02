@@ -154,48 +154,42 @@ const HighSchool = () => {
     };
   }, []);
 
+useEffect(() => {
+  let unsubUser;
 
-  useEffect(() => {
-    let unsubUser;
+  const user = auth.currentUser;
+  if (!user) {
+    navigate('/login');
+    return;
+  }
 
-    const user = auth.currentUser;
-    if (!user) {
-      navigate('/login');
+  // مراقبة بيانات المستخدم
+  unsubUser = onSnapshot(doc(db, "users", user.uid), (snap) => {
+    if (!snap.exists()) {
+      navigate('/complete-profile');
       return;
     }
 
-    // مراقبة بيانات المستخدم
-    unsubUser = onSnapshot(doc(db, "users", user.uid), (snap) => {
-      if (!snap.exists()) {
-        // إذا كان المستخدم مسجل بجوجل لكن ليس له بيانات في الداتابيز
-        navigate('/complete-profile');
-        return;
-      }
-      
-      const data = snap.data();
-      
-      // التحقق من الشروط التي طلبتها
-      if (!data.profileCompleted) {
-        navigate('/complete-profile');
-      } else if (!data.isActivated) {
-        navigate('/activation-pending');
-      } else {
-        // إذا كان كل شيء تمام، قم بتخزين البيانات في الـ State
-        setUserData({ id: snap.id, ...data });
-        setAuthLoading(false); // هنا تفتح الصفحة
-      }
-    });
+    const data = snap.data();
 
-    return () => unsubUser?.();
-  }, [navigate]);
+    // التحقق من الشروط
+    if (!data.profileCompleted) {
+      navigate('/complete-profile');
+    } else if (!data.isActivated) {
+      navigate('/activation-pending');
+    } else {
+      // ✅ كل البيانات توضع هنا داخل الـ else وقبل قفلة الـ onSnapshot
+      setUserData({ id: snap.id, ...data });
+      setEducationStage(data.stage || 'ثانوي');
+      setCurrentGrade(data.grade || 'الصف الثالث الثانوي');
+      setBranch(data.branch || 'عام');
+      setWishlist(data.wishlist || []);
+      setAuthLoading(false); 
+    }
+  }); // قفلة الـ onSnapshot الصحيحة
 
-        setUserData({ id: snap.id, ...data });
-        setEducationStage(data.stage || 'ثانوي');
-        setCurrentGrade(data.grade || 'الصف الثالث الثانوي');
-        setBranch(data.branch || 'عام');
-        setWishlist(data.wishlist || []);
-        setAuthLoading(false);
-      });
+  return () => unsubUser?.();
+}, [navigate]);
 
       // ميزة: جلب الكورسات الديناميكي بناءً على (المرحلة + الصف + التخصص)
       const coursesQuery = query(
@@ -1108,4 +1102,5 @@ const HighSchool = () => {
 };
 
 export default HighSchool;
+
 
