@@ -1,541 +1,1099 @@
- import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { db, auth } from '../firebase';
+import React, { 
+  useState, 
+  useEffect, 
+  useMemo, 
+  useRef, 
+  useCallback, 
+  useLayoutEffect 
+} from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+
+// استيراد مكتبات Firebase الأساسية
+import { db, auth, storage } from '../firebase';
 import { 
-  collection, getDocs, query, orderBy, limit, 
-  doc, onSnapshot, where, updateDoc, increment,
-  addDoc, serverTimestamp, getDoc
+  collection, 
+  query, 
+  where, 
+  orderBy, 
+  onSnapshot, 
+  doc, 
+  getDoc, 
+  updateDoc, 
+  increment, 
+  addDoc, 
+  serverTimestamp, 
+  limit, 
+  arrayUnion, 
+  runTransaction,
+  writeBatch,
+  getDocs
 } from 'firebase/firestore';
+
+// مكتبات الحركة والتصميم
 import { motion, AnimatePresence, useScroll, useSpring, useTransform } from 'framer-motion';
 import { 
-  GraduationCap, BookOpen, PlayCircle, Shield, 
-  ChevronLeft, Star, Users, Layout, Search, Filter,
-  Clock, Award, Flame, Zap, LayoutDashboard,
-  Trophy, Bell, History, ArrowRightCircle, Sparkles,
-  Wallet, BellDot, PlusCircle, CheckCircle2, AlertCircle,
-  Menu, X, Share2, Heart, MessageSquare, Info,
-  Settings, LogOut, CreditCard, BookText, School,
-  Target, Rocket, Headphones, PenTool, Monitor
+  Zap, Star, Users, Clock, Lock, Unlock, Wallet, Sparkles, Trophy, 
+  Search, Filter, Shield, HardDrive, CreditCard, Share2, Eye, 
+  PlayCircle, AlertCircle, Menu, X, Bell, Settings, LogOut, 
+  ChevronRight, Heart, MessageSquare, Info, BookOpen, GraduationCap,
+  Award, Flame, Target, Rocket, Headphones, PenTool, Monitor, CheckCircle2,
+  TrendingUp, Calendar, ChevronLeft, Bookmark, Crown, Gift, HelpCircle,
+  LayoutDashboard, BellDot, ShieldCheck, UserCheck, Briefcase, FileText,
+  MapPin, Phone, Mail, Globe, Cpu, Database, CloudLightning
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
-import './HighSchool.css'; 
+// --- الثوابت والبيانات الثابتة للنظام (Constants) ---
+const STAGES = ['ابتدائي', 'اعدادي', 'ثانوي'];
+const GRADES = {
+  'ابتدائي': ['الصف الأول', 'الصف الثاني', 'الصف الثالث', 'الصف الرابع', 'الصف الخامس', 'الصف السادس'],
+  'اعدادي': ['الصف الأول الاعدادي', 'الصف الثاني الاعدادي', 'الصف الثالث الاعدادي'],
+  'ثانوي': ['الصف الأول الثانوي', 'الصف الثاني الثانوي', 'الصف الثالث الثانوي']
+};
 
-
-
-
+const SUBJECTS = [
+  'الكل', 'اللغة العربية', 'اللغة الإنجليزية', 'الرياضيات', 'الفيزياء', 
+  'الكيمياء', 'الأحياء', 'التاريخ', 'الجغرافيا', 'الفلسفة'
+];
 
 /**
- * @component MAFA_Universal_Portal_v2
- * @description نظام الإدارة التعليمي المتكامل - يدعم جميع المراحل التعليمية بتقنيات الهولوغرام
+ * @component HighSchool
+ * @version 3.0.0
+ * @description النظام الأضخم لإدارة التعليم المنهجي - منصة MAFA
  */
 const HighSchool = () => {
   const navigate = useNavigate();
   const scrollRef = useRef(null);
-
   
-  // --- 1. إدارة الحالات (State Management) ---
+  // -----------------------------------------------------------------
+  // 1. حالات إدارة المستخدم والأمان (User & Security States)
+  // -----------------------------------------------------------------
   const [userData, setUserData] = useState(null);
+  const [isActivated, setIsActivated] = useState(false);
+  const [isSecure, setIsSecure] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [watermarkPos, setWatermarkPos] = useState({ x: 10, y: 10 });
+
+  // -----------------------------------------------------------------
+  // 2. حالات المحتوى والفلترة (Content & Filtering States)
+  // -----------------------------------------------------------------
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
-  const [topStudents, setTopStudents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('الكل'); 
+  const [educationStage, setEducationStage] = useState('ثانوي'); 
+  const [currentGrade, setCurrentGrade] = useState('الصف الثالث الثانوي');
+  const [branch, setBranch] = useState('عام'); // علمي | أدبي | عام
+  const [activeTab, setActiveTab] = useState('الكل');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('latest');
+  const [loading, setLoading] = useState(true);
+
+  // -----------------------------------------------------------------
+  // 3. حالات التفاعل والإشعارات (Interaction States)
+  // -----------------------------------------------------------------
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const [showNotificationPanel, setShowNotificationPanel] = useState(false);
-  
-  // الحالة الجديدة للمراحل التعليمية
-  const [educationStage, setEducationStage] = useState('ثانوي'); // ابتدائي | اعدادي | ثانوي
-  const [currentGrade, setCurrentGrade] = useState('الكل');
+  const [showNotifPanel, setShowNotifPanel] = useState(false);
+  const [topStudents, setTopStudents] = useState([]);
+  const [walletModal, setWalletModal] = useState(false);
+  const [wishlist, setWishlist] = useState([]);
+  const [systemStats, setSystemStats] = useState({ totalStudents: 0, totalCourses: 0 });
 
-  // --- 2. التحكم في المؤثرات البصرية (Advanced Framer Motion) ---
+  // -----------------------------------------------------------------
+  // 4. نظام المؤثرات الحركية (Framer Motion Setup)
+  // -----------------------------------------------------------------
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
-  const opacityHero = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 300], [1, 0]);
 
-  
-  // --- 3. نظام الحماية (Security System) ---
+  // -----------------------------------------------------------------
+  // 5. محرك الأمان الفائق (Security Engine)
+  // -----------------------------------------------------------------
   useEffect(() => {
+    // منع الضغط اليمين والاختصارات
+    const preventIntrusion = (e) => {
+      if (e.ctrlKey && (e.key === 'u' || e.key === 's' || e.key === 'i' || e.key === 'j' || e.key === 'p' || e.key === 'c')) {
+        e.preventDefault();
+        return false;
+      }
+      if (e.keyCode === 123) { // F12
+        e.preventDefault();
+        return false;
+      }
+    };
+
     const handleContextMenu = (e) => e.preventDefault();
-    const handleKeyDown = (e) => {
-      if (e.ctrlKey && (e.key === 'u' || e.key === 's' || e.key === 'p')) e.preventDefault();
+
+    // كشف محاولة فتح أدوات المطورين
+    const detectDevTools = () => {
+      const widthThreshold = window.outerWidth - window.innerWidth > 160;
+      const heightThreshold = window.outerHeight - window.innerHeight > 160;
+      if (widthThreshold || heightThreshold) {
+        setIsSecure(false);
+        // يمكنك هنا إرسال تقرير للأدمن أن هذا المستخدم يحاول الاختراق
+      } else {
+        setIsSecure(true);
+      }
     };
-    
+
+    document.addEventListener('keydown', preventIntrusion);
     document.addEventListener('contextmenu', handleContextMenu);
-    document.addEventListener('keydown', handleKeyDown);
-    
+    window.addEventListener('resize', detectDevTools);
+
+    // تحريك العلامة المائية عشوائياً
+    const wmInterval = setInterval(() => {
+      setWatermarkPos({
+        x: Math.floor(Math.random() * 80) + 5,
+        y: Math.floor(Math.random() * 80) + 5
+      });
+    }, 10000);
+
     return () => {
+      document.removeEventListener('keydown', preventIntrusion);
       document.removeEventListener('contextmenu', handleContextMenu);
-      document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', detectDevTools);
+      clearInterval(wmInterval);
     };
   }, []);
 
-  // --- 4. مزامنة بيانات المستخدم والاشعارات (Real-time Engine) ---
+  // -----------------------------------------------------------------
+  // 6. مزامنة البيانات السحابية (Firebase Cloud Sync)
+  // -----------------------------------------------------------------
   useEffect(() => {
-    let unsubscribeUser = () => {};
-    let unsubscribeNotif = () => {};
+    let unsubUser, unsubCourses, unsubStats, unsubNotif, unsubLeaders;
 
-    const syncData = async () => {
+    const initializeDataSync = async () => {
       const user = auth.currentUser;
-      if (!user) return;
+      if (!user) {
+        navigate('/login');
+        return;
+      }
 
-      // مزامنة الملف الشخصي
-      unsubscribeUser = onSnapshot(doc(db, "users", user.uid), (snap) => {
-        if (snap.exists()) {
-          setUserData({ id: snap.id, ...snap.data() });
+      // ميزة: التحقق من إكمال البيانات (من Saved Info الخاص بك)
+      unsubUser = onSnapshot(doc(db, "users", user.uid), (snap) => {
+        if (!snap.exists()) {
+          navigate('/complete-profile'); // التوجيه لصفحة إكمال البيانات
+          return;
         }
+        const data = snap.data();
+        
+        // منع الدخول إذا لم يتم التفعيل أو لم تكتمل البيانات
+        if (!data.profileCompleted || !data.isActivated) {
+          navigate('/activation-pending'); 
+        }
+
+        setUserData({ id: snap.id, ...data });
+        setEducationStage(data.stage || 'ثانوي');
+        setCurrentGrade(data.grade || 'الصف الثالث الثانوي');
+        setBranch(data.branch || 'عام');
+        setWishlist(data.wishlist || []);
+        setAuthLoading(false);
       });
 
-      // مزامنة الاشعارات
-      const nQuery = query(
-        collection(db, "notifications"),
-        where("userId", "==", user.uid),
-        orderBy("createdAt", "desc"),
-        limit(10)
-      );
-      unsubscribeNotif = onSnapshot(nQuery, (snap) => {
-        setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-      });
-    };
-
-    syncData();
-    return () => { unsubscribeUser(); unsubscribeNotif(); };
-  }, []);
-
-  // --- 5. جلب البيانات بناءً على المرحلة (Data Fetching) ---
-  const fetchEducationData = useCallback(async () => {
-    setLoading(true);
-    try {
-      // جلب الكورسات بناءً على التعليم (ثانوي/اعدادي/ابتدائي)
-      const q = query(
+      // ميزة: جلب الكورسات الديناميكي بناءً على (المرحلة + الصف + التخصص)
+      const coursesQuery = query(
         collection(db, "courses_metadata"),
         where("stage", "==", educationStage),
+        where("grade", "==", currentGrade),
+        where("isPublic", "==", true),
         orderBy("createdAt", "desc")
       );
-      
-      const snap = await getDocs(q);
-      const data = snap.docs.map(d => ({
-        id: d.id,
-        ...d.data(),
-        rating: d.data().rating || (Math.random() * 2 + 3).toFixed(1),
-        studentsCount: d.data().studentsCount || Math.floor(Math.random() * 500) + 50
-      }));
-      
-      setCourses(data);
-      setFilteredCourses(data);
 
-      // جلب لوحة الصدارة للمرحلة الحالية
-      const leaderQ = query(
+      unsubCourses = onSnapshot(coursesQuery, (snap) => {
+        const fetchedCourses = snap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          // بيانات افتراضية إذا لم تتوفر
+          rating: doc.data().rating || 4.5,
+          studentsCount: doc.data().studentsCount || 0
+        }));
+        setCourses(fetchedCourses);
+        setLoading(false);
+      });
+
+      // ميزة: إحصائيات المنصة الحية
+      unsubStats = onSnapshot(doc(db, "system", "global_stats"), (snap) => {
+        if (snap.exists()) setSystemStats(snap.data());
+      });
+
+      // ميزة: لوحة الصدارة للمرحلة الحالية
+      const leaderQuery = query(
         collection(db, "users"),
         where("stage", "==", educationStage),
         orderBy("points", "desc"),
         limit(5)
       );
-      const leaderSnap = await getDocs(leaderQ);
-      setTopStudents(leaderSnap.docs.map(d => d.data()));
+      unsubLeaders = onSnapshot(leaderQuery, (snap) => {
+        setTopStudents(snap.docs.map(d => d.data()));
+      });
 
-    } catch (error) {
-      console.error("Fetch Error:", error);
-    } finally {
-      setTimeout(() => setLoading(false), 1200);
+      // ميزة: الإشعارات
+      const notifQuery = query(
+        collection(db, "notifications"),
+        where("userId", "==", user.uid),
+        orderBy("createdAt", "desc"),
+        limit(10)
+      );
+      unsubNotif = onSnapshot(notifQuery, (snap) => {
+        setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      });
+    };
+
+    initializeDataSync();
+
+    return () => {
+      unsubUser?.(); unsubCourses?.(); unsubStats?.(); unsubNotif?.(); unsubLeaders?.();
+    };
+  }, [educationStage, currentGrade, navigate]);
+
+  // -----------------------------------------------------------------
+  // 7. محرك الفلترة والبحث (Filtering Engine)
+  // -----------------------------------------------------------------
+  useEffect(() => {
+    let result = [...courses];
+
+    // الفلترة بالبحث
+    if (searchTerm) {
+      const lowerSearch = searchTerm.toLowerCase();
+      result = result.filter(c => 
+        c.title?.toLowerCase().includes(lowerSearch) || 
+        c.instructor?.toLowerCase().includes(lowerSearch) ||
+        c.subject?.toLowerCase().includes(lowerSearch)
+      );
     }
-  }, [educationStage]);
 
-  useEffect(() => {
-    fetchEducationData();
-  }, [fetchEducationData]);
+    // الفلترة بالتبويب (المادة)
+    if (activeTab !== 'الكل') {
+      result = result.filter(c => c.subject === activeTab);
+    }
 
-  // --- 6. نظام الفلترة والبحث الذكي (Filtering System) ---
-  useEffect(() => {
-    let result = courses.filter(c => {
-      const matchSearch = c.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          c.instructor?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchGrade = activeTab === 'الكل' || c.grade === activeTab;
-      return matchSearch && matchGrade;
-    });
+    // الفلترة بالتخصص (علمي/أدبي) إذا كان في ثانوي
+    if (educationStage === 'ثانوي' && branch !== 'عام') {
+      result = result.filter(c => c.branch === branch || c.branch === 'عام');
+    }
 
+    // الترتيب
+    if (sortBy === 'latest') result.sort((a, b) => b.createdAt?.seconds - a.createdAt?.seconds);
     if (sortBy === 'popular') result.sort((a, b) => b.studentsCount - a.studentsCount);
     if (sortBy === 'rating') result.sort((a, b) => b.rating - a.rating);
 
     setFilteredCourses(result);
-  }, [searchTerm, activeTab, courses, sortBy]);
+  }, [searchTerm, activeTab, courses, sortBy, educationStage, branch]);
 
-  // --- 7. دوال التفاعل (Interaction Handlers) ---
-  const handleStageChange = (stage) => {
-    setEducationStage(stage);
-    setActiveTab('الكل');
+  // -----------------------------------------------------------------
+  // 8. منطق العمليات المالية (Wallet & Transactions)
+  // -----------------------------------------------------------------
+  const handlePurchase = async (course) => {
+    // 1. التحقق من الملكية المسبقة
+    if (userData.enrolledCourses?.includes(course.id)) {
+      navigate(`/course-player/${course.id}`);
+      return;
+    }
+
+    // 2. الكورس المجاني
+    if (course.isFree) {
+      await enrollStudent(course.id);
+      return;
+    }
+
+    // 3. التحقق من الرصيد
+    if (userData.balance < course.price) {
+      setWalletModal(true);
+      return;
+    }
+
+    // 4. تنفيذ العملية (Firestore Transaction)
+    if (window.confirm(`تأكيد شراء كورس ${course.title} بسعر ${course.price} ج.م؟`)) {
+      try {
+        await runTransaction(db, async (transaction) => {
+          const userRef = doc(db, "users", auth.currentUser.uid);
+          const courseRef = doc(db, "courses_metadata", course.id);
+          
+          const userSnap = await transaction.get(userRef);
+          if (userSnap.data().balance < course.price) throw "Insufficient balance";
+
+          // تحديث الرصيد والكورسات المشترك بها
+          transaction.update(userRef, {
+            balance: increment(-course.price),
+            enrolledCourses: arrayUnion(course.id),
+            points: increment(50) // مكافأة نقاط عند الشراء
+          });
+
+          // تحديث عدد طلاب الكورس
+          transaction.update(courseRef, {
+            studentsCount: increment(1)
+          });
+
+          // تسجيل الفاتورة في السجل
+          const logRef = doc(collection(db, "transactions"));
+          transaction.set(logRef, {
+            userId: auth.currentUser.uid,
+            userName: userData.name,
+            courseId: course.id,
+            courseTitle: course.title,
+            amount: course.price,
+            type: 'purchase',
+            timestamp: serverTimestamp()
+          });
+        });
+
+        alert("تم الاشتراك بنجاح! توجه إلى مشغل الكورسات الآن.");
+      } catch (error) {
+        console.error("Transaction Error:", error);
+        alert("حدث خطأ أثناء إتمام عملية الشراء.");
+      }
+    }
   };
 
-  const toggleLike = async (courseId, e) => {
+  const enrollStudent = async (courseId) => {
+    try {
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      await updateDoc(userRef, {
+        enrolledCourses: arrayUnion(courseId)
+      });
+      navigate(`/course-player/${courseId}`);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // -----------------------------------------------------------------
+  // 9. الدوال المساعدة (Helper Functions)
+  // -----------------------------------------------------------------
+  const toggleWishlist = async (courseId, e) => {
     e.stopPropagation();
-    // هنا يوضع منطق Firebase للـ Like
-    console.log("Liked:", courseId);
+    const userRef = doc(db, "users", auth.currentUser.uid);
+    const isExist = wishlist.includes(courseId);
+    
+    await updateDoc(userRef, {
+      wishlist: isExist ? wishlist.filter(id => id !== courseId) : arrayUnion(courseId)
+    });
   };
 
-  // --- 8. مكونات UI الفرعية (Sub-components) ---
-  const Sidebar = () => (
-    <motion.aside 
-      initial={{ x: 300 }} 
-      animate={{ x: 0 }} 
-      exit={{ x: 300 }}
-      className="portal-sidebar glass-heavy"
-    >
-      <div className="sidebar-header">
-        <Zap size={30} className="text-cyan-400" />
-        <h3>MAFA System</h3>
-        <X onClick={() => setIsSidebarOpen(false)} />
-      </div>
-      <nav className="sidebar-nav">
-        <div className="nav-group">
-          <span>الرئيسية</span>
-          <button onClick={() => navigate('/dashboard')}><LayoutDashboard size={18}/> لوحة التحكم</button>
-          <button onClick={() => navigate('/courses')} className="active"><BookOpen size={18}/> دوراتي التعليمية</button>
-        </div>
-        <div className="nav-group">
-          <span>الأدوات</span>
-          <button onClick={() => navigate('/exams')}><PenTool size={18}/> بنك الامتحانات</button>
-          <button onClick={() => navigate('/library')}><Monitor size={18}/> المكتبة الرقمية</button>
-          <button onClick={() => navigate('/ai-chat')}><Sparkles size={18}/> مساعد AI</button>
-        </div>
-        <div className="nav-group">
-          <span>الحساب</span>
-          <button onClick={() => navigate('/wallet')}><Wallet size={18}/> المحفظة</button>
-          <button onClick={() => navigate('/settings')}><Settings size={18}/> الإعدادات</button>
-        </div>
-      </nav>
-      <div className="sidebar-footer">
-        <button className="logout-btn"><LogOut size={18}/> تسجيل الخروج</button>
-      </div>
-    </motion.aside>
+  const getThemeColors = () => {
+    if (educationStage === 'ابتدائي') return { main: '#4ade80', glow: 'rgba(74, 222, 128, 0.5)', bg: 'from-green-500/10 to-transparent' };
+    if (educationStage === 'اعدادي') return { main: '#60a5fa', glow: 'rgba(96, 165, 250, 0.5)', bg: 'from-blue-500/10 to-transparent' };
+    if (currentGrade === 'الصف الثالث الثانوي') return { main: '#f87171', glow: 'rgba(248, 113, 113, 0.5)', bg: 'from-red-500/10 to-transparent' };
+    return { main: '#a78bfa', glow: 'rgba(167, 139, 250, 0.5)', bg: 'from-purple-500/10 to-transparent' };
+  };
+
+  const theme = getThemeColors();
+
+  // -----------------------------------------------------------------
+  // 10. مكونات الواجهة الصغيرة (Sub-components)
+  // -----------------------------------------------------------------
+  
+  // شريط الإعلانات المتحرك
+  const PromoBanner = () => (
+    <div className="promo-banner bg-gradient-to-r from-yellow-500 to-orange-600 text-white overflow-hidden py-2 relative">
+      <motion.div 
+        animate={{ x: ['100%', '-100%'] }} 
+        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+        className="whitespace-nowrap flex items-center gap-10 font-bold"
+      >
+        <span>🎁 خصم 50% على اشتراك العام الكامل لطلاب تالتة ثانوي!</span>
+        <span>🔥 انضم الآن لأكثر من {systemStats.totalStudents} طالب مسجل</span>
+        <span>🚀 بنك الأسئلة الجديد متاح الآن مجاناً للمشتركين</span>
+      </motion.div>
+    </div>
   );
 
-  // --- 9. شاشة التحميل المطورة ---
-  if (loading) return (
-    <div className="mafa-loader-v2">
-      <div className="loader-content">
-        <motion.div 
-          animate={{ scale: [1, 1.2, 1], rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="main-icon"
-        >
-          <Zap size={50} />
-        </motion.div>
-        <div className="loading-bar">
-          <motion.div initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 1 }} className="fill" />
+  // الكارت الخاص بكل كورس
+  const CourseCard = ({ course, index }) => (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.1 }}
+      className="course-card-premium group relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden hover:border-primary/50 transition-all duration-500"
+      style={{ '--primary': theme.main }}
+    >
+      <div className="relative h-52 overflow-hidden">
+        <img 
+          src={course.thumbnail} 
+          alt={course.title} 
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-60" />
+        
+        {/* شارات الكورس */}
+        <div className="absolute top-4 left-4 flex flex-col gap-2">
+          {course.isFree ? (
+            <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">مجاني</span>
+          ) : (
+            <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg" style={{ background: theme.main }}>
+              {course.price} ج.م
+            </span>
+          )}
+          {course.isTrending && (
+             <span className="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
+               <Flame size={10} /> تريند
+             </span>
+          )}
         </div>
-        <p>جاري تحميل محتوى {educationStage}...</p>
+
+        <button 
+          onClick={(e) => toggleWishlist(course.id, e)}
+          className="absolute top-4 right-4 p-2 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-red-500 transition-colors"
+        >
+          <Heart size={18} fill={wishlist.includes(course.id) ? "currentColor" : "none"} />
+        </button>
+
+        <div 
+          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+          onClick={() => handlePurchase(course)}
+        >
+          <div className="p-4 bg-white/20 backdrop-blur-xl rounded-full scale-50 group-hover:scale-100 transition-transform">
+            <PlayCircle size={50} className="text-white" />
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6">
+        <div className="flex items-center gap-2 mb-3">
+          <img src={course.instructorAvatar} className="w-6 h-6 rounded-full border border-white/20" alt="" />
+          <span className="text-gray-400 text-xs font-medium">{course.instructor}</span>
+        </div>
+        
+        <h3 className="text-white font-bold text-lg mb-4 line-clamp-1 group-hover:text-primary transition-colors">
+          {course.title}
+        </h3>
+
+        <div className="grid grid-cols-3 gap-2 mb-6">
+          <div className="flex flex-col items-center p-2 bg-white/5 rounded-xl">
+            <Users size={14} className="text-gray-400 mb-1" />
+            <span className="text-white text-[10px]">{course.studentsCount}</span>
+          </div>
+          <div className="flex flex-col items-center p-2 bg-white/5 rounded-xl">
+            <Star size={14} className="text-yellow-500 mb-1" />
+            <span className="text-white text-[10px]">{course.rating}</span>
+          </div>
+          <div className="flex flex-col items-center p-2 bg-white/5 rounded-xl">
+            <Clock size={14} className="text-gray-400 mb-1" />
+            <span className="text-white text-[10px]">{course.duration}</span>
+          </div>
+        </div>
+
+        {/* مؤشر التقدم إذا كان مشتركاً */}
+        {userData?.enrolledCourses?.includes(course.id) && (
+          <div className="mb-4">
+            <div className="flex justify-between text-[10px] text-gray-400 mb-1">
+              <span>تقدمك في المادة</span>
+              <span>{userData.progress?.[course.id] || 0}%</span>
+            </div>
+            <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: `${userData.progress?.[course.id] || 0}%` }}
+                className="h-full bg-primary"
+                style={{ background: theme.main }}
+              />
+            </div>
+          </div>
+        )}
+
+        <button 
+          onClick={() => handlePurchase(course)}
+          className="w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
+          style={{ 
+            background: userData?.enrolledCourses?.includes(course.id) ? 'transparent' : theme.main,
+            border: userData?.enrolledCourses?.includes(course.id) ? `1px solid ${theme.main}` : 'none',
+            color: 'white',
+            boxShadow: userData?.enrolledCourses?.includes(course.id) ? 'none' : theme.glow
+          }}
+        >
+          {userData?.enrolledCourses?.includes(course.id) ? (
+            <> <Monitor size={18} /> متابعة التعلم </>
+          ) : (
+            <> <Zap size={18} /> اشترك الآن </>
+          )}
+        </button>
+      </div>
+    </motion.div>
+  );
+
+  // -----------------------------------------------------------------
+  // 11. ريندر الواجهة الرئيسية (Main Render)
+  // -----------------------------------------------------------------
+  
+  // حالة التحميل الكلي
+  if (authLoading) return (
+    <div className="h-screen w-full bg-[#0a0a0a] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-6">
+        <motion.div 
+          animate={{ rotate: 360, scale: [1, 1.2, 1] }} 
+          transition={{ duration: 2, repeat: Infinity }}
+          className="w-20 h-20 border-4 border-t-primary border-white/5 rounded-full"
+          style={{ borderTopColor: theme.main }}
+        />
+        <p className="text-white font-bold tracking-widest animate-pulse">جاري تأمين الاتصال بـ MAFA ACADEMY...</p>
       </div>
     </div>
   );
 
   return (
-    <div className={`portal-container stage-${educationStage}`} ref={scrollRef}>
-      <motion.div className="scroll-progress" style={{ scaleX }} />
-      
-      {/* طبقة الحماية - العلامة المائية */}
-      <div className="security-overlay">
-        <span>{userData?.email}</span>
-        <span>{new Date().toLocaleDateString()}</span>
-        <span>MAFA-PROTECT-V2</span>
+    <div 
+      className={`portal-container min-h-screen bg-[#0a0a0a] text-white selection:bg-primary/30 ${!isSecure ? 'blur-3xl grayscale pointer-events-none' : ''}`}
+      style={{ fontFamily: 'Cairo, sans-serif' }}
+    >
+      <PromoBanner />
+
+      {/* ميزة العلامة المائية الذكية */}
+      <div 
+        className="fixed pointer-events-none z-[9999] opacity-[0.03] text-white font-bold text-sm select-none transition-all duration-1000"
+        style={{ top: `${watermarkPos.y}%`, left: `${watermarkPos.x}%` }}
+      >
+        {userData?.email} <br /> {new Date().toLocaleString()}
       </div>
 
-      <AnimatePresence>
-        {isSidebarOpen && <Sidebar />}
-      </AnimatePresence>
+      {/* شريط التقدم العلوي */}
+      <motion.div className="fixed top-0 left-0 right-0 h-1 z-[1001] origin-left bg-primary" style={{ scaleX, background: theme.main }} />
 
-      {/* 🧭 الهيدر العلوي - Floating Navbar */}
-      <header className="main-header glass-premium">
-        <div className="header-left">
-          <button className="menu-btn" onClick={() => setIsSidebarOpen(true)}>
-            <Menu />
-          </button>
-          <div className="logo" onClick={() => navigate('/')}>
-            <div className="logo-icon"><Rocket /></div>
-            <div className="logo-text">MAFA<span>ACADEMY</span></div>
-          </div>
-        </div>
-
-        <div className="stage-selector glass">
-          {['ابتدائي', 'اعدادي', 'ثانوي'].map(s => (
-            <button 
-              key={s} 
-              className={educationStage === s ? 'active' : ''}
-              onClick={() => handleStageChange(s)}
-            >
-              {s}
+      {/* 🧭 الهيدر (Navbar) */}
+      <header className="sticky top-0 z-[1000] bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5">
+        <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between">
+          
+          <div className="flex items-center gap-8">
+            <button onClick={() => setIsSidebarOpen(true)} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
+              <Menu size={26} />
             </button>
-          ))}
-        </div>
-
-        <div className="header-right">
-          <div className="user-stats glass" onClick={() => navigate('/wallet')}>
-            <div className="stat">
-               <Wallet size={16} />
-               <span>{userData?.balance || 0} ج.م</span>
-            </div>
-            <div className="stat">
-               <Flame size={16} />
-               <span>{userData?.streak || 0}</span>
-            </div>
+            <Link to="/" className="flex items-center gap-3 group">
+              <div className="p-2 bg-primary rounded-2xl rotate-3 group-hover:rotate-12 transition-transform" style={{ background: theme.main }}>
+                <Rocket size={24} className="text-white" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-black text-xl tracking-tighter leading-none">MAFA</span>
+                <span className="text-[10px] font-bold text-gray-500 tracking-[0.2em]">ACADEMY</span>
+              </div>
+            </Link>
           </div>
 
-          <div className="notification-bell" onClick={() => setShowNotificationPanel(!showNotificationPanel)}>
-            <Bell />
-            {notifications.filter(n => !n.read).length > 0 && <span className="badge" />}
-          </div>
+          <nav className="hidden lg:flex items-center gap-1 bg-white/5 p-1.5 rounded-2xl border border-white/5">
+            {STAGES.map(s => (
+              <button
+                key={s}
+                onClick={() => setEducationStage(s)}
+                className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${educationStage === s ? 'bg-white text-black shadow-xl' : 'text-gray-400 hover:text-white'}`}
+              >
+                {s}
+              </button>
+            ))}
+          </nav>
 
-          <div className="profile-trigger" onClick={() => navigate('/profile')}>
-            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userData?.name}`} alt="user" />
-            <div className="online-indicator" />
+          <div className="flex items-center gap-4">
+            <div 
+              className="hidden md:flex items-center gap-3 px-4 py-2 bg-white/5 rounded-2xl border border-white/10 cursor-pointer hover:bg-white/10 transition-colors"
+              onClick={() => setWalletModal(true)}
+            >
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary" style={{ color: theme.main }}>
+                <Wallet size={16} />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] text-gray-500 font-bold">رصيد المحفظة</span>
+                <span className="text-sm font-black">{userData?.balance || 0} ج.م</span>
+              </div>
+            </div>
+
+            <div className="relative">
+              <button 
+                onClick={() => setShowNotifPanel(!showNotifPanel)}
+                className="p-3 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors relative"
+              >
+                <Bell size={22} />
+                {notifications.some(n => !n.read) && (
+                  <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 border-2 border-[#0a0a0a] rounded-full" />
+                )}
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3 pl-4 border-l border-white/10 ml-2">
+               <img 
+                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userData?.name}`} 
+                className="w-10 h-10 rounded-2xl border-2 border-primary/50 p-0.5"
+                style={{ borderColor: theme.main }}
+                alt="user"
+               />
+            </div>
           </div>
         </div>
       </header>
 
-      {/* 🚀 قسم الهيرو والترحيب */}
-      <section className="hero-section">
-        <motion.div style={{ opacity: opacityHero }} className="hero-bg-effects">
-          <div className="blob blob-1" />
-          <div className="blob blob-2" />
-        </motion.div>
-
-        <div className="hero-grid">
+      {/* 🚀 قسم الهيرو (Hero Section) */}
+      <section className="relative pt-20 pb-32 overflow-hidden">
+        {/* خلفيات متحركة */}
+        <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-gradient-to-b ${theme.bg} blur-[120px] -z-10`} />
+        
+        <div className="max-w-[1400px] mx-auto px-6 grid lg:grid-cols-12 gap-16 items-center">
+          
           <motion.div 
-            initial={{ x: 100, opacity: 0 }} 
-            animate={{ x: 0, opacity: 1 }}
-            className="hero-welcome"
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="lg:col-span-7"
           >
-            <div className="badge-pill"><Sparkles size={14}/> نظام التعلم الذكي v2.0</div>
-            <h1>أهلاً بك يا <span className="name-gradient">{userData?.name?.split(' ')[0] || 'طالبنا'}</span></h1>
-            <p>أنت الآن تتصفح مناهج المرحلة <strong>{educationStage}</strong>. لديك اليوم {filteredCourses.length} كورسات متاحة ومهمة واحدة متبقية.</p>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-md rounded-full border border-white/10 mb-8">
+              <Sparkles size={16} className="text-yellow-500" />
+              <span className="text-xs font-bold text-gray-300">أهلاً بك في الجيل القادم من التعليم</span>
+            </div>
             
-            <div className="hero-search-bar glass">
-              <Search />
-              <input 
-                type="text" 
-                placeholder="ابحث عن مادة، مدرس، أو درس معين..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <button className="btn-primary">بحث سريع</button>
-            </div>
+            <h1 className="text-6xl md:text-7xl font-black leading-[1.1] mb-8">
+              طريقك للقمة <br /> 
+              بدأ من <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-white" style={{ backgroundImage: `linear-gradient(to right, ${theme.main}, #fff)` }}>MAFA</span>
+            </h1>
 
-            <div className="quick-info">
-              <div className="info-item">
-                <Target />
-                <span>هدف اليوم: 4 ساعات مذاكرة</span>
-              </div>
-              <div className="info-item">
-                <Award />
-                <span>المستوى الحالي: {userData?.level || 'مبتدئ'}</span>
-              </div>
-            </div>
-          </motion.div>
+            <p className="text-gray-400 text-lg md:text-xl max-w-2xl mb-12 leading-relaxed">
+              تصفح الآن أفضل الكورسات التعليمية لـ <span className="text-white font-bold">{currentGrade}</span>. 
+              أكثر من {systemStats.totalCourses} كورس متخصص تم إعدادهم بواسطة نخبة من الخبراء.
+            </p>
 
-          <motion.div 
-            initial={{ scale: 0.8, opacity: 0 }} 
-            animate={{ scale: 1, opacity: 1 }}
-            className="hero-leaderboard glass"
-          >
-            <div className="l-head">
-              <Trophy className="text-yellow-400" />
-              <h3>أوائل المرحلة {educationStage}</h3>
-            </div>
-            <div className="l-body">
-              {topStudents.map((s, i) => (
-                <div key={i} className="l-row">
-                  <span className="rank">#{i+1}</span>
-                  <img src={`https://api.dicebear.com/initials/svg?seed=${s.name}`} alt="" />
-                  <div className="details">
-                    <p>{s.name}</p>
-                    <span>{s.points} XP</span>
-                  </div>
-                  {i === 0 && <Sparkles size={16} className="crown" />}
+            <div className="flex flex-wrap gap-4 mb-12">
+              <div className="flex -space-x-3">
+                {[1,2,3,4].map(i => (
+                  <img key={i} src={`https://i.pravatar.cc/150?u=${i}`} className="w-12 h-12 rounded-full border-4 border-[#0a0a0a]" alt="" />
+                ))}
+                <div className="w-12 h-12 rounded-full border-4 border-[#0a0a0a] bg-primary flex items-center justify-center text-xs font-bold" style={{ background: theme.main }}>
+                  +{Math.floor(systemStats.totalStudents / 1000)}k
                 </div>
-              ))}
+              </div>
+              <div className="flex flex-col justify-center">
+                <span className="text-white font-bold">طلابنا المتميزين</span>
+                <span className="text-gray-500 text-xs">نفتخر بكوننا جزءاً من نجاحهم</span>
+              </div>
             </div>
-            <button className="view-all" onClick={() => navigate('/leaderboard')}>
-              عرض القائمة الكاملة <ArrowRightCircle size={16} />
-            </button>
+
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="relative flex-1 group">
+                <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-primary transition-colors" />
+                <input 
+                  type="text" 
+                  placeholder="ابحث عن مادة، مدرس، أو درس معين..."
+                  className="w-full h-16 bg-white/5 border border-white/10 rounded-2xl pr-14 pl-6 text-white outline-none focus:border-primary/50 transition-all"
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <button className="h-16 px-10 bg-white text-black font-black rounded-2xl hover:scale-105 active:scale-95 transition-all">
+                بحث ذكي
+              </button>
+            </div>
           </motion.div>
+
+          {/* لوحة الصدارة المصغرة */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="lg:col-span-5 hidden lg:block"
+          >
+            <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[40px] p-8 relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-10 opacity-10">
+                  <Trophy size={150} className="text-primary" style={{ color: theme.main }} />
+               </div>
+               
+               <div className="flex items-center justify-between mb-8 relative z-10">
+                  <h3 className="text-xl font-black flex items-center gap-3">
+                    <Trophy className="text-yellow-500" />
+                    أوائل المرحلة
+                  </h3>
+                  <button onClick={() => navigate('/leaderboard')} className="text-xs font-bold text-primary" style={{ color: theme.main }}>مشاهدة الكل</button>
+               </div>
+
+               <div className="space-y-4 relative z-10">
+                  {topStudents.map((s, i) => (
+                    <motion.div 
+                      key={i} 
+                      initial={{ x: 20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: i * 0.1 }}
+                      className="flex items-center justify-between p-4 bg-white/5 rounded-3xl border border-white/5 hover:border-white/20 transition-all group"
+                    >
+                      <div className="flex items-center gap-4">
+                        <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black ${i === 0 ? 'bg-yellow-500 text-black' : 'bg-white/10 text-gray-400'}`}>
+                          {i + 1}
+                        </span>
+                        <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${s.name}`} className="w-10 h-10 rounded-xl" alt="" />
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold group-hover:text-primary transition-colors">{s.name}</span>
+                          <span className="text-[10px] text-gray-500">طالب متميز</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-black text-white">{s.points}</div>
+                        <div className="text-[10px] text-gray-500">نقطة XP</div>
+                      </div>
+                    </motion.div>
+                  ))}
+               </div>
+
+               <div className="mt-8 pt-8 border-t border-white/10 flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">مركزك الحالي</span>
+                    <span className="text-lg font-black"># {userData?.rank || '---'}</span>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">نقاط الـ Streak</span>
+                    <div className="flex items-center gap-2 text-orange-500">
+                      <Flame size={18} fill="currentColor" />
+                      <span className="text-lg font-black">{userData?.streak || 0}</span>
+                    </div>
+                  </div>
+               </div>
+            </div>
+          </motion.div>
+
         </div>
       </section>
 
-      {/* 📚 قسم المحتوى التعليمي */}
-      <main className="content-area">
-        <div className="content-filters">
-          <div className="tabs glass">
-            {['الكل', 'الصف الأول', 'الصف الثاني', 'الصف الثالث', 'مراجعات نهائية'].map(tab => (
-              <button 
-                key={tab} 
-                className={activeTab === tab ? 'active' : ''}
+      {/* 📚 قسم المحتوى التعليمي (Main Content) */}
+      <main className="max-w-[1400px] mx-auto px-6 pb-40">
+        
+        {/* اختيار الصف الدراسي والفلترة */}
+        <div className="flex flex-col gap-10 mb-20">
+          
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div>
+              <h2 className="text-4xl font-black mb-4 flex items-center gap-4">
+                <BookOpen className="text-primary" style={{ color: theme.main }} />
+                المناهج الدراسية
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {GRADES[educationStage]?.map(g => (
+                  <button
+                    key={g}
+                    onClick={() => setCurrentGrade(g)}
+                    className={`px-5 py-2 rounded-2xl text-xs font-bold transition-all border ${currentGrade === g ? 'bg-primary border-primary text-white shadow-lg' : 'bg-white/5 border-white/5 text-gray-400 hover:border-white/20'}`}
+                    style={currentGrade === g ? { background: theme.main, borderColor: theme.main } : {}}
+                  >
+                    {g}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/5">
+               <div className="flex items-center gap-2 px-4 py-2 bg-black/40 rounded-xl text-xs font-bold">
+                 <Filter size={14} className="text-gray-500" />
+                 <span className="text-gray-400">ترتيب حسب:</span>
+                 <select 
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="bg-transparent outline-none text-white cursor-pointer"
+                 >
+                   <option value="latest">الأحدث</option>
+                   <option value="popular">الأكثر شعبية</option>
+                   <option value="rating">الأعلى تقييماً</option>
+                 </select>
+               </div>
+               
+               {educationStage === 'ثانوي' && (
+                 <div className="flex bg-black/40 p-1 rounded-xl">
+                    <button 
+                      onClick={() => setBranch('عام')}
+                      className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all ${branch === 'عام' ? 'bg-white text-black' : 'text-gray-500'}`}
+                    >عام</button>
+                    <button 
+                      onClick={() => setBranch('علمي')}
+                      className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all ${branch === 'علمي' ? 'bg-white text-black' : 'text-gray-500'}`}
+                    >علمي</button>
+                    <button 
+                      onClick={() => setBranch('أدبي')}
+                      className={`px-4 py-1.5 rounded-lg text-[10px] font-black transition-all ${branch === 'أدبي' ? 'bg-white text-black' : 'text-gray-500'}`}
+                    >أدبي</button>
+                 </div>
+               )}
+            </div>
+          </div>
+
+          {/* تبويبات المواد */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar">
+            {SUBJECTS.map(tab => (
+              <button
+                key={tab}
                 onClick={() => setActiveTab(tab)}
+                className={`flex-shrink-0 px-8 py-4 rounded-3xl text-sm font-bold transition-all ${activeTab === tab ? 'bg-white text-black scale-105' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
               >
                 {tab}
-                {activeTab === tab && <motion.div layoutId="tab-underline" className="underline" />}
               </button>
             ))}
           </div>
-
-          <div className="sort-box glass">
-            <Filter size={18} />
-            <select onChange={(e) => setSortBy(e.target.value)}>
-              <option value="latest">المضاف حديثاً</option>
-              <option value="popular">الأكثر تفاعلاً</option>
-              <option value="rating">الأعلى تقييماً</option>
-            </select>
-          </div>
         </div>
 
-        <section className="courses-grid">
-          <AnimatePresence mode="popLayout">
-            {filteredCourses.length > 0 ? (
-              filteredCourses.map((course, idx) => (
-                <motion.div
-                  key={course.id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ delay: idx * 0.05 }}
-                  className="course-card-premium glass"
-                  onClick={() => navigate(`/course/${course.id}`)}
-                >
-                  <div className="card-thumb">
-                    <img src={course.thumbnail} alt={course.title} />
-                    <div className="overlay-tags">
-                      <span className="tag-grade">{course.grade}</span>
-                      <span className="tag-type">{course.category || 'فيديو'}</span>
-                    </div>
-                    <div className="play-overlay">
-                      <PlayCircle size={50} />
-                    </div>
-                  </div>
+        {/* عرض الكورسات */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {[1,2,3,4,5,6,7,8].map(i => (
+              <div key={i} className="h-[450px] bg-white/5 rounded-[40px] animate-pulse" />
+            ))}
+          </div>
+        ) : filteredCourses.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <AnimatePresence>
+              {filteredCourses.map((course, idx) => (
+                <CourseCard key={course.id} course={course} index={idx} />
+              ))}
+            </AnimatePresence>
+          </div>
+        ) : (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            className="flex flex-col items-center justify-center py-40 bg-white/5 rounded-[60px] border border-dashed border-white/10"
+          >
+            <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-8">
+              <AlertCircle size={40} className="text-gray-600" />
+            </div>
+            <h3 className="text-2xl font-black mb-2">لا توجد كورسات متاحة حالياً</h3>
+            <p className="text-gray-500">جرب تغيير الفلتر أو البحث عن كلمة أخرى</p>
+            <button 
+              onClick={() => {setSearchTerm(''); setActiveTab('الكل');}}
+              className="mt-8 px-8 py-3 bg-white text-black font-bold rounded-2xl hover:scale-105 transition-transform"
+            >إعادة ضبط</button>
+          </motion.div>
+        )}
 
-                  <div className="card-info">
-                    <div className="inst-meta">
-                      <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${course.instructor}`} alt="" />
-                      <span>{course.instructor}</span>
-                    </div>
-                    <h3>{course.title}</h3>
-                    
-                    <div className="stats-row">
-                      <div className="stat"><Users size={14}/> {course.studentsCount}</div>
-                      <div className="stat"><Star size={14} className="star-icon"/> {course.rating}</div>
-                      <div className="stat"><Clock size={14}/> {course.duration || '10س'}</div>
-                    </div>
+        {/* 🛠️ قسم الأدوات المساعدة (Smart Tools) */}
+        <section className="mt-40 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          
+          <div className="group p-10 bg-gradient-to-br from-purple-500/20 to-transparent backdrop-blur-xl border border-white/10 rounded-[50px] hover:border-purple-500/50 transition-all">
+            <div className="w-16 h-16 bg-purple-500 rounded-3xl flex items-center justify-center mb-10 rotate-3 group-hover:rotate-12 transition-transform shadow-2xl">
+              <PenTool size={30} className="text-white" />
+            </div>
+            <h4 className="text-2xl font-black mb-4">بنك الأسئلة الذكي</h4>
+            <p className="text-gray-400 text-sm leading-relaxed mb-8">تدرب على آلاف الأسئلة بنظام MCQ الحديث مع تصحيح فوري وتحليل لنقاط قوتك وضعفك.</p>
+            <button className="flex items-center gap-2 font-bold text-purple-400 group-hover:gap-4 transition-all">
+              ابدأ الاختبارات الآن <ChevronLeft size={18} />
+            </button>
+          </div>
 
-                    <div className="progress-section">
-                      <div className="prog-text">
-                        <span>نسبة الإكمال</span>
-                        <span>{course.progress || 0}%</span>
-                      </div>
-                      <div className="prog-bar">
-                        <motion.div 
-                          initial={{ width: 0 }}
-                          whileInView={{ width: `${course.progress || 0}%` }}
-                          className="prog-fill" 
-                        />
-                      </div>
-                    </div>
+          <div className="group p-10 bg-gradient-to-br from-cyan-500/20 to-transparent backdrop-blur-xl border border-white/10 rounded-[50px] hover:border-cyan-500/50 transition-all">
+            <div className="w-16 h-16 bg-cyan-500 rounded-3xl flex items-center justify-center mb-10 -rotate-3 group-hover:rotate-6 transition-transform shadow-2xl">
+              <Monitor size={30} className="text-white" />
+            </div>
+            <h4 className="text-2xl font-black mb-4">المكتبة الرقمية</h4>
+            <p className="text-gray-400 text-sm leading-relaxed mb-8">تحميل الكتب الخارجية، مذكرات المدرسين، وملخصات القوانين بصيغة PDF عالية الجودة.</p>
+            <button className="flex items-center gap-2 font-bold text-cyan-400 group-hover:gap-4 transition-all">
+              تصفح الملفات <ChevronLeft size={18} />
+            </button>
+          </div>
 
-                    <div className="card-actions">
-                      <button className="enroll-btn">إبدأ التعلم الآن</button>
-                      <button className="like-btn" onClick={(e) => toggleLike(course.id, e)}>
-                        <Heart size={18} />
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))
-            ) : (
-              <div className="no-data-state glass">
-                <AlertCircle size={50} />
-                <h2>لا توجد كورسات متاحة حالياً</h2>
-                <p>جرب تغيير فلاتر البحث أو المرحلة التعليمية</p>
-                <button onClick={() => {setSearchTerm(''); setActiveTab('الكل');}} className="btn-secondary">إعادة ضبط</button>
-              </div>
-            )}
-          </AnimatePresence>
-        </section>
+          <div className="group p-10 bg-gradient-to-br from-orange-500/20 to-transparent backdrop-blur-xl border border-white/10 rounded-[50px] hover:border-orange-500/50 transition-all">
+            <div className="w-16 h-16 bg-orange-500 rounded-3xl flex items-center justify-center mb-10 rotate-6 group-hover:rotate-12 transition-transform shadow-2xl">
+              <Sparkles size={30} className="text-white" />
+            </div>
+            <h4 className="text-2xl font-black mb-4">مساعد MAFA (الذكاء الاصطناعي)</h4>
+            <p className="text-gray-400 text-sm leading-relaxed mb-8">لديك سؤال صعب؟ صور السؤال وسيقوم مساعدنا الذكي بشرح الحل لك بالتفصيل في ثوانٍ.</p>
+            <button className="flex items-center gap-2 font-bold text-orange-400 group-hover:gap-4 transition-all">
+              تحدث مع المساعد <ChevronLeft size={18} />
+            </button>
+          </div>
 
-        {/* 🛠️ قسم الأدوات المساعدة (Tools) */}
-        <section className="mega-tools-grid">
-           <div className="mega-tool glass-premium" onClick={() => navigate('/exam-center')}>
-              <div className="tool-icon bg-red-500/20 text-red-400"><PenTool /></div>
-              <div className="tool-desc">
-                <h4>مركز الامتحانات</h4>
-                <p>أكثر من 50,000 سؤال بنظام الوزارة الجديد مع تصحيح ذكي.</p>
-                <span className="tool-link">ابدأ الاختبار <ChevronLeft size={16}/></span>
-              </div>
-           </div>
-           
-           <div className="mega-tool glass-premium" onClick={() => navigate('/library')}>
-              <div className="tool-icon bg-purple-500/20 text-purple-400"><BookText /></div>
-              <div className="tool-desc">
-                <h4>المكتبة الشاملة</h4>
-                <p>تحميل الكتب الخارجية، الملخصات، والمذكرات بصيغة PDF.</p>
-                <span className="tool-link">تصفح الكتب <ChevronLeft size={16}/></span>
-              </div>
-           </div>
-
-           <div className="mega-tool glass-premium" onClick={() => navigate('/support')}>
-              <div className="tool-icon bg-cyan-500/20 text-cyan-400"><Headphones /></div>
-              <div className="tool-desc">
-                <h4>الدعم والمساعدة</h4>
-                <p>فريق تقني وتعليمي متواجد 24 ساعة لحل مشكلاتك.</p>
-                <span className="tool-link">تواصل معنا <ChevronLeft size={16}/></span>
-              </div>
-           </div>
         </section>
       </main>
 
-      {/* 🦶 الفوتر العملاق */}
-      <footer className="portal-footer glass-heavy">
-        <div className="f-content">
-          <div className="f-brand">
-             <div className="logo">
-               <Zap size={30} fill="#00f2ff" />
-               <h2>MAFA ACADEMY</h2>
-             </div>
-             <p>نحن نصنع مستقبلك التعليمي بأحدث تقنيات الذكاء الاصطناعي والتعلم التفاعلي. منصة MAFA هي بيتك الثاني للتميز.</p>
-             <div className="social-links">
-                <button><Share2 size={20}/></button>
-                <button><MessageSquare size={20}/></button>
-                <button><Info size={20}/></button>
-             </div>
+      {/* 🦶 الفوتر (Footer) */}
+      <footer className="bg-[#050505] border-t border-white/5 pt-32 pb-10">
+        <div className="max-w-[1400px] mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-20 mb-32">
+            <div className="lg:col-span-1">
+              <div className="flex items-center gap-3 mb-8">
+                 <div className="p-2 bg-primary rounded-xl" style={{ background: theme.main }}>
+                   <Zap size={24} className="text-white" />
+                 </div>
+                 <h2 className="text-2xl font-black">MAFA ACADEMY</h2>
+              </div>
+              <p className="text-gray-500 leading-relaxed mb-10">
+                منصة MAFA هي البيت الثاني لكل طالب يبحث عن التميز والنجاح. نستخدم أحدث تقنيات الذكاء الاصطناعي لتوفير تجربة تعليمية فريدة.
+              </p>
+              <div className="flex gap-4">
+                <button className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-primary transition-colors hover:text-white"><Share2 size={20}/></button>
+                <button className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-primary transition-colors hover:text-white"><MessageSquare size={20}/></button>
+                <button className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:bg-primary transition-colors hover:text-white"><Info size={20}/></button>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-white font-bold mb-8 flex items-center gap-2">
+                <LayoutDashboard size={18} className="text-primary" style={{ color: theme.main }} />
+                المراحل الدراسية
+              </h4>
+              <ul className="space-y-4 text-gray-500 font-medium">
+                <li className="hover:text-white cursor-pointer transition-colors">المرحلة الثانوية</li>
+                <li className="hover:text-white cursor-pointer transition-colors">الشهادة الإعدادية</li>
+                <li className="hover:text-white cursor-pointer transition-colors">المرحلة الابتدائية</li>
+                <li className="hover:text-white cursor-pointer transition-colors">كورسات اللغات</li>
+                <li className="hover:text-white cursor-pointer transition-colors">مراجعات ليلة الامتحان</li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-white font-bold mb-8 flex items-center gap-2">
+                <ShieldCheck size={18} className="text-primary" style={{ color: theme.main }} />
+                سياسات المنصة
+              </h4>
+              <ul className="space-y-4 text-gray-500 font-medium">
+                <li className="hover:text-white cursor-pointer transition-colors">شروط الاستخدام</li>
+                <li className="hover:text-white cursor-pointer transition-colors">سياسة الخصوصية</li>
+                <li className="hover:text-white cursor-pointer transition-colors">حقوق الملكية الفكرية</li>
+                <li className="hover:text-white cursor-pointer transition-colors">سياسة الاسترجاع</li>
+                <li className="hover:text-white cursor-pointer transition-colors">تأمين الحسابات</li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-white font-bold mb-8 flex items-center gap-2">
+                <Headphones size={18} className="text-primary" style={{ color: theme.main }} />
+                تواصل معنا
+              </h4>
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 group">
+                  <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center group-hover:bg-white/10 transition-all">
+                    <Phone size={20} className="text-gray-400" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">الخط الساخن</span>
+                    <span className="text-sm font-bold">19000 - 01012345678</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 group">
+                  <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center group-hover:bg-white/10 transition-all">
+                    <Mail size={20} className="text-gray-400" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">الدعم الفني</span>
+                    <span className="text-sm font-bold">support@mafa-academy.com</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="f-links-grid">
-             <div className="link-col">
-                <h4>المراحل</h4>
-                <a href="#">الثانوية العامة</a>
-                <a href="#">الشهادة الإعدادية</a>
-                <a href="#">المرحلة الابتدائية</a>
-             </div>
-             <div className="link-col">
-                <h4>المنصة</h4>
-                <a href="#">من نحن</a>
-                <a href="#">الأسئلة الشائعة</a>
-                <a href="#">سياسة الخصوصية</a>
-             </div>
-             <div className="link-col">
-                <h4>الدعم</h4>
-                <a href="#">تواصل معنا</a>
-                <a href="#">شحن الرصيد</a>
-                <a href="#">الدعم الفني</a>
-             </div>
+          <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 text-gray-600 text-xs font-bold">
+            <p>© 2026 MAFA ACADEMY. جميع الحقوق محفوظة. تطوير TITo-TEC</p>
+            <div className="flex items-center gap-8">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={16} className="text-green-500" />
+                <span>مؤمن بواسطة MAFA-PROTECT V3.0</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <UserCheck size={16} className="text-blue-500" />
+                <span>معتمد من وزارة التربية والتعليم</span>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <div className="f-bottom">
-           <p>جميع الحقوق محفوظة &copy; 2026 | تم التطوير بواسطة <span className="dev-name">TITo-TEC</span></p>
-           <div className="trust-badges">
-              <Shield size={16} /> مؤمن بواسطة MAFA-SHIELD
-           </div>
-        </div>
       </footer>
+
+      {/* ----------------------------------------------------------------- */}
+      {/* 12. المودال والقوائم الجانبية (Modals & Sidebar) */}
+      {/* ----------------------------------------------------------------- */}
+      
+      {/* القائمة الجانبية (Sidebar) */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setIsSidebarOpen(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-md z-[2000]" 
+            />
+            <motion.aside 
+              initial={{ x: 400 }} animate={{ x: 0 }} exit={{ x: 400 }}
+              className="fixed top-0 right-0 bottom-0 w-[400px] bg-[#0a0a0a] border-l border-white/10 z-[2001] p-10 overflow-y-auto"
+            >
+              <div className="flex items-center justify-between mb-16">
+                 <h2 className="text-2xl font-black">القائمة</h2>
+                 <button onClick={() => setIsSidebarOpen(false)} className="p-2 bg-white/5 rounded-xl"><X /></button>
+              </div>
+
+              <div className="space-y-12">
+                <div className="space-y-4">
+                  <p className="text-[10px] text-gray-500 font-black tracking-widest uppercase">اللوحة الشخصية</p>
+                  <button className="w-full flex items-center gap-4 p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all text-sm font-bold">
+                    <LayoutDashboard /> لوحة التحكم
+                  </button>
+                  <button className="w-full flex items-center gap-4 p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all text-sm font-bold">
+                    <UserCheck /> الملف الشخصي
+                  </button>
+                  <button className="w-full flex items-center gap-4 p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all text-sm font-bold">
+                    <Wallet /> المحفظة والعمليات
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <p className="text-[10px] text-gray-500 font-black tracking-widest uppercase">المواد الدراسية</p>
+                  <button className="w-full flex items-center gap-4 p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all text-sm font-bold">
+                    <BookOpen /> دوراتي الحالية
+                  </button>
+                  <button className="w-full flex items-center gap-4 p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all text-sm font-bold">
+                    <Monitor /> المكتبة الرقمية
+                  </button>
+                  <button className="w-full flex items-center gap-4 p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-all text-sm font-bold">
+                    <PenTool /> بنك الأسئلة
+                  </button>
+                </div>
+
+                <div className="pt-12 border-t border-white/5">
+                  <button 
+                    onClick={() => auth.signOut()}
+                    className="w-full flex items-center gap-4 p-4 bg-red-500/10 text-red-500 rounded-2xl hover:bg-red-500/20 transition-all text-sm font-bold"
+                  >
+                    <LogOut /> تسجيل الخروج
+                  </button>
+                </div>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* مودال المحفظة (Wallet Modal) */}
+      <AnimatePresence>
+        {walletModal && (
+          <div className="fixed inset-0 z-[3000] flex items-center justify-center px-6">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setWalletModal(false)}
+              className="absolute inset-0 bg-black/90 backdrop-blur-xl" 
+            />
+            <motion.div 
+              initial={{ scale: 0.9, y: 50 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 50 }}
+              className="relative w-full max-w-xl bg-[#111] border border-white/10 rounded-[50px] p-12 overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 p-10 opacity-5 -z-10">
+                <Wallet size={200} />
+              </div>
+
+              <div className="flex items-center justify-between mb-12">
+                 <h2 className="text-3xl font-black">اشحن محفظتك</h2>
+                 <button onClick={() => setWalletModal(false)} className="p-3 bg-white/5 rounded-2xl"><X /></button>
+              </div>
+
+              <div className="bg-white/5 rounded-3xl p-8 mb-10 border border-white/5 text-center">
+                <p className="text-gray-500 text-sm font-bold mb-2">رصيدك الحالي</p>
+                <h3 className="text-5xl font-black text-white">{userData?.balance || 0} <span className="text-xl">ج.م</span></h3>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-12">
+                 <button className="flex flex-col items-center gap-4 p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-primary/50 transition-all">
+                    <CreditCard size={30} className="text-primary" />
+                    <span className="text-sm font-bold">بطاقة بنكية</span>
+                 </button>
+                 <button className="flex flex-col items-center gap-4 p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-primary/50 transition-all">
+                    <CloudLightning size={30} className="text-primary" />
+                    <span className="text-sm font-bold">فودافون كاش</span>
+                 </button>
+                 <button className="flex flex-col items-center gap-4 p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-primary/50 transition-all col-span-2">
+                    <Cpu size={30} className="text-primary" />
+                    <span className="text-sm font-bold">شحن بواسطة كود (سنتر)</span>
+                 </button>
+              </div>
+
+              <div className="flex items-center gap-4 p-6 bg-yellow-500/10 border border-yellow-500/20 rounded-3xl">
+                <Info className="text-yellow-500 shrink-0" />
+                <p className="text-xs font-bold text-yellow-500 leading-relaxed">
+                  عند شحن الرصيد، ستتمكن من تفعيل الكورسات فوراً. في حال واجهت مشكلة تواصل مع الدعم الفني.
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };
