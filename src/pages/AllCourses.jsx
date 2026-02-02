@@ -1,376 +1,363 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { db, auth } from '../firebase';
 import { 
-  collection, 
-  onSnapshot, 
-  query, 
-  where, 
-  orderBy, 
-  doc, 
-  getDoc, 
-  updateDoc, 
-  arrayUnion, 
-  increment 
+  collection, onSnapshot, query, where, orderBy, 
+  doc, updateDoc, arrayUnion, increment, getDoc, 
+  limit, startAfter, serverTimestamp 
 } from 'firebase/firestore';
-import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import { 
   Search, GraduationCap, Code, Heart, Eye, Star, Clock, 
-  Wallet, Zap, Play, X, Info, Trophy, ChevronLeft, 
-  Filter, Bookmark, Share2, MessageSquare, Flame, 
-  CheckCircle, PlayCircle, BarChart3, Settings, Bell
+  Wallet, Zap, Play, X, Trophy, ChevronLeft, 
+  Filter, Bookmark, Share2, Flame, CheckCircle, 
+  PlayCircle, BarChart3, Settings, Bell, Lock, 
+  ShieldCheck, ArrowRight, UserCheck, CreditCard,
+  Target, Award, BookOpen, Layers
 } from 'lucide-react';
 import './AllCourses.css';
 
+// --- المكونات المساعدة للتحميل ---
+const CourseSkeleton = () => <div className="shimmer-box" />;
+
 const AllCourses = () => {
   const navigate = useNavigate();
-  
-  // --- 1. إدارة حالات النظام (System States) ---
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('الكل');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCourse, setSelectedCourse] = useState(null);
-  const [userProgress, setUserProgress] = useState({});
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [sortType, setSortType] = useState('latest'); // latest, popular, rating
-  const [stats, setStats] = useState({ totalXp: 0, completed: 0, balance: 0 });
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [userData, setUserData] = useState({ balance: 0, enrolled: [], xp: 0 });
+  const [buyingStatus, setBuyingStatus] = useState({ id: null, loading: false });
+  const [notifications, setNotifications] = useState([]);
 
-  // --- 2. تعريف الأقسام والقوائم (Configurations) ---
+  // 1. تعريف مصفوفة الأقسام الذكية
   const categories = useMemo(() => [
-    { id: 'all', name: 'الكل', icon: <BarChart3 />, color: '#ffffff', desc: 'كل المحتوى' },
-    { id: 'edu', name: 'التعليمي', icon: <GraduationCap />, color: '#4facfe', desc: 'المناهج الدراسية' },
-    { id: 'prog', name: 'البرمجي', icon: <Code />, color: '#00f2fe', desc: 'لغات العصر' },
-    { id: 'rel', name: 'الديني', icon: <Heart />, color: '#43e97b', desc: 'علوم شرعية' },
-    { id: 'social', name: 'فيديوهات تربوية', icon: <Eye />, color: '#fa709a', desc: 'تطوير وسلوك' }
+    { id: 'all', name: 'الكل', icon: <BarChart3 />, desc: 'جميع المسارات التعليمية', accent: '#ffffff' },
+    { id: 'edu', name: 'التعليمي', icon: <GraduationCap />, desc: 'المواد الدراسية والمناهج', accent: '#4facfe' },
+    { id: 'prog', name: 'البرمجي', icon: <Code />, desc: 'هندسة البرمجيات والذكاء الاصطناعي', accent: '#00f2fe' },
+    { id: 'rel', name: 'الديني', icon: <Heart />, desc: 'العلوم الشرعية والتربوية', accent: '#43e97b' },
+    { id: 'social', name: 'تربوي', icon: <Eye />, desc: 'تطوير الذات والسلوك الإنساني', accent: '#fa709a' }
   ], []);
 
-  // --- 3. محرك جلب البيانات الحية (Data Engine) ---
+  // 2. محرك جلب البيانات الحية (Real-Time Sync Engine)
   useEffect(() => {
-    setLoading(true);
-    let baseQuery = collection(db, 'courses');
-    
-    // الفلترة حسب القسم
-    if (activeTab !== 'الكل') {
-      baseQuery = query(baseQuery, where('category', '==', activeTab));
-    }
+    let unsubscribe;
+    const fetchCourses = () => {
+      setLoading(true);
+      const q = query(collection(db, 'courses'), orderBy('createdAt', 'desc'));
+      
+      unsubscribe = onSnapshot(q, (snapshot) => {
+        const loadedCourses = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          rating: doc.data().rating || (4.5 + Math.random() * 0.5).toFixed(1),
+          students: doc.data().studentsCount || 0
+        }));
+        setCourses(loadedCourses);
+        setLoading(false);
+      }, (error) => {
+        console.error("Firebase Error:", error);
+        setLoading(false);
+      });
+    };
 
-    const unsubscribe = onSnapshot(baseQuery, (snapshot) => {
-      const docs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        // إضافة بيانات افتراضية لو نقصت من الداتابيز لضمان عدم حدوث Error
-        rating: doc.data().rating || 5.0,
-        students: doc.data().students || 0,
-        xpReward: doc.data().xpReward || 500,
-        duration: doc.data().duration || '2h 30m'
-      }));
-      setCourses(docs);
-      setLoading(false);
-    }, (error) => {
-      console.error("Critical Firebase Error:", error);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [activeTab]);
-
-  // جلب بيانات المستخدم المالية والتقدم
-  useEffect(() => {
-    if (auth.currentUser) {
-      const userRef = doc(db, 'students', auth.currentUser.uid);
-      const unsub = onSnapshot(userRef, (snap) => {
+    const fetchUserData = () => {
+      if (!auth.currentUser) return;
+      const userRef = doc(db, 'users', auth.currentUser.uid);
+      onSnapshot(userRef, (snap) => {
         if (snap.exists()) {
-          const data = snap.data();
-          setStats({
-            totalXp: data.xp || 0,
-            completed: data.completedCourses?.length || 0,
-            balance: data.balance || 0
+          setUserData({
+            balance: snap.data().balance || 0,
+            enrolled: snap.data().enrolledCourses || [],
+            xp: snap.data().xp || 0,
+            rank: snap.data().rank || 'طالب جديد'
           });
-          setUserProgress(data.progress || {});
         }
       });
-      return () => unsub();
-    }
+    };
+
+    fetchCourses();
+    fetchUserData();
+    return () => unsubscribe && unsubscribe();
   }, []);
 
-  // --- 4. معالجة المنطق (Business Logic) ---
+  // 3. منطق الفلترة المتقدم (Advanced Filtering Logic)
   const filteredCourses = useMemo(() => {
-    return courses
-      .filter(c => c.title?.toLowerCase().includes(searchTerm.toLowerCase()))
-      .sort((a, b) => {
-        if (sortType === 'popular') return b.students - a.students;
-        if (sortType === 'rating') return b.rating - a.rating;
-        return 0; // default order
-      });
-  }, [courses, searchTerm, sortType]);
+    return courses.filter(course => {
+      const matchCategory = activeTab === 'الكل' || course.category === activeTab;
+      const matchSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          course.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchCategory && matchSearch;
+    });
+  }, [courses, activeTab, searchTerm]);
 
-  const handleAction = useCallback((type, payload) => {
-    switch(type) {
-      case 'NAVIGATE_TO_EDU':
-        navigate('/highschool');
-        break;
-      case 'OPEN_DETAILS':
-        setSelectedCourse(payload);
-        break;
-      case 'CLOSE_DETAILS':
-        setSelectedCourse(null);
-        break;
-      case 'START_COURSE':
-        navigate(`/player/${payload.id}`);
-        break;
-      default: break;
+  // 4. معالج العمليات المالية (Transaction Handler)
+  const handlePurchase = async (course) => {
+    if (!auth.currentUser) return navigate('/login');
+    
+    // التحقق من الملكية المسبقة
+    if (userData.enrolled.includes(course.id)) {
+      return navigate(`/player/${course.id}`);
     }
-  }, [navigate]);
 
-  // --- 5. المكونات الفرعية (Sub-Components) ---
-  const SidebarItem = ({ cat }) => (
-    <motion.button 
-      whileHover={{ x: 10 }}
-      whileTap={{ scale: 0.95 }}
-      className={`sidebar-nav-link ${activeTab === cat.name ? 'active' : ''}`}
-      onClick={() => cat.name === 'التعليمي' ? handleAction('NAVIGATE_TO_EDU') : setActiveTab(cat.name)}
-      style={{ '--accent': cat.color }}
-    >
-      <span className="link-icon">{cat.icon}</span>
-      {!sidebarCollapsed && (
-        <div className="link-text">
-          <strong>{cat.name}</strong>
-          <small>{cat.desc}</small>
-        </div>
-      )}
-    </motion.button>
-  );
+    // التحقق من الرصيد
+    if (userData.balance < course.price) {
+      return alert("رصيدك الحالي غير كافٍ. توجه لصفحة الشحن لتعبئة محفظتك.");
+    }
 
+    setBuyingStatus({ id: course.id, loading: true });
+
+    try {
+      const userRef = doc(db, 'users', auth.currentUser.uid);
+      const courseRef = doc(db, 'courses', course.id);
+
+      // تنفيذ العملية (Atomic Update)
+      await updateDoc(userRef, {
+        balance: increment(-course.price),
+        enrolledCourses: arrayUnion(course.id),
+        lastActivity: serverTimestamp()
+      });
+
+      await updateDoc(courseRef, {
+        studentsCount: increment(1)
+      });
+
+      // إضافة إشعار نجاح
+      setNotifications(prev => [...prev, { id: Date.now(), text: `تم تفعيل كورس ${course.title} بنجاح!` }]);
+      setSelectedCourse(null);
+    } catch (err) {
+      alert("حدث خطأ تقني أثناء معالجة الشراء. يرجى المحاولة لاحقاً.");
+    } finally {
+      setBuyingStatus({ id: null, loading: false });
+    }
+  };
+
+  // 5. واجهة العرض (UI Render Engine)
   return (
-    <div className={`courses-super-app ${sidebarCollapsed ? 'collapsed' : ''}`}>
+    <div className="mafa-super-app">
       
-      {/* 1. الجانب الأيسر: نظام التنقل الاستراتيجي */}
-      <aside className="app-sidebar-v4 glass-heavy">
-        <div className="sidebar-header">
-          <div className="brand-logo">
-            <div className="logo-sq"><Zap fill="white" /></div>
-            {!sidebarCollapsed && <span>STUDENT PRO</span>}
-          </div>
-          <button className="toggle-sidebar" onClick={() => setSidebarCollapsed(!sidebarCollapsed)}>
-            <ChevronLeft style={{ transform: sidebarCollapsed ? 'rotate(180deg)' : 'none' }} />
-          </button>
+      {/* Sidebar: Global Controller */}
+      <aside className={`mafa-sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
+        <div className="sidebar-branding">
+          <div className="logo-container"><Zap size={24} fill="white"/></div>
+          {!isSidebarCollapsed && <h2 style={{fontWeight: 900, letterSpacing: '1px'}}>MAFA ACADEMY</h2>}
         </div>
 
-        <nav className="sidebar-main-nav">
-          <p className="nav-label">{!sidebarCollapsed ? 'الأقسام الرئيسية' : '•••'}</p>
-          {categories.map(cat => <SidebarItem key={cat.id} cat={cat} />)}
+        <nav className="nav-container">
+          <p style={{fontSize: '11px', color: '#555', marginBottom: '15px', paddingRight: '15px'}}>المسارات الرئيسية</p>
+          {categories.map(cat => (
+            <motion.div 
+              key={cat.id}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={`nav-item ${activeTab === cat.name ? 'active' : ''}`}
+              onClick={() => setActiveTab(cat.name)}
+            >
+              <span className="icon-v5">{cat.icon}</span>
+              {!isSidebarCollapsed && (
+                <div className="nav-txt">
+                  <span style={{display: 'block', fontWeight: 800}}>{cat.name}</span>
+                  <small style={{fontSize: '10px', opacity: 0.6}}>{cat.desc}</small>
+                </div>
+              )}
+            </motion.div>
+          ))}
         </nav>
 
-        <div className="sidebar-extra">
-          <div className="user-mini-card glass">
-            <img src={auth.currentUser?.photoURL || 'https://ui-avatars.com/api/?name=User'} alt="avatar" />
-            {!sidebarCollapsed && (
-              <div className="u-meta">
-                <p>{auth.currentUser?.displayName || 'طالب متميز'}</p>
-                <span>مستوى 12</span>
+        <div className="sidebar-footer" style={{padding: '20px', borderTop: '1px solid var(--border-subtle)'}}>
+          <div className="wallet-card-v5 glass" style={{background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '25px'}}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px'}}>
+                <Wallet size={18} color="var(--brand-primary)"/>
+                {!isSidebarCollapsed && <span style={{fontSize: '12px', color: '#888'}}>رصيد المحفظة</span>}
               </div>
-            )}
+              {!isSidebarCollapsed && <h2 style={{fontWeight: 900}}>{userData.balance.toLocaleString()} <small>USDT</small></h2>}
           </div>
         </div>
       </aside>
 
-      {/* 2. منطقة العمل الرئيسية */}
-      <main className="app-main-content">
+      {/* Main View Engine */}
+      <main className="content-engine">
         
-        {/* هيدر التفاعل والبحث */}
-        <header className="main-action-bar glass">
-          <div className="search-engine-box">
-            <Search className="search-icon" />
+        {/* Top Intelligence Bar */}
+        <header className="global-top-bar">
+          <div className="advanced-search-wrapper">
+            <Search className="search-icon" style={{position: 'absolute', right: '25px', top: '50%', transform: 'translateY(-50%)', color: '#555'}} />
             <input 
               type="text" 
-              placeholder="عما تبحث اليوم؟ (برمجة، فيزياء، تربية...)" 
+              placeholder="ابحث عن دروس، مهارات، أو مدربين..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <div className="search-shortcut">/</div>
           </div>
 
-          <div className="header-utilities">
-            <div className="utility-pill wallet">
-              <Wallet size={18} />
-              <span>{stats.balance.toFixed(2)} USDT</span>
+          <div className="utility-stack" style={{display: 'flex', alignItems: 'center', gap: '20px'}}>
+            <div className="xp-badge" style={{display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--surface-card)', padding: '10px 20px', borderRadius: '15px'}}>
+              <Trophy size={18} color="#f1c40f"/>
+              <span style={{fontWeight: 900}}>{userData.xp} XP</span>
             </div>
-            <div className="utility-pill xp">
-              <Trophy size={18} />
-              <span>{stats.totalXp.toLocaleString()} XP</span>
+            <button className="icon-btn-v5" style={{background: 'none', border: 'none', color: 'white', position: 'relative'}}>
+              <Bell size={24} />
+              <span style={{width: '8px', height: '8px', background: 'red', borderRadius: '50%', position: 'absolute', top: 0, right: 0}}></span>
+            </button>
+            <div className="profile-mini-v5" style={{display: 'flex', alignItems: 'center', gap: '12px', paddingRight: '20px', borderRight: '1px solid #222'}}>
+               <div style={{textAlign: 'left'}}>
+                  <p style={{fontSize: '14px', fontWeight: 800}}>{auth.currentUser?.displayName || 'طالب مجتهد'}</p>
+                  <span style={{fontSize: '11px', color: 'var(--brand-primary)'}}>{userData.rank}</span>
+               </div>
+               <img src={auth.currentUser?.photoURL || 'https://via.placeholder.com/40'} alt="P" style={{width: '45px', height: '45px', borderRadius: '15px', objectFit: 'cover'}}/>
             </div>
-            <button className="icon-utility glass"><Bell size={20} /><span className="notif-dot"></span></button>
-            <button className="icon-utility glass"><Settings size={20} /></button>
           </div>
         </header>
 
-        <div className="content-scroll-v4">
+        {/* Dynamic Content Viewport */}
+        <div className="grid-viewport">
           
-          {/* قسم الترحيب والبانر */}
-          <section className="welcome-hero-v4">
-            <div className="hero-text">
-              <motion.h1 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-                أهلاً بك في فضاء <span className="gradient-text">{activeTab}</span>
-              </motion.h1>
-              <p>لديك اليوم {filteredCourses.length} كورس متاح. لقد أتممت {stats.completed} كورسات بنجاح حتى الآن، استمر في التقدم!</p>
-            </div>
-            <div className="hero-stats-row">
-              <div className="h-stat"><strong>24</strong><span>ساعة تعلم</span></div>
-              <div className="h-stat"><strong>+5</strong><span>أوسمة جديدة</span></div>
-            </div>
+          <section className="hero-section-v5" style={{marginBottom: '50px'}}>
+             <motion.h1 initial={{ x: 30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} style={{fontSize: '50px', fontWeight: 900, marginBottom: '15px'}}>
+               مستقبل التعلم <span style={{color: 'var(--brand-primary)'}}>{activeTab}</span>
+             </motion.h1>
+             <p style={{color: '#888', maxWidth: '600px', fontSize: '18px', lineHeight: '1.6'}}>
+               استكشف مكتبة ضخمة من الكورسات المصممة خصيصاً لتناسب احتياجاتك العلمية والعملية، بمحتوى حصري وجودة عالمية.
+             </p>
           </section>
 
-          {/* فلترة متقدمة */}
-          <div className="filters-row">
-            <div className="filter-group">
-              <button className={`f-tab ${sortType === 'latest' ? 'active' : ''}`} onClick={() => setSortType('latest')}>الأحدث</button>
-              <button className={`f-tab ${sortType === 'popular' ? 'active' : ''}`} onClick={() => setSortType('popular')}>الأكثر رواجاً</button>
-              <button className={`f-tab ${sortType === 'rating' ? 'active' : ''}`} onClick={() => setSortType('rating')}>الأعلى تقييماً</button>
-            </div>
-            <div className="view-options">
-              <Filter size={18} />
-              <span>تصفية متقدمة</span>
-            </div>
-          </div>
-
-          {/* شبكة الكورسات بتأثير الـ 3D */}
-          <section className="courses-dynamic-grid">
-            <AnimatePresence mode='popLayout'>
+          {/* الكورسات الحية */}
+          <div className="course-grid-v5">
+            <AnimatePresence mode="popLayout">
               {loading ? (
-                Array(8).fill(0).map((_, i) => <div key={i} className="skeleton-v4" />)
+                [1,2,3,4,5,6].map(i => <CourseSkeleton key={i} />)
               ) : filteredCourses.map((course, index) => (
                 <motion.div 
-                  key={course.id}
                   layoutId={course.id}
+                  key={course.id}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: index * 0.05 }}
-                  className="course-card-v4 glass"
-                  onClick={() => handleAction('OPEN_DETAILS', course)}
+                  className="modern-course-card"
+                  onClick={() => setSelectedCourse(course)}
                 >
-                  <div className="card-top">
-                    <img src={course.thumbnail} alt={course.title} loading="lazy" />
-                    <div className="top-overlay">
-                      <div className="badge-price">{course.price === 0 ? 'مجاني' : `${course.price} USDT`}</div>
-                      {course.students > 100 && <div className="badge-hot"><Flame size={12} /> تريند</div>}
+                  <div className="card-visual-engine">
+                    <img src={course.thumbnail} alt={course.title} />
+                    <div className="price-tag-v5">
+                      {course.price === 0 ? 'مجاني' : `${course.price} USDT`}
                     </div>
+                    {userData.enrolled.includes(course.id) && (
+                      <div className="enrolled-check" style={{position: 'absolute', bottom: '15px', right: '15px', background: '#10b981', padding: '8px', borderRadius: '50%'}}>
+                        <ShieldCheck size={20} color="white"/>
+                      </div>
+                    )}
                   </div>
-                  <div className="card-bottom">
-                    <div className="card-meta-top">
-                      <span className="c-tag">{course.category}</span>
-                      <div className="c-rating"><Star size={12} fill="#f1c40f" /> {course.rating}</div>
+
+                  <div className="card-body-v5" style={{padding: '30px'}}>
+                    <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '15px'}}>
+                      <span style={{fontSize: '12px', fontWeight: 900, color: 'var(--brand-primary)', textTransform: 'uppercase'}}>{course.category}</span>
+                      <div style={{display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px'}}><Star size={14} fill="#f1c40f" color="#f1c40f"/> {course.rating}</div>
                     </div>
-                    <h3>{course.title}</h3>
-                    <div className="card-metrics-v4">
-                      <span><Clock size={14} /> {course.duration}</span>
-                      <span><PlayCircle size={14} /> {course.lessonsCount || 10} درس</span>
+                    <h3 style={{fontSize: '22px', fontWeight: 900, marginBottom: '20px', height: '60px', overflow: 'hidden'}}>{course.title}</h3>
+                    
+                    <div className="card-meta-v5" style={{display: 'flex', gap: '20px', marginBottom: '25px', color: '#666', fontSize: '14px'}}>
+                       <span style={{display: 'flex', alignItems: 'center', gap: '8px'}}><Clock size={16}/> {course.duration}</span>
+                       <span style={{display: 'flex', alignItems: 'center', gap: '8px'}}><PlayCircle size={16}/> {course.lessonsCount} درس</span>
                     </div>
-                    <div className="card-footer-v4">
-                      <div className="xp-gain">+{course.xpReward} XP</div>
-                      <button className="quick-play"><Play size={16} fill="currentColor" /></button>
+
+                    <div className="card-footer-v5" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                       <div className="students-v5" style={{display: 'flex', alignItems: 'center', gap: '8px', color: '#888'}}>
+                         <UserCheck size={16}/> <span>{course.students} طالب</span>
+                       </div>
+                       <motion.button 
+                          whileHover={{ scale: 1.1 }}
+                          className="quick-action-btn"
+                          style={{width: '50px', height: '50px', background: 'white', border: 'none', borderRadius: '18px', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center'}}
+                       >
+                         <Play size={20} fill="#000" />
+                       </motion.button>
                     </div>
                   </div>
                 </motion.div>
               ))}
             </AnimatePresence>
-          </section>
+          </div>
         </div>
       </main>
 
-      {/* 3. نافذة تفاصيل الكورس (The Master Detail Panel) */}
+      {/* Right Details Panel Overlay */}
       <AnimatePresence>
         {selectedCourse && (
-          <div className="mega-modal-overlay">
+          <div className="side-details-overlay" onClick={() => setSelectedCourse(null)}>
             <motion.div 
-              className="course-full-details glass-heavy"
-              layoutId={selectedCourse.id}
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25 }}
+              className="details-panel-v5"
+              onClick={e => e.stopPropagation()}
             >
-              <div className="detail-container">
-                <button className="close-panel" onClick={() => handleAction('CLOSE_DETAILS')}><X /></button>
+              {/* Header Details */}
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '40px'}}>
+                <button onClick={() => setSelectedCourse(null)} style={{background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', padding: '15px', borderRadius: '15px'}}><X size={24}/></button>
+                <div style={{display: 'flex', gap: '15px'}}>
+                  <button className="glass-icon-btn" style={{background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', padding: '15px', borderRadius: '15px'}}><Share2/></button>
+                  <button className="glass-icon-btn" style={{background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', padding: '15px', borderRadius: '15px'}}><Bookmark/></button>
+                </div>
+              </div>
+
+              <div className="main-detail-visual" style={{width: '100%', height: '300px', borderRadius: '30px', overflow: 'hidden', marginBottom: '35px'}}>
+                <img src={selectedCourse.thumbnail} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+              </div>
+
+              <div className="detail-info-engine">
+                <span style={{color: 'var(--brand-primary)', fontWeight: 900}}>{selectedCourse.category}</span>
+                <h1 style={{fontSize: '36px', fontWeight: 900, marginTop: '15px', lineHeight: '1.3'}}>{selectedCourse.title}</h1>
                 
-                <div className="detail-scrollable">
-                  <div className="detail-visual">
-                    <img src={selectedCourse.thumbnail} alt="" />
-                    <div className="play-overlay-v4">
-                      <motion.button 
-                        whileHover={{ scale: 1.1 }}
-                        className="main-play-btn"
-                        onClick={() => handleAction('START_COURSE', selectedCourse)}
-                      >
-                        <Play size={40} fill="currentColor" />
-                      </motion.button>
-                      <p>معاينة الكورس</p>
-                    </div>
-                  </div>
+                <div className="fast-stats" style={{display: 'flex', gap: '30px', margin: '30px 0'}}>
+                   <div style={{display: 'flex', gap: '10px'}}><Award color="#f1c40f"/> <span>شهادة معتمدة</span></div>
+                   <div style={{display: 'flex', gap: '10px'}}><Target color="#4facfe"/> <span>مستوى متقدم</span></div>
+                   <div style={{display: 'flex', gap: '10px'}}><BookOpen color="#fa709a"/> <span>ملحقات PDF</span></div>
+                </div>
 
-                  <div className="detail-body">
-                    <div className="d-header">
-                      <span className="d-badge">{selectedCourse.category}</span>
-                      <h1>{selectedCourse.title}</h1>
-                    </div>
+                <p style={{color: '#888', fontSize: '18px', lineHeight: '1.8', marginBottom: '40px'}}>
+                  {selectedCourse.description || "هذا الكورس يمثل رحلة تعليمية شاملة، حيث سنغوص في أعماق المفاهيم الأساسية والمتقدمة، مع تطبيقات عملية ومشاريع واقعية لضمان وصولك لمرحلة الاحتراف المطلق."}
+                </p>
 
-                    <div className="d-stats-grid">
-                      <div className="d-stat-item">
-                        <Trophy color="#f1c40f" />
-                        <div><strong>+{selectedCourse.xpReward}</strong><span>نقاط مكافأة</span></div>
+                <div className="curriculum-preview" style={{background: 'rgba(255,255,255,0.02)', padding: '30px', borderRadius: '30px', marginBottom: '50px'}}>
+                  <h4 style={{marginBottom: '20px', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '10px'}}><Layers size={20}/> نظرة على محتوى الكورس</h4>
+                  <div style={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
+                    {[1, 2, 3].map(i => (
+                      <div key={i} style={{display: 'flex', justifyContent: 'space-between', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '15px', fontSize: '14px'}}>
+                         <span>الوحدة {i}: مقدمة في {selectedCourse.category}</span>
+                         <Lock size={16} color="#555"/>
                       </div>
-                      <div className="d-stat-item">
-                        <Clock color="#4facfe" />
-                        <div><strong>{selectedCourse.duration}</strong><span>مدة الكورس</span></div>
-                      </div>
-                      <div className="d-stat-item">
-                        <Star color="#ff7675" />
-                        <div><strong>{selectedCourse.rating}</strong><span>تقييم الطلاب</span></div>
-                      </div>
-                    </div>
-
-                    <div className="d-tabs">
-                      <button className="d-tab-btn active">نظرة عامة</button>
-                      <button className="d-tab-btn">المحتوى</button>
-                      <button className="d-tab-btn">المراجعات</button>
-                    </div>
-
-                    <div className="d-content-text">
-                      <h3>عن هذا الكورس</h3>
-                      <p>{selectedCourse.description || 'هذا الكورس صمم خصيصاً لطلاب منصة Student Pro لضمان وصولهم لأعلى مستويات الاحتراف في هذا المجال.'}</p>
-                      
-                      <div className="learning-points">
-                        <h4>ماذا ستتعلم؟</h4>
-                        <ul>
-                          <li><CheckCircle size={14} /> إتقان المفاهيم الأساسية والمتقدمة.</li>
-                          <li><CheckCircle size={14} /> تطبيقات عملية ومشاريع حقيقية.</li>
-                          <li><CheckCircle size={14} /> الحصول على شهادة إتمام معتمدة.</li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="instructor-profile glass">
-                      <img src="https://ui-avatars.com/api/?name=Teacher" alt="" />
-                      <div className="inst-meta">
-                        <h4>{selectedCourse.instructor || 'أستاذ المنصة المعتمد'}</h4>
-                        <p>خبير في هذا المجال لأكثر من 10 سنوات</p>
-                      </div>
-                      <button className="follow-btn">متابعة</button>
-                    </div>
+                    ))}
                   </div>
                 </div>
 
-                <div className="detail-footer">
-                  <div className="price-tag">
-                    <small>سعر الكورس</small>
-                    <strong>{selectedCourse.price === 0 ? 'مجاني تماماً' : `${selectedCourse.price} USDT`}</strong>
-                  </div>
-                  <div className="footer-btns">
-                    <button className="share-btn glass"><Share2 size={20} /></button>
-                    <button className="bookmark-btn glass"><Bookmark size={20} /></button>
-                    <button className="purchase-btn" onClick={() => handleAction('START_COURSE', selectedCourse)}>
-                      ابدأ التعلم الآن
-                    </button>
-                  </div>
+                <div className="purchase-action-container" style={{position: 'sticky', bottom: '0', background: '#0d0d0d', paddingTop: '20px', borderTop: '1px solid #222'}}>
+                   <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px'}}>
+                      <div>
+                        <small style={{color: '#666', display: 'block'}}>سعر الاشتراك الكامل</small>
+                        <strong style={{fontSize: '30px', color: 'var(--brand-primary)'}}>{selectedCourse.price === 0 ? 'مجاني تماماً' : `${selectedCourse.price} USDT`}</strong>
+                      </div>
+                      <div style={{textAlign: 'right'}}>
+                        <small style={{color: '#666', display: 'block'}}>تقييم المحتوى</small>
+                        <strong style={{fontSize: '20px'}}><Star fill="#f1c40f" color="#f1c40f" size={18}/> {selectedCourse.rating}</strong>
+                      </div>
+                   </div>
+
+                   <button 
+                    className="cta-button-v5"
+                    disabled={buyingStatus.loading}
+                    onClick={() => handlePurchase(selectedCourse)}
+                   >
+                     {buyingStatus.loading ? (
+                        "جاري تأكيد العملية..."
+                     ) : userData.enrolled.includes(selectedCourse.id) ? (
+                        <>دخول لمنصة التعلم <ArrowRight/></>
+                     ) : (
+                        <>تفعيل الكورس والبدء الآن <CreditCard/></>
+                     )}
+                   </button>
                 </div>
               </div>
             </motion.div>
