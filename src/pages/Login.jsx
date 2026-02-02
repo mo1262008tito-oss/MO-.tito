@@ -24,7 +24,7 @@ import {
   doc, setDoc, getDoc, serverTimestamp, updateDoc, 
   increment, collection, query, where, getDocs 
 } from 'firebase/firestore';
-
+import './Login.css'; 
 /**
  * MAFA UNIVERSAL ECOSYSTEM - VERSION 2026
  * نظام إدارة الدخول والبيانات العملاق - 1000+ Logic Lines
@@ -419,3 +419,4 @@ const Login = () => {
 };
 
 export default Login;
+
