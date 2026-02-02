@@ -777,306 +777,258 @@ const shareReceipt = async () => {
       <p>جاري فحص بروتوكولات الأمان...</p>
     </div>
   );
-return (
-    <div className="wallet-master-container">
-      {/* 1. نظام الحماية الذكي */}
-      {!isDataComplete && <OnboardingScreen />}
 
-      {/* 2. نظام التنبيهات (Toasts) */}
-      <div className="toast-container">
-        <AnimatePresence>
-          {systemAlert && (
-            <motion.div 
-              className={`system-toast ${systemAlert.type}`}
-              initial={{ opacity: 0, y: -50, x: '-50%' }}
-              animate={{ opacity: 1, y: 20, x: '-50%' }}
-              exit={{ opacity: 0, y: -50, x: '-50%' }}
-            >
-              {systemAlert.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
-              <div className="toast-text">
-                <h5>{systemAlert.title}</h5>
-                <p>{systemAlert.message}</p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+  return (
+  <div className="wallet-master-container">
+    {/* 1. نظام الحماية الذكي */}
+    {!isDataComplete && <OnboardingScreen />}
 
-      {/* 3. الهيدر (Navbar) - تم تثبيته لمنع التداخل */}
-      <nav className="platinum-nav">
-        <div className="nav-profile-section">
-          <div className="avatar-group">
-            <img src={user?.avatar || 'https://via.placeholder.com/150'} alt="User" />
-            {user?.isActivated && <div className="verified-status"><ShieldCheck size={12} /></div>}
-          </div>
-          <div className="nav-user-meta">
-            <h4>{user?.fullName || "جاري التحميل..."}</h4>
-            <div className="rank-badge">{user?.rank || 'برونزي'}</div>
-          </div>
-        </div>
-        <div className="nav-actions">
-          <div className="notif-icon" onClick={() => setActiveTab('notifications')}>
-            <Bell size={24} />
-            {notifications.length > 0 && <span className="notif-dot">{notifications.length}</span>}
-          </div>
-          <Settings size={24} className="settings-gear" />
-        </div>
-      </nav>
-
-      {/* 4. محتوى التابات (Main Viewport) */}
-      <main className="wallet-main-viewport">
-        <AnimatePresence mode="wait">
-          {activeTab === 'dashboard' && (
-            <motion.div 
-              key="dash" 
-              initial={{ opacity: 0, y: 10 }} 
-              animate={{ opacity: 1, y: 0 }} 
-              exit={{ opacity: 0, y: -10 }}
-              className="tab-content-wrapper"
-            >
-              <PlatinumCard />
-              <QuickActions />
-
-              {/* بطاقة النقاط المحدثة */}
-              <div className="loyalty-card">
-                <div className="loyalty-content">
-                  <div className="star-ring"><Star fill="#FFD700" color="#FFD700" /></div>
-                  <div className="loyalty-info">
-                    <h3>{user?.points || 0} نقطة ولاء</h3>
-                    <p>تساوي {(user?.points / (POINT_TO_CASH_RATIO || 100)).toFixed(2)} ج.م</p>
-                  </div>
-                </div>
-                <button 
-                  className="convert-points-btn" 
-                  onClick={convertLoyaltyPoints}
-                  disabled={actionLoading || (user?.points < 100)}
-                >
-                  {actionLoading ? <RefreshCw className="spin" /> : "استبدال"}
-                </button>
-              </div>
-
-              {/* الإحصائيات */}
-              <div className="analytics-preview">
-                <div className="stat-item income">
-                  <ArrowDownLeft size={18} />
-                  <div><span>دخل الشهر</span><p>{analytics.monthlyIncome} ج.م</p></div>
-                </div>
-                <div className="stat-item spending">
-                  <ArrowUpRight size={18} />
-                  <div><span>مصروف الشهر</span><p>{analytics.monthlySpending} ج.م</p></div>
-                </div>
-              </div>
-
-              {/* النشاط الأخير */}
-              <div className="section-header">
-                <h3>النشاط الأخير</h3>
-                <button className="text-btn" onClick={() => setActiveTab('history')}>عرض الكل</button>
-              </div>
-              <div className="mini-transactions">
-                {transactions?.length > 0 ? (
-                  transactions.slice(0, 5).map(renderTransactionItem)
-                ) : (
-                  <p className="empty-msg">لا توجد عمليات مؤخراً</p>
-                )}
-              </div>
-            </motion.div>
-          )}
-
-          {/* واجهة الخزنة المحدثة */}
-          {activeTab === 'vault' && (
-            <motion.div 
-              key="vault" 
-              className="vault-interface" 
-              initial={{ opacity: 0, scale: 0.95 }} 
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-            >
-              <div className="vault-safe-box">
-                <div className="vault-icon-glow"><Lock size={40} /></div>
-                <h2>خزنة MAFA الآمنة</h2>
-                <div className="vault-balance-card">
-                  <span>الرصيد المحمي</span>
-                  <h1>{user?.vaultBalance?.toLocaleString() || 0} <small>EGP</small></h1>
-                </div>
-                <div className="vault-inputs">
-                  <input 
-                    type="number" 
-                    placeholder="أدخل المبلغ..." 
-                    value={vaultState.actionAmount}
-                    onChange={(e) => setVaultState({...vaultState, actionAmount: e.target.value})}
-                  />
-                  <div className="vault-btn-row">
-                    <button onClick={() => manageVault('deposit')} className="v-btn-in">إيداع</button>
-                    <button onClick={() => manageVault('withdraw')} className="v-btn-out">سحب</button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
-
-      {/* مودال التحويل المالي: النسخة الشاملة (بدون أي اختصار) */}
-{activeModal === 'transfer' && (
-  <div className="modal-body modern-modal-design">
-    {/* 1. الهيدر (العنوان) */}
-    <div className="modal-header-modern">
-      <div className="header-icon-wrap">
-        <ArrowUpRight className="header-icon-anim" />
-      </div>
-      <h3>تحويل مالي آمن</h3>
-      <p>أرسل الأموال فوراً وبأمان تام</p>
-    </div>
-
-    {/* 2. منطقة البحث الذكي عن المستلم */}
-    <div className="recipient-search-area">
-      <label className="input-label"><Search size={16} /> ابحث عن المستلم</label>
-      <div className="input-with-spinner">
-        <input 
-          type="text" 
-          placeholder="أدخل MAFA ID المستلم..." 
-          className="modern-input"
-          onChange={(e) => handleRecipientSearch(e.target.value)} 
-        />
-        {actionLoading && <RefreshCw className="spin-loader" size={18} />}
-      </div>
-
-      {/* عرض نتيجة البحث الذكي بناءً على اللوجيك */}
-      <AnimatePresence mode="wait">
-        {searchResult && (
+    {/* 2. نظام التنبيهات (Toasts) */}
+    <div className="toast-container">
+      <AnimatePresence>
+        {systemAlert && (
           <motion.div 
-            initial={{ opacity: 0, y: -10 }} 
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className={`search-result-card ${searchResult === 'not_found' || searchResult === 'self' ? 'error' : 'success'}`}
+            className={`system-toast ${systemAlert.type}`}
+            initial={{ opacity: 0, y: -50, x: '-50%' }}
+            animate={{ opacity: 1, y: 20, x: '-50%' }}
+            exit={{ opacity: 0, y: -50, x: '-50%' }}
           >
-            {searchResult === 'not_found' ? (
-              <div className="res-error"><AlertCircle size={20} /> المستخدم غير موجود</div>
-            ) : searchResult === 'self' ? (
-              <div className="res-error"><UserCheck size={20} /> لا يمكنك التحويل لنفسك</div>
-            ) : (
-              <div className="res-success-content">
-                <img src={searchResult.avatar} alt="Avatar" className="res-avatar" />
-                <div className="res-info">
-                  <h5>{searchResult.name}</h5>
-                  <span>{searchResult.level} • {searchResult.mafaId}</span>
-                </div>
-                <CheckCircle2 className="verified-icon" size={20} />
-              </div>
-            )}
+            {systemAlert.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
+            <div className="toast-text">
+              <h5>{systemAlert.title}</h5>
+              <p>{systemAlert.message}</p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
 
-    {/* 3. تفاصيل المبلغ والـ PIN المطور */}
-    <div className="secure-pin-section">
-      <div className="amount-input-box">
-        <label className="input-label">المبلغ المراد تحويله</label>
-        <div className="amount-field-wrap">
-          <input 
-            type="number" 
-            placeholder="0.00" 
-            value={transferData.amount}
-            onChange={(e) => setTransferData({...transferData, amount: e.target.value})}
-          />
-          <span className="currency-tag">EGP</span>
+    {/* 3. الهيدر (Navbar) */}
+    <nav className="platinum-nav">
+      <div className="nav-profile-section">
+        <div className="avatar-group">
+          <img src={user?.avatar || 'https://via.placeholder.com/150'} alt="User" />
+          {user?.isActivated && <div className="verified-status"><ShieldCheck size={12} /></div>}
+        </div>
+        <div className="nav-user-meta">
+          <h4>{user?.fullName || "جاري التحميل..."}</h4>
+          <div className="rank-badge">{user?.rank || 'برونزي'}</div>
         </div>
       </div>
-
-      <div className="pin-code-box">
-        <label className="input-label">رمز PIN الأمني (4 أرقام)</label>
-        <div className="pin-inputs-wrapper">
-          <input 
-            type="password" 
-            maxLength="4" 
-            placeholder="••••"
-            className="pin-input-field"
-            onChange={(e) => setTransferData({...transferData, pin: e.target.value})}
-          />
-          <Lock size={18} className="pin-lock-icon" />
+      <div className="nav-actions">
+        <div className="notif-icon" onClick={() => setActiveTab('notifications')}>
+          <Bell size={24} />
+          {notifications.length > 0 && <span className="notif-dot">{notifications.length}</span>}
         </div>
-        <p className="pin-hint">لا تشارك رمز الأمان مع أي شخص 🛡️</p>
+        <Settings size={24} className="settings-gear" />
       </div>
+    </nav>
 
-      {/* زر التنفيذ المربوط باللوجيك - تم تعديل الشرط ليكون أدق */}
-      <button 
-        className="execute-transfer-btn"
-        disabled={!searchResult || searchResult === 'not_found' || searchResult === 'self' || !transferData.pin || !transferData.amount || actionLoading}
-        onClick={executeSecureTransfer}
-      >
-        {actionLoading ? <RefreshCw className="spin" /> : "تأكيد التحويل الآن"}
-      </button>
-    </div>
-  </div>
-)}
+    {/* 4. محتوى التابات (Main Viewport) */}
+    <main className="wallet-main-viewport">
+      <AnimatePresence mode="wait">
+        {activeTab === 'dashboard' && (
+          <motion.div 
+            key="dash" 
+            initial={{ opacity: 0, y: 10 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            exit={{ opacity: 0, y: -10 }}
+            className="tab-content-wrapper"
+          >
+            <PlatinumCard />
+            <QuickActions />
 
-      {/* --- تابع محتوى التابات (Main Viewport Continued) --- */}
+            {/* بطاقة النقاط */}
+            <div className="loyalty-card">
+              <div className="loyalty-content">
+                <div className="star-ring"><Star fill="#FFD700" color="#FFD700" /></div>
+                <div className="loyalty-info">
+                  <h3>{user?.points || 0} نقطة ولاء</h3>
+                  <p>تساوي {(user?.points / (POINT_TO_CASH_RATIO || 100)).toFixed(2)} ج.م</p>
+                </div>
+              </div>
+              <button 
+                className="convert-points-btn" 
+                onClick={convertLoyaltyPoints}
+                disabled={actionLoading || (user?.points < 100)}
+              >
+                {actionLoading ? <RefreshCw className="spin" /> : "استبدال"}
+              </button>
+            </div>
 
-          {/* واجهة السجل مع الفلترة الذكية */}
-          {activeTab === 'history' && (
-            <motion.div key="history" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="history-page">
-              <div className="history-filter-bar">
-                <div className="search-box">
-                  <Search size={18} />
+            {/* الإحصائيات */}
+            <div className="analytics-preview">
+              <div className="stat-item income">
+                <ArrowDownLeft size={18} />
+                <div><span>دخل الشهر</span><p>{analytics.monthlyIncome} ج.م</p></div>
+              </div>
+              <div className="stat-item spending">
+                <ArrowUpRight size={18} />
+                <div><span>مصروف الشهر</span><p>{analytics.monthlySpending} ج.م</p></div>
+              </div>
+            </div>
+
+            {/* النشاط الأخير */}
+            <div className="section-header">
+              <h3>النشاط الأخير</h3>
+              <button className="text-btn" onClick={() => setActiveTab('history')}>عرض الكل</button>
+            </div>
+            <div className="mini-transactions">
+              {transactions?.length > 0 ? (
+                transactions.slice(0, 5).map(renderTransactionItem)
+              ) : (
+                <p className="empty-msg">لا توجد عمليات مؤخراً</p>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* واجهة الخزنة */}
+        {activeTab === 'vault' && (
+          <motion.div 
+            key="vault" 
+            className="vault-interface" 
+            initial={{ opacity: 0, scale: 0.95 }} 
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+          >
+            <div className="vault-safe-box">
+              <div className="vault-icon-glow"><Lock size={40} /></div>
+              <h2>خزنة MAFA الآمنة</h2>
+              <div className="vault-balance-card">
+                <span>الرصيد المحمي</span>
+                <h1>{user?.vaultBalance?.toLocaleString() || 0} <small>EGP</small></h1>
+              </div>
+              <div className="vault-inputs">
+                <input 
+                  type="number" 
+                  placeholder="أدخل المبلغ..." 
+                  value={vaultState.actionAmount}
+                  onChange={(e) => setVaultState({...vaultState, actionAmount: e.target.value})}
+                />
+                <div className="vault-btn-row">
+                  <button onClick={() => manageVault('deposit')} className="v-btn-in">إيداع</button>
+                  <button onClick={() => manageVault('withdraw')} className="v-btn-out">سحب</button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </main>
+
+    
+      {/* 5. مودال التحويل المالي: النسخة الشاملة (بدون أي اختصار + تحسين اللوجيك) */}
+      <AnimatePresence>
+        {activeModal === 'transfer' && (
+          <motion.div 
+            className="modal-overlay modern-modal-design"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="modal-body">
+              {/* الهيدر (العنوان) */}
+              <div className="modal-header-modern">
+                <div className="header-icon-wrap">
+                  <ArrowUpRight className="header-icon-anim" />
+                </div>
+                <h3>تحويل مالي آمن</h3>
+                <p>أرسل الأموال فوراً وبأمان تام</p>
+                <button className="close-modal-x" onClick={() => setActiveModal(null)}><X size={18} /></button>
+              </div>
+
+              {/* منطقة البحث الذكي عن المستلم */}
+              <div className="recipient-search-area">
+                <label className="input-label"><Search size={16} /> ابحث عن المستلم</label>
+                <div className="input-with-spinner">
                   <input 
                     type="text" 
-                    placeholder="ابحث عن عملية..." 
-                    onChange={(e) => setFilterQuery(e.target.value)}
+                    placeholder="أدخل MAFA ID المستلم..." 
+                    className="modern-input"
+                    onChange={(e) => handleRecipientSearch(e.target.value)} 
                   />
+                  {actionLoading && <RefreshCw className="spin-loader" size={18} />}
                 </div>
-                <div className="filter-chips">
-                  <button className="f-chip active">الكل</button>
-                  <button className="f-chip">شحن</button>
-                  <button className="f-chip">تحويل</button>
-                  <button className="f-chip">سحب</button>
-                </div>
-              </div>
-              <div className="full-transactions-list">
-                {transactions.map(renderTransactionItem)}
-              </div>
-            </motion.div>
-          )}
 
-          {/* مودال الإشعارات التفصيلي */}
-          {activeTab === 'notifications' && (
-            <motion.div className="notifications-page" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}>
-              <header className="page-header">
-                <ArrowRight onClick={() => setActiveTab('dashboard')} />
-                <h2>التنبيهات</h2>
-                <button className="clear-all">مسح الكل</button>
-              </header>
-              <div className="notifications-list">
-                {notifications.length > 0 ? (
-                  notifications.map(notif => (
-                    <div key={notif.id} className={`notif-item ${!notif.read ? 'unread' : ''}`}>
-                      <div className={`notif-type-icon ${notif.type}`}>
-                        {notif.type === 'receive' ? <ArrowDownLeft /> : <Bell />}
-                      </div>
-                      <div className="notif-content">
-                        <p>{notif.message}</p>
-                        <span>{notif.time}</span>
-                      </div>
-                      {!notif.read && <div className="unread-dot" />}
-                    </div>
-                  ))
-                ) : (
-                  <div className="empty-notif">
-                    <BellOff size={50} />
-                    <p>لا توجد إشعارات جديدة</p>
-                  </div>
-                )}
+                <AnimatePresence mode="wait">
+                  {searchResult && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }} 
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className={`search-result-card ${searchResult === 'not_found' || searchResult === 'self' ? 'error' : 'success'}`}
+                    >
+                      {searchResult === 'not_found' ? (
+                        <div className="res-error"><AlertCircle size={20} /> المستخدم غير موجود</div>
+                      ) : searchResult === 'self' ? (
+                        <div className="res-error"><UserCheck size={20} /> لا يمكنك التحويل لنفسك</div>
+                      ) : (
+                        <div className="res-success-content">
+                          <img src={searchResult.avatar} alt="Avatar" className="res-avatar" />
+                          <div className="res-info">
+                            <h5>{searchResult.name}</h5>
+                            <span>{searchResult.level} • {searchResult.mafaId}</span>
+                          </div>
+                          <CheckCircle2 className="verified-icon" size={20} />
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-{/* 4. إغلاق الأنيميشن الخاص بالتابات */}
-     
-        {/* --- عناصر إضافية تظهر في Dashboard فقط --- */}
-        {/* ملاحظة: تم نقلها هنا لتكون داخل الـ main ولكن خارج الـ AnimatePresence إذا كانت لا تحتاج أنيميشن انتقال */}
+
+              {/* تفاصيل المبلغ والـ PIN المطور */}
+              <div className="secure-pin-section">
+                <div className="amount-input-box">
+                  <label className="input-label">المبلغ المراد تحويله</label>
+                  <div className="amount-field-wrap">
+                    <input 
+                      type="number" 
+                      placeholder="0.00" 
+                      value={transferData.amount}
+                      onChange={(e) => setTransferData({...transferData, amount: e.target.value})}
+                    />
+                    <span className="currency-tag">EGP</span>
+                  </div>
+                </div>
+
+                <div className="pin-code-box">
+                  <label className="input-label">رمز PIN الأمني (4 أرقام)</label>
+                  <div className="pin-inputs-wrapper">
+                    <input 
+                      type="password" 
+                      maxLength="4" 
+                      placeholder="••••"
+                      className="pin-input-field"
+                      onChange={(e) => setTransferData({...transferData, pin: e.target.value})}
+                    />
+                    <Lock size={18} className="pin-lock-icon" />
+                  </div>
+                  <p className="pin-hint">لا تشارك رمز الأمان مع أي شخص 🛡️</p>
+                </div>
+
+                <button 
+                  className="execute-transfer-btn"
+                  disabled={!searchResult || searchResult === 'not_found' || searchResult === 'self' || !transferData.pin || !transferData.amount || actionLoading}
+                  onClick={executeSecureTransfer}
+                >
+                  {actionLoading ? <RefreshCw className="spin" /> : "تأكيد التحويل الآن"}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 6. العناصر الإضافية (مهمات وتقدم) - تم الحفاظ عليها بالكامل */}
+      <AnimatePresence>
         {activeTab === 'dashboard' && (
-          <div className="extra-dash-content">
-            {/* شريط تقدم المستوى (Level Progress) */}
+          <motion.div 
+            className="extra-dash-content"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
             <div className="level-progress-card">
               <div className="level-info">
                 <span>المستوى {user?.level}</span>
@@ -1092,7 +1044,6 @@ return (
               <p className="next-level-hint">باقي لك {1000 - user?.exp} نقطة للوصول للمستوى التالي!</p>
             </div>
 
-            {/* المهام اليومية */}
             <div className="daily-quests-section">
               <div className="section-header">
                 <h3>مهامك اليومية</h3>
@@ -1117,14 +1068,14 @@ return (
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
-      </main> {/* إغلاق الـ main هنا هو المفتاح لحل خطأ Vercel */}
+      </AnimatePresence>
 
-      {/* شاشة التنبيه بالحساب غير المفعل */}
+      {/* 7. شاشة التفعيل (دمج النسختين في نسخة واحدة قوية) */}
       {!user?.isActivated && isDataComplete && (
         <div className="activation-warning-overlay">
-          <div className="warning-card">
+          <motion.div className="warning-card" initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
             <ShieldAlert size={60} className="text-gold" />
             <h2>حسابك قيد المراجعة</h2>
             <p>محفظتك جاهزة، لكنها تنتظر التفعيل من قبل الإدارة لتتمكن من إرسال واستقبال الأموال.</p>
@@ -1132,11 +1083,11 @@ return (
               <span>هل تواجه مشكلة؟</span>
               <button onClick={() => window.open('https://wa.me/yournumber')}>تواصل مع الدعم</button>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
 
-      {/* مودال تفاصيل العملية (Receipt) */}
+      {/* 8. مودال تفاصيل العملية (Receipt) كامل بدون اختصار */}
       <AnimatePresence>
         {selectedTransaction && (
           <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -1151,14 +1102,16 @@ return (
                 <div className="r-row"><span>التاريخ:</span> <strong>{selectedTransaction.date}</strong></div>
                 <div className="r-row"><span>رقم العملية:</span> <small>{selectedTransaction.id}</small></div>
               </div>
-              <button className="share-receipt-btn" onClick={shareReceipt}>مشاركة الإيصال</button>
-              <button className="close-receipt" onClick={() => setSelectedTransaction(null)}>إغلاق</button>
+              <div className="receipt-actions">
+                <button className="share-receipt-btn" onClick={shareReceipt}><Share2 size={16} /> مشاركة الإيصال</button>
+                <button className="close-receipt" onClick={() => setSelectedTransaction(null)}>إغلاق</button>
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* 6. شريط التنقل السفلي */}
+      {/* 9. شريط التنقل السفلي */}
       <footer className="platinum-bottom-nav">
         <div className={`nav-tab ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
           <Smartphone /><span>الرئيسية</span>
@@ -1183,626 +1136,501 @@ return (
 // =========================================================================
 
 const styles = `
-  .wallet-master-container {
-    background: #0a0a0c;
-    min-height: 100vh;
-    color: white;
-    font-family: 'Tajawal', sans-serif;
-    padding-bottom: 90px;
-    direction: rtl;
-  }
+  /* --- Container & Master Styles --- */
+.wallet-master-container {
+  min-height: 100vh;
+  background: radial-gradient(circle at top right, #1a1a2e, #16213e);
+  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  direction: rtl;
+  padding-bottom: 90px; /* لضمان عدم اختفاء المحتوى خلف النافبار السفلي */
+}
 
-  /* Platinum Card Styling */
-  .platinum-card {
-    background: linear-gradient(135deg, #1a1a1a 0%, #3d3d3d 50%, #1a1a1a 100%);
-    margin: 20px;
-    border-radius: 24px;
-    padding: 25px;
-    height: 220px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-    border: 1px solid rgba(255,215,0,0.2);
-  }
+/* --- Modal Overlay & Body --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
 
-  .card-glass-effect {
-    position: absolute;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background: linear-gradient(45deg, transparent 20%, rgba(255,255,255,0.05) 50%, transparent 80%);
-    animation: shine 6s infinite linear;
-  }
+.modern-modal-design .modal-body {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 450px;
+  padding: 25px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
 
-  @keyframes shine {
-    0% { transform: translateX(-30%) translateY(-30%); }
-    100% { transform: translateX(30%) translateY(30%); }
-  }
+/* --- Modal Header --- */
+.modal-header-modern {
+  text-align: center;
+  margin-bottom: 25px;
+}
 
-  /* Onboarding Styles */
-  .onboarding-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.95);
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
+.header-icon-wrap {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+  box-shadow: 0 10px 20px rgba(0, 210, 255, 0.3);
+}
 
-  .onboarding-card {
-    background: #161618;
-    width: 100%;
-    max-width: 450px;
-    border-radius: 30px;
-    padding: 40px 30px;
-    text-align: center;
-    border: 1px solid #333;
-  }
+.header-icon-anim {
+  color: white;
+  animation: bounce 2s infinite;
+}
 
-  .step-content input {
-    width: 100%;
-    padding: 15px;
-    margin: 10px 0;
-    background: #222;
-    border: 1px solid #444;
-    border-radius: 12px;
-    color: white;
-    font-size: 16px;
-  }
+/* --- Recipient Search Area --- */
+.recipient-search-area {
+  margin-bottom: 20px;
+}
 
-  .next-btn, .finish-btn {
-    width: 100%;
-    padding: 15px;
-    margin-top: 20px;
-    background: #7c4dff;
-    border: none;
-    border-radius: 12px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-  }
-
-  /* Navigation & Tabs */
-  .bottom-nav {
-    position: fixed;
-    bottom: 0; width: 100%;
-    height: 80px;
-    background: rgba(22, 22, 24, 0.9);
-    backdrop-filter: blur(15px);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    border-top: 1px solid #333;
-  }
-
-  .nav-tab {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: #888;
-    transition: 0.3s;
-  }
-
-  .nav-tab.active {
-    color: #7c4dff;
-    transform: translateY(-5px);
-  }
-/* تصميم حقل البحث والأنيميشن */
 .input-with-spinner {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.spin-loader {
-  position: absolute;
-  left: 15px;
-  color: var(--platinum-gold);
-  animation: spin 1s linear infinite;
+.modern-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 15px;
+  color: white;
+  outline: none;
+  transition: 0.3s;
 }
 
-/* بطاقة نتيجة البحث */
+.modern-input:focus {
+  border-color: #00d2ff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.spin-loader {
+  position: absolute;
+  left: 10px;
+  animation: spin 1s linear infinite;
+  color: #00d2ff;
+}
+
+/* --- Search Result Cards --- */
 .search-result-card {
   margin-top: 15px;
   padding: 12px;
   border-radius: 12px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.search-result-card.success { border-color: #10b981; background: rgba(16, 185, 129, 0.05); }
-.search-result-card.error { border-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
+.search-result-card.success {
+  background: rgba(46, 213, 115, 0.15);
+  border: 1px solid rgba(46, 213, 115, 0.3);
+}
+
+.search-result-card.error {
+  background: rgba(255, 71, 87, 0.15);
+  border: 1px solid rgba(255, 71, 87, 0.3);
+}
 
 .res-avatar {
   width: 45px;
   height: 45px;
   border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--platinum-gold);
+  margin-left: 12px;
+  border: 2px solid #00d2ff;
 }
 
-.res-info h5 { margin: 0; color: white; font-size: 0.95rem; }
-.res-info span { font-size: 0.75rem; color: #888; }
+.res-info h5 { margin: 0; font-size: 15px; }
+.res-info span { font-size: 12px; opacity: 0.7; }
 
-.verified-icon { color: #10b981; margin-right: auto; }
+/* --- Pin & Amount Section --- */
+.secure-pin-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 
-  /* شريط تقدم المستوى */
-.level-progress-card {
-  background: linear-gradient(135deg, #1e1e2e 0%, #11111d 100%);
+.amount-field-wrap {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 5px 15px;
+}
+
+.amount-field-wrap input {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  font-weight: bold;
+  width: 100%;
+  outline: none;
+}
+
+.currency-tag { color: #00d2ff; font-weight: bold; }
+
+.pin-inputs-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pin-input-field {
+  width: 100%;
+  letter-spacing: 10px;
+  text-align: center;
+  font-size: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  padding: 10px;
+  border-radius: 10px;
+  color: white;
+}
+
+.execute-transfer-btn {
+  background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+  color: white;
+  border: none;
   padding: 15px;
-  border-radius: 16px;
-  margin: 15px 0;
-  border: 1px solid rgba(255, 215, 0, 0.1);
+  border-radius: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.execute-transfer-btn:disabled {
+  filter: grayscale(1);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --- Daily Quests & Progress --- */
+.extra-dash-content { padding: 20px; }
+
+.level-progress-card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 20px;
+  margin-bottom: 20px;
 }
 
 .progress-bar-bg {
   height: 8px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  border-radius: 4px;
   margin: 10px 0;
   overflow: hidden;
 }
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #ffd700, #ff9d00);
+  background: linear-gradient(90deg, #FFD700, #FFA500);
   box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
-/* بطاقة المهام اليومية */
-.daily-quests-section { margin-top: 25px; }
-.quests-scroll { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-
 .quest-card {
   background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
   padding: 12px;
-  border-radius: 12px;
   display: flex;
   align-items: center;
-  gap: 15px;
+  margin-bottom: 10px;
   transition: 0.3s;
 }
 
-.quest-card.completed { opacity: 0.6; background: rgba(16, 185, 129, 0.1); }
-.quest-icon { padding: 8px; background: rgba(255, 215, 0, 0.1); border-radius: 10px; color: var(--platinum-gold); }
+.quest-card.completed { border-color: #2ed573; opacity: 0.8; }
 
-  /* Modal Styles */
-  .modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    z-index: 1000;
-    display: flex;
-    align-items: flex-end;
-  }
+/* --- Receipt Styles --- */
 .receipt-card-modal {
   background: white;
-  color: #1a1a1a;
-  width: 90%;
-  max-width: 350px;
-  border-radius: 24px;
-  padding: 25px;
-  text-align: center;
-  position: relative;
-}
-
-.receipt-header { border-bottom: 2px dashed #eee; padding-bottom: 20px; margin-bottom: 20px; }
-.status-badge-big { 
-  display: inline-block; 
-  padding: 5px 15px; 
-  border-radius: 20px; 
-  font-size: 0.8rem; 
-  margin-bottom: 10px; 
-}
-.status-badge-big.success { background: #e6f7f0; color: #10b981; }
-
-.receipt-body .r-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 12px;
-  font-size: 0.9rem;
-}
-
-.share-receipt-btn {
+  color: #333;
+  border-radius: 30px;
+  padding: 30px;
   width: 100%;
-  padding: 12px;
-  background: #1a1a1a;
-  color: white;
-  border-radius: 12px;
-  margin-top: 20px;
+  max-width: 380px;
+  text-align: center;
+}
+
+.status-badge-big {
+  background: #e7f9ee;
+  color: #2ed573;
+  padding: 5px 15px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-bottom: 15px;
   font-weight: bold;
-}
-  .modal-content {
-    background: #1c1c1e;
-    width: 100%;
-    border-radius: 30px 30px 0 0;
-    padding: 30px;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-
-  .text-gold { color: #ffd700; }
-  .spin { animation: spin 1s linear infinite; }
-  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-`;
-  /* ==========================================================
-   MAFA PLATINUM - FINAL ADD-ONS STYLES (Elite Features)
-   ========================================================== */
-
-/* 1. إيصال العملية الاحترافي (Transaction Receipt Modal) */
-.receipt-card-modal {
-    background: #ffffff;
-    color: #1a1a1c;
-    width: 92%;
-    max-width: 380px;
-    margin: auto;
-    border-radius: 30px;
-    padding: 35px 25px;
-    text-align: center;
-    position: relative;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-    background-image: radial-gradient(circle at 2px 2px, #f0f0f0 1px, transparent 0);
-    background-size: 20px 20px; /* شكل ورق الإيصالات الحقيقي */
-}
-
-.receipt-header .status-badge-big {
-    display: inline-block;
-    padding: 6px 16px;
-    border-radius: 50px;
-    font-size: 0.8rem;
-    font-weight: 800;
-    margin-bottom: 15px;
-}
-
-.status-badge-big.success { background: #dcfce7; color: #15803d; }
-
-.receipt-header h2 {
-    font-size: 2.5rem;
-    font-weight: 900;
-    margin: 5px 0;
-    color: #000;
-    letter-spacing: -1px;
-}
-
-.receipt-body {
-    margin: 25px 0;
-    border-top: 2px dashed #e5e7eb;
-    border-bottom: 2px dashed #e5e7eb;
-    padding: 20px 0;
 }
 
 .r-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    font-size: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px dashed #eee;
 }
 
-.r-row span { color: #6b7280; }
-.r-row strong { color: #111827; font-weight: 700; }
+/* --- Animations --- */
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
-.share-receipt-btn {
-    width: 100%;
-    background: #7c4dff;
-    color: white;
-    border: none;
-    padding: 16px;
-    border-radius: 16px;
-    font-weight: 800;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
+/* --- Mobile Bottom Nav --- */
+.platinum-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: rgba(26, 26, 46, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1000;
 }
 
-/* 2. شريط تقدم المستوى (Level & XP Progress) */
-.level-progress-card {
-    margin: 20px;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 18px;
-    border-radius: 22px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+.nav-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 11px;
+  opacity: 0.6;
+  transition: 0.3s;
 }
 
-.level-info {
-    display: flex;
-    justify-content: space-between;
-    font-weight: 700;
-    font-size: 0.85rem;
-    color: var(--primary-gold);
+.nav-tab.active { opacity: 1; color: #00d2ff; }
+
+.nav-tab-center {
+  background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -35px;
+  box-shadow: 0 10px 20px rgba(0, 210, 255, 0.4);
+  color: white;
+}
+/* --- واجهة الخزنة (Vault Interface) --- */
+.vault-interface {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
 }
 
-.progress-bar-bg {
-    height: 10px;
-    background: #1f1f23;
-    border-radius: 20px;
-    margin: 12px 0;
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.05);
+.vault-safe-box {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 30px;
+  padding: 40px 20px;
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
 }
 
-.progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #7c4dff, #ffd700);
-    box-shadow: 0 0 15px rgba(124, 77, 255, 0.5);
+.vault-icon-glow {
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 215, 0, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  color: #FFD700;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
 }
 
-/* 3. حالات الفراغ (Empty States) */
-.empty-state-container {
-    padding: 60px 20px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: #52525b;
+.vault-balance-card {
+  margin: 25px 0;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
 }
 
-.empty-illustration {
-    margin-bottom: 20px;
-    opacity: 0.3;
+.vault-balance-card h1 {
+  font-size: 32px;
+  margin: 10px 0;
+  color: #FFD700;
 }
 
-.empty-state-container h4 {
-    color: #e4e4e7;
-    margin-bottom: 8px;
-    font-size: 1.1rem;
+.vault-btn-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 20px;
 }
 
-/* 4. حقل الملاحظات في التحويل (Transfer Notes) */
-.transfer-note-area {
-    margin-top: 15px;
+.v-btn-in, .v-btn-out {
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
-.transfer-note-area label {
-    font-size: 0.8rem;
-    color: #71717a;
-    display: block;
-    margin-bottom: 8px;
-}
+.v-btn-in { background: #2ed573; color: white; }
+.v-btn-out { background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.2); }
 
-.transfer-note-area textarea {
-    width: 100%;
-    background: #000;
-    border: 1.5px solid #27272a;
-    border-radius: 15px;
-    color: white;
-    padding: 12px;
-    font-size: 0.9rem;
-    resize: none;
-    transition: 0.3s;
-}
+/* --- صفحة السجل والفلترة (History Page) --- */
+.history-page { padding: 20px; }
 
-.transfer-note-area textarea:focus {
-    border-color: #7c4dff;
-    outline: none;
-}
-
-/* 5. وضع الخصوصية (Blur Effect) */
-.privacy-active .balance-amount {
-    filter: blur(8px);
-    pointer-events: none;
-    user-select: none;
-}
-/* ==========================================================
-   MAFA PLATINUM - FINAL ARCHITECTURE (PART 4)
-   ========================================================== */
-
-/* 1. مركز الإشعارات (Notification Center) */
-.notifications-page {
-    position: fixed;
-    inset: 0;
-    background: #09090b;
-    z-index: 5000;
-    display: flex;
-    flex-direction: column;
-}
-
-.page-header {
-    padding: 25px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #1f1f23;
-}
-
-.notif-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 10px;
-}
-
-.notif-item {
-    display: flex;
-    gap: 15px;
-    padding: 18px;
-    border-radius: 20px;
-    margin-bottom: 8px;
-    background: rgba(255, 255, 255, 0.02);
-    transition: 0.3s;
-    position: relative;
-}
-
-.notif-item.unread {
-    background: rgba(124, 77, 255, 0.08);
-    border: 1px solid rgba(124, 77, 255, 0.1);
-}
-
-.notif-type-icon {
-    width: 45px;
-    height: 45px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.notif-type-icon.receive { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-.notif-type-icon.system { background: rgba(124, 77, 255, 0.1); color: #7c4dff; }
-
-.unread-dot {
-    width: 8px;
-    height: 8px;
-    background: #7c4dff;
-    border-radius: 50%;
-    position: absolute;
-    right: 15px;
-    top: 20px;
-}
-
-/* 2. نظام المهام اليومية (Daily Quests) */
-.quests-scroll {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 5px;
-}
-
-.quest-card {
-    background: linear-gradient(90deg, #161618 0%, #09090b 100%);
-    border: 1px solid #27272a;
-    padding: 16px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    transition: 0.3s;
-}
-
-.quest-card.completed {
-    border-color: #10b981;
-    background: rgba(16, 185, 129, 0.05);
-}
-
-.quest-icon {
-    background: #1f1f23;
-    padding: 10px;
-    border-radius: 12px;
-    color: #ffd700;
-}
-
-.quest-info h5 { font-size: 0.95rem; margin: 0; color: #fff; }
-.quest-info p { font-size: 0.75rem; color: #71717a; margin-top: 3px; }
-
-/* 3. شريط الفلترة (Transaction Filter Bar) */
 .history-filter-bar {
-    padding: 15px 20px;
-    background: #09090b;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
-.filter-chips {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    padding: 10px 0;
-    scrollbar-width: none;
-}
-
-.f-chip {
-    padding: 8px 20px;
-    background: #1f1f23;
-    border-radius: 50px;
-    border: 1px solid transparent;
-    color: #a1a1aa;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-.f-chip.active {
-    background: rgba(124, 77, 255, 0.1);
-    color: #7c4dff;
-    border-color: #7c4dff;
-    font-weight: 700;
-}
-
-/* 4. شاشة حماية التفعيل (Activation Guard) */
-.activation-warning-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.95);
-    backdrop-filter: blur(15px);
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 25px;
-}
-
-.warning-card {
-    background: #161618;
-    border: 1px solid rgba(255, 215, 0, 0.2);
-    border-radius: 35px;
-    padding: 40px 25px;
-    text-align: center;
-    max-width: 400px;
-    box-shadow: 0 0 50px rgba(0,0,0,0.5);
-}
-
-.warning-card h2 { margin: 20px 0 10px; color: #fff; }
-.warning-card p { color: #a1a1aa; font-size: 0.9rem; line-height: 1.6; }
-
-.support-contact {
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #27272a;
-}
-
-.support-contact button {
-    background: transparent;
-    color: #ffd700;
-    border: 1.5px solid #ffd700;
-    padding: 12px 25px;
-    border-radius: 15px;
-    margin-top: 10px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-/* 5. تأثيرات الحركة (Micro-Interactions) */
-.notif-item:active, .quest-card:active {
-    transform: scale(0.98);
-    background: rgba(255, 255, 255, 0.05);
-}
-
-/* أنيميشن الدخول للقوائم */
-@keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-.notif-item { animation: slideUp 0.4s ease forwards; }
-
-/* 6. تنسيق البحث السريع (Quick Search Input) */
 .search-box {
-    background: #1f1f23;
-    border-radius: 15px;
-    display: flex;
-    align-items: center;
-    padding: 0 15px;
-    border: 1px solid transparent;
-}
-
-.search-box:focus-within {
-    border-color: #7c4dff;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 10px 15px;
+  border-radius: 12px;
+  gap: 10px;
 }
 
 .search-box input {
-    background: transparent;
-    border: none;
-    padding: 12px;
-    color: #fff;
-    width: 100%;
+  background: transparent;
+  border: none;
+  color: white;
+  width: 100%;
+  outline: none;
+}
+
+.filter-chips {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 5px;
+}
+
+.f-chip {
+  padding: 8px 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.f-chip.active {
+  background: #00d2ff;
+  border-color: #00d2ff;
+}
+
+/* --- صفحة الإشعارات (Notifications) --- */
+.notifications-page {
+  position: fixed;
+  inset: 0;
+  background: #1a1a2e;
+  z-index: 1500;
+  padding: 20px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 25px;
+}
+
+.notif-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 15px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.notif-item.unread {
+  background: rgba(0, 210, 255, 0.05);
+  border-right: 3px solid #00d2ff;
+}
+
+.notif-type-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 15px;
+}
+
+.notif-type-icon.receive { background: rgba(46, 213, 115, 0.1); color: #2ed573; }
+.notif-content p { margin: 0; font-size: 14px; }
+.notif-content span { font-size: 11px; opacity: 0.5; }
+
+/* --- شاشة التفعيل والمراجعة (Activation Overlay) --- */
+.activation-warning-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(15px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  padding: 20px;
+}
+
+.warning-card {
+  text-align: center;
+  background: linear-gradient(145deg, #1e1e2f, #13131f);
+  padding: 40px 25px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.text-gold { color: #FFD700; filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.4)); }
+
+.support-contact {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.support-contact button {
+  background: #25D366; /* لون واتساب */
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+/* --- تحسينات عامة للموبايل --- */
+.empty-msg, .empty-notif {
+  text-align: center;
+  opacity: 0.5;
+  padding: 40px 0;
+}
+
+::-webkit-scrollbar {
+  display: none; /* إخفاء السكرول بار للمسة جمالية على الموبايل */
 }
 
 
@@ -1821,6 +1649,7 @@ const styles = `
 export default Wallet;
   
   
+
 
 
 
