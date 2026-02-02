@@ -738,221 +738,228 @@ const Wallet = () => {
 
   return (
     <div className="wallet-master-container">
+      {/* 1. نظام الحماية: منع الدخول إلا بعد إكمال البيانات */}
       {!isDataComplete && <OnboardingScreen />}
-      
-      {/* Navbar العلوي */}
-      <nav className="wallet-nav">
-        <div className="nav-profile">
-          <div className="avatar-wrapper">
-            <img src={user?.avatar || 'https://via.placeholder.com/150'} alt="Profile" />
-            <div className="status-indicator"></div>
+
+      {/* 2. نظام التنبيهات الذكي (Alerts) */}
+      <AnimatePresence>
+        {systemAlert && (
+          <motion.div 
+            className={`system-toast ${systemAlert.type}`}
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 20 }}
+            exit={{ opacity: 0, y: -50 }}
+          >
+            {systemAlert.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
+            <div className="toast-text">
+              <h5>{systemAlert.title}</h5>
+              <p>{systemAlert.message}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 3. الهيدر (Navbar) */}
+      <nav className="platinum-nav">
+        <div className="nav-profile-section">
+          <div className="avatar-group">
+            <img src={user?.avatar || 'https://via.placeholder.com/150'} alt="User" />
+            {user?.isActivated && <div className="verified-status"><ShieldCheck size={12} /></div>}
           </div>
-          <div className="nav-info">
-            <h4>أهلاً، {user?.fullName?.split(' ')[0]}</h4>
-            <span className="user-rank">{user?.rank}</span>
+          <div className="nav-user-meta">
+            <h4>{user?.fullName || "جاري التحميل..."}</h4>
+            <div className="rank-badge">{user?.rank}</div>
           </div>
         </div>
-        <div className="nav-controls">
-          <div className="notification-bell" onClick={() => setActiveTab('notifications')}>
-            <Bell size={22} />
-            {notifications.length > 0 && <span className="badge">{notifications.length}</span>}
+        <div className="nav-actions">
+          <div className="notif-icon" onClick={() => setActiveTab('notifications')}>
+            <Bell size={24} />
+            {notifications.length > 0 && <span className="notif-dot">{notifications.length}</span>}
           </div>
-          <div className="settings-icon"><Settings size={22} /></div>
+          <Settings size={24} className="settings-gear" />
         </div>
       </nav>
 
-      {/* المحتوى الرئيسي المتحرك */}
-      <main className="wallet-content">
+      {/* 4. محتوى التابات (Main Tabs) */}
+      <main className="wallet-main-viewport">
         <AnimatePresence mode="wait">
           {activeTab === 'dashboard' && (
-            <motion.div 
-              key="dash"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
+            <motion.div key="dash" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              {/* البطاقة البلاتينية */}
               <PlatinumCard />
-              <QuickActions />
               
-              {/* قسم النقاط (Gamification) */}
-              <div className="points-widget">
-                <div className="points-info">
-                  <Star className="text-gold" fill="currentColor" />
-                  <div>
-                    <h3>{user?.points || 0} نقطة</h3>
-                    <p>تعادل {user?.points / POINT_TO_CASH_RATIO} ج.م</p>
+              {/* أزرار الوصول السريع */}
+              <QuickActions />
+
+              {/* ميزة النقاط (اللوجيك ميزة 9) */}
+              <div className="loyalty-card">
+                <div className="loyalty-content">
+                  <div className="star-ring"><Star fill="#FFD700" color="#FFD700" /></div>
+                  <div className="loyalty-info">
+                    <h3>{user?.points || 0} نقطة ولاء</h3>
+                    <p>يمكنك تحويلها إلى {(user?.points / POINT_TO_CASH_RATIO).toFixed(2)} ج.م</p>
                   </div>
                 </div>
-                <button onClick={convertLoyaltyPoints} className="convert-btn">استبدال</button>
+                <button 
+                  className="convert-points-btn" 
+                  onClick={convertLoyaltyPoints}
+                  disabled={actionLoading}
+                >
+                  {actionLoading ? <RefreshCw className="spin" /> : "استبدال الآن"}
+                </button>
               </div>
 
-              {/* السجل المصغر */}
+              {/* ميزة الإحصائيات (اللوجيك ميزة 4) */}
+              <div className="analytics-preview">
+                <div className="stat-item">
+                  <ArrowDownLeft color="#10b981" />
+                  <div><span>دخل الشهر</span><p>{analytics.monthlyIncome} ج.م</p></div>
+                </div>
+                <div className="stat-item">
+                  <ArrowUpRight color="#ef4444" />
+                  <div><span>مصروف الشهر</span><p>{analytics.monthlySpending} ج.م</p></div>
+                </div>
+              </div>
+
+              {/* سجل العمليات المصغر */}
               <div className="section-header">
-                <h3>آخر العمليات</h3>
+                <h3>النشاط الأخير</h3>
                 <button onClick={() => setActiveTab('history')}>عرض الكل</button>
               </div>
-              <div className="mini-history">
-                {transactions.slice(0, 4).map(renderTransactionItem)}
+              <div className="mini-transactions">
+                {transactions.slice(0, 5).map(renderTransactionItem)}
+              </div>
+            </motion.div>
+          )}
+
+          {/* ميزة الخزنة (اللوجيك ميزة 7) */}
+          {activeTab === 'vault' && (
+            <motion.div key="vault" className="vault-interface" initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
+              <div className="vault-safe-box">
+                <Lock size={50} className="lock-icon" />
+                <h2>خزنة MAFA الآمنة</h2>
+                <div className="vault-balance-card">
+                  <span>الرصيد المحمي</span>
+                  <h1>{user?.vaultBalance?.toLocaleString()} <small>EGP</small></h1>
+                </div>
+                <div className="vault-inputs">
+                  <input 
+                    type="number" 
+                    placeholder="المبلغ..." 
+                    value={vaultState.actionAmount}
+                    onChange={(e) => setVaultState({...vaultState, actionAmount: e.target.value})}
+                  />
+                  <div className="vault-btn-row">
+                    <button onClick={() => manageVault('deposit')} className="v-btn-in">إيداع للخزنة</button>
+                    <button onClick={() => manageVault('withdraw')} className="v-btn-out">سحب للمحفظة</button>
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </main>
 
-      {/* التوجيه السفلي (Bottom Tabs) */}
-      <footer className="bottom-nav">
+      {/* 5. نظام المودالات (اللوجيك ميزات 5, 6, 8) */}
+      <AnimatePresence>
+        {activeModal && (
+          <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div className="modal-sheet" initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}>
+              <div className="sheet-handle" onClick={() => setActiveModal(null)}></div>
+              
+              {/* مودال التحويل المالي (الميزات 5 و 6) */}
+              {activeModal === 'transfer' && (
+                <div className="modal-body">
+                  <h3>تحويل مالي آمن</h3>
+                  <div className="recipient-search-area">
+                    <input 
+                      type="text" 
+                      placeholder="أدخل MAFA ID المستلم" 
+                      onChange={(e) => handleRecipientSearch(e.target.value)}
+                    />
+                    {actionLoading && <RefreshCw className="spin" />}
+                  </div>
+
+                  {/* نتائج البحث من اللوجيك */}
+                  {searchResult && searchResult !== 'not_found' && searchResult !== 'self' && (
+                    <div className="search-success-card">
+                      <img src={searchResult.avatar} alt="" />
+                      <div className="res-meta">
+                        <p>{searchResult.name}</p>
+                        <span>{searchResult.level}</span>
+                      </div>
+                      <UserCheck color="#10b981" />
+                    </div>
+                  )}
+
+                  <div className="amount-field">
+                    <label>المبلغ</label>
+                    <input type="number" placeholder="0.00" onChange={(e) => setTransferData({...transferData, amount: e.target.value})} />
+                  </div>
+
+                  <div className="pin-field">
+                    <label>رمز PIN الأمني</label>
+                    <input type="password" maxLength="4" placeholder="****" onChange={(e) => setTransferData({...transferData, pin: e.target.value})} />
+                  </div>
+
+                  <button className="main-action-btn" onClick={executeSecureTransfer}>تأكيد العملية</button>
+                </div>
+              )}
+
+              {/* مودال الشحن (الميزة 8) */}
+              {activeModal === 'recharge' && (
+                <div className="modal-body">
+                  <h3>شحن الرصيد</h3>
+                  <div className="methods-grid">
+                    {Object.values(RECHARGE_METHODS).map(m => (
+                      <div 
+                        key={m.id} 
+                        className={`m-item ${rechargeData.method === m.id ? 'active' : ''}`}
+                        onClick={() => setRechargeData({...rechargeData, method: m.id})}
+                      >
+                        {m.name}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="upload-section" onClick={() => document.getElementById('file-up').click()}>
+                    {rechargeData.previewUrl ? (
+                      <img src={rechargeData.previewUrl} className="receipt-preview" />
+                    ) : (
+                      <><ImageIcon size={30} /><p>ارفع صورة الإيصال</p></>
+                    )}
+                    <input id="file-up" type="file" hidden onChange={(e) => {
+                      const file = e.target.files[0];
+                      setRechargeData({...rechargeData, receiptFile: file, previewUrl: URL.createObjectURL(file)});
+                    }} />
+                  </div>
+                  <button className="main-action-btn" onClick={handleRechargeSubmission}>إرسال الطلب</button>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 6. شريط التنقل السفلي */}
+      <footer className="platinum-bottom-nav">
         <div className={`nav-tab ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
-          <WalletIcon size={24} />
-          <span>الرئيسية</span>
+          <Smartphone /><span>الرئيسية</span>
         </div>
         <div className={`nav-tab ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
-          <History size={24} />
-          <span>النشاط</span>
+          <History /><span>النشاط</span>
+        </div>
+        <div className="nav-tab-center" onClick={() => secureOpenModal('transfer')}>
+          <div className="fab-plus"><Plus size={30} /></div>
         </div>
         <div className={`nav-tab ${activeTab === 'vault' ? 'active' : ''}`} onClick={() => setActiveTab('vault')}>
-          <PiggyBank size={24} />
-          <span>ادخار</span>
+          <PiggyBank /><span>الخزنة</span>
         </div>
         <div className={`nav-tab ${activeTab === 'support' ? 'active' : ''}`} onClick={() => setActiveTab('support')}>
-          <Headphones size={24} />
-          <span>الدعم</span>
+          <Headphones /><span>الدعم</span>
         </div>
       </footer>
     </div>
   );
-
-// تابع للجزء الرابع... (تصميم المودالات Modals، CSS المعقد، ونظام الـ QR Code)
-
-  // =========================================================================
-// [ SECTION 8: DYNAMIC MODALS & INTERACTION LAYERS ]
-// =========================================================================
-
-  // مكون فرعي: واجهات الإدخال (Financial Forms)
-  const renderModals = () => (
-    <AnimatePresence>
-      {activeModal && (
-        <motion.div 
-          className="modal-backdrop"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          onClick={() => setActiveModal(null)}
-        >
-          <motion.div 
-            className="modal-content"
-            initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-handle"></div>
-            
-            {/* مودال التحويل المالي */}
-            {activeModal === 'transfer' && (
-              <div className="transfer-flow">
-                <h3>إرسال أموال</h3>
-                <div className="search-box">
-                  <input 
-                    type="text" 
-                    placeholder="أدخل MAFA ID للمستلم..." 
-                    onChange={(e) => handleRecipientSearch(e.target.value)}
-                  />
-                  {actionLoading ? <RefreshCw className="spin" /> : <Search size={20} />}
-                </div>
-
-                {searchResult && searchResult !== 'not_found' && searchResult !== 'self' && (
-                  <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="recipient-card">
-                    <img src={searchResult.avatar || 'https://via.placeholder.com/50'} alt="" />
-                    <div>
-                      <p className="name">{searchResult.name}</p>
-                      <span className="level">{searchResult.level}</span>
-                    </div>
-                    <CheckCircle2 size={20} className="text-green" />
-                  </motion.div>
-                )}
-
-                <div className="amount-input">
-                  <label>المبلغ المراد تحويله</label>
-                  <input 
-                    type="number" 
-                    placeholder="0.00" 
-                    value={transferData.amount}
-                    onChange={(e) => setTransferData({...transferData, amount: e.target.value})}
-                  />
-                </div>
-
-                <div className="security-pin-section">
-                  <label>رمز الأمان (PIN)</label>
-                  <div className="pin-stars">
-                    <input 
-                      type="password" maxLength="4" placeholder="••••"
-                      onChange={(e) => setTransferData({...transferData, pin: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <button 
-                  className="confirm-transfer-btn"
-                  onClick={executeSecureTransfer}
-                  disabled={actionLoading}
-                >
-                  {actionLoading ? "جاري المعالجة..." : "تأكيد التحويل الآن"}
-                </button>
-              </div>
-            )}
-
-            {/* مودال الشحن (Recharge) */}
-            {activeModal === 'recharge' && (
-              <div className="recharge-flow">
-                <h3>شحن المحفظة</h3>
-                <div className="method-selector">
-                  {Object.values(RECHARGE_METHODS).map(m => (
-                    <div 
-                      key={m.id} 
-                      className={`method-btn ${rechargeData.method === m.id ? 'active' : ''}`}
-                      onClick={() => setRechargeData({...rechargeData, method: m.id})}
-                      style={{ '--brand-color': m.color }}
-                    >
-                      {m.name}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="instructions-box">
-                  <p>حول المبلغ إلى الرقم: <strong>{RECHARGE_METHODS[rechargeData.method.toUpperCase()]?.number || '99821'}</strong></p>
-                  <small>ثم ارفع صورة الإيصال بالأسفل</small>
-                </div>
-
-                <div className="upload-area" onClick={() => document.getElementById('file-input').click()}>
-                  {rechargeData.previewUrl ? (
-                    <img src={rechargeData.previewUrl} alt="Receipt" className="preview-img" />
-                  ) : (
-                    <>
-                      <ImageIcon size={40} />
-                      <p>اضغط لرفع صورة الإيصال</p>
-                    </>
-                  )}
-                  <input 
-                    id="file-input" type="file" hidden 
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      setRechargeData({
-                        ...rechargeData, 
-                        receiptFile: file, 
-                        previewUrl: URL.createObjectURL(file)
-                      });
-                    }}
-                  />
-                </div>
-
-                <button className="submit-recharge-btn" onClick={handleRechargeSubmission}>
-                  إرسال الطلب للمراجعة
-                </button>
-              </div>
-            )}
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-
 // =========================================================================
 // [ SECTION 9: STYLESHEET (INTEGRATED CSS) ]
 // =========================================================================
@@ -1103,5 +1110,6 @@ const styles = `
 export default Wallet;
   
   
+
 
 
