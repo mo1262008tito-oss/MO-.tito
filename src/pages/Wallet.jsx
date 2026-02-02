@@ -147,24 +147,7 @@ const Wallet = () => {
               setTransactions(transList);
               calculateAnalytics(transList);
             });
-// أضف هذا الجزء داخل مكون Wallet ليعمل سجل العمليات
-  const renderTransactionItem = (item) => (
-    <div key={item.id} className="transaction-item">
-      <div className="trans-info">
-        <div className={`trans-icon ${item.type}`}>
-          {item.type === 'deposit' ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
-        </div>
-        <div className="trans-text">
-          <h5>{item.title}</h5>
-          <p>{item.date?.toDate().toLocaleDateString('ar-EG')}</p>
-        </div>
-      </div>
-      <div className={`trans-amount ${item.type === 'deposit' ? 'positive' : 'negative'}`}>
-        {item.type === 'deposit' ? '+' : '-'}{item.amount} ج.م
-      </div>
-    </div>
-  );
-            // 5. مزامنة الإشعارات غير المقروءة
+         // 5. مزامنة الإشعارات غير المقروءة
             const qNotifs = query(
               collection(db, 'notifications'),
               where('userId', '==', currentUser.uid),
@@ -507,6 +490,25 @@ const Wallet = () => {
     }
   };
 
+
+  // أضف هذا الجزء داخل مكون Wallet ليعمل سجل العمليات
+  const renderTransactionItem = (item) => (
+    <div key={item.id} className="transaction-item">
+      <div className="trans-info">
+        <div className={`trans-icon ${item.type}`}>
+          {item.type === 'deposit' ? <ArrowDownLeft size={20} /> : <ArrowUpRight size={20} />}
+        </div>
+        <div className="trans-text">
+          <h5>{item.title}</h5>
+          <p>{item.date?.toDate().toLocaleDateString('ar-EG')}</p>
+        </div>
+      </div>
+      <div className={`trans-amount ${item.type === 'deposit' ? 'positive' : 'negative'}`}>
+        {item.type === 'deposit' ? '+' : '-'}{item.amount} ج.م
+      </div>
+    </div>
+  );
+   
 // تابع للجزء الثالث... (الواجهة الرسومية وتصميم البطاقة البلاتينية)
 
 // =========================================================================
@@ -1101,4 +1103,5 @@ const styles = `
 export default Wallet;
   
   
+
 
