@@ -1,0 +1,487 @@
+
+
+/* MAFA ACADEMY - STUDENT ANALYTICS SYSTEM (FULL RIGOR MODE)
+  This file covers every character in the StudentAnalyticsSystem component.
+*/
+
+/* 1. الحاوية والتحريك الخلفي */
+.analytics-container {
+    background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.03) 0%, transparent 70%);
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* 2. بطاقة النتيجة الكونية (The Cosmic Card) */
+.ultra-glass {
+    position: relative;
+    background: rgba(10, 10, 10, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+    transition: transform 0.3s ease;
+}
+
+/* 3. عدادات البيانات الدائرية والمربعة (Stats) */
+.stat-box {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 40px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: center;
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.stat-box:hover {
+    background: rgba(59, 130, 246, 0.05);
+    border-color: #3b82f6;
+    transform: translateY(-10px);
+}
+
+/* 4. خريطة الإجابات الحرارية (Response Heatmap) */
+.heatmap-cell {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-family: 'Orbitron', sans-serif;
+    transition: 0.3s;
+    cursor: help;
+}
+
+.heatmap-cell.correct {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.heatmap-cell.wrong {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* 5. الشهادة الرقمية الاحترافية (Digital Certificate) */
+.certificate-frame {
+    border: 4px dashed rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 50px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, transparent 100%);
+}
+
+.certificate-inner {
+    background: #050505;
+    padding: 60px 20px;
+    border-radius: 40px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.certificate-title {
+    font-family: 'Orbitron', sans-serif;
+    color: #3b82f6;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+}
+
+.student-name-display {
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 900;
+    background: linear-gradient(to bottom, #fff 0%, #888 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 20px 0;
+}
+
+/* 6. نظام الأوسمة (Badges) */
+.badge-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.03);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.badge-circle::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: #3b82f6;
+    animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 7. تذييل الصفحة (Footer) */
+.system-footer {
+    letter-spacing: 0.5em;
+    color: #333;
+    font-weight: 900;
+}
+
+/* 8. زر الطباعة والحفظ (CTA) */
+.btn-tactical {
+    height: 64px;
+    padding: 0 40px;
+    border-radius: 20px;
+    font-weight: 900;
+    font-size: 1.1rem;
+    transition: 0.4s;
+}
+
+.btn-primary-glow {
+    background: #3b82f6;
+    color: white;
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+}
+
+.btn-primary-glow:hover {
+    box-shadow: 0 0 50px rgba(59, 130, 246, 0.6);
+    transform: scale(1.05);
+}
+
+/* 9. تأثيرات الطباعة (Print Overrides) */
+@media print {
+    .mafa-root { background: white !important; color: black !important; }
+    .ultra-glass { border: 2px solid #000 !important; background: none !important; }
+    .no-print, button, footer { display: none !important; }
+    .certificate-frame { border: 4px solid black !important; }
+}
+
+/* 10. الخطوط العريضة للحزم */
+.font-rigor {
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.05em;
+}
+
+/* 11. نظام الأوسمة المتقدم (The Badge Vault) */
+.badge-vault-grid {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    perspective: 1000px;
+}
+
+.badge-item {
+    width: 80px;
+    height: 80px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.badge-item:hover {
+    transform: rotateY(180deg) scale(1.1);
+}
+
+.badge-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    border: 2px solid rgba(139, 92, 246, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* 12. بطاقة "تحدي اليوم القادم" (Next Challenge Card) */
+.next-challenge-card {
+    border-left: 5px solid #3b82f6; /* علامة الحزم */
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.next-challenge-card::before {
+    content: 'NEXT MISSION';
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    font-family: 'Orbitron';
+    font-size: 40px;
+    font-weight: 900;
+    opacity: 0.03;
+    white-space: nowrap;
+}
+
+/* 13. تقرير ولي الأمر (Parental Security Sync) */
+.parent-sync-status {
+    background: rgba(255, 255, 255, 0.02);
+    padding: 15px 30px;
+    border-radius: 100px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.sync-pulse {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #10b981;
+    animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+    0% { transform: scale(0.95); opacity: 0.7; }
+    70% { transform: scale(1.5); opacity: 0; }
+    100% { transform: scale(0.95); opacity: 0; }
+}
+
+/* 14. تحليل القوة والضعف (Mastery Analytics) */
+.mastery-bar-container {
+    width: 100%;
+    height: 8px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+.mastery-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+    transition: width 1.5s ease-out;
+}
+
+/* 15. تذييل النظام (System Version Info) */
+.system-version-tag {
+    font-family: 'Orbitron';
+    color: #1a1a1a;
+    font-size: 10px;
+    letter-spacing: 10px;
+    transition: 0.3s;
+}
+
+.system-version-tag:hover {
+    color: #3b82f6;
+    letter-spacing: 12px;
+}
+
+/* 16. تأثير اهتزاز الشاشة عند النجاح (Haptic Simulation) */
+.success-shake {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+/* 17. نظام النوافذ المنبثقة (Professional Admin Modals) */
+.fixed.inset-0 {
+    backdrop-filter: blur(15px) brightness(0.2);
+    z-index: 9999;
+}
+
+.max-h-\[90vh\]::-webkit-scrollbar {
+    width: 4px;
+}
+
+.max-h-\[90vh\]::-webkit-scrollbar-thumb {
+    background: var(--accent-blue);
+    border-radius: 10px;
+}
+
+/* 18. تحليل نقاط القوة (Strength/Weakness Indicators) */
+.strength-indicator {
+    padding: 15px;
+    border-radius: 15px;
+    background: rgba(16, 185, 129, 0.05);
+    border-right: 4px solid var(--success-green);
+    margin-bottom: 10px;
+}
+
+.weakness-indicator {
+    padding: 15px;
+    border-radius: 15px;
+    background: rgba(239, 68, 68, 0.05);
+    border-right: 4px solid var(--danger-red);
+    margin-bottom: 10px;
+}
+
+/* 19. تنسيق بنك الأسئلة للإدارة (Question Bank Grid) */
+.group:hover .absolute.top-0.left-0 {
+    width: 8px; /* زيادة سماكة خط الصعوبة عند التمرير */
+    transition: 0.3s ease;
+}
+
+.group button svg {
+    transition: transform 0.3s ease;
+}
+
+.group:hover button svg {
+    transform: scale(1.2);
+}
+
+/* 20. شريط التقدم التفاعلي (Interactive Progress Bars) */
+.progress-container {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 100px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+    box-shadow: 0 0 10px var(--accent-blue);
+}
+
+/* 21. تحسينات الهواتف (Ultimate Mobile Optimization) */
+@media (max-width: 768px) {
+    .ultra-glass {
+        padding: 20px !important;
+        border-radius: 20px;
+    }
+    
+    .student-name-display {
+        font-size: 2.5rem !important;
+    }
+    
+    .stat-box {
+        padding: 1.5rem;
+    }
+}
+
+/* 22. نظام "الوميض" للعناصر الهامة (The Tactical Pulse) */
+.pulse-blue {
+    animation: pulse-blue-frame 2s infinite;
+}
+
+@keyframes pulse-blue-frame {
+    0% { border-color: rgba(59, 130, 246, 0.2); }
+    50% { border-color: rgba(59, 130, 246, 0.8); }
+    100% { border-color: rgba(59, 130, 246, 0.2); }
+}
+
+/* 23. حماية المحتوى (Anti-Copy Protection) */
+.no-select {
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* 24. تذييل النسخة (Version Control Branding) */
+footer p {
+    letter-spacing: 0.8em;
+    font-size: 9px;
+    opacity: 0.4;
+    text-transform: uppercase;
+}
+/* 25. نظام التفاعل مع الأيقونات (Icon Tactical Animation) */
+svg {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ultra-glass:hover svg {
+    filter: drop-shadow(0 0 8px var(--accent-blue));
+    transform: scale(1.1) rotate(-5deg);
+}
+
+/* 26. تصميم شريط الحالة (Progress & Loading States) */
+.loading-shimmer {
+    background: linear-gradient(90deg, 
+        rgba(255,255,255,0) 0%, 
+        rgba(255,255,255,0.05) 50%, 
+        rgba(255,255,255,0) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* 27. تنسيق "تقرير ولي الأمر" الصارم (Parental Report Design) */
+.parental-shield {
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    background: rgba(16, 185, 129, 0.02);
+    border-radius: 12px;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 28. تحسين تجربة القوائم المنسدلة (Dropdowns & Selects) */
+select option {
+    background: #0a0a0a;
+    color: white;
+    padding: 10px;
+}
+
+/* 29. تأثيرات الأزرار عند الضغط (Tactical Feedback) */
+.mafa-btn:active {
+    transform: scale(0.98) translateY(1px);
+    filter: brightness(0.8);
+}
+
+.mafa-btn:disabled {
+    background: #1a1a1a !important;
+    color: #444 !important;
+    cursor: not-allowed;
+    box-shadow: none !important;
+}
+
+/* 30. نظام المسافات الاحترافي (Global Spacing) */
+.section-divider {
+    height: 1px;
+    width: 100%;
+    background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+    margin: 40px 0;
+}
+
+/* 31. كود الشهادة - اللمسات النهائية (Certificate Finisher) */
+.certificate-inner::after {
+    content: '';
+    position: absolute;
+    inset: 15px;
+    border: 1px solid rgba(255,255,255,0.03);
+    border-radius: 30px;
+    pointer-events: none;
+}
+
+/* 32. تحسين العرض على الشاشات العريضة (Ultrawide Support) */
+@media (min-width: 1920px) {
+    .max-w-7xl {
+        max-w-90%;
+    }
+    .student-name-display {
+        font-size: 5rem;
+    }
+}
+
+/* 33. نظام "الظلام الدامس" (Pure Black Optimization) */
+::selection {
+    background: var(--accent-blue);
+    color: #000;
+}
+
+/* 34. منع التلاعب بالواجهة (DevTools Protection Styles) */
+canvas {
+    pointer-events: none;
+}
+
