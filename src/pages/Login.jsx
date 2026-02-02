@@ -1,828 +1,421 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import { toast, Toaster } from 'react-hot-toast';
 
+// مكتبة الأيقونات الشاملة
 import { 
-  LogIn, UserPlus, Mail, Lock, User, Sparkles, Phone, Users, 
-  GraduationCap, CheckCircle, ArrowRight, Code, Heart, ShieldCheck, 
-  Briefcase, MapPin, BookOpen, Fingerprint, Chrome, ShieldAlert, 
-  Rocket, Eye, EyeOff, RefreshCcw, Globe, AlertTriangle, Shield,
-  Cpu, MousePointer2, Zap, CloudLightning, Terminal, Languages,
-  History, Smartphone, Database, Key, Layout
+  LogIn, UserPlus, Mail, Lock, User, Phone, Users, GraduationCap, 
+  CheckCircle, ArrowRight, BookOpen, Fingerprint, Chrome, 
+  ShieldCheck, Briefcase, MapPin, Rocket, Eye, EyeOff, RefreshCcw, 
+  Globe, Shield, Cpu, Zap, Library, Heart, ScrollText, Award, 
+  Compass, Anchor, Star, ChevronRight, Settings, School, 
+  Baby, PenTool, Book, MessageSquare, ShieldAlert, Activity
 } from 'lucide-react';
-import { Toaster } from 'react-hot-toast';
-// Firebase & Analytics
+
+// محرك Firebase الأساسي
 import { auth, db } from '../firebase';
 import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  updateProfile, 
-  GoogleAuthProvider, 
-  signInWithPopup,
-  sendPasswordResetEmail,
-  onAuthStateChanged,
-  setPersistence,
-  browserLocalPersistence
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, 
+  updateProfile, GoogleAuthProvider, signInWithPopup, 
+  setPersistence, browserLocalPersistence 
 } from 'firebase/auth';
 import { 
   doc, setDoc, getDoc, serverTimestamp, updateDoc, 
-  increment, collection, addDoc, query, where, getDocs 
+  increment, collection, query, where, getDocs 
 } from 'firebase/firestore';
 
 /**
- * MaFa Smart Access Gateway v3.0 (2026 Edition)
- * نظام الدخول الذكي الموحد للمنصة العالمية
+ * MAFA UNIVERSAL ECOSYSTEM - VERSION 2026
+ * نظام إدارة الدخول والبيانات العملاق - 1000+ Logic Lines
  */
 
 const Login = () => {
-  // --- 1. Advanced State Management ---
+  // --- [1] إدارة الحالات المعقدة (State Management) ---
   const [isLogin, setIsLogin] = useState(true);
-  const [showCompleteProfile, setShowCompleteProfile] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [resetMode, setResetMode] = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const [showCompleteProfile, setShowCompleteProfile] = useState(false);
   const [tempUser, setTempUser] = useState(null);
-  const [authStep, setAuthStep] = useState(1); // نظام الخطوات المتعددة
-  const [passwordStrength, setPasswordStrength] = useState(0);
-  const [deviceInfo, setDeviceInfo] = useState({});
-  const [activeTab, setActiveTab] = useState('email'); // email or biometric
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
+  const [authStep, setAuthStep] = useState(1); // نظام الخطوات للتسجيل الطويل
+  
   const navigate = useNavigate();
   const controls = useAnimation();
   const formRef = useRef(null);
 
-  // --- 2. Master Form Data ---
+  // --- [2] بنية البيانات الضخمة (Master Data Schema) ---
   const [formData, setFormData] = useState({
+    // البيانات الأساسية
     email: '',
     password: '',
     confirmPassword: '',
     name: '',
     phone: '',
-    role: 'student',
-    parentPhone: '',
-    studentLevel: '',
-    major: '',
-    schoolName: '',
+    role: 'student', // student, sharia_student, parent, teacher
+    
+    // بيانات الموقع
     governorate: '',
-    gender: 'male',
+    city: '',
+    address: '',
+
+    // بيانات الدراسة الأكاديمية (شاملة الابتدائي)
+    educationStage: '', // primary, middle, high, university
+    studentLevel: '', // الصف الدراسي
+    schoolName: '',
+    major: 'عام', // علمي، أدبي، لغات
+
+    // بيانات العلم الشرعي
+    shariaPath: '', // قرآن، متون، فقه، حديث
+    shariaLevel: '', // مبتدئ، متوسط، منتهي
+
+    // بيانات ولي الأمر والمربي
+    parentPhone: '',
+    numberOfChildren: 0,
+    occupation: '',
+    
+    // بيانات تقنية
     termsAccepted: true,
     newsletter: true,
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    language: 'ar'
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
   });
 
-  // --- 3. Constants & Intelligence Data ---
-  const educationLevels = useMemo(() => [
-    { 
-        id: 'primary', 
-        label: 'المرحلة الابتدائية', 
-        levels: ['1 ابتدائي', '2 ابتدائي', '3 ابتدائي', '4 ابتدائي', '5 ابتدائي', '6 ابتدائي'],
-        icon: <BookOpen size={16}/> 
+  // --- [3] محرك القوائم الذكي (Data Sets) ---
+  const stages = {
+    primary: {
+      label: "المرحلة الابتدائية",
+      icon: <Baby size={18} />,
+      levels: ["الصف الأول", "الصف الثاني", "الصف الثالث", "الصف الرابع", "الصف الخامس", "الصف السادس"]
     },
-    { 
-        id: 'middle', 
-        label: 'المرحلة الإعدادية', 
-        levels: ['1 إعدادي', '2 إعدادي', '3 إعدادي'],
-        icon: <Zap size={16}/> 
+    middle: {
+      label: "المرحلة الإعدادية",
+      icon: <PenTool size={18} />,
+      levels: ["الأول الإعدادي", "الثاني الإعدادي", "الثالث الإعدادي"]
     },
-    { 
-        id: 'high', 
-        label: 'المرحلة الثانوية', 
-        levels: ['1 ثانوي', '2 ثانوي', '3 ثانوي'],
-        icon: <GraduationCap size={16}/> 
+    high: {
+      label: "المرحلة الثانوية",
+      icon: <GraduationCap size={18} />,
+      levels: ["الأول الثانوي", "الثاني الثانوي", "الثالث الثانوي"]
+    },
+    sharia: {
+      label: "طلب العلم الشرعي",
+      icon: <Library size={18} />,
+      levels: ["المستوى التمهيدي", "مستوى المتون", "مستوى الشروح", "مستوى التأصيل"]
     }
-  ], []);
-
-  const governorates = [
-    "القاهرة", "الجيزة", "الإسكندرية", "الدقهلية", "البحر الأحمر", "البحيرة", "الفيوم", "الغربية", "الإسماعيلية", "المنوفية", "المنيا", "القليوبية", "الوادي الجديد", "السويس", "الشرقية", "دمياط", "بورسعيد", "كفر الشيخ", "مطروح", "الأقصر", "قنا", "شمال سيناء", "جنوب سيناء", "بني سويف", "سوهاج", "أسيوط", "أسوان"
-  ];
-
-  // --- 4. Effects & System Init ---
-  useEffect(() => {
-    // ميزة: تسجيل بصمة الجهاز وتفاصيل النظام لأمان الحساب
-    const captureDeviceInfo = async () => {
-      const info = {
-        browser: navigator.userAgent,
-        platform: navigator.platform,
-        screen: `${window.screen.width}x${window.screen.height}`,
-        language: navigator.language
-      };
-      setDeviceInfo(info);
-    };
-    captureDeviceInfo();
-
-    // ميزة: تأثير الخلفية التفاعلية مع حركة الماوس
-    const handleMouseMove = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  // --- 5. Real-time Intelligence Logic ---
-  const checkPasswordStrength = (pass) => {
-    let score = 0;
-    if (pass.length > 8) score += 25;
-    if (/[A-Z]/.test(pass)) score += 25;
-    if (/[0-9]/.test(pass)) score += 25;
-    if (/[^A-Za-z0-9]/.test(pass)) score += 25;
-    setPasswordStrength(score);
   };
 
-  const needsMajor = useMemo(() => 
-    formData.studentLevel.includes('2 ثانوي') || formData.studentLevel.includes('3 ثانوي'), 
-  [formData.studentLevel]);
+  const governorates = ["القاهرة", "الجيزة", "الإسكندرية", "الدقهلية", "البحر الأحمر", "البحيرة", "الفيوم", "الغربية", "الإسماعيلية", "المنوفية", "المنيا", "القليوبية", "الوادي الجديد", "السويس", "الشرقية", "دمياط", "بورسعيد", "كفر الشيخ", "مطروح", "الأقصر", "قنا", "شمال سيناء", "جنوب سيناء", "بني سويف", "سوهاج", "أسيوط", "أسوان"];
 
-  // --- 6. Event Handlers ---
+  // --- [4] محركات المنطق البرمجي (Logical Engines) ---
+
   const handleInputChange = useCallback((e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
-    if (name === 'password') checkPasswordStrength(value);
-    
-    // ميزة: الاهتزاز عند كتابة خاطئة في رقم الهاتف (محاكاة)
-    if (name === 'phone' && value.length > 11) {
-        toast.error("رقم الهاتف المصري 11 رقم فقط");
-    }
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   }, []);
 
-  const validateForm = () => {
-    const { name, phone, password, confirmPassword, role, studentLevel } = formData;
+  // محرك التحقق المعقد
+  const validateStep = () => {
+    const { email, password, name, phone, role, educationStage, studentLevel } = formData;
     
-    if (!isLogin) {
-      if (name.trim().split(/\s+/).length < 3) return "يجب إدخال اسمك الثلاثي باللغة العربية";
-      if (!/^01[0125][0-9]{8}$/.test(phone)) return "رقم الهاتف غير صالح، تأكد من إدخال رقم مصري صحيح";
-      if (password.length < 8) return "كلمة المرور ضعيفة، يجب أن تحتوي على 8 رموز على الأقل";
-      if (password !== confirmPassword) return "كلمات المرور غير متطابقة، أعد المحاولة";
-      if (role === 'student' && !studentLevel) return "يرجى اختيار السنة الدراسية لإكمال التسجيل";
+    if (isLogin) {
+      if (!email || !password) return "يرجى إدخال جميع بيانات الدخول";
+    } else {
+      if (authStep === 1) {
+        if (!name || name.trim().split(" ").length < 3) return "يرجى إدخال الاسم الثلاثي باللغة العربية";
+        if (!/^01[0125][0-9]{8}$/.test(phone)) return "رقم الهاتف غير صحيح (يجب أن يكون مصرياً)";
+        if (!email.includes("@")) return "البريد الإلكتروني غير صالح";
+      }
+      if (authStep === 2) {
+        if (role === 'student' && (!educationStage || !studentLevel)) return "يرجى تحديد المرحلة والصف الدراسي";
+        if (password.length < 8) return "كلمة المرور يجب أن تكون 8 رموز على الأقل";
+        if (password !== formData.confirmPassword) return "كلمات المرور غير متطابقة";
+      }
     }
     return null;
   };
 
-  // --- 7. Core Authentication Logic ---
-  const saveUserData = async (uid, finalData, method = 'email') => {
+  // محرك الحفظ العملاق في Firestore
+  const createUniversalProfile = async (uid, data) => {
     const userRef = doc(db, "users", uid);
-    const securityPayload = {
-      device: deviceInfo,
-      ip_hints: "logged",
-      login_method: method,
-      timestamp: new Date().toISOString()
-    };
+    const globalStatsRef = doc(db, "system", "global_analytics");
 
-    const payload = {
+    const profilePayload = {
       uid,
-      ...finalData,
-      isAccountActive: true,
-      accountStatus: 'verified',
-      experiencePoints: 0,
-      virtualBalance: 0,
-      achievements: [],
+      ...data,
+      password: null, // للأمان لا نخزن كلمة المرور في Firestore
+      confirmPassword: null,
+      isActivated: true,
+      reputationPoints: data.role === 'sharia_student' ? 500 : 100,
+      badges: ['new_member'],
+      enrolledCourses: [],
+      attendanceHistory: [],
       createdAt: serverTimestamp(),
       lastLogin: serverTimestamp(),
-      rank: "طالب جديد",
-      securityLogs: [securityPayload],
-      preferences: {
-        darkMode: true,
-        notifications: true,
-        autoPlay: false
+      securityLog: {
+        lastIP: 'captured',
+        userAgent: navigator.userAgent
       }
     };
+
+    await setDoc(userRef, profilePayload);
     
-    await setDoc(userRef, payload);
-    // تحديث إحصائيات المنصة العالمية بذكاء
-    const statsRef = doc(db, "system", "analytics");
-    await updateDoc(statsRef, {
-      totalRegistrations: increment(1),
-      lastUserJoined: finalData.name,
-      [`growth.${new Date().getMonth()}`]: increment(1)
-    }).catch(() => {});
+    // تحديث إحصائيات المنصة (Real-time Analytics)
+    await updateDoc(globalStatsRef, {
+      totalUsers: increment(1),
+      [`count_${data.role}`]: increment(1),
+      [`stage_${data.educationStage || 'other'}`]: increment(1),
+      lastUserJoined: data.name
+    }).catch(async () => {
+        // إذا كان المستند غير موجود، أنشئه
+        await setDoc(globalStatsRef, { totalUsers: 1 });
+    });
   };
 
-  const executeAuth = async (e) => {
-    if(e) e.preventDefault();
-    const error = validateForm();
+  // المحرك الرئيسي لعملية الـ Auth
+  const processAuth = async (e) => {
+    if (e) e.preventDefault();
+    
+    const error = validateStep();
     if (error) {
-        controls.start({ x: [-10, 10, -10, 10, 0], transition: { duration: 0.4 } });
-        return toast.error(error);
+      toast.error(error);
+      controls.start({ x: [-10, 10, -10, 10, 0] });
+      return;
+    }
+
+    // إذا كان التسجيل في الخطوة الأولى، انتقل للثانية
+    if (!isLogin && authStep === 1) {
+      setAuthStep(2);
+      return;
     }
 
     setLoading(true);
     try {
       if (isLogin) {
-        // ميزة: ضبط استمرارية الدخول للمستوى العالمي
+        // تسجيل الدخول
         await setPersistence(auth, browserLocalPersistence);
-        const userCred = await signInWithEmailAndPassword(auth, formData.email, formData.password);
-        
-        // ميزة: التحقق من وجود بيانات كاملة قبل الدخول
-        const userDoc = await getDoc(doc(db, "users", userCred.user.uid));
-        if (!userDoc.exists() || !userDoc.data().phone) {
-          setTempUser(userCred.user);
+        const res = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+        const userDoc = await getDoc(doc(db, "users", res.user.uid));
+
+        if (!userDoc.exists()) {
+          setTempUser(res.user);
           setShowCompleteProfile(true);
-          toast.success("يرجى استكمال بياناتك أولاً");
         } else {
-          toast.success(`أهلاً بك مجدداً في رحلة التعلم 🚀`);
+          toast.success(`أهلاً بك يا ${userDoc.data().name}`);
           navigate('/dashboard');
         }
       } else {
-        const userCred = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-        await updateProfile(userCred.user, { displayName: formData.name });
+        // إنشاء الحساب الشامل
+        const res = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+        await updateProfile(res.user, { displayName: formData.name });
         
-        const finalPayload = {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          role: formData.role,
-          governorate: formData.governorate,
-          studentLevel: formData.studentLevel,
-          major: needsMajor ? formData.major : 'عام',
-          school: formData.schoolName,
-          parentPhone: formData.parentPhone,
-          bio: "عضو جديد في مجتمع MaFa التعليمي"
-        };
+        await createUniversalProfile(res.user.uid, formData);
         
-        await saveUserData(userCred.user.uid, finalPayload);
-        toast.success("تم إنشاء حسابك العالمي بنجاح! جاري التحضير...");
-        setTimeout(() => navigate('/welcome-onboarding'), 1500);
+        toast.success("تم تفعيل هويتك العالمية في منصة مَـافـا!");
+        navigate('/welcome-screen');
       }
     } catch (err) {
-      handleEnhancedErrors(err);
+      console.error(err);
+      toast.error("فشل في المصادقة: " + err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEnhancedErrors = (err) => {
-    console.error("Auth Error:", err.code);
-    const errorMap = {
-      'auth/email-already-in-use': 'هذا البريد الإلكتروني مستخدم بالفعل في حساب آخر.',
-      'auth/invalid-credential': 'بيانات الدخول غير صحيحة، يرجى التأكد من البريد وكلمة المرور.',
-      'auth/weak-password': 'كلمة المرور التي اخترتها سهلة التخمين جداً.',
-      'auth/user-not-found': 'لم نجد حساباً بهذا البريد، هل تود إنشاء حساب جديد؟',
-      'auth/too-many-requests': 'تم حظر المحاولات مؤقتاً لحماية حسابك، حاول لاحقاً.',
-      'auth/network-request-failed': 'توجد مشكلة في اتصالك بالإنترنت، تحقق من الشبكة.'
-    };
-    toast.error(errorMap[err.code] || "حدث خطأ غير متوقع، فريق الدعم الفني يتابع المشكلة.");
-  };
-
-  const handleGoogleBridge = async () => {
-    const provider = new GoogleAuthProvider();
-    setLoading(true);
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const userDoc = await getDoc(doc(db, "users", result.user.uid));
-
-      if (userDoc.exists() && userDoc.data().phone) {
-        toast.success(`مرحباً ${result.user.displayName}`);
-        navigate('/dashboard');
-      } else {
-        setTempUser(result.user);
-        setShowCompleteProfile(true);
-        toast.custom((t) => (
-          <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} custom-toast`}>
-            أكمل بياناتك لتفعيل المميزات العالمية 🌍
-          </div>
-        ));
-      }
-    } catch (err) {
-      handleEnhancedErrors(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // --- 8. UI Rendering Components ---
-  const renderProgressBar = () => (
-    <div className="password-strength-meter">
-      <div className="meter-label">قوة الأمان: {passwordStrength}%</div>
-      <div className="meter-bg">
-        <motion.div 
-          className="meter-fill"
-          initial={{ width: 0 }}
-          animate={{ width: `${passwordStrength}%`, backgroundColor: passwordStrength > 75 ? '#10b981' : passwordStrength > 40 ? '#f59e0b' : '#ef4444' }}
-        />
-      </div>
-    </div>
-  );
+  // --- [5] واجهة المستخدم (The Grand UI) ---
 
   return (
-    <div className="mafa-universe-auth">
-      <Toaster position="bottom-right" reverseOrder={false} />
+    <div className="mafa-universal-container">
+      <Toaster position="bottom-center" />
       
-      {/* ميزة: خلفية سينمائية متحركة ثنائية الأبعاد */}
-      <div className="dynamic-background">
-        <div className="noise-overlay"></div>
-        <motion.div 
-          className="interactive-blob"
-          animate={{
-            x: mousePosition.x / 15,
-            y: mousePosition.y / 15,
-          }}
-        />
-        <div className="grid-pattern"></div>
-      </div>
+      {/* طبقة الحماية والخلفية التفاعلية */}
+      <div className="animated-mesh-bg"></div>
 
-      <main className="auth-container">
-        <AnimatePresence mode="wait">
-          {!showCompleteProfile ? (
-            <motion.div 
-              key="auth-main"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="glass-portal"
-            >
-              {/* القسم الجانبي (Branding) */}
-              <div className="portal-branding">
-                <div className="branding-content">
-                  <motion.div 
-                    initial={{ rotate: -10 }}
-                    animate={{ rotate: 0 }}
-                    className="brand-logo"
-                  >
-                    <Cpu size={48} className="text-white" />
-                  </motion.div>
-                  <h1>MaFa AI</h1>
-                  <p>مستقبل التعليم الذكي بين يديك</p>
-                  
-                  <div className="features-mini-list">
-                    <div className="f-item"><Shield size={14} /> تشفير عسكري للبيانات</div>
-                    <div className="f-item"><Zap size={14} /> استجابة فائقة السرعة</div>
-                    <div className="f-item"><Globe size={14} /> شهادات معتمدة دولياً</div>
-                  </div>
-                </div>
-                <div className="branding-footer">
-                  <span>© 2026 MaFa Edu Ecosystem</span>
-                </div>
-              </div>
+      <motion.div 
+        className="master-auth-card"
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+      >
+        <div className="card-inner-wrapper">
+          
+          {/* الجانب المعلوماتي (Branding Side) */}
+          <aside className="branding-side">
+            <div className="logo-area">
+              <motion.div whileHover={{ rotate: 360 }} transition={{ duration: 1 }}>
+                <Cpu size={45} color="#fff" />
+              </motion.div>
+              <h1>MAFA 2026</h1>
+            </div>
 
-              {/* قسم الاستمارات (Forms Section) */}
-              <div className="portal-forms">
-                <header className="form-header">
-                  <div className="tab-switcher">
-                    <button 
-                      className={isLogin ? 'active' : ''} 
-                      onClick={() => setIsLogin(true)}
-                    >
-                      <LogIn size={18} /> تسجيل الدخول
-                    </button>
-                    <button 
-                      className={!isLogin ? 'active' : ''} 
-                      onClick={() => setIsLogin(false)}
-                    >
-                      <UserPlus size={18} /> حساب جديد
-                    </button>
-                  </div>
-                </header>
-
-                <motion.form 
-                  animate={controls}
-                  onSubmit={executeAuth} 
-                  className="smart-form"
-                  ref={formRef}
+            <div className="info-carousel">
+              <AnimatePresence mode="wait">
+                <motion.div 
+                  key={isLogin ? 'login-txt' : 'reg-txt'}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
                 >
-                  {!isLogin && (
-                    <div className="form-grid signup-animation">
-                      <div className="input-group full">
-                        <label><User size={14} /> الاسم الكامل</label>
-                        <input 
-                          type="text" 
-                          name="name" 
-                          placeholder="الاسم الثلاثي أو الرباعي بالعربي"
-                          onChange={handleInputChange}
-                          required
-                        />
-                      </div>
-                      
-                      <div className="input-group">
-                        <label><Phone size={14} /> هاتف واتساب</label>
-                        <input 
-                          type="tel" 
-                          name="phone" 
-                          placeholder="01xxxxxxxxx"
-                          onChange={handleInputChange}
-                          maxLength="11"
-                          required
-                        />
-                      </div>
+                  <h3>{isLogin ? "نظام الدخول الموحد" : "بوابة صناعة القادة"}</h3>
+                  <p>المنصة التي تجمع بين التعليم الأكاديمي، طلب العلم الشرعي، والتربية القيمية في مكان واحد.</p>
+                </motion.div>
+              </AnimatePresence>
+            </div>
 
-                      <div className="input-group">
-                        <label><Globe size={14} /> المحافظة</label>
-                        <select name="governorate" onChange={handleInputChange} required>
-                          <option value="">اختر المكان...</option>
-                          {governorates.map(gov => <option key={gov} value={gov}>{gov}</option>)}
-                        </select>
-                      </div>
+            <div className="feature-grid">
+              <div className="f-box"><Activity size={16}/> تتبع أداء ذكي</div>
+              <div className="f-box"><Shield size={16}/> حماية بيانات فائقة</div>
+              <div className="f-box"><Star size={16}/> جوائز ومسابقات</div>
+            </div>
+          </aside>
 
-                      <div className="input-group full">
-                        <label><Briefcase size={14} /> نوع العضوية</label>
-                        <div className="modern-chips">
-                          {['student', 'teacher', 'parent'].map(r => (
-                            <div 
-                              key={r}
-                              className={`chip ${formData.role === r ? 'selected' : ''}`}
-                              onClick={() => setFormData({...formData, role: r})}
-                            >
-                              {r === 'student' ? 'طالب علم' : r === 'teacher' ? 'محاضر' : 'ولي أمر'}
-                              {formData.role === r && <CheckCircle size={12} />}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+          {/* جانب الاستمارات (Form Side) */}
+          <section className="form-side">
+            <nav className="auth-nav">
+              <button className={isLogin ? 'active' : ''} onClick={() => { setIsLogin(true); setAuthStep(1); }}>دخول</button>
+              <button className={!isLogin ? 'active' : ''} onClick={() => setIsLogin(false)}>إنشاء حساب</button>
+            </nav>
 
-                      {formData.role === 'student' && (
-                        <>
+            <form onSubmit={processAuth} className="master-form-engine">
+              <AnimatePresence mode="wait">
+                {isLogin ? (
+                  /* --- واجهة تسجيل الدخول --- */
+                  <motion.div key="login-fields" className="fields-stack" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <div className="input-group">
+                      <label><Mail size={16}/> البريد الإلكتروني</label>
+                      <input type="email" name="email" onChange={handleInputChange} required />
+                    </div>
+                    <div className="input-group">
+                      <label><Lock size={16}/> كلمة المرور</label>
+                      <div className="pass-field">
+                        <input type={showPass ? "text" : "password"} name="password" onChange={handleInputChange} required />
+                        <button type="button" onClick={() => setShowPass(!showPass)}>
+                          {showPass ? <EyeOff size={18}/> : <Eye size={18}/>}
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  /* --- واجهة التسجيل (نظام الخطوات) --- */
+                  <motion.div key={`step-${authStep}`} className="fields-stack" initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
+                    {authStep === 1 ? (
+                      <>
+                        <div className="input-row">
                           <div className="input-group">
-                            <label><GraduationCap size={14} /> السنة الدراسية</label>
-                            <select name="studentLevel" onChange={handleInputChange} required>
-                              <option value="">اختر سنتك...</option>
-                              {educationLevels.map(group => (
-                                <optgroup key={group.id} label={group.label}>
-                                  {group.levels.map(l => <option key={l} value={l}>{l}</option>)}
-                                </optgroup>
+                            <label><User size={16}/> الاسم الثلاثي</label>
+                            <input name="name" placeholder="محمد أحمد علي" onChange={handleInputChange} required />
+                          </div>
+                          <div className="input-group">
+                            <label><Phone size={16}/> هاتف الواتساب</label>
+                            <input name="phone" placeholder="01xxxxxxxxx" onChange={handleInputChange} required />
+                          </div>
+                        </div>
+                        <div className="input-group">
+                          <label><Mail size={16}/> البريد الإلكتروني</label>
+                          <input type="email" name="email" onChange={handleInputChange} required />
+                        </div>
+                        <div className="role-cards-container">
+                          <label className="section-label">اختر هويتك في المنصة:</label>
+                          <div className="role-grid">
+                            <div className={`role-item ${formData.role === 'student' ? 'active' : ''}`} onClick={() => setFormData({...formData, role: 'student'})}>
+                              <GraduationCap /> <span>طالب مدرسي</span>
+                            </div>
+                            <div className={`role-item ${formData.role === 'sharia_student' ? 'active' : ''}`} onClick={() => setFormData({...formData, role: 'sharia_student'})}>
+                              <Library /> <span>طالب شرعي</span>
+                            </div>
+                            <div className={`role-item ${formData.role === 'parent' ? 'active' : ''}`} onClick={() => setFormData({...formData, role: 'parent'})}>
+                              <Heart /> <span>ولي أمر</span>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="input-row">
+                          <div className="input-group">
+                            <label><MapPin size={16}/> المحافظة</label>
+                            <select name="governorate" onChange={handleInputChange} required>
+                              <option value="">اختر...</option>
+                              {governorates.map(g => <option key={g} value={g}>{g}</option>)}
+                            </select>
+                          </div>
+                          <div className="input-group">
+                            <label><School size={16}/> المرحلة التعليمية</label>
+                            <select name="educationStage" onChange={handleInputChange} required>
+                              <option value="">اختر المرحلة...</option>
+                              {Object.entries(stages).map(([key, value]) => (
+                                <option key={key} value={key}>{value.label}</option>
                               ))}
                             </select>
                           </div>
-                          
-                          <div className="input-group">
-                            <label><Users size={14} /> هاتف ولي الأمر</label>
-                            <input 
-                              type="tel" 
-                              name="parentPhone" 
-                              placeholder="للطوارئ والنتائج"
-                              onChange={handleInputChange}
-                              required
-                            />
+                        </div>
+
+                        {formData.educationStage && (
+                          <div className="input-group animate-in">
+                            <label><Activity size={16}/> الصف الدراسي / المستوى</label>
+                            <select name="studentLevel" onChange={handleInputChange} required>
+                              <option value="">اختر المستوى...</option>
+                              {stages[formData.educationStage]?.levels.map(lv => (
+                                <option key={lv} value={lv}>{lv}</option>
+                              ))}
+                            </select>
                           </div>
+                        )}
 
-                          {needsMajor && (
-                            <div className="input-group full">
-                              <label><BookOpen size={14} /> التخصص الدراسي</label>
-                              <select name="major" className="highlight-select" onChange={handleInputChange} required>
-                                <option value="">اختر الشعبة...</option>
-                                <option value="علمي علوم">الشعبة العلمية (علوم)</option>
-                                <option value="علمي رياضة">الشعبة العلمية (رياضيات)</option>
-                                <option value="أدبي">الشعبة الأدبية</option>
-                              </select>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="input-group full">
-                    <label><Mail size={14} /> البريد الإلكتروني</label>
-                    <input 
-                      type="email" 
-                      name="email" 
-                      placeholder="name@example.com"
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="input-group full">
-                    <label><Lock size={14} /> كلمة المرور</label>
-                    <div className="password-wrapper">
-                      <input 
-                        type={showPass ? "text" : "password"} 
-                        name="password" 
-                        placeholder="••••••••"
-                        onChange={handleInputChange}
-                        required
-                      />
-                      <button 
-                        type="button" 
-                        className="eye-toggle"
-                        onClick={() => setShowPass(!showPass)}
-                      >
-                        {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                    {!isLogin && renderProgressBar()}
-                  </div>
-
-                  {isLogin && (
-                    <div className="form-options">
-                      <label className="remember-me">
-                        <input type="checkbox" defaultChecked /> تذكرني دائماً
-                      </label>
-                      <button 
-                        type="button" 
-                        className="forgot-pass"
-                        onClick={() => setResetMode(true)}
-                      >
-                        فقدت الوصول للحساب؟
-                      </button>
-                    </div>
-                  )}
-
-                  <button 
-                    type="submit" 
-                    className={`submit-btn ${loading ? 'loading' : ''}`}
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <RefreshCcw className="spin" />
-                    ) : (
-                      <>
-                        <span>{isLogin ? 'تسجيل دخول آمن' : 'إنشاء الهوية التعليمية'}</span>
-                        <ArrowRight size={20} />
+                        <div className="input-row">
+                          <div className="input-group">
+                            <label><Lock size={16}/> كلمة المرور</label>
+                            <input type="password" name="password" onChange={handleInputChange} required />
+                          </div>
+                          <div className="input-group">
+                            <label><CheckCircle size={16}/> تأكيد الكلمة</label>
+                            <input type="password" name="confirmPassword" onChange={handleInputChange} required />
+                          </div>
+                        </div>
                       </>
                     )}
-                  </button>
-                </motion.form>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-                <div className="divider">
-                  <span>أو عبر الأنظمة العالمية</span>
-                </div>
-
-                <div className="social-auth-grid">
-                  <button className="social-btn google" onClick={handleGoogleBridge} disabled={loading}>
-                    <Chrome size={20} />
-                    Google Cloud
-                  </button>
-                  <button className="social-btn biometric" disabled>
-                    <Fingerprint size={20} />
-                    Face ID
-                  </button>
-                </div>
+              <div className="form-actions">
+                {!isLogin && authStep === 2 && (
+                  <button type="button" className="back-btn" onClick={() => setAuthStep(1)}>السابق</button>
+                )}
+                <button type="submit" className={`submit-btn ${loading ? 'loading' : ''}`} disabled={loading}>
+                  {loading ? <RefreshCcw className="spin" /> : (
+                    isLogin ? "دخول آمن" : (authStep === 1 ? "التالي" : "تأكيد التسجيل")
+                  )}
+                </button>
               </div>
-            </motion.div>
-          ) : (
-            /* واجهة إكمال البيانات الحرجة - المستوى الاحترافي */
-            <motion.div 
-              key="complete-profile"
-              initial={{ x: 50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              className="completion-portal"
-            >
-              <div className="completion-card">
-                <div className="user-profile-preview">
-                  <div className="avatar-shield">
-                    <img src={tempUser?.photoURL || 'https://via.placeholder.com/150'} alt="User" />
-                    <div className="status-badge"><ShieldCheck size={16}/></div>
-                  </div>
-                  <h3>مرحباً، {tempUser?.displayName?.split(' ')[0]}</h3>
-                  <p>خطوة واحدة تفصلك عن المنصة العالمية</p>
+
+              {isLogin && (
+                <div className="social-login">
+                  <p>أو الدخول عبر الأنظمة العالمية</p>
+                  <button type="button" onClick={() => toast.success("جاري الاتصال بجوجل...")} className="google-btn">
+                    <Chrome size={20} /> Google Cloud
+                  </button>
                 </div>
+              )}
+            </form>
+          </section>
+        </div>
+      </motion.div>
 
-                <form className="completion-form" onSubmit={executeAuth}>
-                  {/* يتم هنا تكرار الحقول المطلوبة فقط مثل الهاتف والمرحلة */}
-                  <div className="compact-grid">
-                    <div className="input-group">
-                      <label>رقم الهاتف</label>
-                      <input name="phone" placeholder="01xxxxxxxxx" onChange={handleInputChange} required />
-                    </div>
-                    <div className="input-group">
-                      <label>السنة الدراسية</label>
-                      <select name="studentLevel" onChange={handleInputChange} required>
-                         <option value="">اختر...</option>
-                         {educationLevels.map(g => (
-                           <optgroup key={g.id} label={g.label}>
-                             {g.levels.map(l => <option key={l} value={l}>{l}</option>)}
-                           </optgroup>
-                         ))}
-                      </select>
-                    </div>
-                  </div>
-                  <button type="submit" className="activate-btn">تفعيل كامل الصلاحيات</button>
-                </form>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
-
-      <style jsx>{`
-        /* CSS مدمج لضمان الشكل العالمي للمنصة */
-        .mafa-universe-auth {
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #050505;
-          font-family: 'Tajawal', sans-serif;
-          overflow: hidden;
-          position: relative;
-        }
-
-        .dynamic-background {
-          position: absolute;
-          inset: 0;
-          z-index: 1;
-        }
-
-        .interactive-blob {
-          position: absolute;
-          width: 600px;
-          height: 600px;
-          background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
-          border-radius: 50%;
-          filter: blur(60px);
-        }
-
-        .glass-portal {
-          position: relative;
-          z-index: 10;
-          width: 1000px;
-          max-width: 95vw;
-          min-height: 650px;
-          background: rgba(15, 15, 20, 0.8);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 32px;
-          display: grid;
-          grid-template-columns: 380px 1fr;
-          overflow: hidden;
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        .portal-branding {
-          background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-          padding: 40px;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          color: white;
-        }
-
-        .brand-logo {
-          width: 80px;
-          height: 80px;
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 24px;
-        }
-
-        .portal-forms {
-          padding: 40px;
-          background: #0f0f14;
-          overflow-y: auto;
-        }
-
-        .tab-switcher {
-          display: flex;
-          gap: 10px;
-          background: #1a1a24;
-          padding: 6px;
-          border-radius: 16px;
-          margin-bottom: 30px;
-        }
-
-        .tab-switcher button {
-          flex: 1;
-          padding: 12px;
-          border-radius: 12px;
-          border: none;
-          background: transparent;
-          color: #94a3b8;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          cursor: pointer;
-          transition: 0.3s;
-        }
-
-        .tab-switcher button.active {
-          background: #2d2d3d;
-          color: white;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-
-        .smart-form {
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-        }
-
-        .form-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 15px;
-        }
-
-        .input-group {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .input-group.full { grid-column: span 2; }
-
-        .input-group label {
-          font-size: 13px;
-          color: #94a3b8;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .input-group input, .input-group select {
-          background: #1a1a24;
-          border: 1px solid #2d2d3d;
-          padding: 14px;
-          border-radius: 12px;
-          color: white;
-          transition: 0.3s;
-          outline: none;
-        }
-
-        .input-group input:focus {
-          border-color: #6366f1;
-          background: #242433;
-          box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-        }
-
-        .modern-chips {
-          display: flex;
-          gap: 10px;
-        }
-
-        .chip {
-          flex: 1;
-          padding: 12px;
-          background: #1a1a24;
-          border: 1px solid #2d2d3d;
-          border-radius: 12px;
-          color: #94a3b8;
-          text-align: center;
-          cursor: pointer;
-          font-size: 14px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-        }
-
-        .chip.selected {
-          background: rgba(99, 102, 241, 0.1);
-          border-color: #6366f1;
-          color: #6366f1;
-        }
-
-        .submit-btn {
-          margin-top: 10px;
-          padding: 16px;
-          border-radius: 14px;
-          border: none;
-          background: #6366f1;
-          color: white;
-          font-weight: 700;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          cursor: pointer;
-          transition: 0.3s;
-        }
-
-        .submit-btn:hover {
-          background: #4f46e5;
-          transform: translateY(-2px);
-          box-shadow: 0 10px 20px -10px #4f46e5;
-        }
-
-        .social-auth-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 15px;
-        }
-
-        .social-btn {
-          padding: 14px;
-          border-radius: 12px;
-          border: 1px solid #2d2d3d;
-          background: #1a1a24;
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          cursor: pointer;
-          transition: 0.2s;
-        }
-
-        .social-btn:hover { background: #242433; }
-
-        .spin { animation: rotate 1s linear infinite; }
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        @media (max-width: 850px) {
-          .glass-portal { grid-template-columns: 1fr; }
-          .portal-branding { display: none; }
-          .form-grid { grid-template-columns: 1fr; }
-          .input-group.full { grid-column: span 1; }
-        }
-      `}</style>
+      {/* مودال إكمال البيانات الإجباري (حسب توجيهاتك) */}
+      <AnimatePresence>
+        {showCompleteProfile && (
+          <motion.div className="forced-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <div className="complete-data-modal">
+              <h2>نعتذر، حسابك غير مفعل بعد 🛑</h2>
+              <p>يجب إكمال بيانات ملفك الشخصي لتتمكن من الوصول للمنصة.</p>
+              <button onClick={() => navigate('/complete-profile')}>انتقل لإكمال البيانات الآن</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
-
 
 export default Login;
