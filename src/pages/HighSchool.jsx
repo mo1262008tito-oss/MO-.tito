@@ -7,7 +7,7 @@ import React, {
   useLayoutEffect 
 } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-
+import './HighSchool.css'; // تأكد من ربط الملف هنا
 // استيراد مكتبات Firebase الأساسية
 import { db, auth, storage } from '../firebase';
 import { 
@@ -1054,6 +1054,7 @@ const HighSchool = () => {
 };
 
 export default HighSchool;
+
 
 
 
