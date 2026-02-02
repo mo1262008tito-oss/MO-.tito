@@ -235,18 +235,18 @@ useEffect(() => {
         orderBy("createdAt", "desc"),
         limit(10)
       );
+  // ... نهاية الإشعارات
       unsubNotif = onSnapshot(notifQuery, (snap) => {
         setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() })));
       });
-    };
+    }; // <--- هذه القفلة كانت تائهة بين الكود القديم والجديد
 
     initializeDataSync();
 
     return () => {
-      unsubUser?.(); unsubCourses?.(); unsubStats?.(); unsubNotif?.(); unsubLeaders?.();
+      unsubUser?.(); unsubCourses?.(); ... 
     };
-  }, [educationStage, currentGrade, navigate]);
-
+  }, [educationStage, currentGrade, navigate]); // <--- هذا القوس هو الذي اعتبره Vite "غير متوقع"
   // -----------------------------------------------------------------
   // 7. محرك الفلترة والبحث (Filtering Engine)
   // -----------------------------------------------------------------
@@ -1102,5 +1102,6 @@ useEffect(() => {
 };
 
 export default HighSchool;
+
 
 
