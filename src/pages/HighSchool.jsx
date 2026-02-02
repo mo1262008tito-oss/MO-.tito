@@ -243,10 +243,14 @@ useEffect(() => {
 
     initializeDataSync();
 
-    return () => {
-      unsubUser?.(); unsubCourses?.(); ... 
+return () => {
+      unsubUser?.();
+      unsubCourses?.();
+      unsubStats?.();
+      unsubNotif?.();
+      unsubLeaders?.();
     };
-  }, [educationStage, currentGrade, navigate]); // <--- هذا القوس هو الذي اعتبره Vite "غير متوقع"
+  }, [educationStage, currentGrade, navigate]);
   // -----------------------------------------------------------------
   // 7. محرك الفلترة والبحث (Filtering Engine)
   // -----------------------------------------------------------------
@@ -1102,6 +1106,7 @@ useEffect(() => {
 };
 
 export default HighSchool;
+
 
 
 
