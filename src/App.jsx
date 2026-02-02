@@ -20,7 +20,7 @@ import Religious from './pages/Religious.jsx';
 import ActivationPage from './pages/ActivationPage.jsx';
 import About from './pages/About.jsx';
 import library from './pages/library.jsx';
-
+import CompleteProfile from './pages/CompleteProfile';
 // استيراد التنسيقات العامة
 import './Global.css';
 
@@ -106,7 +106,7 @@ function App() {
             <Route path="/activation" element={<ActivationPage userData={userData} />} />
             <Route path="/highschool" element={<HighSchool />} />
             <Route path="/religious" element={<Religious />} />
-           
+           <Route path="/complete-profile" element={<CompleteProfile />} />
             <Route path="/quizsystem" element={<div style={{color:'white', padding:'100px'}}>الاختبارات</div>} />
 
           {/* مسارات محمية (للطالب فقط) */}
@@ -139,6 +139,7 @@ function App() {
 
 
 export default App;
+
 
 
 
