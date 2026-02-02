@@ -1,388 +1,411 @@
-/* --- Titan OS: Global Login Styles --- */
+/* MAFA UNIVERSAL DESIGN SYSTEM v2.0 
+  Focus: Tech-Noir, Glassmorphism, Global UX
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
+
 :root {
-  --primary-glow: conic-gradient(from 180deg at 50% 50%, #16abff33 0deg, #0885ff33 55deg, #54d6ff33 120deg, #0071ff33 160deg, transparent 360deg);
-  --accent: #3b82f6;
-  --accent-glow: rgba(59, 130, 246, 0.5);
-  --bg-dark: #020617;
-  --card-bg: rgba(15, 23, 42, 0.7);
-  --input-bg: rgba(30, 41, 59, 0.5);
+  --brand-primary: #f87171; /* الأحمر التقني */
+  --brand-secondary: #6366f1; /* البنفسجي الذكي */
+  --bg-dark: #020617; /* أسود فضائي */
+  --card-bg: rgba(15, 23, 42, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
   --text-main: #f8fafc;
   --text-dim: #94a3b8;
+  --neon-glow: 0 0 20px rgba(248, 113, 113, 0.2);
 }
 
-.login-page {
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Cairo', sans-serif;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  overflow-x: hidden;
+}
+
+/* الخلفية المتحركة (Mesh Gradient) */
+.mafa-universal-container {
   min-height: 100vh;
   display: flex;
-  align-items: center;
   justify-content: center;
-  background-color: var(--bg-dark);
-  font-family: 'Cairo', sans-serif;
-  overflow: hidden;
-  position: relative;
-  direction: rtl;
-}
-
-/* الخلفية المضيئة المتحركة */
-.bg-glow {
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  background: var(--primary-glow);
-  filter: blur(80px);
-  border-radius: 50%;
-  z-index: 0;
-  animation: pulse-glow 10s infinite alternate;
-}
-
-@keyframes pulse-glow {
-  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
-  100% { transform: translate(20%, 20%) scale(1.5); opacity: 0.8; }
-}
-
-.login-container {
-  z-index: 10;
-  width: 100%;
-  max-width: 450px;
+  align-items: center;
   padding: 20px;
+  position: relative;
+  background: radial-gradient(circle at 0% 0%, rgba(248, 113, 113, 0.05) 0%, transparent 50%),
+              radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
 }
 
-.login-card {
+.animated-mesh-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 0.4;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23F87171' d='M44.7,-76.4C58.8,-69.2,71.8,-59.1,79.6,-45.8C87.4,-32.6,90,-16.3,88.5,-0.9C87,14.5,81.4,29.1,72.9,41.4C64.4,53.7,53,63.7,39.9,71.1C26.9,78.5,13.4,83.2,-0.8,84.5C-15.1,85.9,-30.2,83.9,-43.5,76.6C-56.8,69.4,-68.3,56.9,-75.7,42.7C-83.1,28.5,-86.4,12.7,-84.8,-2.7C-83.3,-18.1,-76.9,-33.1,-67.4,-45.5C-57.9,-57.9,-45.3,-67.7,-31.8,-75.2C-18.3,-82.8,-4,-88.2,10.6,-86.3C25.2,-84.4,30.6,-83.6,44.7,-76.4Z' transform='translate(100 100)' /%3E%3C/svg%3E");
+  background-size: 80% auto;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(80px);
+}
+
+/* الكارت الرئيسي (Master Card) */
+.master-auth-card {
+  width: 100%;
+  max-width: 1100px;
   background: var(--card-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  padding: 40px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(25px);
+  border: 1px solid var(--glass-border);
+  border-radius: 32px;
+  overflow: hidden;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
 }
 
-/* الهيدر واللوجو */
-.card-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.logo-box {
-  width: 64px;
-  height: 64px;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 15px;
-  box-shadow: 0 0 20px var(--accent-glow);
-}
-
-.icon-neon {
-  color: white;
-  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
-}
-
-.card-header h2 {
-  color: var(--text-main);
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 5px;
-}
-
-.card-header p {
-  color: var(--text-dim);
-  font-size: 14px;
-}
-
-/* اختيار الرتبة (Role Selector) */
-.role-selector-v2 {
+.card-inner-wrapper {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 25px;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 5px;
-  border-radius: 12px;
+  grid-template-columns: 1.2fr 2fr;
+  min-height: 700px;
 }
 
-.role-selector-v2 button {
-  background: transparent;
-  border: none;
-  color: var(--text-dim);
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.3s;
+/* الجانب التسويقي (Branding) */
+.branding-side {
+  background: linear-gradient(160deg, rgba(248, 113, 113, 0.1), rgba(99, 102, 241, 0.1));
+  padding: 60px 40px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid var(--glass-border);
+}
+
+.logo-area {
+  display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  font-family: 'Cairo';
-}
-
-.role-selector-v2 button.active {
-  background: var(--accent);
-  color: white;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-/* الحقول (Input Groups) */
-.auth-form {
-  display: flex;
-  flex-direction: column;
   gap: 15px;
 }
 
-.input-group {
-  position: relative;
-  display: flex;
-  align-items: center;
+.logo-area h1 {
+  font-weight: 900;
+  letter-spacing: -1px;
+  font-size: 28px;
+  background: linear-gradient(to right, #fff, #94a3b8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.input-icon {
-  position: absolute;
-  right: 15px;
+.info-carousel h3 {
+  font-size: 32px;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.info-carousel p {
   color: var(--text-dim);
-  pointer-events: none;
+  line-height: 1.8;
+  font-size: 16px;
+}
+
+.feature-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.f-box {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px 20px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #cbd5e1;
+  border: 1px solid transparent;
+  transition: 0.3s;
+}
+
+.f-box:hover {
+  border-color: var(--brand-primary);
+  background: rgba(248, 113, 113, 0.05);
+}
+
+/* الجانب التفاعلي (Form) */
+.form-side {
+  padding: 50px 70px;
+  background: rgba(2, 6, 23, 0.4);
+}
+
+.auth-nav {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 40px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.auth-nav button {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  padding-bottom: 15px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  position: relative;
+  transition: 0.3s;
+}
+
+.auth-nav button.active {
+  color: var(--brand-primary);
+}
+
+.auth-nav button.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--brand-primary);
+  box-shadow: var(--neon-glow);
+}
+
+/* مدخلات البيانات (Inputs) */
+.master-form-engine {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.input-group label {
+  font-size: 14px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .input-group input, .input-group select {
-  width: 100%;
-  background: var(--input-bg);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 12px 45px 12px 15px;
-  color: white;
-  font-family: 'Cairo';
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  padding: 14px 20px;
+  border-radius: 16px;
+  color: #fff;
+  font-size: 15px;
   transition: 0.3s;
 }
 
 .input-group input:focus, .input-group select:focus {
-  border-color: var(--accent);
   outline: none;
-  background: rgba(30, 41, 59, 0.8);
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  border-color: var(--brand-primary);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 15px rgba(248, 113, 113, 0.1);
 }
 
-/* الأزرار */
-.btn-primary {
-  background: linear-gradient(90deg, #3b82f6, #2563eb);
-  color: white;
-  border: none;
-  padding: 14px;
-  border-radius: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  font-size: 16px;
+/* بطاقات الرتب (Role Selection) */
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
   margin-top: 10px;
 }
 
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px -5px var(--accent-glow);
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-google {
-  background: white;
-  color: #1e293b;
-  border: none;
-  padding: 12px;
-  border-radius: 12px;
-  font-weight: 600;
+.role-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--glass-border);
+  padding: 15px;
+  border-radius: 18px;
+  text-align: center;
   cursor: pointer;
   transition: 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.role-item.active {
+  background: rgba(248, 113, 113, 0.1);
+  border-color: var(--brand-primary);
+  transform: translateY(-5px);
+}
+
+.role-item span {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* الأزرار (Buttons) */
+.submit-btn {
+  background: linear-gradient(135deg, var(--brand-primary), #ef4444);
+  color: white;
+  border: none;
+  padding: 18px;
+  border-radius: 18px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.submit-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 20px 40px rgba(239, 68, 68, 0.3);
+}
+
+.google-btn {
+  width: 100%;
+  background: white;
+  color: #020617;
+  border: none;
+  padding: 14px;
+  border-radius: 16px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  width: 100%;
-}
-
-.btn-google:hover {
-  background: #f1f5f9;
-}
-
-/* الفواصل والروابط */
-.divider {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin: 20px 0;
-  color: var(--text-dim);
-  font-size: 13px;
-}
-
-.divider::before, .divider::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.divider span { padding: 0 10px; }
-
-.toggle-text {
-  text-align: center;
-  margin-top: 20px;
-  color: var(--text-dim);
-  font-size: 14px;
-}
-
-.toggle-text span {
-  color: var(--accent);
   cursor: pointer;
-  font-weight: 700;
-  margin-right: 5px;
+  margin-top: 15px;
 }
 
-/* واجهة إكمال الملف الشخصي (Profile Complete) */
-.profile-complete {
-  text-align: center;
+/* التحويل للجوال (Mobile Optimization) */
+@media (max-width: 992px) {
+  .card-inner-wrapper {
+    grid-template-columns: 1fr;
+  }
+  .branding-side {
+    display: none;
+  }
+  .form-side {
+    padding: 40px 25px;
+  }
+  .input-row {
+    grid-template-columns: 1fr;
+  }
+  .role-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
-.user-badge {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 20px;
+/* أنيميشن التحميل */
+.spin {
+  animation: rotate 1s linear infinite;
 }
 
-.user-badge img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 3px solid var(--accent);
-  padding: 3px;
-}
-
-.badge-icon {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  background: var(--accent);
-  color: white;
-  border-radius: 50%;
-  padding: 4px;
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--bg-dark);
-}
-
-/* الـ Loader داخل الزر */
-.loader {
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255,255,255,0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
+@keyframes rotate {
+  from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-/* تحسينات الموبايل */
-@media (max-width: 480px) {
-  .login-card {
-    padding: 25px 20px;
-  }
-  
-  .card-header h2 { font-size: 20px; }
-  
-  .role-selector-v2 { gap: 5px; }
-}
-
-/* --- Titan OS: Advanced Global Enhancements --- */
-
-/* 1. نمط شبكة تقني في الخلفية */
-.login-page::before {
-  content: "";
-  position: absolute;
+/* مودال التنبيه الإجباري */
+.forced-overlay {
+  position: fixed;
   inset: 0;
-  background-image: 
-    linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
-  background-size: 30px 30px;
-  mask-image: radial-gradient(ellipse at center, black, transparent 80%);
-  pointer-events: none;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* 2. تحسين حقل الاختيار (Custom Select) */
-select {
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: left 1rem center;
-  background-size: 1em;
+.complete-data-modal {
+  background: var(--bg-dark);
+  padding: 40px;
+  border-radius: 30px;
+  border: 1px solid var(--brand-primary);
+  text-align: center;
+  max-width: 450px;
+}
+/* --- [6] أنظمة التحقق والتنبيهات البصرية (Validation Visuals) --- */
+
+.input-box.success input {
+  border-color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.03) !important;
 }
 
-/* 3. تأثير النيون للأزرار عند التحميل والحالة النشطة */
-.btn-primary.loading {
-  position: relative;
-  overflow: hidden;
+.input-box.error input {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.03) !important;
+  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
 }
 
-.btn-primary.loading::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-  animation: shimmer 1.5s infinite;
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
-@keyframes shimmer {
-  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+/* --- [7] منتقي المسارات التعليمية (Step Indicator) --- */
+
+.auth-steps-progress {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 30px;
 }
 
-/* 4. تحسين أزرار الأدوار (Role Buttons) */
-.role-selector-v2 button {
-  border: 1px solid rgba(255, 255, 255, 0.05) !important;
-  position: relative;
-  overflow: hidden;
+.step-dot {
+  width: 40px;
+  height: 6px;
+  border-radius: 10px;
+  background: var(--glass-border);
+  transition: 0.5s all ease;
 }
 
-.role-selector-v2 button::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(59, 130, 246, 0.2) 0%, transparent 50%);
-  opacity: 0;
-  transition: opacity 0.3s;
+.step-dot.active {
+  background: var(--brand-primary);
+  box-shadow: 0 0 15px var(--brand-primary);
+  width: 60px;
 }
 
-.role-selector-v2 button:hover::before {
-  opacity: 1;
+/* --- [8] تفاصيل المسارات الخاصة (Sharia & Academic Stages) --- */
+
+.dynamic-fields-container {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px dashed var(--glass-border);
+  padding: 20px;
+  border-radius: 24px;
+  margin-top: 10px;
 }
 
-/* 5. تنسيق الـ Tooltip والتنبيهات بشكل احترافي */
-.input-group:focus-within .input-icon {
-  color: var(--accent);
-  filter: drop-shadow(0 0 8px var(--accent-glow));
+.stage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 12px;
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--brand-secondary);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  margin-bottom: 15px;
 }
 
-/* 6. تأثير الزجاج عند تحريك الماوس على الكارت */
-.login-card {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
-}
+/* --- [9] تخصيص الـ Scrollbar (Global Tech Look) --- */
 
-.login-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.7), 0 0 20px rgba(59, 130, 246, 0.1);
-}
-
-/* 7. تنسيق الـ Scrollbar (للنوافذ الطويلة) */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -392,153 +415,309 @@ select {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: var(--glass-border);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
+  background: var(--brand-primary);
 }
 
-/* 8. تأثير النبض للأيقونة الرئيسية (Logo Box Pulse) */
-.logo-box {
-  animation: logo-pulse 4s ease-in-out infinite;
-}
+/* --- [10] تأثيرات الأزرار الاجتماعية (Social Logic) --- */
 
-@keyframes logo-pulse {
-  0%, 100% { box-shadow: 0 0 20px var(--accent-glow); }
-  50% { box-shadow: 0 0 40px var(--accent-glow), 0 0 60px rgba(59, 130, 246, 0.2); }
-}
-
-/* 9. تحسين نصوص الـ Placeholder */
-::placeholder {
-  color: rgba(148, 163, 184, 0.5);
-  font-size: 13px;
-}
-
-/* 10. واجهة "إكمال البيانات" الفاخرة */
-.profile-complete h3 {
-  background: linear-gradient(to left, #fff, var(--accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-size: 28px;
+.social-login-row {
+  display: flex;
+  gap: 15px;
   margin-top: 10px;
 }
 
-.profile-complete .input-group {
-  animation: slide-up 0.5s ease-out forwards;
-}
-
-@keyframes slide-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* --- Titan OS: Universal Screen Optimizer --- */
-
-/* 1. ضبط الصفحة لتشغل كامل مساحة الرؤية ومنع التمرير العشوائي */
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-}
-
-.login-page {
-  min-height: 100vh;
-  min-height: -webkit-fill-available; /* حل لمشكلة ارتفاع المتصفحات على الموبايل */
-  width: 100vw;
+.social-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  padding: 12px;
+  border-radius: 16px;
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom);
+  gap: 10px;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
-/* 2. شاشات الكمبيوتر الكبيرة جداً (Ultra Wide) */
-@media (min-width: 1440px) {
-  .login-container {
-    max-width: 500px; /* تكبير بسيط للكارت ليتناسب مع المساحة */
+.social-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+  border-color: #fff;
+}
+
+.social-btn.google:hover {
+  background: #fff;
+  color: #000;
+}
+
+/* --- [11] فوتر الخصوصية (Legal Mini Footer) --- */
+
+.auth-footer-terms {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.auth-footer-terms a {
+  color: var(--brand-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* --- [12] أنيميشن الظهور المتدرج (Entrance Keyframes) --- */
+
+.animate-in {
+  animation: fadeInUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  .bg-glow {
-    width: 700px;
-    height: 700px;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* 3. الأجهزة اللوحية (Tablets / iPads) */
-@media (max-width: 1024px) {
-  .login-card {
-    padding: 35px;
-    border-radius: 20px;
+/* --- [13] نظام الألوان الذكي للمراحل (Conditional Themes) --- */
+
+/* إذا كان المستخدم طالب شرعي */
+.sharia-mode .submit-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.sharia-mode .role-item.active {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+/* إذا كان ولي أمر */
+.parent-mode .submit-btn {
+  background: linear-gradient(135deg, #ec4899, #db2777);
+}
+
+/* --- [14] تأثير الشحن/التحميل (Skeleton Shimmer) --- */
+
+.loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* --- [15] لمسات نهائية للحواف والتوهج (Neon Accents) --- */
+
+.master-auth-card::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, var(--brand-primary), transparent, var(--brand-secondary));
+  z-index: -1;
+  border-radius: 34px;
+  opacity: 0.15;
+}
+
+/* توافق الشاشات العريضة جداً Ultra-Wide */
+@media (min-width: 1800px) {
+  .master-auth-card {
+    max-width: 1400px;
+  }
+  .form-side {
+    padding: 80px 120px;
   }
 }
 
-/* 4. الهواتف الذكية (Mobile Phones) */
-@media (max-width: 480px) {
-  .login-container {
-    padding: 10px;
-    margin-top: -20px; /* لرفع الكارت قليلاً للأعلى */
+/* --- [16] محرك الاستجابة العالمي (Universal Responsive Engine) --- */
+
+@media (max-width: 850px) {
+  /* تحويل التصميم من أفقي إلى رأسي */
+  .card-inner-wrapper {
+    grid-template-columns: 1fr;
+    min-height: auto;
   }
 
-  .login-card {
-    padding: 25px 20px;
-    border-radius: 20px;
-    border: none; /* إزالة الحدود في الموبايل ليعطي شكل Flat عصري */
-    background: rgba(15, 23, 42, 0.9); /* تقليل الشفافية لزيادة وضوح النصوص */
+  /* إخفاء الجانب التعريفي في الجوال لتوفير المساحة */
+  .branding-side {
+    display: none; 
   }
 
-  .card-header h2 {
+  .master-auth-card {
+    border-radius: 0; /* ملء الشاشة تماماً في الجوال */
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .mafa-universal-container {
+    padding: 0;
+    align-items: flex-start; /* يبدأ من الأعلى ليسهل التمرير */
+    background: var(--bg-dark);
+  }
+
+  .form-side {
+    padding: 30px 20px;
+    background: transparent;
+  }
+
+  /* تكبير الحقول لتناسب اللمس */
+  .input-group input, .input-group select {
+    padding: 16px;
+    font-size: 16px; /* منع الـ Zoom التلقائي في آيفون */
+  }
+
+  .auth-nav {
+    justify-content: center;
+    gap: 40px;
+  }
+
+  .auth-nav button {
     font-size: 20px;
   }
 
-  /* جعل الأزرار أكبر لسهولة اللمس بالأصابع */
-  .btn-primary, .btn-google {
-    padding: 16px;
-    font-size: 15px;
+  /* جعل الأزرار الاجتماعية عريضة وسهلة الضغط */
+  .social-login-row {
+    flex-direction: column;
+    gap: 12px;
   }
 
-  /* تعديل شبكة الأدوار لتصبح أسهل في الضغط */
-  .role-selector-v2 {
-    gap: 8px;
-  }
-  
-  .role-selector-v2 button {
-    padding: 12px 5px;
-    font-size: 11px;
+  .social-btn {
+    width: 100%;
+    padding: 15px;
   }
 
-  .input-group input, .input-group select {
-    font-size: 16px; /* منع الـ Zoom التلقائي في آيفون عند التركيز */
-    padding: 14px 45px 14px 15px;
+  /* تعديل شبكة الرتب لتكون 2 في كل صف بدلاً من 3 */
+  .role-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  /* تحويل الـ Input Row من عمودين إلى عمود واحد */
+  .input-row {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .submit-btn {
+    position: sticky; /* جعل زر الإرسال يظهر دائماً في الأسفل في بعض التصاميم */
+    bottom: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   }
 }
 
-/* 5. وضع الشاشات الصغيرة جداً (مثل iPhone SE) */
-@media (max-height: 670px) {
-  .login-card {
-    padding: 20px;
+/* --- [17] تحسينات خاصة للشاشات الصغيرة جداً (Tiny Phones < 380px) --- */
+
+@media (max-width: 380px) {
+  .role-grid {
+    grid-template-columns: 1fr; /* رتبة واحدة في كل صف */
   }
-  .card-header {
-    margin-bottom: 15px;
+
+  .auth-nav button {
+    font-size: 16px;
+    gap: 15px;
   }
-  .logo-box {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 10px;
-  }
-  .divider {
-    margin: 10px 0;
+
+  .logo-area h1 {
+    font-size: 22px;
   }
 }
 
-/* 6. تحسين تجربة الـ Landscape (تدوير الموبايل) */
-@media (max-height: 500px) and (orientation: landscape) {
-  .login-page {
-    align-items: flex-start;
-    padding: 40px 20px;
-    overflow-y: auto;
+/* --- [18] تحسينات الأجهزة اللوحية (Tablets & iPads) --- */
+
+@media (min-width: 851px) and (max-width: 1100px) {
+  .card-inner-wrapper {
+    grid-template-columns: 0.8fr 1.2fr;
   }
-  .login-card {
-    margin: 20px auto;
+
+  .form-side {
+    padding: 40px;
   }
+}
+
+/* --- [19] نظام التفاعل مع اللمس (Touch Feedback) --- */
+
+@media (hover: none) {
+  .role-item:active {
+    background: rgba(248, 113, 113, 0.2);
+    transform: scale(0.95);
+  }
+
+  .submit-btn:active {
+    transform: scale(0.98);
+    filter: brightness(0.9);
+  }
+}
+
+/* --- [20] دعم الوضع الليلي للهواتف (System Dark Mode Support) --- */
+
+@media (prefers-color-scheme: light) {
+  /* يمكنك تركها كما هي لفرض الثيم المظلم (Tech Style) 
+     أو إضافة تعديلات هنا إذا أردت نسخة فاتحة.
+  */
+}
+
+/* --- [21] تحسينات الـ Safe Area للهواتف الحديثة (Notch Optimization) --- */
+
+.form-side {
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-top: env(safe-area-inset-top);
+}
+
+/* --- [22] تأثيرات إضافية للنصوص البرمجية (Terminal Look) --- */
+
+.sharia-mode::before {
+  content: 'SYSTEM_STATUS: SECURE_ACCESS';
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-family: 'monospace';
+  font-size: 10px;
+  color: #10b981;
+  opacity: 0.5;
+}
+
+/* --- [23] أنيميشن التنقل بين الخطوات --- */
+
+.step-enter {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.step-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 400ms ease-out;
+}
+
+.step-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.step-exit-active {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: all 400ms ease-in;
 }
