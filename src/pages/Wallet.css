@@ -1,133 +1,527 @@
-/* =========================================================================
-   [ 1. GLOBAL VARIABLES & RESET ]
-   ========================================================================= */
-:root {
-    --primary-gold: #ffcc00;
-    --dark-gold: #b8860b;
-    --platinum-gradient: linear-gradient(135deg, #2c2c2e 0%, #48484a 50%, #2c2c2e 100%);
-    --bg-black: #0a0a0c;
-    --card-bg: #1c1c1e;
-    --accent-purple: #7c4dff;
-    --success-green: #00e676;
-    --error-red: #ff5252;
-    --text-main: #ffffff;
-    --text-muted: #a1a1aa;
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* =========================================
+   MAFA PLATINUM - NEW COMPONENTS STYLES
+   ========================================= */
+
+/* 1. نظام التنبيهات (System Toast) */
+.system-toast {
+  position: fixed;
+  top: 25px;
+  left: 20px;
+  right: 20px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  z-index: 9999;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    -webkit-tap-highlight-color: transparent;
+.system-toast.success { background: rgba(16, 185, 129, 0.95); color: white; }
+.system-toast.error { background: rgba(239, 68, 68, 0.95); color: white; }
+
+.toast-text h5 { margin: 0; font-size: 0.95rem; font-weight: 700; }
+.toast-text p { margin: 2px 0 0; font-size: 0.8rem; opacity: 0.9; }
+
+/* 2. الهيدر المطور (Platinum Navbar) */
+.platinum-nav {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(9, 9, 11, 0.8);
 }
 
-body {
-    background-color: var(--bg-black);
-    color: var(--text-main);
-    font-family: 'Tajawal', sans-serif;
-    overflow-x: hidden;
+.avatar-group { position: relative; }
+.avatar-group img {
+  width: 48px;
+  height: 48px;
+  border-radius: 15px;
+  border: 2px solid var(--accent-purple, #7c4dff);
 }
 
-/* =========================================================================
-   [ 2. LAYOUT & CONTAINERS ]
-   ========================================================================= */
-.wallet-master-container {
-    max-width: 500px;
-    margin: 0 auto;
-    min-height: 100vh;
-    padding: 20px 15px 100px 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
+.verified-status {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  background: #10b981;
+  border-radius: 50%;
+  padding: 2px;
+  border: 2px solid #09090b;
 }
 
-/* =========================================================================
-   [ 3. NAVIGATION BAR (TOP) ]
-   ========================================================================= */
-.wallet-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 5px;
+/* 3. الإحصائيات (Analytics) */
+.analytics-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 15px 20px;
 }
 
-.nav-profile {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+.stat-item {
+  background: rgba(255,255,255,0.03);
+  padding: 15px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
-.avatar-wrapper {
+.stat-item span { font-size: 0.7rem; color: #888; }
+.stat-item p { font-size: 1rem; font-weight: 700; margin-top: 2px; }
+
+/* 4. نظام النقاط (Loyalty Card) */
+.loyalty-card {
+  margin: 15px 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  border-radius: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid rgba(124, 77, 255, 0.3);
+}
+
+.star-ring {
+  background: rgba(255, 215, 0, 0.1);
+  padding: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+}
+
+.convert-points-btn {
+  background: #ffd700;
+  color: #000;
+  padding: 10px 15px;
+  border-radius: 12px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+}
+
+/* 5. الخزنة (Vault Interface) */
+.vault-safe-box {
+  margin: 20px;
+  padding: 40px 20px;
+  background: linear-gradient(180deg, #1a1a1c 0%, #09090b 100%);
+  border-radius: 35px;
+  text-align: center;
+  border: 1px solid rgba(255,215,0,0.15);
+}
+
+.vault-balance-card {
+  margin: 30px 0;
+  background: rgba(0,0,0,0.4);
+  padding: 25px;
+  border-radius: 25px;
+}
+
+.vault-balance-card h1 { font-size: 2.8rem; color: #ffd700; margin: 10px 0; }
+.vault-inputs input {
+  width: 90%;
+  background: #000;
+  border: 1px solid #333;
+  padding: 18px;
+  border-radius: 15px;
+  color: #fff;
+  font-size: 1.3rem;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.vault-btn-row { display: flex; gap: 10px; justify-content: center; }
+.v-btn-in { background: #10b981; color: #fff; padding: 15px 30px; border-radius: 12px; border: none; font-weight: bold; }
+.v-btn-out { background: rgba(255,255,255,0.05); color: #fff; padding: 15px 30px; border-radius: 12px; border: none; font-weight: bold; }
+
+/* 6. نظام المودالات (Modal Sheets) */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 10000;
+  display: flex;
+  align-items: flex-end;
+}
+
+.modal-sheet {
+  background: #161618;
+  width: 100%;
+  border-radius: 35px 35px 0 0;
+  padding: 25px;
+  padding-bottom: 50px;
+  border-top: 1px solid #333;
+}
+
+.sheet-handle {
+  width: 50px;
+  height: 6px;
+  background: #333;
+  border-radius: 10px;
+  margin: 0 auto 25px;
+}
+
+.search-success-card {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 15px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 15px 0;
+}
+
+.search-success-card img { width: 45px; height: 45px; border-radius: 12px; }
+
+.main-action-btn {
+  width: 100%;
+  background: var(--accent-purple, #7c4dff);
+  color: white;
+  padding: 18px;
+  border-radius: 18px;
+  font-weight: 800;
+  border: none;
+  margin-top: 25px;
+  box-shadow: 0 10px 20px rgba(124, 77, 255, 0.2);
+}
+
+/* 7. النافبار السفلي (Platinum Bottom Nav) */
+.platinum-bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 90px;
+  background: rgba(18, 18, 18, 0.95);
+  backdrop-filter: blur(20px);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top: 1px solid #222;
+  padding-bottom: 10px;
+}
+
+.nav-tab-center {
+  margin-top: -50px;
+}
+
+.fab-plus {
+  background: #7c4dff;
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 25px rgba(124, 77, 255, 0.4);
+  border: 5px solid #09090b;
+}
+
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* --- حقول الإدخال داخل المودالات (Input Fields) --- */
+.amount-field, .pin-field, .recipient-search-area {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.amount-field label, .pin-field label {
+  font-size: 0.85rem;
+  color: #a1a1aa;
+  margin-right: 5px;
+}
+
+.amount-field input, .pin-field input, .recipient-search-area input {
+  background: #000;
+  border: 1.5px solid #27272a;
+  padding: 16px;
+  border-radius: 14px;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.amount-field input:focus, .pin-field input:focus, .recipient-search-area input:focus {
+  border-color: #7c4dff;
+  outline: none;
+  background: #09090b;
+}
+
+.recipient-search-area .spin {
+  position: absolute;
+  left: 15px;
+  top: 45px;
+  color: #7c4dff;
+}
+
+/* --- سجل العمليات المصغر (Mini Transactions) --- */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 25px 20px 15px;
+}
+
+.section-header h3 { font-size: 1.1rem; font-weight: 700; }
+.section-header button {
+  background: transparent;
+  border: none;
+  color: #7c4dff;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.mini-transactions {
+  margin: 0 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 20px;
+  padding: 10px;
+}
+
+/* --- نظام الشحن ورفع الصور (Recharge & Upload) --- */
+.methods-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.m-item {
+  background: #1f1f23;
+  padding: 15px;
+  border-radius: 15px;
+  text-align: center;
+  font-size: 0.9rem;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.m-item.active {
+  background: rgba(124, 77, 255, 0.1);
+  border-color: #7c4dff;
+  color: #7c4dff;
+}
+
+.upload-section {
+  background: #000;
+  border: 2px dashed #333;
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  margin-top: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.upload-section:hover {
+  border-color: #7c4dff;
+  background: rgba(124, 77, 255, 0.02);
+}
+
+.upload-section p {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: #71717a;
+}
+
+.receipt-preview {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+/* --- شاشة السجل الكامل (Full History Page) --- */
+.history-full-page {
+  padding: 0 20px;
+}
+
+.full-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* --- تفاصيل الأيقونات والألوان --- */
+.text-gold { color: #ffd700; }
+.lock-icon { color: #ffd700; filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3)); }
+
+/* تحسين شكل الأرقام */
+input[type="number"] {
+  font-family: 'Inter', sans-serif; /* لضمان وضوح الأرقام */
+}
+
+/* أنيميشن بسيط لظهور العناصر */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stat-item, .loyalty-card {
+  animation: fadeInUp 0.5s ease forwards;
+}
+/* --- 1. تنسيق عناصر العمليات (Transaction Items) --- */
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: 0.3s ease;
+}
+
+.transaction-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateX(-5px);
+}
+
+.trans-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.trans-icon-wrapper {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trans-icon-wrapper.income { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.trans-icon-wrapper.expense { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.trans-icon-wrapper.vault { background: rgba(255, 215, 0, 0.15); color: #ffd700; }
+
+.trans-details h5 { font-size: 0.9rem; margin: 0; font-weight: 600; }
+.trans-details span { font-size: 0.75rem; color: #71717a; }
+
+.trans-amount { text-align: left; }
+.trans-amount.positive { color: #10b981; font-weight: 700; }
+.trans-amount.negative { color: #ef4444; font-weight: 700; }
+
+/* --- 2. شاشة إكمال البيانات (Onboarding Screen) --- */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: #09090b;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  text-align: center;
+}
+
+.onboarding-card {
+  width: 100%;
+  max-width: 400px;
+}
+
+.onboarding-card h2 { color: var(--primary-gold); margin-bottom: 10px; }
+.onboarding-card p { color: #a1a1aa; margin-bottom: 30px; }
+
+.step-indicator {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 30px;
+  justify-content: center;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #27272a;
+}
+
+.dot.active { background: var(--accent-purple); width: 24px; border-radius: 4px; }
+
+/* --- 3. حالات التحميل (Loading States) --- */
+.loading-screen {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #09090b;
+}
+
+.platinum-loader {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(124, 77, 255, 0.1);
+  border-top-color: var(--accent-purple);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* --- 4. تحسينات الأزرار (Button Enhancements) --- */
+.main-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.convert-btn-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- 5. شاشة الدعم (Support Tab) --- */
+.support-container {
+  padding: 20px;
+}
+
+.support-card {
+  background: var(--glass-bg);
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+}
+
+.support-card:hover { border-color: var(--accent-purple); }
+
+/* --- 6. التجاوب مع الشاشات (Responsive) --- */
+@media (max-width: 380px) {
+  .vault-balance-card h1 { font-size: 2rem; }
+  .platinum-nav { padding: 15px; }
+  .loyalty-card { padding: 15px; }
+}
+
+/* أخيراً: إخفاء الـ Scrollbar بشكل جمالي */
+::-webkit-scrollbar { width: 0px; }
+
+/* ==========================================================
+   MAFA PLATINUM - ULTRA DETAILED COMPONENT STYLES
+   ========================================================== */
+
+/* --- 1. تأثير البطاقة البلاتينية العائمة (PlatinumCard Effects) --- */
+/* هذا التنسيق يمنح البطاقة مظهراً ثلاثي الأبعاد مع لمعان معدني */
+.platinum-card-wrapper {
     position: relative;
-    width: 50px;
-    height: 50px;
-}
-
-.avatar-wrapper img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--accent-purple);
-}
-
-.status-indicator {
-    position: absolute;
-    bottom: 2px;
-    right: 2px;
-    width: 12px;
-    height: 12px;
-    background: var(--success-green);
-    border: 2px solid var(--bg-black);
-    border-radius: 50%;
-}
-
-.nav-info h4 {
-    font-size: 1.1rem;
-    font-weight: 700;
-}
-
-.user-rank {
-    font-size: 0.8rem;
-    color: var(--primary-gold);
-    background: rgba(255, 204, 0, 0.1);
-    padding: 2px 8px;
-    border-radius: 20px;
-}
-
-.nav-controls {
-    display: flex;
-    gap: 15px;
-}
-
-.notification-bell {
-    position: relative;
-    cursor: pointer;
-}
-
-.notification-bell .badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: var(--error-red);
-    color: white;
-    font-size: 0.6rem;
-    padding: 2px 5px;
-    border-radius: 10px;
-    min-width: 15px;
-    text-align: center;
-}
-
-/* =========================================================================
-   [ 4. PLATINUM CARD (THE HERO) ]
-   ========================================================================= */
-.platinum-card {
-    position: relative;
-    width: 100%;
+    margin: 20px;
     height: 220px;
-    background: var(--platinum-gradient);
-    border-radius: 24px;
+    background: linear-gradient(135deg, #1a1a1c 0%, #3a3a3c 50%, #1a1a1c 100%);
+    border-radius: 28px;
     padding: 25px;
     overflow: hidden;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
@@ -135,1031 +529,332 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    perspective: 1000px;
 }
 
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.gold-chip {
-    width: 45px;
-    height: 35px;
-    background: linear-gradient(135deg, #ffd700 0%, #b8860b 100%);
-    border-radius: 6px;
-    position: relative;
-    margin-bottom: 5px;
-}
-
-.brand-logo {
-    font-weight: 900;
-    letter-spacing: 2px;
-    font-size: 1.2rem;
-}
-
-.brand-logo span {
-    color: var(--primary-gold);
-    margin-right: 5px;
-    font-weight: 300;
-}
-
-.card-balance-section {
-    margin-top: 10px;
-}
-
-.balance-label {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    letter-spacing: 1px;
-}
-
-.balance-amount {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-top: 5px;
-}
-
-.balance-amount h2 {
-    font-size: 2.2rem;
-    font-weight: 800;
-    font-family: 'monospace';
-}
-
-.eye-toggle {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: white;
-    padding: 8px;
-    border-radius: 50%;
-    cursor: pointer;
-    backdrop-filter: blur(5px);
-}
-
-.card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-}
-
-.card-holder span, .card-id span {
-    display: block;
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    margin-bottom: 3px;
-}
-
-.card-holder p, .card-id p {
-    font-size: 0.95rem;
-    font-weight: 600;
-    letter-spacing: 1px;
-}
-
-/* =========================================================================
-   [ 5. QUICK ACTIONS GRID ]
-   ========================================================================= */
-.quick-actions-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-    margin-top: 5px;
-}
-
-.action-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-}
-
-.action-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: var(--transition-smooth);
-}
-
-.action-item:active .action-icon {
-    transform: scale(0.9);
-}
-
-.action-icon.purple { background: rgba(124, 77, 255, 0.15); color: #7c4dff; }
-.action-icon.green { background: rgba(0, 230, 118, 0.15); color: #00e676; }
-.action-icon.blue { background: rgba(33, 150, 243, 0.15); color: #2196f3; }
-.action-icon.gold { background: rgba(255, 215, 0, 0.15); color: #ffd700; }
-
-.action-item span {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-muted);
-}
-
-/* =========================================================================
-   [ 6. ONBOARDING & DATA COMPLETION ]
-   ========================================================================= */
-.onboarding-overlay {
-    position: fixed;
-    inset: 0;
-    background: #000;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    direction: rtl;
-}
-
-.onboarding-card {
-    background: var(--card-bg);
-    border-radius: 30px;
-    width: 100%;
-    max-width: 400px;
-    padding: 40px 25px;
-    border: 1px solid #333;
-    position: relative;
-}
-
-.steps-indicator {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin: 25px 0;
-}
-
-.step {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: #333;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    transition: var(--transition-smooth);
-}
-
-.step.active {
-    background: var(--accent-purple);
-    box-shadow: 0 0 15px var(--accent-purple);
-}
-
-.level-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-    margin-top: 20px;
-}
-
-.level-card {
-    background: #252529;
-    padding: 18px;
-    border-radius: 15px;
-    text-align: center;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: var(--transition-smooth);
-}
-
-.level-card.selected {
-    border-color: var(--accent-purple);
-    background: rgba(124, 77, 255, 0.1);
-}
-
-/* =========================================================================
-   [ 7. TRANSACTION HISTORY ITEMS ]
-   ========================================================================= */
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.mini-history {
-    background: var(--card-bg);
-    border-radius: 20px;
-    padding: 10px;
-}
-
-.transaction-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    border-bottom: 1px solid #2d2d2f;
-}
-
-.transaction-item:last-child { border: none; }
-
-.trans-info {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-}
-
-.trans-icon {
-    width: 45px;
-    height: 45px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.trans-icon.withdraw { background: rgba(255, 82, 82, 0.1); color: var(--error-red); }
-.trans-icon.deposit { background: rgba(0, 230, 118, 0.1); color: var(--success-green); }
-
-.trans-text h5 { font-size: 0.95rem; margin-bottom: 2px; }
-.trans-text p { font-size: 0.75rem; color: var(--text-muted); }
-
-.trans-amount { text-align: left; }
-.trans-amount.positive { color: var(--success-green); font-weight: 700; }
-.trans-amount.negative { color: var(--error-red); font-weight: 700; }
-
-/* =========================================================================
-   [ 8. MODAL SYSTEM (BOTTOM SHEET) ]
-   ========================================================================= */
-.modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px);
-    z-index: 2000;
-    display: flex;
-    align-items: flex-end;
-}
-
-.modal-content {
-    background: #161618;
-    width: 100%;
-    border-radius: 35px 35px 0 0;
-    padding: 40px 25px 30px 25px;
-    max-height: 85vh;
-    overflow-y: auto;
-    border-top: 1px solid #333;
-}
-
-.modal-handle {
-    width: 50px;
-    height: 5px;
-    background: #444;
-    border-radius: 10px;
-    position: absolute;
-    top: 15px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-/* =========================================================================
-   [ 9. FORM ELEMENTS & BUTTONS ]
-   ========================================================================= */
-input[type="number"], input[type="text"], input[type="tel"], input[type="password"] {
-    width: 100%;
-    background: #252529;
-    border: 1px solid #3a3a3c;
-    border-radius: 15px;
-    padding: 16px;
-    color: white;
-    font-size: 1rem;
-    margin-top: 8px;
-    outline: none;
-    transition: var(--transition-smooth);
-}
-
-input:focus {
-    border-color: var(--accent-purple);
-    background: #2c2c30;
-}
-
-.confirm-transfer-btn, .submit-recharge-btn {
-    width: 100%;
-    padding: 18px;
-    border-radius: 15px;
-    border: none;
-    background: var(--accent-purple);
-    color: white;
-    font-weight: 800;
-    font-size: 1.1rem;
-    margin-top: 25px;
-    cursor: pointer;
-    box-shadow: 0 10px 20px rgba(124, 77, 255, 0.3);
-}
-
-/* =========================================================================
-   [ 10. REWARDS & POINTS WIDGET ]
-   ========================================================================= */
-.points-widget {
-    background: linear-gradient(90deg, #1c1c1e 0%, #2c2c2e 100%);
-    border-radius: 20px;
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-right: 4px solid var(--primary-gold);
-}
-
-.points-info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.convert-btn {
-    background: var(--primary-gold);
-    color: black;
-    padding: 8px 15px;
-    border-radius: 10px;
-    font-weight: 700;
-    border: none;
-    font-size: 0.85rem;
-}
-
-/* =========================================================================
-   [ 11. BOTTOM NAVIGATION TAB BAR ]
-   ========================================================================= */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 85px;
-    background: rgba(10, 10, 12, 0.95);
-    backdrop-filter: blur(20px);
-    display: flex;
-    justify-content: space-around;
-    padding-bottom: 20px;
-    border-top: 1px solid #222;
-    z-index: 1500;
-}
-
-.nav-tab {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    color: #555;
-    flex: 1;
-}
-
-.nav-tab.active {
-    color: var(--accent-purple);
-}
-
-.nav-tab span {
-    font-size: 0.7rem;
-    font-weight: 600;
-}
-
-/* =========================================================================
-   [ 12. RESPONSIVE ADJUSTMENTS ]
-   ========================================================================= */
-@media (max-width: 380px) {
-    .platinum-card { height: 200px; padding: 15px; }
-    .balance-amount h2 { font-size: 1.8rem; }
-    .action-icon { width: 50px; height: 50px; }
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.spin {
-    animation: spin 1s linear infinite;
-}
-/* =========================================================================
-   [ 13. VAULT SYSTEM (THE SMART SAFE) ]
-   ========================================================================= */
-.vault-container {
-    background: linear-gradient(180deg, #1a1a1c 0%, #111 100%);
-    border-radius: 30px;
-    padding: 30px 20px;
-    text-align: center;
-    border: 1px solid #333;
-    margin-top: 10px;
-}
-
-.vault-lock-icon {
-    width: 80px;
-    height: 80px;
-    background: rgba(255, 215, 0, 0.1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 20px;
-    color: var(--primary-gold);
-    border: 2px dashed var(--primary-gold);
-}
-
-.vault-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin: 20px 0;
-}
-
-.stat-box {
-    background: #252529;
-    padding: 15px;
-    border-radius: 18px;
-}
-
-.stat-box span {
-    display: block;
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    margin-bottom: 5px;
-}
-
-.stat-box p {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--primary-gold);
-}
-
-/* =========================================================================
-   [ 14. RECHARGE & UPLOAD UI ]
-   ========================================================================= */
-.method-selector {
-    display: flex;
-    gap: 10px;
-    margin: 20px 0;
-    overflow-x: auto;
-    padding-bottom: 10px;
-}
-
-.method-btn {
-    flex: 0 0 120px;
-    padding: 15px;
-    background: #252529;
-    border-radius: 15px;
-    text-align: center;
-    border: 2px solid transparent;
-    cursor: pointer;
-    transition: var(--transition-smooth);
-}
-
-.method-btn.active {
-    border-color: var(--brand-color);
-    background: rgba(var(--brand-color-rgb), 0.1);
-}
-
-.upload-area {
-    width: 100%;
-    height: 180px;
-    border: 2px dashed #444;
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-top: 20px;
-    cursor: pointer;
-    overflow: hidden;
-    position: relative;
-}
-
-.upload-area:hover {
-    border-color: var(--accent-purple);
-    background: rgba(124, 77, 255, 0.05);
-}
-
-.preview-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.instructions-box {
-    background: #2a2a2d;
-    padding: 15px;
-    border-radius: 12px;
-    border-right: 4px solid var(--accent-purple);
-    margin: 15px 0;
-}
-
-.instructions-box strong {
-    color: var(--accent-purple);
-    font-family: 'monospace';
-    font-size: 1.2rem;
-    display: block;
-    margin-top: 5px;
-}
-
-/* =========================================================================
-   [ 15. SYSTEM ALERTS (TOASTS) ]
-   ========================================================================= */
-.system-alert {
-    position: fixed;
-    top: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 400px;
-    padding: 16px 20px;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    z-index: 11000;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-    animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-@keyframes slideDown {
-    from { opacity: 0; transform: translate(-50%, -50px); }
-    to { opacity: 1; transform: translate(-50%, 0); }
-}
-
-.alert-info { background: #1e3a8a; border: 1px solid #3b82f6; }
-.alert-success { background: #064e3b; border: 1px solid #10b981; }
-.alert-warning { background: #78350f; border: 1px solid #f59e0b; }
-.alert-error { background: #7f1d1d; border: 1px solid #ef4444; }
-
-/* =========================================================================
-   [ 16. ADVANCED RECIPIENT CARD (TRANSFER) ]
-   ========================================================================= */
-.recipient-card {
-    background: #2c2c30;
-    padding: 15px;
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin: 15px 0;
-    border: 1px solid #444;
-}
-
-.recipient-card img {
-    width: 45px;
-    height: 45px;
-    border-radius: 12px;
-}
-
-.recipient-card .name {
-    font-weight: 700;
-    font-size: 0.95rem;
-}
-
-.recipient-card .level {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-}
-
-/* =========================================================================
-   [ 17. SKELETON LOADERS & STATES ]
-   ========================================================================= */
-.loader-container {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-}
-
-.loader-container p {
-    color: var(--text-muted);
-    font-weight: 500;
-    letter-spacing: 1px;
-}
-
-/* =========================================================================
-   [ 18. SCROLLBAR CUSTOMIZATION ]
-   ========================================================================= */
-::-webkit-scrollbar {
-    width: 5px;
-}
-
-::-webkit-scrollbar-track {
-    background: var(--bg-black);
-}
-
-::-webkit-scrollbar-thumb {
-    background: #333;
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--accent-purple);
-}
-
-/* =========================================================================
-   [ 19. UTILITY CLASSES ]
-   ========================================================================= */
-.text-center { text-align: center; }
-.mt-20 { margin-top: 20px; }
-.mb-10 { margin-bottom: 10px; }
-.fw-800 { font-weight: 800; }
-
-.glass-morphism {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* =========================================================================
-   [ 20. PIN INPUT GROUP ]
-   ========================================================================= */
-.pin-input-group {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin: 20px 0;
-}
-
-.pin-field {
-    width: 100% !important;
-    text-align: center;
-    font-size: 2rem !important;
-    letter-spacing: 15px;
-    font-family: 'password', sans-serif;
-}
-
-/* =========================================================================
-   [ 21. ANALYTICS & REPORTS UI ]
-   ========================================================================= */
-.analytics-card {
-    background: var(--card-bg);
-    border-radius: 25px;
-    padding: 20px;
-    margin-top: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.chart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.income-expense-row {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.flow-box {
-    flex: 1;
-    padding: 15px;
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.flow-box.income { border-right: 4px solid var(--success-green); }
-.flow-box.expense { border-right: 4px solid var(--error-red); }
-
-.flow-box span {
-    font-size: 0.7rem;
-    color: var(--text-muted);
-    display: block;
-}
-
-.flow-box h4 {
-    font-size: 1.1rem;
-    margin-top: 5px;
-    font-family: 'monospace';
-}
-
-/* =========================================================================
-   [ 22. QR CODE SYSTEM ]
-   ========================================================================= */
-.qr-container {
-    background: white;
-    padding: 20px;
-    border-radius: 25px;
-    width: fit-content;
-    margin: 20px auto;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-
-.qr-overlay-text {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    margin-top: 10px;
-}
-
-/* =========================================================================
-   [ 23. EMPTY STATES (حالات عدم وجود بيانات) ]
-   ========================================================================= */
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 20px;
-    opacity: 0.5;
-}
-
-.empty-state-icon {
-    width: 100px;
-    height: 100px;
-    background: #1a1a1c;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-.empty-state p {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-}
-
-/* =========================================================================
-   [ 24. SEARCH & FILTERING BAR ]
-   ========================================================================= */
-.filter-bar {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    padding: 5px 0 15px 0;
-    scrollbar-width: none; /* Firefox */
-}
-
-.filter-bar::-webkit-scrollbar { display: none; } /* Chrome/Safari */
-
-.filter-tag {
-    white-space: nowrap;
-    padding: 8px 18px;
-    border-radius: 12px;
-    background: #1c1c1e;
-    color: #888;
-    font-size: 0.85rem;
-    border: 1px solid #333;
-    cursor: pointer;
-}
-
-.filter-tag.active {
-    background: var(--accent-purple);
-    color: white;
-    border-color: var(--accent-purple);
-}
-
-/* =========================================================================
-   [ 25. NOTIFICATION LIST STYLING ]
-   ========================================================================= */
-.notification-item {
-    padding: 18px;
-    background: #161618;
-    border-radius: 15px;
-    margin-bottom: 12px;
-    border-right: 3px solid var(--accent-purple);
-    display: flex;
-    gap: 15px;
-    position: relative;
-}
-
-.notification-item.unread {
-    background: rgba(124, 77, 255, 0.05);
-}
-
-.notif-dot {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    width: 8px;
-    height: 8px;
-    background: var(--accent-purple);
-    border-radius: 50%;
-}
-
-.notif-time {
-    font-size: 0.65rem;
-    color: var(--text-muted);
-    margin-top: 5px;
-    display: block;
-}
-
-/* =========================================================================
-   [ 26. DARK GLOW ANIMATIONS ]
-   ========================================================================= */
-.glow-effect {
-    position: relative;
-}
-
-.glow-effect::after {
+/* تأثير اللمعان المتحرك على البطاقة */
+.platinum-card-wrapper::after {
     content: '';
     position: absolute;
-    inset: -2px;
-    background: linear-gradient(45deg, var(--accent-purple), var(--primary-gold));
-    filter: blur(10px);
-    z-index: -1;
-    opacity: 0.3;
-    border-radius: inherit;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.05), transparent);
+    transform: rotate(45deg);
+    animation: cardShine 6s infinite linear;
 }
 
-/* =========================================================================
-   [ 27. IPHONE NOTCH & SAFE AREAS ]
-   ========================================================================= */
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-    .bottom-nav {
-        padding-bottom: env(safe-area-inset-bottom);
-        height: calc(85px + env(safe-area-inset-bottom));
+@keyframes cardShine {
+    0% { transform: translateX(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) rotate(45deg); }
+}
+
+/* --- 2. تفاصيل البحث عن المستلم (Advanced Search UI) --- */
+/* لضمان عدم حدوث لغط عند إرسال الأموال، هذا الجزء يبرز هوية المستلم */
+.recipient-search-area label {
+    font-size: 0.9rem;
+    color: var(--accent-purple);
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.search-success-card {
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+    border: 1px dashed rgba(16, 185, 129, 0.4);
+    padding: 18px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 20px 0;
+    animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.res-meta p {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0;
+}
+
+.res-meta span {
+    font-size: 0.8rem;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+/* --- 3. نظام إدخال الرمز السري (Secure PIN Input) --- */
+/* تحسين شكل حقل الـ PIN ليكون مستوحى من تطبيقات الـ ATM */
+.pin-field input {
+    letter-spacing: 15px;
+    text-align: center;
+    font-size: 1.8rem !important;
+    font-family: 'Courier New', monospace;
+    background: #050505 !important;
+    border: 2px solid #222 !important;
+}
+
+.pin-field input::placeholder {
+    letter-spacing: normal;
+    font-size: 1rem;
+    color: #444;
+}
+
+/* --- 4. تفاصيل الخزنة المعمقة (The Vault Experience) --- */
+/* تأثيرات بصرية تجعل المستخدم يشعر بأمان مدخراته */
+.vault-interface h2 {
+    font-family: 'Inter', sans-serif;
+    letter-spacing: -1px;
+    background: linear-gradient(to bottom, #fff, #888);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.vault-balance-card {
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    box-shadow: inset 0 0 20px rgba(255, 215, 0, 0.05);
+    position: relative;
+}
+
+.vault-balance-card::before {
+    content: 'TOP SECRET';
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 0.6rem;
+    color: rgba(255, 215, 0, 0.3);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    padding: 2px 5px;
+}
+
+/* --- 5. أزرار الأكشن السريع (Action Buttons Detail) --- */
+.main-action-btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.main-action-btn:active {
+    transform: scale(0.96);
+    box-shadow: 0 4px 15px rgba(124, 77, 255, 0.4);
+}
+
+/* تحسين شكل الأيقونة داخل الأزرار */
+.main-action-btn svg {
+    filter: drop-shadow(0 0 5px rgba(255,255,255,0.3));
+}
+
+/* --- 6. تفاصيل مودال الشحن (Recharge Modal Details) --- */
+.m-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+/* تأثير اختيار طريقة الدفع */
+.m-item.active {
+    box-shadow: 0 0 15px rgba(124, 77, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.upload-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+}
+
+.receipt-preview {
+    border: 3px solid #7c4dff;
+    padding: 5px;
+    background: #000;
+}
+
+/* --- 7. قسم الإحصائيات المتقدم (Analytics Breakdown) --- */
+.stat-item {
+    position: relative;
+    overflow: hidden;
+}
+
+/* خط تزييني ملون أسفل الإحصائية */
+.stat-item::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 40%;
+}
+
+.stat-item:first-child::before { background: #10b981; } /* للدخل */
+.stat-item:last-child::before { background: #ef4444; } /* للمصروف */
+
+/* --- 8. التحريك (Animations) --- */
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulseGold {
+    0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+}
+
+.star-ring {
+    animation: pulseGold 2s infinite;
+}
+
+/* ==========================================================
+   MAFA PLATINUM - UNIVERSAL RESPONSIVENESS & ADAPTIVITY
+   ========================================================== */
+
+/* 1. الحاويات المرنة (Adaptive Containers) */
+.wallet-master-container {
+    max-width: 1200px; /* لضمان عدم تمدد الواجهة بشكل مفرط على الشاشات الكبيرة */
+    margin: 0 auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 2. تحويل الشبكات حسب حجم الشاشة (Dynamic Grid) */
+.wallet-main-viewport {
+    flex: 1;
+    width: 100%;
+    padding-bottom: 100px; /* مساحة للنافبار السفلي */
+}
+
+/* شاشات التابلت والشاشات المتوسطة (768px وما فوق) */
+@media (min-width: 768px) {
+    .analytics-preview {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .platinum-nav {
+        padding: 25px 40px;
+        border-radius: 0 0 30px 30px;
+    }
+
+    .loyalty-card {
+        margin: 20px 40px;
+        padding: 30px;
+    }
+
+    /* جعل سجل العمليات يظهر في عمودين على الشاشات الكبيرة */
+    .mini-transactions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin: 0 40px;
+    }
+
+    .modal-sheet {
+        max-width: 500px;
+        margin: 0 auto;
+        border-radius: 30px;
+        bottom: 20px; /* جعل المودال يظهر كبطاقة عائمة في الشاشات الكبيرة */
     }
 }
 
-/* =========================================================================
-   [ 28. THE END - FINAL TOUCHES ]
-   ========================================================================= */
-.wallet-wrapper {
-    animation: fadeInPage 0.5s ease-out;
+/* شاشات الكمبيوتر الكبيرة (1024px وما فوق) */
+@media (min-width: 1024px) {
+    .wallet-main-viewport {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr; /* تقسيم الشاشة لجزئين: رئيسي وجانبي */
+        gap: 30px;
+        padding: 40px;
+    }
+
+    /* تثبيت البطاقة البلاتينية في الجانب الأيمن */
+    .dash-left-column {
+        grid-column: 1 / 2;
+    }
+    
+    .dash-right-column {
+        grid-column: 2 / 3;
+    }
+
+    .platinum-bottom-nav {
+        width: 400px;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 20px;
+        border-radius: 50px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+    }
 }
 
-@keyframes fadeInPage {
-    from { opacity: 0; filter: blur(10px); }
-    to { opacity: 1; filter: blur(0); }
+/* 3. التعامل مع الشاشات الصغيرة جداً (Ultra Small Screens) */
+@media (max-width: 360px) {
+    .platinum-card-wrapper {
+        height: 180px;
+        padding: 15px;
+    }
+
+    .vault-balance-card h1 {
+        font-size: 1.8rem;
+    }
+
+    .nav-user-meta h4 {
+        font-size: 0.85rem;
+    }
+
+    .fab-plus {
+        width: 55px;
+        height: 55px;
+        margin-top: -30px;
+    }
 }
 
-/* تخصيص زر "شحن الآن" داخل المودال */
-.recharge-flow .confirm-btn {
-    background: var(--success-green);
-    color: #000;
+/* 4. تحسينات الهيكل (Flex Alignment) */
+.transaction-item {
+    width: 100%;
+    box-sizing: border-box; /* لضمان عدم خروج العناصر عن الحاوية */
 }
 
-/* تأثير التمرير السلس للموبايل */
-.wallet-content {
-    -webkit-overflow-scrolling: touch;
+/* 5. تنسيق الصور والإيصالات لتكون متجاوبة */
+.receipt-preview {
+    width: 100%;
+    height: auto;
+    max-height: 250px;
+    object-fit: contain;
+    border-radius: 12px;
 }
-/* =========================================================================
-   [ 29. THE VAULT INTERACTIVE INTERFACE ]
-   ========================================================================= */
-.vault-locking-mechanism {
+
+/* 6. منع التمرير الأفقي المزعج */
+html, body {
+    overflow-x: hidden;
     position: relative;
-    width: 200px;
-    height: 200px;
-    margin: 40px auto;
-    border: 8px solid #1a1a1c;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 0 15px rgba(255,215,0,0.2);
+    width: 100%;
 }
 
-.vault-dial {
-    width: 140px;
-    height: 140px;
-    background: radial-gradient(circle, #2c2c2e 0%, #1c1c1e 100%);
-    border-radius: 50%;
-    border: 2px solid #333;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+/* 7. تحسين الطباعة (Print Media) */
+@media print {
+    .platinum-bottom-nav, .fab-plus, .nav-actions {
+        display: none;
+    }
+    .wallet-master-container {
+        background: white;
+        color: black;
+    }
 }
 
-.vault-dial.unlocked {
-    transform: rotate(360deg);
-    border-color: var(--success-green);
-    box-shadow: 0 0 30px rgba(0, 230, 118, 0.2);
+/* 8. دعم الوضع الداكن/الفاتح التلقائي (System Theme Support) */
+@media (prefers-color-scheme: light) {
+    /* يمكنك إضافة لمسات بسيطة هنا إذا أردت دعم الوضع الفاتح */
+    /* لكن بما أن التصميم بلاتيني، يفضل بقاءه داكناً */
 }
 
-/* =========================================================================
-   [ 30. MICRO-INTERACTIONS & HOVER STATES ]
-   ========================================================================= */
-.card-glass-effect:hover {
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-}
-
-.action-item:hover .action-icon {
-    transform: translateY(-8px);
-    filter: brightness(1.2);
-}
-
-.action-item:hover span {
-    color: var(--text-main);
-}
-
-/* =========================================================================
-   [ 31. CUSTOM SCROLL SNAP FOR CATEGORIES ]
-   ========================================================================= */
-.category-scroller {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    padding: 10px 0;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-}
-
-.category-item {
-    scroll-snap-align: start;
-    flex: 0 0 auto;
-    background: #1c1c1e;
-    padding: 12px 20px;
-    border-radius: 15px;
-    border: 1px solid #333;
-    font-size: 0.9rem;
-    color: var(--text-muted);
-}
-
-/* =========================================================================
-   [ 32. TRANSACTION STATUS BADGES ]
-   ========================================================================= */
-.status-badge {
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
-.status-badge.completed { background: rgba(0, 230, 118, 0.1); color: var(--success-green); }
-.status-badge.pending { background: rgba(255, 204, 0, 0.1); color: var(--primary-gold); }
-.status-badge.failed { background: rgba(255, 82, 82, 0.1); color: var(--error-red); }
-
-/* =========================================================================
-   [ 33. SKELETON LOADING ANIMATION (Pulse Effect) ]
-   ========================================================================= */
-.skeleton {
-    background: linear-gradient(90deg, #1c1c1e 25%, #2c2c2e 50%, #1c1c1e 75%);
-    background-size: 200% 100%;
-    animation: pulse-loading 1.5s infinite;
-}
-
-@keyframes pulse-loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-
-/* =========================================================================
-   [ 34. FLOATING ACTION BUTTON (FAB) ]
-   ========================================================================= */
-.fab-button {
-    position: fixed;
-    bottom: 100px;
-    right: 20px;
-    width: 56px;
-    height: 56px;
-    background: var(--accent-purple);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 5px 15px rgba(124, 77, 255, 0.4);
-    z-index: 1000;
-    border: none;
-    color: white;
-    cursor: pointer;
-}
-
-/* =========================================================================
-   [ 35. MULTI-LEVEL ONBOARDING TRANSITIONS ]
-   ========================================================================= */
-.onboarding-slide-enter {
-    transform: translateX(100%);
-    opacity: 0;
-}
-
-.onboarding-slide-active {
-    transform: translateX(0);
-    opacity: 1;
-    transition: all 0.5s ease-in-out;
-}
-
-/* =========================================================================
-   [ 36. ULTRA-RESPONSIVE FIXES (Small Devices) ]
-   ========================================================================= */
-@media screen and (max-width: 340px) {
-    .wallet-master-container { padding: 10px; }
-    .platinum-card { height: 180px; padding: 15px; }
-    .balance-amount h2 { font-size: 1.5rem; }
-    .quick-actions-grid { gap: 8px; }
-    .action-icon { width: 45px; height: 45px; }
-}
-
-/* =========================================================================
-   [ 37. GLASS-CARD FOOTER ]
-   ========================================================================= */
-.glass-footer-info {
-    margin-top: 30px;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    text-align: center;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-}
-
-.glass-footer-info strong {
-    color: var(--primary-gold);
-}
-
-/* =========================================================================
-   [ 38. THE END OF STYLESHEET ]
-   ========================================================================= */
 
