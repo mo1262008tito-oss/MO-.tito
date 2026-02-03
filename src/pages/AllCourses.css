@@ -696,3 +696,195 @@ body {
     border-radius: 20px;
     margin-bottom: 25px;
 }
+/* =========================================================================
+   [ ALL COURSES - MOBILE OPTIMIZATION ]
+   ========================================================================= */
+
+@media screen and (max-width: 768px) {
+  
+  /* 1. زر فتح القائمة */
+  .mobile-menu-toggle {
+    display: flex;
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 10001;
+    background: var(--brand-primary);
+    border: none;
+    color: white;
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  }
+
+  /* 2. تحويل السايد بار لقائمة علوية تظهر وتختفي */
+  .mafa-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto; /* تأخذ مساحة المحتوى فقط */
+    max-height: 80vh; /* لا تغطي كامل الشاشة */
+    z-index: 10000;
+    transform: translateY(-100%); /* مخفية للأعلى */
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #0d0d0d;
+    border-bottom: 2px solid var(--brand-primary);
+    overflow-y: auto;
+    padding-top: 60px; /* لترك مساحة للزر */
+  }
+
+  /* عندما تكون القائمة مفتوحة */
+  .mafa-sidebar.mobile-open {
+    transform: translateY(0);
+  }
+
+  /* إخفاء السايد بار تماماً عند الـ collapsed في الموبايل */
+  .mafa-sidebar.collapsed {
+    transform: translateY(-100%);
+  }
+
+  /* 3. ضبط محتوى الصفحة الرئيسي */
+  .content-engine {
+    margin: 0 !important;
+    padding: 15px !important;
+  }
+
+  /* 4. تصغير الهيدر (العنوان الكبير) */
+  .hero-section-v5 h1 {
+    font-size: 28px !important;
+    text-align: center;
+  }
+
+  .hero-section-v5 p {
+    font-size: 14px !important;
+    text-align: center;
+    margin: 0 auto;
+  }
+
+  /* 5. شبكة الكورسات (جعلها عمود واحد) */
+  .course-grid-v5 {
+    grid-template-columns: 1fr !important; /* كورس واحد في السطر */
+    gap: 20px;
+  }
+
+  .modern-course-card {
+    border-radius: 20px;
+  }
+
+  .card-body-v5 h3 {
+    font-size: 18px !important;
+    height: auto !important;
+  }
+
+  /* 6. شريط البحث والبروفايل */
+  .global-top-bar {
+    flex-direction: column;
+    gap: 15px;
+    height: auto !important;
+    padding: 20px 10px !important;
+  }
+
+  .advanced-search-wrapper {
+    width: 100% !important;
+  }
+
+  .utility-stack {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .profile-mini-v5 {
+    border: none !important;
+    padding: 0 !important;
+  }
+
+  /* 7. لوحة تفاصيل الكورس (Details Panel) */
+  .details-panel-v5 {
+    width: 100% !important; /* تأخذ كامل الشاشة في الموبايل */
+    padding: 20px !important;
+    border-radius: 0 !important;
+  }
+
+  .main-detail-visual {
+    height: 200px !important;
+    border-radius: 20px !important;
+  }
+
+  .detail-info-engine h1 {
+    font-size: 24px !important;
+  }
+
+  .fast-stats {
+    flex-wrap: wrap; /* إنزال الإحصائيات لسطر جديد */
+    gap: 10px !important;
+  }
+
+  .cta-button-v5 {
+    width: 100%;
+    padding: 15px !important;
+    font-size: 16px !important;
+  }
+}
+
+/* إخفاء زر الموبايل في الشاشات الكبيرة */
+@media screen and (min-width: 769px) {
+  .mobile-menu-toggle {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  /* ضمان أن حاوية الكورسات لا تخرج عن الشاشة */
+  .grid-viewport {
+    padding: 10px !important;
+    overflow-x: hidden; /* منع السكرول العرضي تماماً */
+  }
+
+  /* جعل الكارت مطاطي 100% من عرض الشاشة المتاحة */
+  .modern-course-card {
+    width: 100% !important;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column; /* ترتيب المحتوى رأسياً */
+  }
+
+  /* التأكد من أن الصورة لا تخرج عن حدود الكارت وتأخذ شكلاً متناسقاً */
+  .card-visual-engine {
+    width: 100%;
+    height: 180px; /* تقليل ارتفاع الصورة في الموبايل */
+  }
+
+  .card-visual-engine img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* لضمان عدم تمطط الصورة بشكل سيء */
+  }
+
+  /* ضبط النصوص داخل الكارت */
+  .card-body-v5 {
+    padding: 15px !important; /* تقليل الحواف الداخلية لتوفير مساحة */
+  }
+
+  .card-body-v5 h3 {
+    font-size: 16px !important; /* تصغير حجم العنوان */
+    line-height: 1.4;
+    margin-bottom: 10px;
+  }
+
+  /* ضبط الأيقونات الصغيرة (الوقت، عدد الدروس) */
+  .card-meta-v5 {
+    gap: 10px !important;
+    flex-wrap: wrap; /* السماح للأيقونات بالنزول لسطر جديد إذا ضاقت الشاشة */
+  }
+
+  .card-meta-v5 span {
+    font-size: 12px !important;
+  }
+
+  /* زر التشغيل السريع في الكارت */
+  .quick-action-btn {
+    width: 40px !important;
+    height: 40px !important;
+  }
+}
