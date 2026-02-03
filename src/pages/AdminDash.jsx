@@ -43,23 +43,50 @@ export default function AdminDash() {
   const [courses, setCourses] = useState([]);
   const [academyCategory, setAcademyCategory] = useState('high-school');
   const [loadingProgress, setLoadingProgress] = useState(0);
-
+const [books, setBooks] = useState([]); 
+const [terminalLogs, setTerminalLogs] = useState([]);
   const [students, setStudents] = useState([]); // سطر الحياة لإصلاح خطأ students is not defined
   const [transactions, setTransactions] = useState([]); // لضمان عمل واجهة الخزينة
- const handleDeploy = async () => {
+// [1] دالة الـ Deploy (تأكد أنها مغلقة تماماً)
+const handleDeploy = async () => {
   const coverFile = document.getElementById('courseCoverFile').files[0];
   const coverUrl = document.getElementById('courseCoverUrl').value;
-  
   const teacherFile = document.getElementById('teacherImgFile').files[0];
   const teacherUrl = document.getElementById('teacherImgUrl').value;
 
-  // الأولوية للملف، إذا لم يوجد نرسل الرابط
   const finalCover = coverFile || coverUrl;
   const finalTeacher = teacherFile || teacherUrl;
 
   if (!finalCover) return alert("يرجى اختيار ملف أو وضع رابط للغلاف");
 
+  // بيانات افتراضية للكورس (يجب أن تجمعها من الـ state الخاص بك)
+  const data = { title: "كورس جديد", category: academyCategory }; 
   await AcademyManager.createComplexCourse(data, finalCover, finalTeacher);
+}; 
+
+// [2] الآن مكون واجهة الامتحانات (مستقل تماماً)
+const ExamBuilderUI = () => {
+  const [examMeta, setExamMeta] = useState({ title: '', courseId: '', duration: 30, passScore: 50 });
+  const [questions, setQuestions] = useState([]);
+  const [currentQ, setCurrentQ] = useState({ 
+    questionText: '', 
+    options: ['', '', '', ''], 
+    correctAnswer: 0,
+    points: 5 
+  });
+
+  const addQuestionToPool = () => {
+    if (!currentQ.questionText) return alert("اكتب نص السؤال أولاً!");
+    setQuestions([...questions, currentQ]);
+    setCurrentQ({ questionText: '', options: ['', '', '', ''], correctAnswer: 0, points: 5 });
+  };
+
+  // تأكد من إضافة الـ return هنا لكي تظهر الواجهة
+  return (
+    <div className="exam-builder-container">
+       {/* محتوى واجهة الامتحان الذي كتبناه سابقاً */}
+    </div>
+  );
 };
   
   const [activeChat, setActiveChat] = useState(null); // لدعم نظام الرسائل
@@ -406,15 +433,7 @@ const AcademyManager = {
       alert("خطأ في إضافة المحاضرة: " + error.message);
     }
   },
-const ExamBuilderUI = () => {
-  const [examMeta, setExamMeta] = useState({ title: '', courseId: '', duration: 30, passScore: 50 });
-  const [questions, setQuestions] = useState([]);
-  const [currentQ, setCurrentQ] = useState({ 
-    questionText: '', 
-    options: ['', '', '', ''], 
-    correctAnswer: 0,
-    points: 5 
-  });
+
 
   // إضافة السؤال الحالي إلى قائمة الأسئلة
   const addQuestionToPool = () => {
@@ -2550,6 +2569,7 @@ const ExamBuilderUI = () => {
     </div>
   );
 }
+
 
 
 
