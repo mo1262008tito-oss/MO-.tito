@@ -48,6 +48,10 @@ const Wallet = () => {
   const [activeModal, setActiveModal] = useState(null);
   const [showBalance, setShowBalance] = useState(true);
 
+  // -- Deposit & Recharge States (الأجزاء الناقصة التي سببت الخطأ) --
+  const [depositMethod, setDepositMethod] = useState(null); // لتحديد نوع الشحن (دعم أو كود)
+  const [chargeCode, setChargeCode] = useState('');         // لتخزين الكود المكتوب من قبل المستخدم
+  // ملاحظة: actionLoading موجود لديك بالفعل، لا تكرره.
   const [filterQuery, setFilterQuery] = useState('');
 const [selectedTransaction, setSelectedTransaction] = useState(null);
   // -- Financial Data States --
@@ -1242,3 +1246,4 @@ const shareReceipt = async () => {
 }; // إغلاق الدالة Wallet
 
 export default Wallet;
+
