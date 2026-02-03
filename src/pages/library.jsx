@@ -1,18 +1,19 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { db, auth } from '../firebase';
 import { 
   collection, onSnapshot, query, where, orderBy, 
   doc, updateDoc, increment, addDoc, serverTimestamp, 
-  limit, getDocs 
+  limit 
 } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Search, BookOpen, FileText, DownloadCloud, Eye, Star, Clock, 
-  Library as LibIcon, X, ChevronLeft, Bookmark, Share2, Info, 
-  CheckCircle2, Filter, HardDrive, Layers, Globe, ArrowDownToLine, 
-  TrendingUp, History, Heart, LayoutGrid, List, MessageSquare, 
-  Send, AlertTriangle, Moon, Sun, Coffee, Award, Zap
+  Search, FileText, DownloadCloud, Eye, Star, 
+  X, Heart, Share2, MessageSquare, Send, 
+  AlertTriangle, Moon, Sun, Coffee, Award, Zap,
+  LayoutGrid, List, Filter, HardDrive, Globe
 } from 'lucide-react';
+
+// استيراد ملف الـ CSS الخاص بك
 import './library.css';
 
 const Library = () => {
@@ -24,139 +25,118 @@ const Library = () => {
   const [selectedBook, setSelectedBook] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [viewMode, setViewMode] = useState('grid');
-  const [readingMode, setReadingMode] = useState('default'); // default, sepia, dark
+  const [readingMode, setReadingMode] = useState('default');
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [isRequesting, setIsRequesting] = useState(false);
   const [userXP, setUserXP] = useState(0);
-useEffect(() => {
-  setLoading(true);
-  const booksRef = collection(db, 'library');
-  
-  // بناء الاستعلام بحذر
-  let q;
-  try {
-    if (activeFilter === 'الكل' || activeFilter === 'المفضلة') {
-      q = query(booksRef, orderBy('createdAt', 'desc'));
-    } else {
-      q = query(booksRef, where('category', '==', activeFilter), orderBy('createdAt', 'desc'));
-    }
-  } catch (err) {
-    // إذا فشل الترتيب، اجلب البيانات بدون ترتيب لتجنب الشاشة السوداء
-    q = query(booksRef);
-  }
 
-  const unsubscribe = onSnapshot(q, (snapshot) => {
-    const data = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      rating: doc.data().rating || 4.5,
-      downloads: doc.data().downloads || 0,
-      views: doc.data().views || 0,
-      tags: doc.data().tags || []
-    }));
-    setBooks(data);
-    setLoading(false);
-  }, (error) => {
-    console.error("Firebase Error:", error);
-    setLoading(false); // مهم جداً: توقف عن التحميل حتى لو فشل لجلب البيانات
-  });
-
-  // جلب البيانات المحلية
-  const savedFavs = JSON.parse(localStorage.getItem('lib_favs') || '[]');
-  const savedXP = parseInt(localStorage.getItem('user_xp') || '0');
-  setFavorites(savedFavs);
-  setUserXP(savedXP);
-
-  return () => unsubscribe();
-}, [activeFilter]);
-  // جلب تعليقات الكتاب المختار
+  // --- 2. الربط مع Firebase مع معالجة الأخطاء ---
   useEffect(() => {
-    if (selectedBook) {
-      const commentsRef = collection(db, 'library', selectedBook.id, 'comments');
-      const q = query(commentsRef, orderBy('timestamp', 'desc'), limit(20));
-      const unsubComments = onSnapshot(q, (snap) => {
-        setComments(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    let unsubscribe = () => {};
+    
+    try {
+      setLoading(true);
+      const booksRef = collection(db, 'library');
+      
+      // بناء الاستعلام مع مراعاة وجود Index في Firebase
+      let q = query(booksRef, orderBy('createdAt', 'desc'));
+      
+      if (activeFilter !== 'الكل' && activeFilter !== 'المفضلة') {
+        q = query(booksRef, where('category', '==', activeFilter));
+      }
+
+      unsubscribe = onSnapshot(q, (snapshot) => {
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          rating: doc.data().rating || 4.5,
+          downloads: doc.data().downloads || 0,
+          views: doc.data().views || 0
+        }));
+        setBooks(data);
+        setLoading(false);
+      }, (error) => {
+        console.error("Firebase Snapshot Error:", error);
+        setLoading(false); // إيقاف التحميل حتى عند الخطأ لفتح الصفحة
       });
-      return () => unsubComments();
+    } catch (err) {
+      console.error("Setup Error:", err);
+      setLoading(false);
+    }
+
+    // جلب البيانات المحلية
+    setFavorites(JSON.parse(localStorage.getItem('lib_favs') || '[]'));
+    setUserXP(parseInt(localStorage.getItem('user_xp') || '0'));
+
+    return () => unsubscribe();
+  }, [activeFilter]);
+
+  // جلب التعليقات
+  useEffect(() => {
+    if (selectedBook?.id) {
+      const commentsRef = collection(db, 'library', selectedBook.id, 'comments');
+      const q = query(commentsRef, orderBy('timestamp', 'desc'), limit(15));
+      return onSnapshot(q, (snap) => {
+        setComments(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      }, (err) => console.log("Comments error ignored"));
     }
   }, [selectedBook]);
 
-  // --- 3. الوظائف المنطقية (Handlers) ---
+  // --- 3. الوظائف المنطقية ---
   const handleDownload = async (book) => {
     try {
+      window.open(book.pdfUrl, '_blank');
       const bookRef = doc(db, 'library', book.id);
       await updateDoc(bookRef, { downloads: increment(1) });
-      
-      // إضافة XP للمستخدم
       const newXP = userXP + 50;
       setUserXP(newXP);
       localStorage.setItem('user_xp', newXP.toString());
-      
-      window.open(book.pdfUrl, '_blank');
-    } catch (err) { console.error(err); }
-  };
-
-  const postComment = async () => {
-    if (!newComment.trim() || !selectedBook) return;
-    const commentsRef = collection(db, 'library', selectedBook.id, 'comments');
-    await addDoc(commentsRef, {
-      text: newComment,
-      user: auth.currentUser?.displayName || 'زائر تيتان',
-      timestamp: serverTimestamp(),
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Math.random()}`
-    });
-    setNewComment('');
+    } catch (err) { console.error("Download update failed:", err); }
   };
 
   const toggleFavorite = (id) => {
-    const newFavs = favorites.includes(id) 
-      ? favorites.filter(f => f !== id) 
-      : [...favorites, id];
+    const newFavs = favorites.includes(id) ? favorites.filter(f => f !== id) : [...favorites, id];
     setFavorites(newFavs);
     localStorage.setItem('lib_favs', JSON.stringify(newFavs));
   };
 
-  // خوارزمية الكتب المقترحة
-  const relatedBooks = useMemo(() => {
-    if (!selectedBook) return [];
-    return books
-      .filter(b => b.category === selectedBook.category && b.id !== selectedBook.id)
-      .slice(0, 4);
-  }, [selectedBook, books]);
-// 1. مراجعة بسيطة لحالة البيانات
-if (loading) {
-  return (
-    <div style={{
-      background: '#0d0d0d', 
-      height: '100vh', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center', 
-      color: 'white'
-    }}>
-      <div className="loader">جاري فتح المكتبة...</div>
+  const postComment = async () => {
+    if (!newComment.trim() || !selectedBook) return;
+    try {
+      const commentsRef = collection(db, 'library', selectedBook.id, 'comments');
+      await addDoc(commentsRef, {
+        text: newComment,
+        user: auth.currentUser?.displayName || 'طالب متميز',
+        timestamp: serverTimestamp(),
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${auth.currentUser?.uid || 'guest'}`
+      });
+      setNewComment('');
+    } catch (err) { alert("فشل إرسال التعليق، تأكد من تسجيل الدخول"); }
+  };
+
+  // تصفية الكتب للبحث
+  const filteredBooks = useMemo(() => {
+    return books.filter(b => {
+      const matchesSearch = b.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesFav = activeFilter === 'المفضلة' ? favorites.includes(b.id) : true;
+      return matchesSearch && matchesFav;
+    });
+  }, [books, searchQuery, favorites, activeFilter]);
+
+  // --- 4. واجهة المستخدم ---
+  
+  // صمام أمان التحميل
+  if (loading) return (
+    <div className="titan-lib-container" style={{display:'flex', justifyContent:'center', alignItems:'center', height:'100vh', background:'#0d0d0d'}}>
+      <div className="pulse-orb"><Zap size={40} color="var(--brand-primary)" /></div>
+      <p style={{color:'white', marginRight:'15px'}}>جاري فتح المكتبة العظمى...</p>
     </div>
   );
-}
 
-// 2. إذا انتهى التحميل ولم يجد بيانات (بسبب خطأ Permissions أو غيره)
-if (!books || books.length === 0) {
   return (
-    <div style={{background: '#0d0d0d', height: '100vh', padding: '50px', textAlign: 'center'}}>
-      <h2 style={{color: 'white'}}>لا توجد بيانات حالياً</h2>
-      <p style={{color: '#666'}}>تأكد من صلاحيات Firebase أو اتصال الإنترنت</p>
-      <button onClick={() => window.location.reload()} style={{padding: '10px 20px', marginTop: '20px'}}>إعادة تحميل</button>
-    </div>
-  );
-}
-
-
-  // --- 4. واجهة المستخدم (Render) ---
-  return (
-    <div className={`titan-lib-container mode-${readingMode} view-${viewMode}`}>
+    <div className={`titan-lib-container mode-${readingMode} view-${viewMode}`} translate="no">
       
-      {/* 1. نظام التنقل والبحث الاحترافي */}
       <header className="lib-header-v8 glass">
         <div className="top-bar">
           <div className="brand">
@@ -169,9 +149,9 @@ if (!books || books.length === 0) {
           
           <div className="header-actions">
             <div className="reading-modes-switch">
-              <button onClick={() => setReadingMode('default')} title="الوضع العادي"><Sun size={18}/></button>
-              <button onClick={() => setReadingMode('sepia')} title="وضع القراءة (Sepia)"><Coffee size={18}/></button>
-              <button onClick={() => setReadingMode('dark')} title="الوضع المظلم"><Moon size={18}/></button>
+              <button onClick={() => setReadingMode('default')}><Sun size={18}/></button>
+              <button onClick={() => setReadingMode('sepia')}><Coffee size={18}/></button>
+              <button onClick={() => setReadingMode('dark')}><Moon size={18}/></button>
             </div>
             <button className="request-btn" onClick={() => setIsRequesting(true)}>طلب كتاب</button>
           </div>
@@ -181,7 +161,7 @@ if (!books || books.length === 0) {
           <Search className="search-icon" />
           <input 
             type="text" 
-            placeholder="ابحث في أكثر من 10,000 صفحة من المعرفة..."
+            placeholder="ابحث عن كتب، ملخصات، مصادر..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -193,7 +173,6 @@ if (!books || books.length === 0) {
       </header>
 
       <div className="lib-main-layout">
-        {/* 2. الفلاتر الجانبية الذكية */}
         <aside className="lib-sidebar-v8">
           <div className="sb-group">
             <h3><Filter size={16}/> استكشاف الأقسام</h3>
@@ -203,101 +182,80 @@ if (!books || books.length === 0) {
                 className={`cat-btn ${activeFilter === cat ? 'active' : ''}`}
                 onClick={() => setActiveFilter(cat)}
               >
-                {cat}
-                {cat === 'المفضلة' && <Heart size={12} fill="red" />}
+                {cat} {cat === 'المفضلة' && <Heart size={12} fill="red" />}
               </button>
             ))}
           </div>
-
+          
           <div className="sb-stats glass">
             <h4>إحصائياتك</h4>
             <div className="stat-row"><span>كتب محملة:</span> <b>{Math.floor(userXP/50)}</b></div>
             <div className="stat-row"><span>المفضلة:</span> <b>{favorites.length}</b></div>
-            <div className="progress-mini">
-              <div className="p-bar" style={{width: `${(userXP % 1000) / 10}%`}}></div>
-            </div>
-            <small>تبقي {(1000 - (userXP % 1000))} نقطة للمستوى التالي</small>
           </div>
         </aside>
 
-        {/* 3. شبكة المحتوى الرئيسية */}
         <main className="lib-grid-v8">
-          <AnimatePresence>
-            {loading ? (
-              [...Array(6)].map((_, i) => <div key={i} className="skeleton-v8 glass" />)
-            ) : (
-              books
-                .filter(b => b.title.includes(searchQuery) && (activeFilter === 'الكل' || activeFilter === 'المفضلة' ? true : b.category === activeFilter))
-                .filter(b => activeFilter === 'المفضلة' ? favorites.includes(b.id) : true)
-                .map((book, idx) => (
-                  <motion.div 
-                    key={book.id}
-                    layoutId={`card-${book.id}`}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    whileHover={{ y: -8 }}
-                    className="book-card-v8 glass"
-                    onClick={() => {
-                      setSelectedBook(book);
-                      updateDoc(doc(db, 'library', book.id), { views: increment(1) });
-                    }}
-                  >
-                    <div className="card-cover">
-                      <img src={book.coverImage} alt="" loading="lazy" />
-                      <div className="card-badges">
-                        <span className="b-type">PDF</span>
-                        <button 
-                          className={`b-fav ${favorites.includes(book.id) ? 'active' : ''}`}
-                          onClick={(e) => { e.stopPropagation(); toggleFavorite(book.id); }}
-                        >
-                          <Heart size={16} fill={favorites.includes(book.id) ? "red" : "none"} />
-                        </button>
-                      </div>
+          {filteredBooks.length === 0 ? (
+            <div style={{color:'#555', textAlign:'center', gridColumn:'1/-1', padding:'50px'}}>لم يتم العثور على نتائج تطابق بحثك</div>
+          ) : (
+            <AnimatePresence>
+              {filteredBooks.map((book) => (
+                <motion.div 
+                  key={book.id}
+                  layout // تحريك ذكي بدون layoutId لتجنب خطأ الـ Node
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="book-card-v8 glass"
+                  onClick={() => setSelectedBook(book)}
+                >
+                  <div className="card-cover">
+                    <img src={book.coverImage} alt="" loading="lazy" />
+                    <div className="card-badges">
+                      <button 
+                        className={`b-fav ${favorites.includes(book.id) ? 'active' : ''}`}
+                        onClick={(e) => { e.stopPropagation(); toggleFavorite(book.id); }}
+                      >
+                        <Heart size={16} fill={favorites.includes(book.id) ? "red" : "none"} />
+                      </button>
                     </div>
-                    <div className="card-content">
-                      <span className="c-tag">{book.category}</span>
-                      <h3>{book.title}</h3>
-                      <p>{book.author || 'إدارة تيتان'}</p>
-                      <div className="card-footer">
-                        <div className="f-stats">
-                          <span><Eye size={12}/> {book.views}</span>
-                          <span><DownloadCloud size={12}/> {book.downloads}</span>
-                        </div>
-                        <div className="f-rating"><Star size={12} fill="gold"/> {book.rating}</div>
+                  </div>
+                  <div className="card-content">
+                    <span className="c-tag">{book.category}</span>
+                    <h3>{book.title}</h3>
+                    <div className="card-footer">
+                      <div className="f-stats">
+                        <span><Eye size={12}/> {book.views}</span>
+                        <span><DownloadCloud size={12}/> {book.downloads}</span>
                       </div>
+                      <div className="f-rating"><Star size={12} fill="gold"/> {book.rating}</div>
                     </div>
-                  </motion.div>
-                ))
-            )}
-          </AnimatePresence>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          )}
         </main>
       </div>
 
-      {/* 4. لوحة التفاصيل العملاقة (The Mega Panel) */}
+      {/* مودال التفاصيل */}
       <AnimatePresence>
         {selectedBook && (
           <div className="mega-modal-v8" onClick={() => setSelectedBook(null)}>
             <motion.div 
               className="modal-body-v8 glass-heavy"
-              layoutId={`card-${selectedBook.id}`}
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
               onClick={e => e.stopPropagation()}
             >
               <div className="modal-scroll-area">
                 <div className="modal-top-section">
                   <div className="m-visual">
                     <img src={selectedBook.coverImage} alt="" />
-                    <div className="m-actions">
-                      <button className="main-dl-btn" onClick={() => handleDownload(selectedBook)}>
-                        <DownloadCloud /> تحميل الآن (PDF)
-                      </button>
-                      <div className="sub-btns">
-                        <button className="glass"><Share2 size={18}/></button>
-                        <button className="glass" onClick={() => toggleFavorite(selectedBook.id)}>
-                          <Heart size={18} fill={favorites.includes(selectedBook.id) ? "red" : "none"}/>
-                        </button>
-                        <button className="glass"><AlertTriangle size={18}/></button>
-                      </div>
-                    </div>
+                    <button className="main-dl-btn" onClick={() => handleDownload(selectedBook)}>
+                      <DownloadCloud /> تحميل الآن (PDF)
+                    </button>
                   </div>
                   
                   <div className="m-info">
@@ -305,13 +263,12 @@ if (!books || books.length === 0) {
                     <span className="m-category">{selectedBook.category}</span>
                     <h2>{selectedBook.title}</h2>
                     <div className="m-meta-grid">
-                      <div className="m-m-item"><FileText size={16}/> <b>{selectedBook.pages}</b> صفحة</div>
-                      <div className="m-m-item"><HardDrive size={16}/> <b>{selectedBook.size}</b></div>
+                      <div className="m-m-item"><FileText size={16}/> <b>{selectedBook.pages || '??'}</b> صفحة</div>
+                      <div className="m-m-item"><HardDrive size={16}/> <b>{selectedBook.size || '2MB'}</b></div>
                       <div className="m-m-item"><Globe size={16}/> <b>العربية</b></div>
                     </div>
-                    <p className="m-desc">{selectedBook.description || "هذا الكتاب من المصادر الموثوقة لدينا..."}</p>
+                    <p className="m-desc">{selectedBook.description || "كتاب قيم من مكتبتنا المركزية.."}</p>
                     
-                    {/* نظام التعليقات الحية */}
                     <div className="comments-section">
                       <h4><MessageSquare size={16}/> المناقشات ({comments.length})</h4>
                       <div className="comments-list">
@@ -319,7 +276,7 @@ if (!books || books.length === 0) {
                           <div key={c.id} className="comment-bubble glass">
                             <img src={c.avatar} alt="" />
                             <div className="c-text">
-                              <header><b>{c.user}</b> <small>منذ قليل</small></header>
+                              <header><b>{c.user}</b></header>
                               <p>{c.text}</p>
                             </div>
                           </div>
@@ -327,7 +284,7 @@ if (!books || books.length === 0) {
                       </div>
                       <div className="comment-input">
                         <input 
-                          placeholder="أضف رأيك في هذا الكتاب..." 
+                          placeholder="أضف تعليقاً.." 
                           value={newComment}
                           onChange={(e) => setNewComment(e.target.value)}
                         />
@@ -336,53 +293,36 @@ if (!books || books.length === 0) {
                     </div>
                   </div>
                 </div>
-
-                {/* اقتراحات ذكية */}
-                <div className="related-v8">
-                  <h3>قد يهمك أيضاً 📚</h3>
-                  <div className="related-grid-v8">
-                    {relatedBooks.map(rb => (
-                      <div key={rb.id} className="rel-card glass" onClick={() => setSelectedBook(rb)}>
-                        <img src={rb.coverImage} alt="" />
-                        <h5>{rb.title}</h5>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
-      {/* 5. مودال طلب الكتب (Request System) */}
+      {/* مودال الطلب */}
       <AnimatePresence>
         {isRequesting && (
           <div className="request-modal-overlay glass-heavy" onClick={() => setIsRequesting(false)}>
             <motion.div 
-              initial={{ y: 50, opacity: 0 }} 
-              animate={{ y: 0, opacity: 1 }}
+              initial={{ y: 50 }} animate={{ y: 0 }}
               className="request-form glass"
               onClick={e => e.stopPropagation()}
             >
               <h2>طلب مصدر تعليمي</h2>
-              <p>إذا لم تجد كتاباً معيناً، أخبرنا وسنقوم بتوفيره لك في أقرب وقت.</p>
-              <input type="text" placeholder="اسم الكتاب أو المؤلف" />
-              <textarea placeholder="أي تفاصيل أخرى (السنة، الجزء...)" />
+              <input type="text" placeholder="اسم الكتاب" />
+              <textarea placeholder="تفاصيل إضافية.." />
               <div className="form-btns">
                 <button className="cancel" onClick={() => setIsRequesting(false)}>إلغاء</button>
-                <button className="submit">إرسال الطلب</button>
+                <button className="submit" onClick={() => {alert("تم إرسال طلبك بنجاح"); setIsRequesting(false);}}>إرسال</button>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
-
     </div>
   );
 };
 
 export default Library;
-
 
 
