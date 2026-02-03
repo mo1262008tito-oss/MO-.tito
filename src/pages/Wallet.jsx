@@ -254,19 +254,54 @@ const RECHARGE_METHODS = {
   ADMIN_DIRECT: { id: 'admin', name: 'شحن عبر الدعم الفني', type: 'contact' }
 };
 
-// إضافة دالة للتعامل مع كود السنتر
-const handleCenterCodeRedeem = async (code) => {
+const handleRedeemCode = async () => {
+  if (!chargeCode) return;
   setActionLoading(true);
-  // هنا يتم إرسال الكود للباك إيند للتأكد من صلاحيته
-  // إذا كان الكود صحيحاً يتم إضافة الرصيد فوراً
-  showAlert("شحن الكود", "جاري التحقق من الكود...", "info");
-  // محاكاة استجابة السيرفر
-  setTimeout(() => {
-    setActionLoading(false);
-    showAlert("نجاح", "تم شحن الرصيد بنجاح عبر الكود", "success");
-  }, 2000);
-};
+  
+  try {
+    const codeRef = doc(db, "recharge_codes", chargeCode);
+    const codeSnap = await getDoc(codeRef);
 
+    if (codeSnap.exists() && !codeSnap.data().isUsed) {
+      const amount = codeSnap.data().value;
+      
+      // عملية Transaction لضمان الأمان
+      await runTransaction(db, async (transaction) => {
+        // 1. تحديث رصيد المستخدم
+        transaction.update(doc(db, "users", auth.currentUser.uid), {
+          balance: increment(amount)
+        });
+        
+        // 2. وسم الكود كـ "مُستخدم"
+        transaction.update(codeRef, {
+          isUsed: true,
+          usedBy: auth.currentUser.uid,
+          usedAt: serverTimestamp()
+        });
+
+        // 3. إضافة العملية للسجل
+        const newTransRef = doc(collection(db, "transactions"));
+        transaction.set(newTransRef, {
+          userId: auth.currentUser.uid,
+          type: 'receive',
+          amount: amount,
+          title: 'شحن كود مركز',
+          date: new Date().toLocaleString('ar-EG'),
+          timestamp: serverTimestamp()
+        });
+      });
+
+      setSystemAlert({ type: 'success', title: 'تم الشحن!', message: `تم إضافة ${amount} ج.م لرصيدك بنجاح.` });
+      setActiveModal(null);
+    } else {
+      setSystemAlert({ type: 'error', title: 'كود غير صالح', message: 'هذا الكود مستخدم من قبل أو غير موجود.' });
+    }
+  } catch (error) {
+    setSystemAlert({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء تفعيل الكود.' });
+  } finally {
+    setActionLoading(false);
+  }
+};
   
   /**
    * ميزة 5: نظام البحث الذكي عن المستلم
@@ -917,7 +952,75 @@ const shareReceipt = async () => {
       </AnimatePresence>
     </main>
 
-    
+    {/* مودال الشحن اليدوي المتصل بـ Firebase */}
+<AnimatePresence>
+  {activeModal === 'deposit' && (
+    <motion.div 
+      className="modal-overlay modern-modal-design"
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+    >
+      <motion.div 
+        className="modal-body deposit-manual-wrapper"
+        initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+      >
+        <div className="modal-header-modern">
+          <div className="header-icon-wrap deposit-bg"><Plus size={30} /></div>
+          <h3>شحن رصيد MAFA</h3>
+          <p>اختر وسيلة الشحن المفضلة لديك</p>
+          <button className="close-modal-x" onClick={() => setActiveModal(null)}><X size={18} /></button>
+        </div>
+
+        <div className="deposit-options-stack">
+          {/* الخيار الأول: الدعم الفني */}
+          <div className="deposit-option-card" onClick={() => window.open('https://wa.me/YOUR_NUMBER')}>
+            <div className="option-icon support-icon"><Headphones size={24} /></div>
+            <div className="option-info">
+              <h4>شحن عبر الدعم الفني</h4>
+              <p>فودافون كاش، إنستا باي، تحويل بنكي</p>
+            </div>
+            <ChevronLeft size={20} />
+          </div>
+
+          {/* الخيار الثاني: كود شحن (Center Code) */}
+          <div className="deposit-option-card" onClick={() => setDepositMethod('code')}>
+            <div className="option-icon code-icon"><QrCode size={24} /></div>
+            <div className="option-info">
+              <h4>شحن عبر كود مركز (Center Code)</h4>
+              <p>ادخل الكود المستلم من الموزع</p>
+            </div>
+            <ChevronLeft size={20} />
+          </div>
+        </div>
+
+        {depositMethod === 'code' && (
+          <motion.div className="code-entry-area" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
+            <div className="input-group-modern">
+              <label>أدخل كود الشحن</label>
+              <input 
+                type="text" 
+                placeholder="Ex: MAFA-XXXX-XXXX" 
+                className="modern-input"
+                onChange={(e) => setChargeCode(e.target.value)}
+              />
+            </div>
+            <button 
+              className="execute-transfer-btn deposit-btn"
+              onClick={handleRedeemCode}
+              disabled={actionLoading || !chargeCode}
+            >
+              {actionLoading ? <RefreshCw className="spin" /> : "تفعيل الكود الآن"}
+            </button>
+          </motion.div>
+        )}
+
+        <div className="security-note">
+          <ShieldCheck size={14} />
+          <span>جميع عمليات الشحن مشفرة ومؤمنة بواسطة نظام MAFA</span>
+        </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
       {/* 5. مودال التحويل المالي: النسخة الشاملة (بدون أي اختصار + تحسين اللوجيك) */}
       <AnimatePresence>
         {activeModal === 'transfer' && (
@@ -1110,27 +1213,30 @@ const shareReceipt = async () => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* 9. شريط التنقل السفلي */}
+{/* 9. شريط التنقل السفلي - النسخة المطورة */}
       <footer className="platinum-bottom-nav">
         <div className={`nav-tab ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
           <Smartphone /><span>الرئيسية</span>
         </div>
-        <div className={`nav-tab ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
-          <History /><span>النشاط</span>
+        
+        {/* زر الشحن الجديد */}
+        <div className="nav-tab deposit-highlight" onClick={() => setActiveModal('deposit')}>
+          <Zap className="zap-icon" /><span>شحن</span>
         </div>
+
         <div className="nav-tab-center" onClick={() => setActiveModal('transfer')}>
           <div className="fab-plus"><Plus size={30} /></div>
+          <span className="fab-label">تحويل</span>
         </div>
+
         <div className={`nav-tab ${activeTab === 'vault' ? 'active' : ''}`} onClick={() => setActiveTab('vault')}>
           <PiggyBank /><span>الخزنة</span>
         </div>
-        <div className={`nav-tab ${activeTab === 'support' ? 'active' : ''}`} onClick={() => setActiveTab('support')}>
-          <Headphones /><span>الدعم</span>
+
+        <div className={`nav-tab ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
+          <History /><span>النشاط</span>
         </div>
       </footer>
-    </div>
-  );
 // =========================================================================
 // [ SECTION 9: STYLESHEET (INTEGRATED CSS) ]
 // =========================================================================
@@ -1152,6 +1258,7 @@ const shareReceipt = async () => {
 export default Wallet;
   
   
+
 
 
 
