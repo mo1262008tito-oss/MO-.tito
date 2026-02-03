@@ -426,21 +426,25 @@ const AcademyManager = {
         lecturesCount: increment(1),
         updatedAt: serverTimestamp()
       });
-      
-      setTerminalLogs(prev => [...prev, `[ACADEMY] تم إضافة محاضرة: ${lectureData.title}`]);
+setTerminalLogs(prev => [...prev, `[ACADEMY] تم إضافة محاضرة: ${lectureData.title}`]);
       return lectureWithId;
     } catch (error) {
       alert("خطأ في إضافة المحاضرة: " + error.message);
     }
-  },
+  }, // نهاية دالة addLectureToCourse
+}; // <--- [هام جداً] هذا القوس يغلق كائن AcademyManager بالكامل
 
+// الآن يمكنك وضع المكونات المستقلة هنا
+const ExamBuilderUI = () => {
+  // ... الـ states الخاصة بالامتحان ...
 
-  // إضافة السؤال الحالي إلى قائمة الأسئلة
   const addQuestionToPool = () => {
     if (!currentQ.questionText) return alert("اكتب نص السؤال أولاً!");
     setQuestions([...questions, currentQ]);
-    setCurrentQ({ questionText: '', options: ['', '', '', ''], correctAnswer: 0, points: 5 }); // تصفير الحقول للسؤال التالي
+    setCurrentQ({ questionText: '', options: ['', '', '', ''], correctAnswer: 0, points: 5 });
   };
+
+
 
   return (
     <div className="exam-builder-vessel glass-card">
@@ -2569,6 +2573,7 @@ const AcademyManager = {
     </div>
   );
 }
+
 
 
 
