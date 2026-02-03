@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth'; 
 import { getStorage } from 'firebase/storage';
 import { getDatabase } from 'firebase/database'; 
@@ -7,13 +7,11 @@ import { getAnalytics, isSupported } from "firebase/analytics";
 
 /**
  * إعدادات الاتصال بمشروعك (Mafat Platform)
- * هذه المفاتيح تربط الكود البرمجي بالسيرفرات السحابية
  */
 const firebaseConfig = {
   apiKey: 'AIzaSyDhrGwUiLL_V8Wl2fceAE3rhonE4xQMJDg',
   authDomain: 'mafat-platform.firebaseapp.com',
-  // ملاحظة: تأكد من تطابق هذا الرابط مع الرابط في Realtime Database داخل لوحة Firebase
-databaseURL: "https://mafat-platform-default-rtdb.firebaseio.com",
+  databaseURL: "https://mafat-platform-default-rtdb.firebaseio.com",
   projectId: 'mafat-platform',
   storageBucket: 'mafat-platform.firebasestorage.app',
   messagingSenderId: '732155910926',
@@ -24,26 +22,25 @@ databaseURL: "https://mafat-platform-default-rtdb.firebaseio.com",
 // 1. تشغيل التطبيق الأساسي
 const app = initializeApp(firebaseConfig); 
 
-// 2. تصدير الخدمات لربطها بالأجزاء العشرة من المنصة
+// 2. تهيئة Firestore بإعدادات الاتصال القوي (Experimental Force Long Polling)
+// هذا التعديل هو الحل الجذري لمشكلة ERR_CONNECTION_CLOSED و ERR_QUIC_PROTOCOL_ERROR
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true, // يجبر الاتصال على العمل حتى في الشبكات الضعيفة أو المحجوبة
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) // يضمن عمل المكتبة حتى لو انقطع الإنترنت مؤقتاً
+});
 
-// قاعدة بيانات Firestore (تخزين الطلاب، الكورسات، المذكرات، والنتائج)
-export const db = getFirestore(app);
-
-// نظام المصادقة (إدارة دخول الأدمن والطلاب)
+// 3. نظام المصادقة (Auth)
 export const auth = getAuth(app);
 
-// التخزين السحابي (رفع ملفات الـ PDF، الصور، وأغلفة الكتب)
+// 4. التخزين السحابي (Storage)
 export const storage = getStorage(app);
 
-// قاعدة البيانات اللحظية (محرك الرادار، التنبيهات الفورية، وحالة الأونلاين)
+// 5. قاعدة البيانات اللحظية (RTDB)
 export const rtdb = getDatabase(app); 
 
-// نظام التحليلات (لمراقبة نشاط المنصة بشكل عام)
+// 6. نظام التحليلات مع معالجة الأخطاء لعدم تعطيل الصفحة
 export const analytics = typeof window !== 'undefined' 
-  ? isSupported().then(yes => yes ? getAnalytics(app) : null) 
+  ? isSupported().then(yes => yes ? getAnalytics(app) : null).catch(() => null)
   : null;
 
-// تصدير التطبيق كافتراضي
 export default app;
-
-
