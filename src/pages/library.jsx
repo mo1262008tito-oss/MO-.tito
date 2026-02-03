@@ -29,39 +29,47 @@ const Library = () => {
   const [newComment, setNewComment] = useState('');
   const [isRequesting, setIsRequesting] = useState(false);
   const [userXP, setUserXP] = useState(0);
+useEffect(() => {
+  setLoading(true);
+  const booksRef = collection(db, 'library');
+  
+  // بناء الاستعلام بحذر
+  let q;
+  try {
+    if (activeFilter === 'الكل' || activeFilter === 'المفضلة') {
+      q = query(booksRef, orderBy('createdAt', 'desc'));
+    } else {
+      q = query(booksRef, where('category', '==', activeFilter), orderBy('createdAt', 'desc'));
+    }
+  } catch (err) {
+    // إذا فشل الترتيب، اجلب البيانات بدون ترتيب لتجنب الشاشة السوداء
+    q = query(booksRef);
+  }
 
-  // --- 2. الربط مع Firebase (المزامنة اللحظية) ---
-  useEffect(() => {
-    setLoading(true);
-    const booksRef = collection(db, 'library');
-    const q = activeFilter === 'الكل' 
-      ? query(booksRef, orderBy('createdAt', 'desc'))
-      : activeFilter === 'المفضلة' 
-        ? query(booksRef, orderBy('createdAt', 'desc')) 
-        : query(booksRef, where('category', '==', activeFilter));
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    const data = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      rating: doc.data().rating || 4.5,
+      downloads: doc.data().downloads || 0,
+      views: doc.data().views || 0,
+      tags: doc.data().tags || []
+    }));
+    setBooks(data);
+    setLoading(false);
+  }, (error) => {
+    console.error("Firebase Error:", error);
+    setLoading(false); // مهم جداً: توقف عن التحميل حتى لو فشل لجلب البيانات
+  });
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        rating: doc.data().rating || 4.5,
-        downloads: doc.data().downloads || 0,
-        views: doc.data().views || 0,
-        tags: doc.data().tags || []
-      }));
-      setBooks(data);
-      setLoading(false);
-    });
+  // جلب البيانات المحلية
+  const savedFavs = JSON.parse(localStorage.getItem('lib_favs') || '[]');
+  const savedXP = parseInt(localStorage.getItem('user_xp') || '0');
+  setFavorites(savedFavs);
+  setUserXP(savedXP);
 
-    // جلب البيانات المحلية (المفضلة والـ XP)
-    const savedFavs = JSON.parse(localStorage.getItem('lib_favs') || '[]');
-    const savedXP = parseInt(localStorage.getItem('user_xp') || '0');
-    setFavorites(savedFavs);
-    setUserXP(savedXP);
-
-    return () => unsubscribe();
-  }, [activeFilter]);
-
+  return () => unsubscribe();
+}, [activeFilter]);
   // جلب تعليقات الكتاب المختار
   useEffect(() => {
     if (selectedBook) {
@@ -348,4 +356,5 @@ const Library = () => {
 };
 
 export default Library;
+
 
