@@ -106,7 +106,83 @@ useEffect(() => {
   const [globalSearch, setGlobalSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState('all');
 const [activeTab, setActiveTab] = useState('someDefaultValue');
+// [1] محرك توليد الأكواد (المفقود في قسم الموارد المالية)
+const generateRandomCode = (prefix, length = 8) => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // بدون الحروف المتشابهة مثل O و 0
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return `${prefix}-${result}`;
+};
 
+// [2] الربط الفعلي لتوليد الأكواد في BillingEngine
+const BillingEngine = {
+  async executeBulkGeneration(config) {
+    try {
+      setLoadingProgress(10);
+      const batch = writeBatch(db);
+      const timestamp = serverTimestamp();
+      
+      for (let i = 0; i < Number(config.count); i++) {
+        const code = generateRandomCode(config.prefix);
+        const codeRef = doc(collection(db, "billing_codes"), code);
+        batch.set(codeRef, {
+          code: code,
+          value: Number(config.value),
+          type: config.type,
+          targetId: config.targetId || null,
+          isUsed: false,
+          usedBy: null,
+          createdAt: timestamp
+        });
+      }
+      
+      await batch.commit();
+      setLoadingProgress(100);
+      alert(`تم توليد ${config.count} كود بنجاح!`);
+    } catch (error) {
+      console.error(error);
+      alert("خطأ في التوليد: " + error.message);
+    }
+  }
+};
+  const ExamLogic = {
+  async saveFullExam(examData, questionsArray) {
+    if (questionsArray.length === 0) return alert("لا يمكنك حفظ اختبار بدون أسئلة!");
+    
+    try {
+      setLoadingProgress(30);
+      const examRef = doc(collection(db, "exams"));
+      
+      const payload = {
+        title: examData.title,
+        courseId: examData.courseId,
+        duration: Number(examData.duration), // بالدقائق
+        passScore: Number(examData.passScore),
+        questions: questionsArray, // مصفوفة الأسئلة التي أنشأتها في الواجهة
+        createdAt: serverTimestamp(),
+        active: true
+      };
+
+      await setDoc(examRef, payload);
+      setLoadingProgress(100);
+      setTerminalLogs(prev => [...prev, `[ACADEMY] New Exam Created: ${examData.title}`]);
+      alert("تم نشر الاختبار بنجاح!");
+    } catch (err) {
+      alert("خطأ في حفظ الاختبار: " + err.message);
+    }
+  }
+};
+  // أضف هذا داخل useEffect الرئيسي في الكومبوننت
+useEffect(() => {
+  const q = query(collection(db, "books"), orderBy("createdAt", "desc"));
+  const unsub = onSnapshot(q, (snap) => {
+    const booksData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    setBooks(booksData); // تأكد أن لديك [books, setBooks] في الـ State
+  });
+  return () => unsub();
+}, []);
   /**
    * [1] FEDERAL SECURITY ENGINE (FSE)
    * المسؤول عن حماية المنصة من الاختراق وتعدد الحسابات
@@ -232,138 +308,273 @@ useEffect(() => {
    * محرك الأكاديمية الهجين: يدعم الكورس الكامل، المحاضرات المنفردة، والمواد المجانية
    * الأقسام: (HIGH_SCHOOL, RELIGIOUS, EDUCATIONAL, CODING)
    */
-  const AcademyManager = {
-// أضف هذه الدالة داخل كائن AcademyManager
-async adjustStudentBalance(studentId, amount, type = 'add') {
-  try {
-    const studentRef = doc(db, "users", studentId);
-    const studentSnap = await getDoc(studentRef);
 
-    if (!studentSnap.exists()) throw new Error("الطالب غير موجود");
+const AcademyManager = {
+  // 1. إدارة رصيد الطالب (شحن / خصم)
+  async adjustStudentBalance(studentId, amount, type = 'add') {
+    try {
+      const studentRef = doc(db, "users", studentId);
+      const studentSnap = await getDoc(studentRef);
 
-    const currentBalance = studentSnap.data().balance || 0;
-    const newBalance = type === 'add' ? currentBalance + amount : currentBalance - amount;
+      // نستخدم setDoc مع merge لضمان وجود المستند
+      const currentBalance = studentSnap.exists() ? (studentSnap.data().balance || 0) : 0;
+      const newBalance = type === 'add' ? currentBalance + amount : currentBalance - amount;
 
-    if (newBalance < 0) throw new Error("الرصيد لا يكفي للخصم");
+      if (newBalance < 0) throw new Error("الرصيد لا يكفي للخصم");
 
-    await updateDoc(studentRef, {
-      balance: newBalance,
-      lastBalanceUpdate: serverTimestamp()
-    });
+      await setDoc(studentRef, {
+        balance: newBalance,
+        lastBalanceUpdate: serverTimestamp()
+      }, { merge: true });
 
-    setTerminalLogs(prev => [...prev, `[SYSTEM] تم ${type === 'add' ? 'شحن' : 'خصم'} رصيد الطالب: ${amount} EGP`]);
-    return newBalance;
-  } catch (error) {
-    console.error("Balance Error:", error);
-    throw error;
-  }
-},
-    
-
-    // داخل AcademyManager
-async removeLectureFromCourse(courseId, lectureId) {
-  try {
-    const courseRef = doc(db, "courses", courseId);
-    const courseSnap = await getDoc(courseRef);
-    if (!courseSnap.exists()) throw new Error("Course not found!");
-
-    const currentSections = courseSnap.data().sections || [];
-    const updatedSections = currentSections.filter(lec => lec.id !== lectureId);
-    
-    // تحديث في Firestore
-    await updateDoc(courseRef, {
-      sections: updatedSections,
-      lecturesCount: updatedSections.length, // تحديث العدد
-      updatedAt: serverTimestamp()
-    });
-
-    alert("✅ تم حذف المحاضرة بنجاح!");
-    setLectures(updatedSections); // تحديث الواجهة فوراً
-    setTerminalLogs(prev => [...prev, `[ACADEMY] Lecture ${lectureId} removed from Course ${courseId}`]);
-  } catch (error) {
-    console.error("Failed to remove lecture:", error);
-    alert("❌ فشل حذف المحاضرة: " + error.message);
-  }
-},
-    async createComplexCourse(courseData, coverInput, teacherInput) {
-  try {
-    setLoadingProgress(10);
-    let finalCoverUrl = "";
-    let finalTeacherUrl = "";
-
-    // 1. معالجة غلاف الكورس (ملف أو رابط)
-    if (coverInput instanceof File) {
-      // إذا كان المدخل ملفاً، نقوم بالرفع (سيفشل حالياً حتى تفعل البطاقة)
-      const coverRef = sRef(storage, `academy/covers/${Date.now()}_${coverInput.name}`);
-      const uploadTask = await uploadBytesResumable(coverRef, coverInput);
-      finalCoverUrl = await getDownloadURL(uploadTask.ref);
-    } else {
-      // إذا كان المدخل نصاً، نعتبره رابطاً مباشراً
-      finalCoverUrl = coverInput;
+      setTerminalLogs(prev => [...prev, `[SYSTEM] ${type === 'add' ? 'شحن' : 'خصم'}: ${amount} EGP للطالب ${studentId}`]);
+      return newBalance;
+    } catch (error) {
+      console.error("Balance Error:", error);
+      alert("خطأ في تحديث الرصيد: " + error.message);
     }
-    setLoadingProgress(50);
+  },
 
-    // 2. معالجة صورة المدرس (ملف أو رابط)
-    if (teacherInput instanceof File) {
-      const teacherRef = sRef(storage, `academy/teachers/${Date.now()}_${teacherInput.name}`);
-      const uploadTask = await uploadBytesResumable(teacherRef, teacherInput);
-      finalTeacherUrl = await getDownloadURL(uploadTask.ref);
-    } else {
-      finalTeacherUrl = teacherInput;
+  // 2. تدشين كورس جديد (هجين: ملفات أو روابط)
+  async createComplexCourse(courseData, coverInput, teacherInput) {
+    try {
+      setLoadingProgress(10);
+      let finalCoverUrl = coverInput;
+      let finalTeacherUrl = teacherInput;
+
+      // رفع الغلاف لو كان ملف
+      if (coverInput instanceof File) {
+        const coverRef = sRef(storage, `academy/covers/${Date.now()}_${coverInput.name}`);
+        const uploadTask = await uploadBytesResumable(coverRef, coverInput);
+        finalCoverUrl = await getDownloadURL(uploadTask.ref);
+      }
+      setLoadingProgress(50);
+
+      // رفع صورة المدرس لو كانت ملف
+      if (teacherInput instanceof File) {
+        const teacherRef = sRef(storage, `academy/teachers/${Date.now()}_${teacherInput.name}`);
+        const uploadTask = await uploadBytesResumable(teacherRef, teacherInput);
+        finalTeacherUrl = await getDownloadURL(uploadTask.ref);
+      }
+
+      const finalDoc = {
+        ...courseData,
+        thumbnail: finalCoverUrl,
+        teacherImage: finalTeacherUrl,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        enrolledCount: 0,
+        lecturesCount: 0,
+        booksCount: 0, // عداد الكتب
+        examsCount: 0,  // عداد الامتحانات
+        sections: [],   // المحاضرات
+        books: [],      // الكتب
+        exams: [],      // الامتحانات
+        salesModel: courseData.salesModel || 'FULL'
+      };
+
+      const docRef = await addDoc(collection(db, "courses"), finalDoc);
+      setLoadingProgress(100);
+      setTerminalLogs(prev => [...prev, `[ACADEMY] تم تدشين الكورس: ${courseData.title}`]);
+      return docRef.id;
+    } catch (error) {
+      setLoadingProgress(0);
+      alert("❌ فشل التدشين: " + error.message);
+      throw error;
     }
+  },
 
-    // 3. بناء الوثيقة النهائية في Firestore
-    const finalDoc = {
-      ...courseData,
-      thumbnail: finalCoverUrl,
-      teacherImage: finalTeacherUrl,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      enrolledCount: 0,
-      lecturesCount: 0,
-      sections: [],
-      salesModel: courseData.salesModel || 'FULL'
-    };
+  // 3. إضافة محاضرة فيديو
+  async addLectureToCourse(courseId, lectureData) {
+    try {
+      const courseRef = doc(db, "courses", courseId);
+      const lectureWithId = {
+        ...lectureData,
+        id: `lec_${Date.now()}`,
+        createdAt: new Date().toISOString()
+      };
 
-    const docRef = await addDoc(collection(db, "courses"), finalDoc);
-    setLoadingProgress(100);
-    setTerminalLogs(prev => [...prev, `[ACADEMY] Deployment Success (Hybrid Mode)`]);
-    return docRef.id;
-
-  } catch (error) {
-    setLoadingProgress(0);
-    // إذا فشل الرفع بسبب الـ Storage، سننبه المستخدم
-    if (error.code === 'storage/retry-limit-exceeded') {
-      alert("⚠️ فشل الرفع: يبدو أن خدمة الـ Storage غير مفعلة. يرجى استخدام 'روابط نصية' حالياً.");
-    } else {
-      alert("❌ خطأ: " + error.message);
+      await updateDoc(courseRef, {
+        sections: arrayUnion(lectureWithId),
+        lecturesCount: increment(1),
+        updatedAt: serverTimestamp()
+      });
+      
+      setTerminalLogs(prev => [...prev, `[ACADEMY] تم إضافة محاضرة: ${lectureData.title}`]);
+      return lectureWithId;
+    } catch (error) {
+      alert("خطأ في إضافة المحاضرة: " + error.message);
     }
-    throw error;
-  }
-    },
-    // أضف هذا داخل AcademyManager
-async addLectureToCourse(courseId, lectureData) {
-  try {
-    const courseRef = doc(db, "courses", courseId);
-    const lectureWithId = {
-      ...lectureData,
-      id: `lec_${Date.now()}`, // توليد معرف فريد للمحاضرة
-      createdAt: new Date().toISOString()
-    };
+  },
+const ExamBuilderUI = () => {
+  const [examMeta, setExamMeta] = useState({ title: '', courseId: '', duration: 30, passScore: 50 });
+  const [questions, setQuestions] = useState([]);
+  const [currentQ, setCurrentQ] = useState({ 
+    questionText: '', 
+    options: ['', '', '', ''], 
+    correctAnswer: 0,
+    points: 5 
+  });
 
-    await updateDoc(courseRef, {
-      sections: arrayUnion(lectureWithId),
-      lecturesCount: increment(1),
-      updatedAt: serverTimestamp()
-    });
-    
-    return lectureWithId;
-  } catch (error) {
-    throw error;
-  }
-},
-    // نظام "الكود الموحد": توليد كود يفتح كورس بالكامل بكل محتوياته
-    async generateMasterCourseCode(courseId, count, value, prefix) {
+  // إضافة السؤال الحالي إلى قائمة الأسئلة
+  const addQuestionToPool = () => {
+    if (!currentQ.questionText) return alert("اكتب نص السؤال أولاً!");
+    setQuestions([...questions, currentQ]);
+    setCurrentQ({ questionText: '', options: ['', '', '', ''], correctAnswer: 0, points: 5 }); // تصفير الحقول للسؤال التالي
+  };
+
+  return (
+    <div className="exam-builder-vessel glass-card">
+      <div className="builder-header">
+        <h3><FilePlus size={22} /> إنشاء اختبار جديد</h3>
+        <p>قم بتجهيز الأسئلة وربطها بالكورسات المعنية</p>
+      </div>
+
+      <div className="exam-meta-grid">
+        <input 
+          placeholder="عنوان الاختبار (مثلاً: شامل فيزياء 1)" 
+          value={examMeta.title}
+          onChange={e => setExamMeta({...examMeta, title: e.target.value})}
+        />
+        <select onChange={e => setExamMeta({...examMeta, courseId: e.target.value})}>
+          <option value="">اختر الكورس المستهدف</option>
+          {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+        </select>
+        <input 
+          type="number" 
+          placeholder="المدة بالدقائق" 
+          onChange={e => setExamMeta({...examMeta, duration: e.target.value})}
+        />
+      </div>
+
+      <hr className="my-6 border-slate-700" />
+
+      {/* منطقة بناء السؤال */}
+      <div className="question-editor-box">
+        <h4>السؤال رقم ({questions.length + 1})</h4>
+        <textarea 
+          placeholder="اكتب نص السؤال هنا..." 
+          value={currentQ.questionText}
+          onChange={e => setCurrentQ({...currentQ, questionText: e.target.value})}
+        />
+        
+        <div className="options-grid">
+          {currentQ.options.map((opt, idx) => (
+            <div key={idx} className={`option-input ${currentQ.correctAnswer === idx ? 'correct' : ''}`}>
+              <input 
+                placeholder={`خيار ${idx + 1}`} 
+                value={opt}
+                onChange={e => {
+                  const newOpts = [...currentQ.options];
+                  newOpts[idx] = e.target.value;
+                  setCurrentQ({...currentQ, options: newOpts});
+                }}
+              />
+              <button 
+                type="button"
+                onClick={() => setCurrentQ({...currentQ, correctAnswer: idx})}
+              >
+                {currentQ.correctAnswer === idx ? <CheckCircle2 size={18} /> : <Circle size={18} />}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <button className="titan-btn outline w-full mt-4" onClick={addQuestionToPool}>
+          <Plus size={18} /> إضافة السؤال للقائمة
+        </button>
+      </div>
+
+      {/* عرض الأسئلة المضافة */}
+      <div className="questions-preview mt-6">
+        <h4>الأسئلة المضافة ({questions.length})</h4>
+        {questions.map((q, i) => (
+          <div key={i} className="q-preview-item">
+            <span>{i + 1}. {q.questionText}</span>
+            <button onClick={() => setQuestions(questions.filter((_, idx) => idx !== i))}>
+              <Trash2 size={14} />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <button 
+        className="titan-btn primary w-full mt-8"
+        onClick={() => ExamLogic.saveFullExam(examMeta, questions)}
+        disabled={questions.length === 0}
+      >
+        <CloudUpload size={18} /> حفظ ونشر الاختبار نهائياً
+      </button>
+    </div>
+  );
+};
+  // 4. إضافة كتاب (PDF / رابط خارجي) - جديد
+  async addBookToCourse(courseId, bookData) {
+    try {
+      const courseRef = doc(db, "courses", courseId);
+      const bookWithId = {
+        ...bookData,
+        id: `book_${Date.now()}`,
+        addedAt: new Date().toISOString()
+      };
+
+      await updateDoc(courseRef, {
+        books: arrayUnion(bookWithId),
+        booksCount: increment(1)
+      });
+      
+      alert("✅ تم إضافة الكتاب للمنهج");
+    } catch (error) {
+      alert("خطأ في إضافة الكتاب: " + error.message);
+    }
+  },
+
+  // 5. إضافة امتحان - جديد
+  async addExamToCourse(courseId, examData) {
+    try {
+      const courseRef = doc(db, "courses", courseId);
+      const examWithId = {
+        ...examData,
+        id: `exam_${Date.now()}`,
+        addedAt: new Date().toISOString()
+      };
+
+      await updateDoc(courseRef, {
+        exams: arrayUnion(examWithId),
+        examsCount: increment(1)
+      });
+      
+      alert("✅ تم ربط الامتحان بالكورس");
+    } catch (error) {
+      alert("خطأ في إضافة الامتحان: " + error.message);
+    }
+  },
+
+  // 6. حذف محاضرة
+  async removeLectureFromCourse(courseId, lectureId) {
+    try {
+      const courseRef = doc(db, "courses", courseId);
+      const courseSnap = await getDoc(courseRef);
+      if (!courseSnap.exists()) return;
+
+      const updatedSections = courseSnap.data().sections.filter(lec => lec.id !== lectureId);
+      
+      await updateDoc(courseRef, {
+        sections: updatedSections,
+        lecturesCount: updatedSections.length,
+        updatedAt: serverTimestamp()
+      });
+
+      setLectures(updatedSections);
+      setTerminalLogs(prev => [...prev, `[ACADEMY] تم حذف المحاضرة ${lectureId}`]);
+    } catch (error) {
+      alert("فشل الحذف: " + error.message);
+    }
+  },
+
+  // 7. توليد أكواد الكورسات (Master Keys)
+  async generateMasterCourseCode(courseId, count, value, prefix) {
+    try {
       const batch = writeBatch(db);
       for (let i = 0; i < count; i++) {
         const secretKey = `${prefix}-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
@@ -372,20 +583,20 @@ async addLectureToCourse(courseId, lectureData) {
           code: secretKey,
           targetCourseId: courseId,
           value: Number(value),
-          type: 'COURSE_UNLOCKER', // كود لفتح كورس كامل
+          type: 'COURSE_UNLOCKER',
           isUsed: false,
           createdAt: serverTimestamp()
         });
       }
       await batch.commit();
-      setTerminalLogs(prev => [...prev, `[FINANCE] Generated ${count} Master Unlock Keys for Course: ${courseId}`]);
+      setTerminalLogs(prev => [...prev, `[FINANCE] تم توليد ${count} كود للكورس ${courseId}`]);
+      alert(`✅ تم توليد ${count} كود بنجاح`);
+    } catch (error) {
+      alert("خطأ في توليد الأكواد: " + error.message);
     }
-  };
+  }
+};
 
-  /**
-   * [5] TITAN DATA MINING (STUDENT PROFILES)
-   * نظام استخراج البيانات المتقدم: الاسم الرباعي، أرقام الهاتف، سجل الأجهزة
-   */
   const StudentMiner = {
     // الحصول على سجل الدخول التفصيلي (بصمات الأجهزة والـ IPs)
     async getStudentForensics(uid) {
@@ -1143,6 +1354,8 @@ async addLectureToCourse(courseId, lectureData) {
       count: 10, value: 100, prefix: 'TITAN', type: 'WALLET_RECHARGE', targetId: '', expiry: 365
     });
 
+
+    
     return (
       <div className="finance-vault-vessel">
         <div className="vault-header glass-card">
@@ -2337,6 +2550,7 @@ async addLectureToCourse(courseId, lectureData) {
     </div>
   );
 }
+
 
 
 
