@@ -124,6 +124,33 @@ useEffect(() => {
       .filter(b => b.category === selectedBook.category && b.id !== selectedBook.id)
       .slice(0, 4);
   }, [selectedBook, books]);
+// 1. مراجعة بسيطة لحالة البيانات
+if (loading) {
+  return (
+    <div style={{
+      background: '#0d0d0d', 
+      height: '100vh', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      color: 'white'
+    }}>
+      <div className="loader">جاري فتح المكتبة...</div>
+    </div>
+  );
+}
+
+// 2. إذا انتهى التحميل ولم يجد بيانات (بسبب خطأ Permissions أو غيره)
+if (!books || books.length === 0) {
+  return (
+    <div style={{background: '#0d0d0d', height: '100vh', padding: '50px', textAlign: 'center'}}>
+      <h2 style={{color: 'white'}}>لا توجد بيانات حالياً</h2>
+      <p style={{color: '#666'}}>تأكد من صلاحيات Firebase أو اتصال الإنترنت</p>
+      <button onClick={() => window.location.reload()} style={{padding: '10px 20px', marginTop: '20px'}}>إعادة تحميل</button>
+    </div>
+  );
+}
+
 
   // --- 4. واجهة المستخدم (Render) ---
   return (
@@ -356,5 +383,6 @@ useEffect(() => {
 };
 
 export default Library;
+
 
 
