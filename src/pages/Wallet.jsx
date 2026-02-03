@@ -1190,7 +1190,7 @@ const shareReceipt = async () => {
         </div>
       )}
 
-      {/* 8. مودال تفاصيل العملية (Receipt) كامل بدون اختصار */}
+{/* 8. مودال تفاصيل العملية (Receipt) */}
       <AnimatePresence>
         {selectedTransaction && (
           <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -1201,7 +1201,7 @@ const shareReceipt = async () => {
                 <p>{selectedTransaction.type === 'send' ? 'تحويل مالي' : 'استلام أموال'}</p>
               </div>
               <div className="receipt-body">
-                <div className="r-row"><span>المستلم:</span> <strong>{selectedTransaction.toName}</strong></div>
+                <div className="r-row"><span>المستلم:</span> <strong>{selectedTransaction.toName || 'نظام MAFA'}</strong></div>
                 <div className="r-row"><span>التاريخ:</span> <strong>{selectedTransaction.date}</strong></div>
                 <div className="r-row"><span>رقم العملية:</span> <small>{selectedTransaction.id}</small></div>
               </div>
@@ -1213,13 +1213,13 @@ const shareReceipt = async () => {
           </motion.div>
         )}
       </AnimatePresence>
-{/* 9. شريط التنقل السفلي - النسخة المطورة */}
+
+      {/* 9. شريط التنقل السفلي - النسخة المطورة */}
       <footer className="platinum-bottom-nav">
         <div className={`nav-tab ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
           <Smartphone /><span>الرئيسية</span>
         </div>
         
-        {/* زر الشحن الجديد */}
         <div className="nav-tab deposit-highlight" onClick={() => setActiveModal('deposit')}>
           <Zap className="zap-icon" /><span>شحن</span>
         </div>
@@ -1237,34 +1237,8 @@ const shareReceipt = async () => {
           <History /><span>النشاط</span>
         </div>
       </footer>
-// =========================================================================
-// [ SECTION 9: STYLESHEET (INTEGRATED CSS) ]
-// =========================================================================
-
-
-
-  return (
-    <>
-      <style>{styles}</style>
-      <div className="wallet-wrapper">
-        {/* استدعاء المكونات التي تم تعريفها في الأجزاء السابقة */}
-        {renderMainContent()} 
-        {renderModals()}
-      </div>
-    </>
-  );
-};
+    </div> // إغلاق وسم الـ wallet-master-container الأساسي
+  ); // إغلاق الـ return
+}; // إغلاق الدالة Wallet
 
 export default Wallet;
-  
-  
-
-
-
-
-
-
-
-
-
-
