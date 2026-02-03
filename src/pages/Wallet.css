@@ -947,3 +947,78 @@ button:active {
 
 
 
+/* --- تحسين واجهة خيارات الشحن --- */
+.deposit-options-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 25px 0;
+  width: 100%;
+}
+
+.deposit-option-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 16px;
+  display: flex;
+  align-items: center; /* محاذاة العناصر أفقياً */
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  text-align: right; /* ضمان المحاذاة لليمين */
+}
+
+.deposit-option-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--platinum-blue);
+}
+
+.option-icon {
+  width: 52px;
+  height: 52px;
+  background: rgba(0, 210, 255, 0.1);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--platinum-blue);
+  flex-shrink: 0; /* منع انكماش الأيقونة */
+}
+
+.option-info {
+  flex-grow: 1; /* جعل النصوص تأخذ المساحة المتبقية */
+}
+
+.option-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.option-info p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* السهم الصغير في طرف الكارت */
+.deposit-option-card::after {
+  content: '\2039'; /* رمز سهم بسيط */
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.2);
+  margin-right: auto; /* دفع السهم لأقصى اليسار */
+  transform: rotate(180deg);
+}
+
+/* تحسين منطقة إدخال الكود */
+.code-entry-area {
+  margin-top: 10px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 24px;
+  border: 1px solid rgba(0, 210, 255, 0.1);
+}
+
