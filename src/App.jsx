@@ -20,7 +20,7 @@ import HighSchool from './pages/HighSchool.jsx';
 import Religious from './pages/Religious.jsx';
 import ActivationPage from './pages/ActivationPage.jsx';
 import About from './pages/About.jsx';
-import Library from './pages/Library.jsx'; // تم التصحيح هنا L كابيتال
+import library from './pages/library.jsx'; // تم التصحيح هنا L كابيتال
 import CompleteProfile from './pages/CompleteProfile';
 
 // استيراد التنسيقات العامة
@@ -125,4 +125,5 @@ function App() {
 }
 
 export default App;
+
 
