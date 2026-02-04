@@ -1,15 +1,38 @@
 /* StudentDash.css - الجزء الأول: الأساسيات والهوية البصرية */
 
+/* الألوان الافتراضية (الوضع المظلم Cyber) */
 :root {
-  --primary-glow: #00f2ff;
-  --secondary-glow: #7000ff;
-  --accent-gold: #facc15;
-  --glass-bg: rgba(15, 15, 25, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --primary-bg: #050a18;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --accent: #3b82f6;
   --text-main: #ffffff;
-  --text-dim: #a1a1aa;
+  --card-border: rgba(255, 255, 255, 0.1);
 }
 
+/* وضع النهار (Light Mode) */
+body.light-theme {
+  --primary-bg: #f0f2f5;
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --accent: #2563eb;
+  --text-main: #1a1a1a;
+  --card-border: rgba(0, 0, 0, 0.1);
+}
+
+/* وضع المياه (Aqua Theme) */
+body.aqua-theme {
+  --primary-bg: #002b36;
+  --glass-bg: rgba(0, 242, 255, 0.05);
+  --accent: #00f2ff;
+  --text-main: #e0fbfc;
+  --card-border: rgba(0, 242, 255, 0.2);
+}
+/* تعديل الكرة الضوئية لتناسب كل ثيم */
+.student-dashboard-container::before {
+  /* اجعل اللون متغير بدلاً من كونه ثابتاً */
+  background: var(--accent); 
+  opacity: 0.15;
+  transition: background 0.8s ease; /* انتقال ناعم جداً */
+}
 /* 1. الخلفية العامة للمنصة (Animated Cyber Background) */
 .student-dashboard-container {
   background: radial-gradient(circle at top right, #0d0d1a, #000000);
@@ -2138,193 +2161,221 @@ body {
   }
 }
 /* =========================================================================
-   [ ALL COURSES - MOBILE OPTIMIZATION ]
+   [ TITAN MOBILE RECONSTRUCTION 2026 ]
    ========================================================================= */
 
 @media screen and (max-width: 768px) {
-  
-  /* 1. زر فتح القائمة */
+  /* 1. القائمة الجانبية (إصلاح سد الرؤية) */
+  .mafa-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px; /* عرض مناسب للموبايل */
+    height: 100vh;
+    background: rgba(10, 10, 10, 0.98);
+    backdrop-filter: blur(20px);
+    z-index: 10000;
+    transform: translateX(-100%); /* تختفي لليسار بدل الأعلى */
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* عندما تفتح القائمة */
+  .mafa-sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+  }
+
+  /* 2. شريط التنقل السفلي (Quick Nav) - لإمكانية الوصول السريع */
+  .dash-sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 65px;
+    background: rgba(15, 15, 15, 0.9);
+    backdrop-filter: blur(15px);
+    display: flex;
+    flex-direction: row !important;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 10px;
+    z-index: 999;
+    border-top: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+  }
+
+  /* 3. إصلاح المؤقت والمهام (الظهور والكتابة) */
+  .dashboard-main-grid {
+    grid-template-columns: 1fr !important; /* عمود واحد لضمان عدم تداخل المهام */
+    padding-bottom: 80px; /* مساحة لكي لا يغطي الشريط السفلي على المحتوى */
+  }
+
+  .timer-display-v2 {
+    width: 160px; /* تصغير المؤقت ليتناسب مع شاشات الموبايل الصغيرة */
+    height: 160px;
+  }
+
+  .timer-text {
+    font-size: 1.8rem;
+  }
+
+  /* 4. زر فتح القائمة (Hamburger) */
   .mobile-menu-toggle {
     display: flex;
     position: fixed;
     top: 15px;
     right: 15px;
     z-index: 10001;
-    background: var(--brand-primary);
+    background: var(--accent);
     border: none;
     color: white;
-    padding: 10px;
+    width: 45px;
+    height: 45px;
+    align-items: center;
+    justify-content: center;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
   }
 
-  /* 2. تحويل السايد بار لقائمة علوية تظهر وتختفي */
-  .mafa-sidebar {
+  /* 5. منع السكرول عند فتح القائمة */
+  body.menu-open {
+    overflow: hidden;
+  }
+
+  /* 6. إصلاح كروت الكورسات */
+  .modern-course-card {
+    margin: 10px 0;
+    width: 100% !important;
+  }
+}
+@media (max-width: 768px) {
+  /* منع السايد بار من سد الشاشة */
+  .dash-sidebar {
     position: fixed;
-    top: 0;
+    bottom: 0;
     left: 0;
     width: 100%;
-    height: auto; /* تأخذ مساحة المحتوى فقط */
-    max-height: 80vh; /* لا تغطي كامل الشاشة */
-    z-index: 10000;
-    transform: translateY(-100%); /* مخفية للأعلى */
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    background: #0d0d0d;
-    border-bottom: 2px solid var(--brand-primary);
-    overflow-y: auto;
-    padding-top: 60px; /* لترك مساحة للزر */
+    height: 70px; /* شريط سفلي */
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-around;
+    background: rgba(10, 10, 15, 0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--primary-glow);
+    z-index: 1001;
+    padding: 0;
+    border-radius: 20px 20px 0 0;
   }
 
-  /* عندما تكون القائمة مفتوحة */
-  .mafa-sidebar.mobile-open {
-    transform: translateY(0);
+  .sidebar-menu {
+    flex-direction: row !important;
+    width: 100%;
+    margin: 0;
+    gap: 0;
   }
 
-  /* إخفاء السايد بار تماماً عند الـ collapsed في الموبايل */
-  .mafa-sidebar.collapsed {
-    transform: translateY(-100%);
-  }
-
-  /* 3. ضبط محتوى الصفحة الرئيسي */
-  .content-engine {
-    margin: 0 !important;
-    padding: 15px !important;
-  }
-
-  /* 4. تصغير الهيدر (العنوان الكبير) */
-  .hero-section-v5 h1 {
-    font-size: 28px !important;
-    text-align: center;
-  }
-
-  .hero-section-v5 p {
-    font-size: 14px !important;
-    text-align: center;
-    margin: 0 auto;
-  }
-
-  /* 5. شبكة الكورسات (جعلها عمود واحد) */
-  .course-grid-v5 {
-    grid-template-columns: 1fr !important; /* كورس واحد في السطر */
-    gap: 20px;
-  }
-
-  .modern-course-card {
-    border-radius: 20px;
-  }
-
-  .card-body-v5 h3 {
-    font-size: 18px !important;
-    height: auto !important;
-  }
-
-  /* 6. شريط البحث والبروفايل */
-  .global-top-bar {
+  .menu-item {
     flex-direction: column;
-    gap: 15px;
-    height: auto !important;
-    padding: 20px 10px !important;
+    font-size: 0.7rem;
+    padding: 10px;
+    gap: 5px;
   }
 
-  .advanced-search-wrapper {
-    width: 100% !important;
+  /* إخفاء العناصر غير الضرورية في شريط الموبايل السفلي */
+  .sidebar-mood-tracker, .sidebar-footer, .welcome-banner {
+    display: none !important;
   }
 
-  .utility-stack {
-    width: 100%;
-    justify-content: space-between;
+  /* أهم جزء: جعل المحتوى قابلاً للنقر والكتابة */
+  .dashboard-content-layout {
+    grid-template-columns: 1fr !important;
+    padding: 10px;
+    padding-bottom: 100px; /* مساحة للشريط السفلي */
   }
 
-  .profile-mini-v5 {
-    border: none !important;
-    padding: 0 !important;
-  }
-
-  /* 7. لوحة تفاصيل الكورس (Details Panel) */
-  .details-panel-v5 {
-    width: 100% !important; /* تأخذ كامل الشاشة في الموبايل */
-    padding: 20px !important;
-    border-radius: 0 !important;
-  }
-
-  .main-detail-visual {
-    height: 200px !important;
-    border-radius: 20px !important;
-  }
-
-  .detail-info-engine h1 {
-    font-size: 24px !important;
-  }
-
-  .fast-stats {
-    flex-wrap: wrap; /* إنزال الإحصائيات لسطر جديد */
-    gap: 10px !important;
-  }
-
-  .cta-button-v5 {
-    width: 100%;
-    padding: 15px !important;
-    font-size: 16px !important;
+  .dashboard-main-grid {
+    grid-template-columns: 1fr !important; /* عمود واحد للمهام والمؤقت */
   }
 }
-
-/* إخفاء زر الموبايل في الشاشات الكبيرة */
-@media screen and (min-width: 769px) {
-  .mobile-menu-toggle {
-    display: none;
+@media (max-width: 768px) {
+  .quick-notes-overlay {
+    bottom: 80px; /* رفعها فوق الشريط السفلي */
+    left: 10px;
+    width: 50px; /* تصغيرها جداً */
+    height: 50px;
+    overflow: hidden;
+    transition: 0.5s;
+  }
+  
+  /* تفتح فقط عند الضغط */
+  .quick-notes-overlay.active {
+    width: 90%;
+    height: 250px;
   }
 }
-@media screen and (max-width: 768px) {
-  /* ضمان أن حاوية الكورسات لا تخرج عن الشاشة */
-  .grid-viewport {
-    padding: 10px !important;
-    overflow-x: hidden; /* منع السكرول العرضي تماماً */
-  }
+/* أضف هذا الكلاس للكروت */
+.glass-v4 {
+  position: relative;
+  overflow: hidden;
+}
 
-  /* جعل الكارت مطاطي 100% من عرض الشاشة المتاحة */
-  .modern-course-card {
-    width: 100% !important;
-    margin-bottom: 20px;
-    display: flex;
-    flex-direction: column; /* ترتيب المحتوى رأسياً */
-  }
+.glass-v4::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    800px circle at var(--mouse-x) var(--mouse-y), 
+    rgba(255, 255, 255, 0.06),
+    transparent 40%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
 
-  /* التأكد من أن الصورة لا تخرج عن حدود الكارت وتأخذ شكلاً متناسقاً */
-  .card-visual-engine {
-    width: 100%;
-    height: 180px; /* تقليل ارتفاع الصورة في الموبايل */
-  }
+@keyframes focus-breath {
+  0% { box-shadow: inset 0 0 100px rgba(255, 77, 77, 0.05); }
+  50% { box-shadow: inset 0 0 200px rgba(255, 77, 77, 0.15); }
+  100% { box-shadow: inset 0 0 100px rgba(255, 77, 77, 0.05); }
+}
 
-  .card-visual-engine img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* لضمان عدم تمطط الصورة بشكل سيء */
-  }
+.focus-mode-active .student-dashboard-container {
+  animation: focus-breath 4s infinite ease-in-out;
+  transition: 1s;
+}
 
-  /* ضبط النصوص داخل الكارت */
-  .card-body-v5 {
-    padding: 15px !important; /* تقليل الحواف الداخلية لتوفير مساحة */
-  }
+.badge-item.legendary:hover {
+  animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+}
 
-  .card-body-v5 h3 {
-    font-size: 16px !important; /* تصغير حجم العنوان */
-    line-height: 1.4;
-    margin-bottom: 10px;
-  }
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
 
-  /* ضبط الأيقونات الصغيرة (الوقت، عدد الدروس) */
-  .card-meta-v5 {
-    gap: 10px !important;
-    flex-wrap: wrap; /* السماح للأيقونات بالنزول لسطر جديد إذا ضاقت الشاشة */
-  }
+::-webkit-scrollbar {
+  width: 6px;
+}
 
-  .card-meta-v5 span {
-    font-size: 12px !important;
-  }
+::-webkit-scrollbar-track {
+  background: var(--primary-bg);
+}
 
-  /* زر التشغيل السريع في الكارت */
-  .quick-action-btn {
-    width: 40px !important;
-    height: 40px !important;
-  }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, var(--primary-glow), var(--secondary-glow));
+  border-radius: 10px;
+  box-shadow: 0 0 10px var(--primary-glow);
+}
+input:focus, textarea:focus {
+  border-color: var(--primary-glow) !important;
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+  background: rgba(255, 255, 255, 0.08) !important;
+  outline: none;
+  transition: 0.3s;
 }
