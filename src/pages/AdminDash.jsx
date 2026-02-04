@@ -16,7 +16,8 @@ import {
   MoreVertical, PlusSquare, Trash2, Send, Layout, ShieldQuestion, 
   CheckCircle, XCircle, Filter, Shield, Globe2, ZapOff, Video, 
   UserCheck, CreditCard as CardIcon, DollarSign, Calendar, Clock, Edit3, Save,
-  LogOut, Menu, Check, X
+  LogOut, Menu, Check, X,
+  FilePlus, CheckCircle2, Circle, Plus, CloudUpload // الأيقونات المفقودة التي أضفتها لك
 } from 'lucide-react';
 
 
@@ -39,73 +40,193 @@ import { ref, set, onValue, update, remove, push, child, get, onDisconnect } fro
 import { ref as sRef, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import './AdminDash.css';
 
+
+  // مكوّن منشئ الاختبارات (داخلي لسهولة الوصول للـ States)
+  // ملاحظة: يفضل نقله للخارج لاحقاً للأداء، لكن هنا وضعته لك مصلحاً داخل السياق
+  const ExamBuilderUI = () => {
+    const [examMeta, setExamMeta] = useState({ title: '', courseId: '', duration: 30, passScore: 50 });
+    const [questions, setQuestions] = useState([]);
+    const [currentQ, setCurrentQ] = useState({ 
+      questionText: '', 
+      options: ['', '', '', ''], 
+      correctAnswer: 0,
+      points: 5 
+    });
+    
+return (
+      <div className="exam-builder-container glass-card p-6">
+          <h2 className="text-xl font-bold mb-4">منشئ الاختبارات التيتان</h2>
+          <button onClick={addQuestionToPool} className="titan-btn primary">إضافة السؤال للقائمة</button>
+      </div>
+    );
+}; // <--- تأكد أن هذا القوس موجود هنا فقط لإغلاق ExamBuilderUI
+    
+
+    const addQuestionToPool = () => {
+      if (!currentQ.questionText) return alert("اكتب نص السؤال أولاً!");
+      setQuestions([...questions, currentQ]);
+      setCurrentQ({ questionText: '', options: ['', '', '', ''], correctAnswer: 0, points: 5 });
+    };
+
+  const AcademyUI = () => (
+    <div className="academy-control-panel">
+      {/* شريط اختيار القسم التعليمي */}
+      <div className="category-scroller glass-card shadow-sm">
+        {[
+          { id: 'high-school', label: 'الثانوية العامة', icon: <Award /> },
+          { id: 'religious', label: 'العلوم الدينية', icon: <BookOpen /> },
+          { id: 'educational', label: 'التربوي', icon: <Users /> },
+          { id: 'coding', label: 'البرمجة والتقنية', icon: <Cpu /> }
+        ].map(cat => (
+          <button 
+            key={cat.id} 
+            className={`cat-btn ${academyCategory === cat.id ? 'active' : ''}`}
+            onClick={() => setAcademyCategory(cat.id)}
+          >
+            {cat.icon} <span>{cat.label}</span>
+          </button>
+        ))}
+      </div>
+
+
 export default function AdminDash() {
+  // --- [1] منطقة تعريف الـ States (يجب أن تكون كلها في البداية) ---
   const [courses, setCourses] = useState([]);
   const [academyCategory, setAcademyCategory] = useState('high-school');
   const [loadingProgress, setLoadingProgress] = useState(0);
-const [books, setBooks] = useState([]); 
-const [terminalLogs, setTerminalLogs] = useState([]);
-  const [students, setStudents] = useState([]); // سطر الحياة لإصلاح خطأ students is not defined
-  const [transactions, setTransactions] = useState([]); // لضمان عمل واجهة الخزينة
-// [1] دالة الـ Deploy (تأكد أنها مغلقة تماماً)
-const handleDeploy = async () => {
-  const coverFile = document.getElementById('courseCoverFile').files[0];
-  const coverUrl = document.getElementById('courseCoverUrl').value;
-  const teacherFile = document.getElementById('teacherImgFile').files[0];
-  const teacherUrl = document.getElementById('teacherImgUrl').value;
-
-  const finalCover = coverFile || coverUrl;
-  const finalTeacher = teacherFile || teacherUrl;
-
-  if (!finalCover) return alert("يرجى اختيار ملف أو وضع رابط للغلاف");
-
-  // بيانات افتراضية للكورس (يجب أن تجمعها من الـ state الخاص بك)
-  const data = { title: "كورس جديد", category: academyCategory }; 
-  await AcademyManager.createComplexCourse(data, finalCover, finalTeacher);
-}; 
-
-// [2] الآن مكون واجهة الامتحانات (مستقل تماماً)
-const ExamBuilderUI = () => {
-  const [examMeta, setExamMeta] = useState({ title: '', courseId: '', duration: 30, passScore: 50 });
-  const [questions, setQuestions] = useState([]);
-  const [currentQ, setCurrentQ] = useState({ 
-    questionText: '', 
-    options: ['', '', '', ''], 
-    correctAnswer: 0,
-    points: 5 
+  const [books, setBooks] = useState([]); 
+  const [terminalLogs, setTerminalLogs] = useState([]);
+  const [students, setStudents] = useState([]); 
+  const [transactions, setTransactions] = useState([]); // تعريف واحد فقط (تم حذف التكرار)
+  const [activeChat, setActiveChat] = useState(null);
+  const [stats, setStats] = useState({
+    totalStudents: 0,
+    activeCourses: 0,
+    revenue: 0,
+    securityAlerts: 0
   });
+  const [editingItem, setEditingItem] = useState(null);
+  const [lectures, setLectures] = useState([]);
+  const [isLectureLoading, setIsLectureLoading] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [activeTab, setActiveTab] = useState('dashboard');
 
-  const addQuestionToPool = () => {
-    if (!currentQ.questionText) return alert("اكتب نص السؤال أولاً!");
-    setQuestions([...questions, currentQ]);
-    setCurrentQ({ questionText: '', options: ['', '', '', ''], correctAnswer: 0, points: 5 });
+  // --- [2] منطقة الدوال المنطقية (Logic) ---
+
+  // دالة الـ Deploy
+  const handleDeploy = async () => {
+    const coverFile = document.getElementById('courseCoverFile')?.files[0];
+    const coverUrl = document.getElementById('courseCoverUrl')?.value;
+    const teacherFile = document.getElementById('teacherImgFile')?.files[0];
+    const teacherUrl = document.getElementById('teacherImgUrl')?.value;
+
+    const finalCover = coverFile || coverUrl;
+    const finalTeacher = teacherFile || teacherUrl;
+
+    if (!finalCover) return alert("يرجى اختيار ملف أو وضع رابط للغلاف");
+
+    const data = { title: "كورس جديد", category: academyCategory }; 
+    // يفترض وجود AcademyManager معرف عالمياً أو مستورد
+    await AcademyManager.createComplexCourse(data, finalCover, finalTeacher);
   };
 
-  // تأكد من إضافة الـ return هنا لكي تظهر الواجهة
+    return (
+      <div className="exam-builder-container glass-card p-6">
+          <h2 className="text-xl font-bold mb-4">منشئ الاختبارات التيتان</h2>
+          {/* محتوى الواجهة الخاص بك */}
+          <button onClick={addQuestionToPool} className="titan-btn primary">إضافة السؤال للقائمة</button>
+      </div>
+    );
+  };
+
+  // --- [3] منطقة الـ Effects (جلب البيانات) ---
+  useEffect(() => {
+    const q = query(
+      collection(db, "transactions"), 
+      orderBy("timestamp", "desc"), 
+      limit(10)
+    );
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const txData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setTransactions(txData);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // --- [4] واجهة المستخدم النهائية ---
   return (
-    <div className="exam-builder-container">
-       {/* محتوى واجهة الامتحان الذي كتبناه سابقاً */}
+    <div className="admin-dash-container">
+      {/* هنا تضع الـ JSX الخاص بك وتستدعي المكونات */}
+      {activeTab === 'exams' && <ExamBuilderUI />}
+      
+      {/* سجل العمليات الحقيقي */}
+      <div className="ledger-station">
+        {transactions.map(tx => (
+          <div key={tx.id} className="ledger-item">
+            <span>{tx.amount} EGP</span>
+            <small>{tx.description}</small>
+          </div>
+        ))}
+      </div>
     </div>
   );
+}
+useEffect(() => {
+  // جلب آخر 10 عمليات مالية مرتبة من الأحدث للأقدم
+  const q = query(
+    collection(db, "transactions"), 
+    orderBy("timestamp", "desc"), 
+    limit(10)
+  );
+  
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    const txData = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    setTransactions(txData);
+  });
+
+  return () => unsubscribe();
+}, []);
+
+      const executeCommand = async (cmd) => {
+  const [action, target, value] = cmd.split(' ');
+  
+  try {
+    switch (action) {
+      case 'ban': // مثال: ban user_id_123
+        await StudentsManager.toggleStatus(target, 'BANNED');
+        setTerminalLogs(prev => [...prev, `[SUCCESS] User ${target} has been banned.`]);
+        break;
+        
+      case 'clear':
+        setTerminalLogs([]);
+        break;
+
+      case 'lock': // قفل المنصة فوراً
+        await SystemCommander.updatePlatformStatus('EMERGENCY_LOCK');
+        break;
+
+      default:
+        setTerminalLogs(prev => [...prev, `[ERROR] Unknown command: ${action}`]);
+    }
+  } catch (err) {
+    setTerminalLogs(prev => [...prev, `[CRITICAL] Execution failed: ${err.message}`]);
+  }
 };
+  const handleAnswerSelect = (questionId, answer) => {
+  // حفظ محلي
+  setAnswers({ ...answers, [questionId]: answer });
   
-  const [activeChat, setActiveChat] = useState(null); // لدعم نظام الرسائل
-  // ---------------------------------------------
-// --- حل أخطاء التعريف (Fixing Reference Errors) ---
-const [stats, setStats] = useState({
-  totalStudents: 0,
-  activeCourses: 0,
-  revenue: 0,
-  securityAlerts: 0
-}); // هذا سيصلح خطأ stats is not defined
-
-// في منطقة تعريف الـ states، أضف هذا:
-const [editingItem, setEditingItem] = useState(null); // الكورس الذي يتم تعديل محاضراته
-const [lectures, setLectures] = useState([]); // قائمة المحاضرات الخاصة بالـ editingItem
-const [isLectureLoading, setIsLectureLoading] = useState(false); // حالة التحميل للمحاضرات
-  
-const [selectedStudent, setSelectedStudent] = useState(null); // هذا سيصلح خطأ selectedStudent is not defined
-
+  // حفظ سحابي لحظي (الاسترداد)
+  set(ref(rtdb, `temp_exams/${auth.currentUser.uid}/${examId}/${questionId}`), answer);
+};
 useEffect(() => {
   // جلب إحصائيات الطلاب حية (Real-time)
   const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
@@ -132,7 +253,7 @@ useEffect(() => {
   // محرك البحث والفرز
   const [globalSearch, setGlobalSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState('all');
-const [activeTab, setActiveTab] = useState('someDefaultValue');
+
 // [1] محرك توليد الأكواد (المفقود في قسم الموارد المالية)
 const generateRandomCode = (prefix, length = 8) => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // بدون الحروف المتشابهة مثل O و 0
@@ -174,33 +295,7 @@ const BillingEngine = {
     }
   }
 };
-  const ExamLogic = {
-  async saveFullExam(examData, questionsArray) {
-    if (questionsArray.length === 0) return alert("لا يمكنك حفظ اختبار بدون أسئلة!");
-    
-    try {
-      setLoadingProgress(30);
-      const examRef = doc(collection(db, "exams"));
-      
-      const payload = {
-        title: examData.title,
-        courseId: examData.courseId,
-        duration: Number(examData.duration), // بالدقائق
-        passScore: Number(examData.passScore),
-        questions: questionsArray, // مصفوفة الأسئلة التي أنشأتها في الواجهة
-        createdAt: serverTimestamp(),
-        active: true
-      };
-
-      await setDoc(examRef, payload);
-      setLoadingProgress(100);
-      setTerminalLogs(prev => [...prev, `[ACADEMY] New Exam Created: ${examData.title}`]);
-      alert("تم نشر الاختبار بنجاح!");
-    } catch (err) {
-      alert("خطأ في حفظ الاختبار: " + err.message);
-    }
-  }
-};
+ 
   // أضف هذا داخل useEffect الرئيسي في الكومبوننت
 useEffect(() => {
   const q = query(collection(db, "books"), orderBy("createdAt", "desc"));
@@ -671,25 +766,6 @@ const ExamBuilderUI = () => {
    * [7] GUI COMPONENT: ACADEMY CONTROL PANEL
    * واجهة التحكم في الأكاديمية (الرفع، الحذف، التعديل)
    */
-  const AcademyUI = () => (
-    <div className="academy-control-panel">
-      {/* شريط اختيار القسم التعليمي */}
-      <div className="category-scroller glass-card shadow-sm">
-        {[
-          { id: 'high-school', label: 'الثانوية العامة', icon: <Award /> },
-          { id: 'religious', label: 'العلوم الدينية', icon: <BookOpen /> },
-          { id: 'educational', label: 'التربوي', icon: <Users /> },
-          { id: 'coding', label: 'البرمجة والتقنية', icon: <Cpu /> }
-        ].map(cat => (
-          <button 
-            key={cat.id} 
-            className={`cat-btn ${academyCategory === cat.id ? 'active' : ''}`}
-            onClick={() => setAcademyCategory(cat.id)}
-          >
-            {cat.icon} <span>{cat.label}</span>
-          </button>
-        ))}
-      </div>
 
       <div className="academy-main-grid">
         {/* نموذج رفع كورس جديد - النسخة الضخمة */}
@@ -2573,6 +2649,7 @@ const ExamBuilderUI = () => {
     </div>
   );
 }
+
 
 
 
