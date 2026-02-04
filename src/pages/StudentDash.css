@@ -44,6 +44,36 @@ body.aqua-theme {
   overflow-x: hidden;
 }
 
+
+.theme-selector-wrapper {
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 5px;
+  border-radius: 15px;
+  border: 1px solid var(--card-border);
+}
+
+.theme-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 10px;
+  transition: 0.3s;
+}
+
+.theme-btn:hover {
+  background: var(--glass-bg);
+  transform: scale(1.1);
+}
+
+.theme-btn.active {
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+}
+
 /* إضافة كرات ضوئية متحركة في الخلفية */
 .student-dashboard-container::before {
   content: '';
@@ -2379,3 +2409,4 @@ input:focus, textarea:focus {
   outline: none;
   transition: 0.3s;
 }
+
