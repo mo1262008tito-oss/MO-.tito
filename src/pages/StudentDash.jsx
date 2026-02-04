@@ -233,6 +233,41 @@ const goToActivation = () => {
     }
   };
 
+  // --- 1. استرجاع الثيم عند التحميل وتطبيقه ---
+useEffect(() => {
+  const savedTheme = localStorage.getItem('theme') || 'space-dark';
+  setTheme(savedTheme);
+  
+  // تحديث كلاس الـ body فوراً
+  if (savedTheme === 'space-dark') {
+    document.body.className = ''; 
+  } else {
+    document.body.className = `${savedTheme}-theme`;
+  }
+}, []);
+
+// --- 2. دالة التبديل الذكية (تُستدعى عند الضغط على الأيقونة) ---
+const handleThemeChange = (newTheme) => {
+  setTheme(newTheme);
+  localStorage.setItem('theme', newTheme);
+  
+  // تحديث الشكل
+  if (newTheme === 'space-dark') {
+    document.body.className = '';
+  } else {
+    document.body.className = `${newTheme}-theme`;
+  }
+
+  // ميزة إضافية: حفظ في Firebase لو المستخدم مسجل دخول
+  if (user?.uid) {
+    updateDoc(doc(db, "students", user.uid), { preferredTheme: newTheme })
+      .catch(err => console.error("Error saving theme:", err));
+  }
+};
+
+
+
+
   
   // --- 4. إدارة المهام (CRUD To-Do) ---
   const addTodo = async (text) => {
@@ -706,10 +741,34 @@ useEffect(() => {
             </div>
           </div>
 
-          <button className="theme-toggle-btn" onClick={toggleTheme}>
-            {theme === "space-dark" ? "🌙" : theme === "forest" ? "🌲" : "🌊"}
-          </button>
+     <div className="theme-selector-wrapper">
+  {/* زر وضع النهار */}
+  <button 
+    className={`theme-btn ${theme === 'light' ? 'active' : ''}`} 
+    onClick={() => handleThemeChange('light')}
+    title="الوضع المضيء"
+  >
+    ☀️
+  </button>
 
+  {/* زر وضع الفضاء (الليل) */}
+  <button 
+    className={`theme-btn ${theme === 'space-dark' ? 'active' : ''}`} 
+    onClick={() => handleThemeChange('space-dark')}
+    title="وضع الفضاء"
+  >
+    🌙
+  </button>
+
+  {/* زر وضع المياه (السماوي) */}
+  <button 
+    className={`theme-btn ${theme === 'aqua' ? 'active' : ''}`} 
+    onClick={() => handleThemeChange('aqua')}
+    title="وضع المياه"
+  >
+    💧
+  </button>
+</div>
           <div className="notification-wrapper">
             <button className="notification-bell">
               🔔 <span className="bell-dot">{notifications.length || broadcasts.length}</span>
@@ -1130,5 +1189,6 @@ useEffect(() => {
 };
 
 export default StudentDash;
+
 
 
