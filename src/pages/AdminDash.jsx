@@ -16,7 +16,7 @@ import {
   UserCheck, CreditCard as CardIcon, DollarSign, Calendar, Clock, Edit3, Save,
   LogOut, Menu, Check, X,
   // ابحث عن السطر 22 وغير CloudUpload إلى UploadCloud
-FilePlus, CheckCircle2, Circle, Plus, UploadCloud
+FilePlus, CheckCircle2, Circle, Plus, UploadCloud, Library
 } from 'lucide-react';
 
 // 2. مكتبات الرسم البياني
@@ -3034,4 +3034,5 @@ const ForensicModal = ({ isOpen, onClose, data }) => {
     </div>
   );
 } 
+
 }
