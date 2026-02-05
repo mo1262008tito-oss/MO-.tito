@@ -3,21 +3,40 @@ import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import * as XLSX from 'xlsx';
 import axios from 'axios';
 
-// 1. استيراد الأيقونات
+// --- الجزء الكامل والنهائي للاستيرادات (TITAN OS CORE) ---
 import {  
-  ShieldCheck, Radio, BookOpen, Users, Key, BarChart3, Cpu, Search,  
-  Zap, ShieldAlert, Fingerprint, MapPin, TrendingUp, Ticket,  
-  MessageCircle, Download, Activity, Wifi, Server, MessageSquare,  
-  History, AlertTriangle, UserPlus, FileText, Settings, Bell,  
-  Lock, Unlock, RefreshCcw, Database, Globe, Layers, Eye,  
-  Target, Award, CreditCard, HardDrive, Share2, Terminal, ChevronRight,  
-  MoreVertical, PlusSquare, Trash2, Send, Layout, ShieldQuestion,  
-  CheckCircle, XCircle, Filter, Shield, Globe2, ZapOff, Video,  
-  UserCheck, CreditCard as CardIcon, DollarSign, Calendar, Clock, Edit3, Save,
-  LogOut, Menu, Check, X,
-  // ابحث عن السطر 22 وغير CloudUpload إلى UploadCloud
-FilePlus, CheckCircle2, Circle, Plus, UploadCloud, Library
+  // الأمان والتحقق
+  Shield, ShieldCheck, ShieldAlert, ShieldQuestion, Fingerprint, 
+  Lock, Unlock, Key, UserCheck, UserPlus, Zap, ZapOff,
+
+  // الإحصائيات والبيانات
+  BarChart3, TrendingUp, Activity, Cpu, Database, 
+  HardDrive, Layers, Target, Award,
+
+  // الملاحة والواجهة
+  Layout, Menu, ChevronRight, MoreVertical, Grid, 
+  Settings, Bell, RefreshCcw, Search, Filter,
+  X, XCircle, Check, CheckCircle, CheckCircle2, Circle, Plus, PlusSquare,
+
+  // التواصل والرسائل
+  MessageCircle, MessageSquare, Send, Share2, Globe, Globe2, Wifi, Server,
+
+  // الأكاديمية والمحتوى
+  BookOpen, Video, FileText, Edit3, Save, Trash2, 
+  History, Clock, Calendar, Download,
+
+  // المالية والموارد
+  CreditCard, DollarSign, Ticket, 
+
+  // الأيقونات الخاصة بالمكتبة والنظام (المصححة)
+  Library, FilePlus, UploadCloud, Terminal, MapPin, 
+  
+  // إذا كنت تستخدم أيقونات بأسماء بديلة (Aliasing)
+  CreditCard as CardIcon 
 } from 'lucide-react';
+
+// تأكد من استيراد Framer Motion إذا كنت تستخدم الأنيميشن
+import { motion, AnimatePresence } from 'framer-motion';
 
 // 2. مكتبات الرسم البياني
 import {  
@@ -1039,6 +1058,7 @@ setTerminalLogs(prev => [...prev, `[ACADEMY] تم إضافة محاضرة: ${lec
 
  };
 
+  
   /**
    * [18] TITAN EXAM ENGINE (TEE)
    * محرك الاختبارات: نظام التصحيح التلقائي، إدارة بنك الأسئلة، والرقابة على الغش
@@ -1198,18 +1218,177 @@ setTerminalLogs(prev => [...prev, `[ACADEMY] تم إضافة محاضرة: ${lec
    * [22] GUI COMPONENT: COMMUNICATIONS COMMAND CENTER
    * واجهة مركز الاتصالات وإدارة التنبيهات والرسائل
    */
-  const CommunicationsUI = () => {
-    const [msgData, setMsgData] = useState({ title: '', message: '', type: 'INFO', category: 'ALL' });
-    const [supportTickets, setSupportTickets] = useState([]);
-    useEffect(() => {
-      // مراقبة تذاكر الدعم الفني المفتوحة
-      const q = query(collection(db, "support_tickets"), where("status", "==", "OPEN"), orderBy("lastUserActivity", "desc"));
-      const unsub = onSnapshot(q, (snap) => {
-        setSupportTickets(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-      });
-      return () => unsub();
-    }, []);
+const CommunicationsUI = () => {
+  const [msgData, setMsgData] = useState({ title: '', message: '', type: 'INFO', category: 'ALL' });
+  const [supportTickets, setSupportTickets] = useState([]);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [adminReply, setAdminReply] = useState("");
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
 
+  // 1. مراقبة تذاكر الدعم الفني الحية (Real-time Stream)
+  useEffect(() => {
+    const q = query(
+      collection(db, "support_tickets"), 
+      where("status", "==", "OPEN"), 
+      orderBy("lastUserActivity", "desc")
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      setSupportTickets(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+    return () => unsub();
+  }, []);
+
+  // 2. إرسال البث (Broadcast Logic)
+  const handleBroadcast = async () => {
+    if (!msgData.title || !msgData.message) return alert("القائد لا يرسل رسائل فارغة!");
+    setIsBroadcasting(true);
+    try {
+      await NotificationHub.sendBroadcast(msgData);
+      setTerminalLogs(prev => [...prev, `[BROADCAST] Sent: ${msgData.title} to ${msgData.category}`]);
+      setMsgData({ title: '', message: '', type: 'INFO', category: 'ALL' });
+    } finally {
+      setIsBroadcasting(false);
+    }
+  };
+
+  // 3. نظام الرد على التذاكر
+  const sendReply = async (ticketId) => {
+    if (!adminReply.trim()) return;
+    await NotificationHub.sendSupportReply(ticketId, adminReply);
+    setAdminReply("");
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="comms-hub-v2 p-6">
+      <div className="flex items-center justify-between mb-10">
+        <div>
+          <h1 className="text-4xl font-black text-white tracking-tighter">TITAN COMMAND CENTER</h1>
+          <p className="text-blue-400 font-mono text-sm tracking-widest">ENCRYPTED COMMUNICATION LINE v5.0</p>
+        </div>
+        <div className="status-badge flex items-center gap-3 bg-blue-500/10 px-4 py-2 rounded-full border border-blue-500/30">
+          <div className="pulse-dot"></div>
+          <span className="text-blue-200 text-xs font-bold">SYSTEM ONLINE</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        
+        {/* القطاع الأيسر: محرك البث الفدرالي */}
+        <div className="xl:col-span-5 space-y-6">
+          <div className="glass-card p-6 border-t-4 border-yellow-500 bg-gradient-to-b from-yellow-500/5 to-transparent">
+            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+              <Zap className="text-yellow-500" /> بث تنبيه نظامي
+            </h3>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-2">
+                {['INFO', 'WARNING', 'EVENT'].map(t => (
+                  <button 
+                    key={t}
+                    onClick={() => setMsgData({...msgData, type: t})}
+                    className={`py-2 rounded border text-[10px] font-bold transition-all ${msgData.type === t ? 'bg-yellow-500 border-yellow-500 text-black' : 'border-white/10 text-gray-400 hover:bg-white/5'}`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+
+              <input 
+                className="titan-input-v2" 
+                placeholder="رأس الرسالة..." 
+                value={msgData.title}
+                onChange={e => setMsgData({...msgData, title: e.target.value})}
+              />
+              
+              <textarea 
+                className="titan-input-v2 h-40 resize-none" 
+                placeholder="اكتب تعليماتك هنا..." 
+                value={msgData.message}
+                onChange={e => setMsgData({...msgData, message: e.target.value})}
+              ></textarea>
+
+              <select 
+                className="titan-input-v2"
+                value={msgData.category}
+                onChange={e => setMsgData({...msgData, category: e.target.value})}
+              >
+                <option value="ALL">إرسال للكل (Global)</option>
+                <option value="high-school">طلاب الثانوية</option>
+                <option value="coding">طلاب البرمجة</option>
+              </select>
+
+              <button 
+                onClick={handleBroadcast}
+                disabled={isBroadcasting}
+                className="w-full py-4 bg-yellow-500 text-black font-black rounded-xl hover:bg-yellow-400 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(234,179,8,0.3)]"
+              >
+                {isBroadcasting ? <Loader className="animate-spin" /> : <Send size={20} />}
+                تأكيد البث الفوري
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* القطاع الأيمن: رادار الدعم الفني والمحادثات */}
+        <div className="xl:col-span-7 flex flex-col gap-6">
+          <div className="glass-card flex-1 overflow-hidden flex flex-col border-t-4 border-green-500">
+            <div className="p-4 border-b border-white/5 flex justify-between items-center bg-green-500/5">
+              <h3 className="font-bold flex items-center gap-2"><MessageCircle size={18}/> رادار الدعم النشط</h3>
+              <span className="bg-green-500/20 text-green-400 text-[10px] px-2 py-1 rounded-full uppercase tracking-tighter">Live Traffic</span>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[500px]">
+              {supportTickets.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center opacity-20 italic text-sm">
+                  <ShieldCheck size={48} className="mb-2"/>
+                  لا توجد تهديدات أو تذاكر دعم معلقة
+                </div>
+              ) : (
+                supportTickets.map(ticket => (
+                  <motion.div 
+                    layout
+                    key={ticket.id} 
+                    onClick={() => setSelectedTicket(ticket)}
+                    className={`p-4 rounded-xl border transition-all cursor-pointer ${selectedTicket?.id === ticket.id ? 'bg-blue-600/20 border-blue-500/50' : 'bg-white/5 border-white/10 hover:border-white/20'}`}
+                  >
+                    <div className="flex justify-between mb-2">
+                      <span className="font-bold text-sm text-blue-300">{ticket.studentName || "طالب مجهول"}</span>
+                      <span className="text-[10px] text-gray-500 font-mono">
+                        {new Date(ticket.lastUserActivity?.seconds * 1000).toLocaleTimeString()}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-400 line-clamp-2 italic">"{ticket.lastMessage}"</p>
+                  </motion.div>
+                ))
+              )}
+            </div>
+
+            {/* نافذة الرد السريع */}
+            {selectedTicket && (
+              <div className="p-4 bg-black/40 border-t border-white/10 animate-slide-up">
+                <div className="flex gap-2">
+                  <input 
+                    className="titan-input-v2 flex-1" 
+                    placeholder={`الرد على ${selectedTicket.studentName}...`}
+                    value={adminReply}
+                    onChange={e => setAdminReply(e.target.value)}
+                    onKeyPress={e => e.key === 'Enter' && sendReply(selectedTicket.id)}
+                  />
+                  <button 
+                    onClick={() => sendReply(selectedTicket.id)}
+                    className="p-3 bg-blue-600 rounded-lg hover:bg-blue-500 transition-colors"
+                  >
+                    <ArrowRight size={20}/>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+      </div>
+    </motion.div>
+  );
 };
 
   const getExamAnalytics = (results) => {
@@ -1354,19 +1533,90 @@ setTerminalLogs(prev => [...prev, `[ACADEMY] تم إضافة محاضرة: ${lec
       setTerminalLogs(prev => [...prev, `[LIBRARY] Purged book ${bookId}`]);
     }
   };
+const LibraryUI = () => {
+  const [libCategory, setLibCategory] = useState('high-school');
+  const [isUploading, setIsUploading] = useState(false);
+  const [newBook, setNewBook] = useState({ title: '', price: 0, category: 'high-school', description: '' });
 
-  /**
-   * [25] GUI COMPONENT: DIGITAL LIBRARY HUB
-   * واجهة إدارة المكتبة الرقمية والأبحاث
-   */
-  const LibraryUI = () => {
-    const [libCategory, setLibCategory] = useState('high-school');
-    const [isUploading, setIsUploading] = useState(false);
+  const handleUpload = async () => {
+    const pdf = document.getElementById('pdf-file').files[0];
+    const cover = document.getElementById('cover-file').files[0];
+    if(!pdf || !newBook.title) return alert("البيانات ناقصة يا قائد!");
+    
+    setIsUploading(true);
+    await LibraryManager.uploadBook(newBook, pdf, cover);
+    setIsUploading(false);
+    setNewBook({ title: '', price: 0, category: 'high-school', description: '' });
+  };
 
-/**
-   * [29] MAIN VIEWPORT DISPATCHER (The Router)
-   * المحرك المسؤول عن عرض التبويب المختار وربطه بالمحرك الخاص به
-   */
+  return (
+    <motion.div initial={{opacity: 0}} animate={{opacity: 1}} className="library-hub p-6">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h2 className="text-3xl font-black text-white">TITAN DIGITAL LIBRARY</h2>
+          <p className="text-gray-400">إدارة المراجع، الكتب، وحقوق النشر الرقمية</p>
+        </div>
+        <div className="stats-pills flex gap-4">
+           <div className="pill glass-card"><BookOpen size={16}/> {books.length} كتاب</div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* لوحة الرفع */}
+        <div className="upload-sector glass-card p-6 border-l-4 border-blue-500">
+          <h3 className="text-xl mb-4 flex items-center gap-2"><UploadCloud/> رفع مؤلف جديد</h3>
+          <div className="space-y-4">
+            <input className="titan-input" placeholder="عنوان الكتاب" value={newBook.title} onChange={e => setNewBook({...newBook, title: e.target.value})} />
+            <select className="titan-input" value={newBook.category} onChange={e => setNewBook({...newBook, category: e.target.value})}>
+              <option value="high-school">ثانوية عامة</option>
+              <option value="coding">برمجة</option>
+              <option value="religious">ديني</option>
+            </select>
+            <div className="file-drop-zone">
+              <label>ملف الـ PDF</label>
+              <input type="file" id="pdf-file" accept=".pdf" />
+            </div>
+            <div className="file-drop-zone">
+              <label>غلاف الكتاب (Image)</label>
+              <input type="file" id="cover-file" accept="image/*" />
+            </div>
+            <button 
+              onClick={handleUpload} 
+              disabled={isUploading}
+              className={`titan-btn primary w-full ${isUploading ? 'loading' : ''}`}
+            >
+              {isUploading ? `جاري الرفع ${Math.round(loadingProgress)}%` : 'تدشين الكتاب الآن'}
+            </button>
+          </div>
+        </div>
+
+        {/* عرض الكتب */}
+        <div className="books-display lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <AnimatePresence>
+            {books.filter(b => b.category === libCategory).map(book => (
+              <motion.div key={book.id} layout initial={{scale: 0.9}} animate={{scale: 1}} className="book-item-card glass-card overflow-hidden">
+                <div className="flex gap-4 p-4">
+                  <img src={book.coverUrl || 'placeholder.jpg'} className="w-24 h-32 object-cover rounded shadow-lg" />
+                  <div className="flex-1">
+                    <h4 className="font-bold text-lg">{book.title}</h4>
+                    <p className="text-xs text-gray-400 line-clamp-2">{book.description}</p>
+                    <div className="mt-4 flex justify-between items-center">
+                      <span className="price-tag">{book.price === 0 ? 'مجاني' : `${book.price} EGP`}</span>
+                      <button onClick={() => LibraryManager.purgeBook(book.id, book.pdfUrl, book.coverUrl)} className="text-red-500 hover:bg-red-500/10 p-2 rounded">
+                        <Trash2 size={18}/>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
   const renderMainContent = () => {
     switch (activeTab) {
       case 'dashboard':
@@ -3036,3 +3286,4 @@ const ForensicModal = ({ isOpen, onClose, data }) => {
 } 
 
 }
+
