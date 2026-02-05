@@ -8,7 +8,8 @@ import {
   Search, FileText, DownloadCloud, Eye, Star, X, Heart, Award, Zap, 
   Moon, Sun, LayoutGrid, List, Filter, HardDrive, Globe, AlertCircle,
   Share2, ShieldCheck, Bookmark, BookOpen, Coffee, Flame, CheckCircle2,
-  Library as LibraryIcon // التسمية البديلة لمنع تعارض الأسماء
+  Library as LibraryIcon,
+  Clock // <--- أضف هذه الكلمة هنا
 } from 'lucide-react';
 
 // --- الميزات المدمجة (20 ميزة): ---
@@ -327,3 +328,4 @@ const Library = () => {
 };
 
 export default Library;
+
