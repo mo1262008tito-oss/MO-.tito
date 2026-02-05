@@ -29,7 +29,7 @@ import {
   CreditCard, DollarSign, Ticket, 
 
   // الأيقونات الخاصة بالمكتبة والنظام (المصححة)
-  Library, FilePlus, UploadCloud, Terminal, MapPin, 
+ Library as LibraryIcon, FilePlus, UploadCloud, Terminal, MapPin, 
   
   // إذا كنت تستخدم أيقونات بأسماء بديلة (Aliasing)
   CreditCard as CardIcon 
@@ -3286,4 +3286,5 @@ const ForensicModal = ({ isOpen, onClose, data }) => {
 } 
 
 }
+
 
