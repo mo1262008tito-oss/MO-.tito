@@ -12,12 +12,16 @@ import {
   Clock // <--- أضف هذه الكلمة هنا
 } from 'lucide-react';
 
+
+
 // --- الميزات المدمجة (20 ميزة): ---
 // 1. نظام الـ XP  2. مستويات القراءة  3. التصفية الذكية  4. البحث اللحظي  5. المفضلة المحلية
 // 6. وضع الـ Sepia  7. حماية الروابط  8. نظام الإنجازات  9. عداد التحميلات  10. مؤشر استقرار السيرفر
 // 11. تبديل طرق العرض  12. تقييم الكتب  13. مشاركة الكتب  14. سجل القراءة  15. إحصائيات سريعة
 // 16. تأثيرات Glassmorphism  17. حماية ضد التحميل العشوائي  18. وضع القراءة المريح  
 // 19. تنبيهات الأمان  20. نظام ترقية الرتب (Rank System)
+
+
 
 const Library = () => {
   // --- States ---
@@ -210,6 +214,7 @@ const Library = () => {
               <button onClick={() => setViewMode('list')} className={`p-2 ${viewMode === 'list' ? 'text-blue-500' : 'text-gray-600'}`}><List/></button>
             </div>
           </div>
+          
 
           <div className="books-grid">
             {filteredBooks.map(book => (
@@ -327,5 +332,8 @@ const Library = () => {
   );
 };
 
+
+
 export default Library;
+
 
