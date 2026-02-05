@@ -35,8 +35,7 @@ import {
   CreditCard as CardIcon 
 } from 'lucide-react';
 
-// تأكد من استيراد Framer Motion إذا كنت تستخدم الأنيميشن
-import { motion, AnimatePresence } from 'framer-motion';
+
 
 // 2. مكتبات الرسم البياني
 import {  
@@ -3286,5 +3285,6 @@ const ForensicModal = ({ isOpen, onClose, data }) => {
 } 
 
 }
+
 
 
