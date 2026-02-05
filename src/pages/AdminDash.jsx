@@ -76,7 +76,7 @@ export default function AdminDash() {
   const [isLectureLoading, setIsLectureLoading] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
-  
+  const [amountToAdjust, setAmountToAdjust] = useState("");
 const [answers, setAnswers] = useState({}); // لحفظ إجابات الطالب
 const [examId, setExamId] = useState(null); // لحفظ معرف الامتحان الحالي
 
@@ -633,17 +633,18 @@ setTerminalLogs(prev => [...prev, `[ACADEMY] تم إضافة محاضرة: ${lec
    * [9] GUI COMPONENT: STUDENT MISSION CONTROL
    * واجهة إدارة الطلاب: الاسم الرباعي، أرقام الهاتف، والبيانات المتقدمة
    */
-
-    // نظام الفلترة الذكي للبيانات الرباعية
-    const filteredList = useMemo(() => {
-      return students.filter(s => 
-        s.fullName?.includes(localSearch) || 
-        s.phone?.includes(localSearch) ||
-        s.parentPhone?.includes(localSearch)
-      );
-    }, [localSearch, students]);
-
-
+// [9] نظام الفلترة الذكي للبيانات الرباعية (المصحح)
+const filteredList = useMemo(() => {
+  // نستخدم globalSearch لأنه هو المعرف في الـ State
+  // ونحول النص لحروف صغيرة لضمان دقة البحث
+  const searchTerm = globalSearch?.toLowerCase() || "";
+  
+  return students.filter(s => 
+    s.fullName?.toLowerCase().includes(searchTerm) || 
+    s.phone?.includes(searchTerm) ||
+    s.parentPhone?.includes(searchTerm)
+  );
+}, [globalSearch, students]); 
 
 
   const processStudentStats = useCallback(() => {
@@ -688,21 +689,54 @@ setTerminalLogs(prev => [...prev, `[ACADEMY] تم إضافة محاضرة: ${lec
                </div>
                <button className="close-x" onClick={() => setSelectedStudent(null)}><XCircle size={30}/></button>
             </div>
+<div className="modal-content-grid">
+  {/* كارت المحفظة والعمليات المطور (TITAN PAY) */}
+  <div className="data-panel glass-card">
+    <div className="panel-head"><CreditCard size={18}/> الإحصاءات المالية</div>
+    
+    <div className="balance-hero">
+      <small>الرصيد الحالي</small>
+      <h1>{selectedStudent.balance || 0} <small>EGP</small></h1>
+    </div>
 
-            <div className="modal-content-grid">
-               {/* كارت المحفظة والعمليات */}
-               <div className="data-panel glass-card">
-                  <div className="panel-head"><CreditCard size={18}/> الإحصاءات المالية</div>
-                  <div className="balance-hero">
-                     <small>الرصيد الحالي</small>
-                     <h1>{selectedStudent.balance || 0} <small>EGP</small></h1>
-                  </div>
-                  <div className="quick-actions">
-                     <button className="titan-btn success sm" onClick={() => FinanceManager.adjustStudentBalance(selectedStudent.id, 100, "Admin Manual Deposit")}>+100</button>
-                     <button className="titan-btn danger sm" onClick={() => FinanceManager.adjustStudentBalance(selectedStudent.id, -100, "Admin Manual Deduction")}>-100</button>
-                  </div>
-               </div>
+    {/* نظام الإدخال الجديد */}
+    <div className="finance-control-center">
+      <div className="amount-input-wrapper">
+        <input 
+          type="number" 
+          placeholder="أدخل المبلغ..." 
+          value={amountToAdjust}
+          onChange={(e) => setAmountToAdjust(e.target.value)}
+          className="titan-amount-field"
+        />
+        <span className="currency-tag">EGP</span>
+      </div>
 
+      <div className="action-buttons-row">
+        <button 
+          className="btn-charge-success"
+          onClick={() => {
+            if (!amountToAdjust || amountToAdjust <= 0) return alert("يرجى إدخال مبلغ صحيح");
+            AcademyManager.adjustStudentBalance(selectedStudent.id, Number(amountToAdjust), "add");
+            setAmountToAdjust(""); 
+          }}
+        >
+          <Plus size={16} /> شحن
+        </button>
+
+        <button 
+          className="btn-charge-danger"
+          onClick={() => {
+            if (!amountToAdjust || amountToAdjust <= 0) return alert("يرجى إدخال مبلغ صحيح");
+            AcademyManager.adjustStudentBalance(selectedStudent.id, Number(amountToAdjust), "deduct");
+            setAmountToAdjust(""); 
+          }}
+        >
+          <Minus size={16} /> خصم
+        </button>
+      </div>
+    </div>
+  </div>
                {/* كارت النشاط والرقابة */}
                <div className="data-panel glass-card">
                   <div className="panel-head"><ShieldCheck size={18}/> حالة القفل والرقابة</div>
@@ -3140,6 +3174,7 @@ const AdminDashboard = () => {
     </div>
   );
 } 
+
 
 
 
