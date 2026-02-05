@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { db, auth } from '../firebase';
 import { 
   doc, updateDoc, onSnapshot, increment, arrayUnion, 
-  setDoc, getDoc, collection, query, orderBy, limit, where 
+  setDoc, getDoc, collection, query, orderBy, limit,  Library 
+   
 } from 'firebase/firestore';
 import axios from 'axios';
 import './Religious.css'; // هذا السطر يربط التصميم بالبرمجة فوراً
@@ -1807,5 +1808,6 @@ const Religious = ({ user, profile }) => {
   </div> 
   ); 
 }; 
+
 
 export default Religious;
