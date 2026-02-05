@@ -5,6 +5,10 @@
 /* ----------------------------------------------------------
    1. ROOT VARIABLES & GLOBAL RESET (المتغيرات الأساسية وإعادة الضبط)
    ---------------------------------------------------------- */
+/* جلب الخطوط من Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Tajawal:wght@400;700;900&display=swap');
+/* يمكنك إضافة خط Digital-7 يدويًا إذا لم يكن متاحًا على Google Fonts */
+
 :root {
     /* الألوان الأساسية: مستوحاة من ألوان الواحات الروحية والتقنية */
     --waha-primary-gold: #FFD700; /* ذهبي ملكي */
@@ -41,9 +45,6 @@
     --transform-perspective: perspective(1000px);
 }
 
-/* جلب الخطوط من Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Tajawal:wght@400;700;900&display=swap');
-/* يمكنك إضافة خط Digital-7 يدويًا إذا لم يكن متاحًا على Google Fonts */
 
 * {
     margin: 0;
@@ -1561,4 +1562,5 @@ button, input, select {
     user-select: none;
     -webkit-user-select: none;
 }
+
 
