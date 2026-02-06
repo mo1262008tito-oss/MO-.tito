@@ -985,42 +985,62 @@ const processStudentStats = useCallback(() => {
    * [16] TITAN LIVE COMMAND (TLC)
    * محرك البث المباشر: إدارة الغرف، المحادثة الفورية، وحظر الطلاب أثناء البث
    */
-  const LiveControl = {
-    // بدء بث مباشر جديد
-    async startLiveSession(config) {
-      const liveRef = ref(rtdb, 'live_sessions/current');
-      const sessionData = {
-        title: config.title,
-        streamUrl: config.url,
-        category: config.category,
-        startedAt: Date.now(),
-        isActive: true,
-        allowChat: true,
-        viewerCount: 0,
-        moderators: [auth.currentUser?.uid]
-      };
+  
+const LiveControl = {
+  // بدء بث مباشر جديد
+  async startLiveSession(config) {
+    // 1. التأكد من وجود مستخدم مسجل وبياناته كاملة
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error("يجب تسجيل الدخول أولاً");
 
+    const liveRef = ref(rtdb, 'live_sessions/current');
+    
+    const sessionData = {
+      title: config.title,
+      streamUrl: config.url,
+      category: config.category,
+      teacherId: currentUser.uid, // ربط البث بـ ID المدرس
+      teacherName: config.teacher,
+      startedAt: Date.now(),
+      isActive: true,
+      allowChat: true,
+      viewerCount: 0,
+      moderators: [currentUser.uid]
+    };
+
+    try {
+      // 2. تحديث حالة البث (أولوية قصوى)
       await set(liveRef, sessionData);
-      
-      // إرسال تنبيه Push لكل الطلاب في هذا القسم
+
+      // 3. إرسال الإشعار (عملية منفصلة عشان لو فشلت متبوظش البث)
       await addDoc(collection(db, "global_notifications"), {
         title: "بث مباشر بدأ الآن!",
         body: `انضم للمدرس ${config.teacher} في بث: ${config.title}`,
         category: config.category,
         type: 'LIVE_START',
-        timestamp: serverTimestamp()
+        timestamp: serverTimestamp(),
+        senderId: currentUser.uid
       });
-    },
 
-    // إغلاق البث
-    async terminateLive() {
+      return { success: true };
+    } catch (error) {
+      console.error("Error starting live session:", error);
+      throw error; // عشان تعرض رسالة خطأ واضحة في الواجهة
+    }
+  },
+
+  // إغلاق البث
+  async terminateLive() {
+    try {
       await update(ref(rtdb, 'live_sessions/current'), { 
         isActive: false, 
         endedAt: Date.now() 
       });
+    } catch (error) {
+      console.error("Error terminating live:", error);
     }
-  };
-
+  }
+};
 
   /**
    * [18] TITAN EXAM ENGINE (TEE)
@@ -3206,6 +3226,7 @@ const AdminDashboard = () => {
     </div>
   );
 } 
+
 
 
 
