@@ -2645,12 +2645,7 @@ const ExamBuilderUI = ({ courses, onSave }) => {
  * [16] GUI COMPONENT: DIGITAL LIBRARY PRO
  * إدارة المحتوى المكتوب: رفع المذكرات والكتب مع نظام حماية الروابط
  */
-const DigitalLibraryUI = () => {
-  // الحالات الافتراضية (تأكد من استيرادها من الـ Logic الخاص بك)
-  // const [libCategory, setLibCategory] = useState('high-school');
-  // const [isUploading, setIsUploading] = useState(false);
-  // const [books, setBooks] = useState([]);
-
+const DigitalLibraryUI = ({ books, setBooks, isUploading, setIsUploading, libCategory, setLibCategory, LibraryManager }) => {
   return (
     <div className="library-vessel space-y-8 p-2">
       
@@ -2763,58 +2758,37 @@ const DigitalLibraryUI = () => {
               </h3>
               
               <form className="titan-form space-y-5" onSubmit={async (e) => {
-                e.preventDefault();
-                const data = {
-                  title: e.target.bTitle.value,
-                  author: e.target.bAuthor.value,
-                  description: e.target.bDesc.value,
-                  category: libCategory,
-                  price: Number(e.target.bPrice.value),
-                  pagesCount: Number(e.target.bPages.value),
-                  isFree: Number(e.target.bPrice.value) === 0
-                };
+                e.preventDefault(); 
+
                 const pdf = e.target.bFile.files[0];
                 const cover = e.target.bCover.files[0];
-                // ... داخل مكون DigitalLibraryUI
-<form className="titan-form space-y-5" onSubmit={async (e) => {
-       // --- ضع هذا الجزء داخل الـ onSubmit الخاص بالفورم ---
 
-e.preventDefault(); 
+                if (!pdf || !cover) {
+                    return alert("⚠️ يرجى اختيار ملف الـ PDF وصورة الغلاف أولاً");
+                }
 
-// 1. استخراج الملفات من الفورم
-const pdf = e.target.bFile.files[0];
-const cover = e.target.bCover.files[0];
+                const data = {
+                    title: e.target.bTitle.value,
+                    author: e.target.bAuthor.value,
+                    description: e.target.bDesc.value,
+                    category: libCategory,
+                    price: Number(e.target.bPrice.value) || 0,
+                    pagesCount: Number(e.target.bPages.value) || 0,
+                    isFree: (Number(e.target.bPrice.value) || 0) === 0,
+                    downloadsCount: 0,
+                    createdAt: new Date()
+                };
 
-// 2. حارس البوابة: التحقق من وجود الملفات ✅
-if (!pdf || !cover) {
-    return alert("⚠️ يرجى اختيار ملف الـ PDF وصورة الغلاف أولاً");
-}
-
-// 3. تجهيز البيانات بالكامل من مدخلات الفورم
-const data = {
-    title: e.target.bTitle.value,
-    author: e.target.bAuthor.value,
-    description: e.target.bDesc.value,
-    category: libCategory,
-    price: Number(e.target.bPrice.value) || 0,
-    pagesCount: Number(e.target.bPages.value) || 0,
-    isFree: (Number(e.target.bPrice.value) || 0) === 0,
-    downloadsCount: 0,
-    createdAt: new Date()
-};
-
-// 4. تنفيذ الرفع السحابي داخل بلوك try-catch
-try {
-    alert("جاري تشفير ورفع الملفات إلى السحابة... انتظر قليلاً");
-    await LibraryManager.uploadBook(data, pdf, cover);
-    setIsUploading(false); // إغلاق النافذة بعد النجاح
-    alert("✅ تم النشر بنجاح في المكتبة الرقمية");
-} catch (error) {
-    console.error("Upload failed:", error);
-    alert("❌ فشل الرفع: تأكد من حجم الملفات أو اتصال الإنترنت");
-}
-
-// --- نهاية الجزء المصلح ---
+                try {
+                    alert("جاري تشفير ورفع الملفات إلى السحابة...");
+                    await LibraryManager.uploadBook(data, pdf, cover);
+                    setIsUploading(false);
+                    alert("✅ تم النشر بنجاح");
+                } catch (error) {
+                    console.error("Upload failed:", error);
+                    alert("❌ فشل الرفع: تأكد من الاتصال بالإنترنت");
+                }
+              }}>
                 <div className="form-row grid grid-cols-1 md:grid-cols-2 gap-4">
                   <input name="bTitle" className="bg-white/5 border border-white/10 p-4 rounded-2xl text-white outline-none focus:border-blue-500" placeholder="عنوان الكتاب" required />
                   <input name="bAuthor" className="bg-white/5 border border-white/10 p-4 rounded-2xl text-white outline-none focus:border-blue-500" placeholder="اسم الكاتب" />
@@ -3220,6 +3194,7 @@ const AdminDashboard = () => {
     </div>
   );
 } 
+
 
 
 
