@@ -105,22 +105,33 @@ const [selectedForensicData, setSelectedForensicData] = useState(null);
     setCurrentQ({ questionText: '', options: ['', '', '', ''], correctAnswer: 0, points: 5 });
   };
 
-  const handleDeploy = async () => {
-    const coverFile = document.getElementById('courseCoverFile')?.files[0];
-    const coverUrl = document.getElementById('courseCoverUrl')?.value;
-    const teacherFile = document.getElementById('teacherImgFile')?.files[0];
-    const teacherUrl = document.getElementById('teacherImgUrl')?.value;
+const handleDeploy = async () => {
+  // جلب الملفات من الـ Input أو الـ State
+  const coverFile = document.getElementById('courseCoverFile')?.files[0];
+  const coverUrl = document.getElementById('courseCoverUrl')?.value;
+  const teacherFile = document.getElementById('teacherImgFile')?.files[0];
+  const teacherUrl = document.getElementById('teacherImgUrl')?.value;
 
-    const finalCover = coverFile || coverUrl;
-    const finalTeacher = teacherFile || teacherUrl;
+  // تحديد المصدر (ملف مرفوع أو رابط خارجي)
+  const finalCover = coverFile || coverUrl;
+  const finalTeacher = teacherFile || teacherUrl;
 
-    if (!finalCover) return alert("يرجى اختيار ملف أو وضع رابط للغلاف");
+  if (!finalCover) return alert("يرجى اختيار ملف أو وضع رابط للغلاف");
 
-    const data = { title: "كورس جديد", category: academyCategory }; 
-    // تأكد من تعريف AcademyManager أو استيراده هنا
-    console.log("Deploying...", data);
-  };
-
+  try {
+    const courseData = { 
+      title: "كورس جديد", // يفضل جلب العنوان من State مربوط بـ Input
+      category: academyCategory,
+      salesModel: 'FULL' 
+    };
+    
+    // استدعاء المانجر
+    await AcademyManager.createComplexCourse(courseData, finalCover, finalTeacher);
+    alert("تم التدشين بنجاح!");
+  } catch (err) {
+    console.error("خطأ في التدشين:", err);
+  }
+};
 
  
 
@@ -591,19 +602,17 @@ setTerminalLogs(prev => [...prev, `[ACADEMY] تم إضافة محاضرة: ${lec
         console.error("Deep Fetch Error:", err);
       }
     },
-
-    // تعديل الحالة الأمنية للطالب (تفعيل/حظر/مراقبة)
+// تعديل الحالة الأمنية للطالب (تفعيل/حظر/مراقبة)
     async setSecurityStatus(uid, status, reason) {
       const batch = writeBatch(db);
       const userRef = doc(db, "users", uid);
       
       batch.update(userRef, {
-        status: status, // ACTIVE, BANNED, WATCHED, SUSPENDED
+        status: status,
         securityNote: reason,
         lastSecurityUpdate: serverTimestamp()
       });
 
-      // إرسال أمر طرد لحظي عبر RTDB إذا تم الحظر
       if (status === 'BANNED' || status === 'SUSPENDED') {
         const sessionRef = ref(rtdb, `active_sessions/${uid}/security_action`);
         await set(sessionRef, {
@@ -614,9 +623,12 @@ setTerminalLogs(prev => [...prev, `[ACADEMY] تم إضافة محاضرة: ${lec
       }
 
       await batch.commit();
-      this.pushToTerminal(`[SECURITY] Status for ${uid} updated to ${status}`);
+      
+      // ✅ التعديل الصحيح: استخدم setTerminalLogs مباشرة
+      setTerminalLogs(prev => [...prev, `[SECURITY] تم تحديث حالة ${uid} إلى ${status}`]);
     },
 
+    
     // مسح سجل الأجهزة للسماح بدخول جهاز جديد (Hardware Reset)
     async clearHardwareLock(uid) {
       const userRef = doc(db, "users", uid);
@@ -1056,7 +1068,7 @@ const filteredList = useMemo(() => {
       let score = 0;
       const detailedResults = examData.questions.map((q, index) => {
         const isCorrect = q.correctAnswer === answers[index];
-        if (isCorrect) score += (100 / examData.questions.length);
+       if (!examData.questions || examData.questions.length === 0) return { score: 0, passed: false };
         return { questionIndex: index, correct: isCorrect };
       });
 
@@ -1599,118 +1611,130 @@ const LibraryUI = () => {
 
 
 /**
- * [9] GUI COMPONENT: STUDENT MISSION CONTROL
- * واجهة إدارة الطلاب: الاسم الرباعي، أرقام الهاتف، والبيانات المتقدمة
- */
+ * [9] GUI COMPONENT: STUDENT MISSION CONTROL
+ * واجهة إدارة الطلاب: الاسم الرباعي، أرقام الهاتف، والبيانات المتقدمة
+ */
 const StudentsManagerUI = () => {
-  const [localSearch, setLocalSearch] = useState("");
+  const [localSearch, setLocalSearch] = useState("");
 
-  return (
-    <div className="titan-student-vessel">
-      {/* شريط الأدوات العلوي للمصنفات */}
-      <div className="vessel-tools glass-card">
-        <div className="search-engine">
-          <Search size={20} className="icon" />
-          <input 
-            placeholder="ابحث بالاسم الرباعي، رقم الهاتف، أو كود الطالب..." 
-            value={localSearch}
-            onChange={(e) => setLocalSearch(e.target.value)}
-          />
-        </div>
-        <div className="action-btns">
-          <button className="titan-btn" onClick={() => exportToExcel(students, 'Titan_Students_Full_Data')}>
-            <Download size={18}/> تقرير شامل (Excel)
-          </button>
-          <button className="titan-btn primary">
-            <UserPlus size={18}/> إضافة طالب يدوياً
-          </button>
-        </div>
-      </div>
+  return (
+    <div className="titan-student-vessel">
+      {/* شريط الأدوات العلوي للمصنفات */}
+      <div className="vessel-tools glass-card">
+        <div className="search-engine">
+          <Search size={20} className="icon" />
+   
+<input 
+  placeholder="ابحث..." 
+  value={localSearch}
+  onChange={(e) => setLocalSearch(e.target.value)} 
+/>
 
-      {/* شبكة البيانات (Table System) */}
-      <div className="data-table-container glass-card shadow-2xl">
-        <table className="titan-master-table">
-          <thead>
-            <tr>
-              <th>الاسم الرباعي الكامل</th>
-              <th>بيانات الاتصال</th>
-              <th>الوالدين</th>
-              <th>الحالة الأمنية</th>
-              <th>المحفظة</th>
-              <th>الأجهزة</th>
-              <th>إدارة</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredList.map(student => (
-              <motion.tr 
-                layout 
-                key={student.id} 
-                className={student.status === 'BANNED' ? 'banned-row' : ''}
-              >
-                <td className="name-cell">
-                  <div className="avatar">{student.fullName?.charAt(0) || 'U'}</div>
-                  <div className="info">
-                    <span className="fullname">{student.fullName || "غير مسجل"}</span>
-                    <small className="id">UID: {student.id?.substring(0, 12)}</small>
-                  </div>
-                </td>
-                <td>
-                  <div className="contact-info">
-                    <div className="item"><Wifi size={12}/> {student.phone}</div>
-                    <div className="item text-muted"><MapPin size={12}/> {student.governorate || 'غير محدد'}</div>
-                  </div>
-                </td>
-                <td>
-                  <div className="parent-tag">
-                    <Users size={14}/> {student.parentPhone || "غير مسجل"}
-                  </div>
-                </td>
-                <td>
-                  <div className={`status-pill ${student.status || 'ACTIVE'}`}>
-                    {student.status === 'BANNED' ? <Lock size={12}/> : <ShieldCheck size={12}/>}
-                    {student.status || 'ACTIVE'}
-                  </div>
-                </td>
-                <td>
-                  <div className="balance-box">
-                    <span className="amount">{student.balance || 0}</span>
-                    <span className="currency"> EGP</span>
-                  </div>
-                </td>
-                <td>
-                  <div className={`hardware-badge ${student.deviceId ? 'locked' : 'unlocked'}`}>
-                    {student.deviceId ? <Fingerprint size={16}/> : <ZapOff size={16}/>}
-                    <small>{student.deviceId ? 'جهاز مقيد' : 'متاح'}</small>
-                  </div>
-                </td>
-                <td className="ops-cell">
-                  <button className="op-btn info" onClick={() => setSelectedStudent(student)}>
-                    <Eye size={18}/>
-                  </button>
-                  <button className="op-btn warn" onClick={() => StudentController.clearHardwareLock(student.id)} title="Hardware Reset">
-                    <RefreshCcw size={18}/>
-                  </button>
-                  <button className="op-btn danger" onClick={() => StudentController.setSecurityStatus(student.id, 'BANNED', 'مخالفة السياسة')}>
-                    <ShieldAlert size={18}/>
-                  </button>
-                </td>
-              </motion.tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+
+<input 
+  placeholder="ابحث بالاسم الرباعي، رقم الهاتف، أو كود الطالب..." 
+  value={globalSearch}
+  onChange={(e) => setGlobalSearch(e.target.value)} 
+/>
+        </div>
+        <div className="action-btns">
+          <button className="titan-btn" onClick={() => exportToExcel(students, 'Titan_Students_Full_Data')}>
+            <Download size={18}/> تقرير شامل (Excel)
+          </button>
+          <button className="titan-btn primary">
+            <UserPlus size={18}/> إضافة طالب يدوياً
+          </button>
+        </div>
+      </div>
+
+      {/* شبكة البيانات (Table System) */}
+      <div className="data-table-container glass-card shadow-2xl">
+        <table className="titan-master-table">
+          <thead>
+            <tr>
+              <th>الاسم الرباعي الكامل</th>
+              <th>بيانات الاتصال</th>
+              <th>الوالدين</th>
+              <th>الحالة الأمنية</th>
+              <th>المحفظة</th>
+              <th>الأجهزة</th>
+              <th>إدارة</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredList.map(student => (
+              <motion.tr 
+                layout 
+                key={student.id} 
+                className={student.status === 'BANNED' ? 'banned-row' : ''}
+              >
+                <td className="name-cell">
+                  <div className="avatar">{student.fullName?.charAt(0) || 'U'}</div>
+                  <div className="info">
+                    <span className="fullname">{student.fullName || "غير مسجل"}</span>
+                    <small className="id">UID: {student.id?.substring(0, 12)}</small>
+                  </div>
+                </td>
+                <td>
+                  <div className="contact-info">
+                    <div className="item"><Wifi size={12}/> {student.phone}</div>
+                    <div className="item text-muted"><MapPin size={12}/> {student.governorate || 'غير محدد'}</div>
+                  </div>
+                </td>
+                <td>
+                  <div className="parent-tag">
+                    <Users size={14}/> {student.parentPhone || "غير مسجل"}
+                  </div>
+                </td>
+                <td>
+                  <div className={`status-pill ${student.status || 'ACTIVE'}`}>
+                    {student.status === 'BANNED' ? <Lock size={12}/> : <ShieldCheck size={12}/>}
+                    {student.status || 'ACTIVE'}
+                  </div>
+                </td>
+                <td>
+                  <div className="balance-box">
+                    <span className="amount">{student.balance || 0}</span>
+                    <span className="currency"> EGP</span>
+                  </div>
+                </td>
+                <td>
+                  <div className={`hardware-badge ${student.deviceId ? 'locked' : 'unlocked'}`}>
+                    {student.deviceId ? <Fingerprint size={16}/> : <ZapOff size={16}/>}
+                    <small>{student.deviceId ? 'جهاز مقيد' : 'متاح'}</small>
+                  </div>
+                </td>
+                <td className="ops-cell">
+                  <button className="op-btn info" onClick={() => setSelectedStudent(student)}>
+                    <Eye size={18}/>
+                  </button>
+                  <button className="op-btn warn" onClick={() => StudentController.clearHardwareLock(student.id)} title="Hardware Reset">
+                    <RefreshCcw size={18}/>
+                  </button>
+                  <button className="op-btn danger" onClick={() => StudentController.setSecurityStatus(student.id, 'BANNED', 'مخالفة السياسة')}>
+                    <ShieldAlert size={18}/>
+                  </button>
+                </td>
+              </motion.tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 };
 
 
-
+  
 /**
  * [11] GUI COMPONENT: FINANCE VAULT
  * خزنة الأكواد الفدرالية: توليد الأكواد وإدارة المبيعات
  */
-const FinanceVaultUI = () => {
+const FinanceVaultUI = ({ stats, genConfig, setGenConfig, transactions, BillingEngine }) => {
+  
+  // تأمين: في حال كانت البيانات لم تصل بعد، نضع قيم افتراضية لمنع الـ Crash
+  const currentStats = stats || { revenue: 0, activeCodesCount: 0 };
+  const currentTransactions = transactions || [];
   return (
     <div className="finance-vault-vessel p-4 lg:p-6">
       <div className="vault-header glass-card flex flex-col md:flex-row justify-between items-center gap-6 p-6 mb-8">
@@ -1983,11 +2007,8 @@ const FinanceVaultUI = () => {
  * [12] GUI COMPONENT: ACADEMY MANAGER
  * واجهة إدارة الكورسات والمحاضرات - التحكم الكامل في المحتوى التعليمي
  */
-const AcademyUI = () => {
-  // الحالات المطلوبة (تأكد من وجودها في الـ Logic فوق)
-  // const [lectures, setLectures] = useState([]);
-  // const [isLectureLoading, setIsLectureLoading] = useState(false);
-  // const [editingItem, setEditingItem] = useState(null);
+const AcademyUI = ({ academyCategory, courses, setCourses }) => {
+ 
 
   return (
     <div className="academy-master-vessel p-4 lg:p-6">
@@ -2235,6 +2256,8 @@ const LectureManagerUI = ({ course }) => {
                     price: e.target.lecPrice.value,
                     isFree: e.target.isFree.checked
                   };
+
+               
                   const video = e.target.videoFile.files[0];
                   const pdf = e.target.pdfFile.files[0];
                   
@@ -2465,15 +2488,9 @@ const ExamBuilderUI = ({ courses, onSave }) => {
     </div>
   );
 };
-  /**
- * [15] GUI COMPONENT: COMMUNICATIONS & SUPPORT HUB
- * مركز الاتصال السحابي: بث الإشعارات وإدارة تذاكر الدعم الفني
- */
-const CommsCenterUI = () => {
-  // الحالات المطلوبة (تأكد من تعريفها في الـ Logic)
-  // const [msgData, setMsgData] = useState({ title: '', message: '', category: 'ALL', type: 'INFO' });
-  // const [supportTickets, setSupportTickets] = useState([]);
 
+ const CommsCenterUI = ({ msgData, setMsgData, supportTickets, setActiveChat, NotificationHub }) => { 
+ 
   return (
     <div className="comms-center-vessel space-y-6">
       <div className="comms-grid grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -2758,11 +2775,46 @@ const DigitalLibraryUI = () => {
                 };
                 const pdf = e.target.bFile.files[0];
                 const cover = e.target.bCover.files[0];
-                
-                alert("جاري تشفير ورفع الملفات إلى السحابة...");
-                await LibraryManager.uploadBook(data, pdf, cover);
-                setIsUploading(false);
-              }}>
+                // ... داخل مكون DigitalLibraryUI
+<form className="titan-form space-y-5" onSubmit={async (e) => {
+       // --- ضع هذا الجزء داخل الـ onSubmit الخاص بالفورم ---
+
+e.preventDefault(); 
+
+// 1. استخراج الملفات من الفورم
+const pdf = e.target.bFile.files[0];
+const cover = e.target.bCover.files[0];
+
+// 2. حارس البوابة: التحقق من وجود الملفات ✅
+if (!pdf || !cover) {
+    return alert("⚠️ يرجى اختيار ملف الـ PDF وصورة الغلاف أولاً");
+}
+
+// 3. تجهيز البيانات بالكامل من مدخلات الفورم
+const data = {
+    title: e.target.bTitle.value,
+    author: e.target.bAuthor.value,
+    description: e.target.bDesc.value,
+    category: libCategory,
+    price: Number(e.target.bPrice.value) || 0,
+    pagesCount: Number(e.target.bPages.value) || 0,
+    isFree: (Number(e.target.bPrice.value) || 0) === 0,
+    downloadsCount: 0,
+    createdAt: new Date()
+};
+
+// 4. تنفيذ الرفع السحابي داخل بلوك try-catch
+try {
+    alert("جاري تشفير ورفع الملفات إلى السحابة... انتظر قليلاً");
+    await LibraryManager.uploadBook(data, pdf, cover);
+    setIsUploading(false); // إغلاق النافذة بعد النجاح
+    alert("✅ تم النشر بنجاح في المكتبة الرقمية");
+} catch (error) {
+    console.error("Upload failed:", error);
+    alert("❌ فشل الرفع: تأكد من حجم الملفات أو اتصال الإنترنت");
+}
+
+// --- نهاية الجزء المصلح ---
                 <div className="form-row grid grid-cols-1 md:grid-cols-2 gap-4">
                   <input name="bTitle" className="bg-white/5 border border-white/10 p-4 rounded-2xl text-white outline-none focus:border-blue-500" placeholder="عنوان الكتاب" required />
                   <input name="bAuthor" className="bg-white/5 border border-white/10 p-4 rounded-2xl text-white outline-none focus:border-blue-500" placeholder="اسم الكاتب" />
@@ -3168,6 +3220,7 @@ const AdminDashboard = () => {
     </div>
   );
 } 
+
 
 
 
