@@ -68,12 +68,12 @@ export default function AdminDash() {
   const [students, setStudents] = useState([]); 
   const [transactions, setTransactions] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
-  const [stats, setStats] = useState({
+const [stats, setStats] = useState({
     totalStudents: 0,
     activeCourses: 0,
-    revenue: 0,
+    totalRevenue: 0, // تم التعديل هنا لتطابق الخطأ
     securityAlerts: 0
-  });
+});
   const [editingItem, setEditingItem] = useState(null);
   const [lectures, setLectures] = useState([]);
   const [isLectureLoading, setIsLectureLoading] = useState(false);
@@ -1167,7 +1167,7 @@ const filteredList = useMemo(() => {
       await addDoc(msgRef, {
         text: message,
         sender: 'ADMIN',
-        senderName: 'فريق الدعم الفني - تيتان',
+        senderName: 'فريق الدعم الفني -Mafa',
         timestamp: serverTimestamp()
       });
     }
@@ -2851,7 +2851,8 @@ const AnalyticsUI = ({ stats, radarStats, securityLogs, chartData, pieData, setT
             <div className="stat-info">
               <p className="text-xs text-yellow-500/70 font-bold mb-1 uppercase tracking-widest">إجمالي الدخل الصافي</p>
               <h2 className="text-3xl font-black text-white leading-none">
-                {stats.totalRevenue?.toLocaleString()} <small className="text-sm font-normal text-yellow-500/50">EGP</small>
+                { (stats?.totalRevenue || stats?.revenue || 0).toLocaleString() } 
+<small className="text-sm font-normal text-yellow-500/50">EGP</small>
               </h2>
               <span className="trend-up flex items-center gap-1 text-[10px] text-green-400 mt-4 bg-green-400/10 w-fit px-2 py-1 rounded-full border border-green-400/20">
                 <TrendingUp size={12}/> +12% هذا الشهر
@@ -3194,6 +3195,7 @@ const AdminDashboard = () => {
     </div>
   );
 } 
+
 
 
 
