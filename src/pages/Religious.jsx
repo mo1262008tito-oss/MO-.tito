@@ -1075,8 +1075,10 @@ const Religious = ({ user, profile }) => {
   // 2. استدعاء المحرك الشامل الذي صنعته أنت (useUltimateWahaOS)
   const waha = useUltimateWahaOS(user, profile);
 
-  // 3. تعريف المتغيرات التي يحتاجها الـ JSX (مثل xpPercentage)
-  const xpPercentage = (waha.faithStats?.faithXP / 1000) * 100 || 0;
+// حساب النسبة المئوية بناءً على الـ XP الحالي والـ XP المطلوب للمستوى التالي
+const xpPercentage = (waha?.faithStats?.faithXP && waha?.faithStats?.nextLevelXP) 
+  ? (waha.faithStats.faithXP / waha.faithStats.nextLevelXP) * 100 
+  : 0;
   const faithLevelName = waha.faithLevelName || "مبتدئ";
   const spiritualMood = waha.spiritualMood || "default";
   const isKhalwaActive = waha.isKhalwaActive || false;
@@ -1811,3 +1813,4 @@ const Religious = ({ user, profile }) => {
 
 
 export default Religious;
+
