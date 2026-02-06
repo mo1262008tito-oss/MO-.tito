@@ -280,8 +280,10 @@ useEffect(() => {
     const activeRef = ref(rtdb, 'active_sessions');
     const unsubRadar = onValue(activeRef, (snapshot) => {
       const data = snapshot.val() || {};
-      setRadarStats(prev => ({ ...prev, online: Object.keys(data).length }));
-    });
+setRadarStats(prev => ({ 
+  ...prev, 
+  online: data ? Object.keys(data).length : 0 
+}));  
 
     // 2. مراقبة سجل التهديدات اللحظي
     const qSecurity = query(collection(db, "security_incidents"), orderBy("timestamp", "desc"), limit(50));
@@ -492,7 +494,7 @@ setTerminalLogs(prev => [...prev, `[ACADEMY] تم إضافة محاضرة: ${lec
       
       await updateDoc(courseRef, {
         sections: updatedSections,
-        lecturesCount: updatedSections.length,
+lecturesCount: (updatedSections?.length || 0),
         updatedAt: serverTimestamp()
       });
 
@@ -662,20 +664,22 @@ const filteredList = useMemo(() => {
   );
 }, [globalSearch, students]); 
 
+const processStudentStats = useCallback(() => {
+    // نضمن إن students مصفوفة حتى لو لسه بتحمل
+    const safeStudents = students || [];
 
-  const processStudentStats = useCallback(() => {
     const stats = {
-      active: students.filter(s => s.status === 'ACTIVE').length,
-      banned: students.filter(s => s.status === 'BANNED').length,
-      newToday: students.filter(s => {
+      active: safeStudents.filter(s => s?.status === 'ACTIVE').length || 0,
+      banned: safeStudents.filter(s => s?.status === 'BANNED').length || 0,
+      newToday: safeStudents.filter(s => {
+        if (!s?.createdAt?.seconds) return false; // حماية لو التاريخ مش موجود
         const today = new Date().toLocaleDateString();
-        const created = new Date(s.createdAt?.seconds * 1000).toLocaleDateString();
+        const created = new Date(s.createdAt.seconds * 1000).toLocaleDateString();
         return today === created;
-      }).length
+      }).length || 0
     };
     return stats;
-  }, [students]);
-
+  }, [students]); // أضف students هنا عشان الدالة تتحدث لما البيانات تيجي
   /**
    * [11] DEEP FORENSIC MODAL
    * نافذة التحليل الجنائي للملف الشخصي للطالب
@@ -1051,9 +1055,7 @@ const filteredList = useMemo(() => {
           hasExam: true,
           examId: docRef.id
         });
-
-        setLoadingProgress(100);
-        setTerminalLogs(prev => [...prev, `[EXAM] New Exam Deployed: ${examData.title} (Questions: ${examData.questions.length})`]);
+setTerminalLogs(prev => [...prev, `[EXAM] New Exam Deployed: ${examData?.title} (Questions: ${examData?.questions?.length || 0})`]);
         return docRef.id;
       } catch (err) {
         console.error("Exam Creation Error:", err);
@@ -1065,13 +1067,19 @@ const filteredList = useMemo(() => {
       const examSnap = await getDoc(doc(db, "exams", examId));
       const examData = examSnap.data();
       
+// 1. حارس الأمان في البداية
+      if (!examData?.questions || examData.questions.length === 0) {
+        return { score: 0, passed: false, detailedResults: [] };
+      }
+
       let score = 0;
+      
+      // 2. الآن نقوم بالعملية بأمان
       const detailedResults = examData.questions.map((q, index) => {
-        const isCorrect = q.correctAnswer === answers[index];
-       if (!examData.questions || examData.questions.length === 0) return { score: 0, passed: false };
+        const isCorrect = q?.correctAnswer === answers[index];
+        if (isCorrect) score++; // لا تنسَ تحديث السكور هنا إذا كنت تحتاجه
         return { questionIndex: index, correct: isCorrect };
       });
-
       const finalScore = Math.round(score);
       const passed = finalScore >= examData.passingScore;
 
@@ -1294,7 +1302,7 @@ const CommunicationsUI = () => {
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[500px]">
-              {supportTickets.length === 0 ? (
+              { (supportTickets?.length || 0) === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center opacity-20 italic text-sm">
                   <ShieldCheck size={48} className="mb-2"/>
                   لا توجد تهديدات أو تذاكر دعم معلقة
@@ -1346,17 +1354,20 @@ const CommunicationsUI = () => {
     </motion.div>
   );
 };
-
-  const getExamAnalytics = (results) => {
-    const total = results.length;
-    const passed = results.filter(r => r.passed).length;
-    const averageScore = results.reduce((acc, curr) => acc + curr.score, 0) / total;
+const getExamAnalytics = (results) => {
+    // 1. تأمين المصفوفة
+    const safeResults = results || [];
+    const total = safeResults.length;
     
-    return {
-      passRate: ((passed / total) * 100).toFixed(1),
-      avg: averageScore.toFixed(1),
-      totalAttempts: total
-    };
+    // 2. حماية القسمة على صفر والحماية من المصفوفة الفارغة
+    if (total === 0) {
+      return { total: 0, passed: 0, averageScore: 0, passRate: 0 };
+    }
+
+    const passed = safeResults.filter(r => r?.passed).length;
+    const averageScore = safeResults.reduce((acc, curr) => acc + (curr?.score || 0), 0) / total;
+
+    return { total, passed, averageScore, passRate: (passed / total) * 100 };
   };
 
   /**
@@ -1506,7 +1517,9 @@ const LibraryUI = () => {
           <p className="text-gray-400">إدارة المراجع، الكتب، وحقوق النشر الرقمية</p>
         </div>
         <div className="stats-pills flex gap-4">
-           <div className="pill glass-card"><BookOpen size={16}/> {books.length} كتاب</div>
+           <div className="pill glass-card">
+  <BookOpen size={16}/> {books?.length || 0} كتاب
+</div>
         </div>
       </div>
 
@@ -1809,7 +1822,7 @@ const FinanceVaultUI = ({ stats, genConfig, setGenConfig, transactions, BillingE
           </h3>
           <div className="ledger-list space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
              {/* هنا نضع التخطيط للسجل */}
-             {transactions.length === 0 ? (
+           { (transactions?.length || 0) === 0 ? (
                <p className="text-center text-gray-600 py-10">لا توجد عمليات مسجلة حالياً</p>
              ) : (
                transactions.slice(0, 10).map(tx => (
@@ -2081,10 +2094,9 @@ const AcademyUI = ({ academyCategory, courses, setCourses }) => {
 
               {/* قائمة المحاضرات المضافة فعلياً */}
               <div className="p-6 border-t border-white/10 bg-white/[0.02]">
-                <h3 className="text-md font-bold text-white mb-4 flex items-center gap-2">
-                  <BookOpen size={18} className="text-blue-400" /> المحاضرات الحالية ({lectures.length})
-                </h3>
-                
+               <h3 className="text-md font-bold text-white mb-4 flex items-center gap-2">
+  <BookOpen size={18} className="text-blue-400" /> المحاضرات الحالية ({lectures?.length || 0})
+</h3>
                 {isLectureLoading ? (
                   <div className="text-center text-gray-400 py-4 flex items-center justify-center gap-2 italic text-sm">
                     <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
@@ -2131,9 +2143,9 @@ const AcademyUI = ({ academyCategory, courses, setCourses }) => {
         <div className="courses-display-section">
           <div className="section-header flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-white border-r-4 border-blue-600 pr-4">كورسات قسم {academyCategory}</h3>
-            <span className="count-badge bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-              {courses.filter(c => c.category === academyCategory).length} كورس
-            </span>
+        <span className="count-badge bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+  {(courses?.filter(c => c?.category === academyCategory)?.length || 0)} كورس
+</span>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -2196,7 +2208,7 @@ const LectureManagerUI = ({ course }) => {
 
       {/* قائمة المحاضرات بنظام الكروت الذكية */}
       <div className="lectures-list-pro space-y-4">
-        {course.sections && course.sections.length > 0 ? (
+       { (course?.sections?.length || 0) > 0 ? (
           course.sections.map((lec, index) => (
             <div key={lec.id || index} className="lecture-item-card glass-card flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl hover:border-blue-500/30 transition-all">
               <div className="flex items-center gap-5">
@@ -2327,7 +2339,7 @@ const ExamBuilderUI = ({ courses, onSave }) => {
 
   // حذف سؤال محدد
   const removeQuestion = (index) => {
-    if (questions.length > 1) {
+ if ((questions?.length || 0) > 1) {
       setQuestions(questions.filter((_, i) => i !== index));
     } else {
       alert("يجب أن يحتوي الاختبار على سؤال واحد على الأقل.");
@@ -2580,8 +2592,7 @@ const ExamBuilderUI = ({ courses, onSave }) => {
           </div>
 
           <div className="tickets-list space-y-3 overflow-y-auto max-h-[400px] custom-scrollbar pr-2">
-            {supportTickets.length > 0 ? supportTickets.map(ticket => (
-              <div key={ticket.id} className="ticket-item group flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all border-l-4 border-l-green-500">
+{(supportTickets?.length || 0) > 0 ? supportTickets.map(ticket => (              <div key={ticket.id} className="ticket-item group flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all border-l-4 border-l-green-500">
                 <div className="ticket-info flex flex-col">
                   <strong className="text-gray-200 text-sm">{ticket.userName}</strong>
                   <p className="text-xs text-gray-500 truncate max-w-[200px]">{ticket.lastMessage}</p>
@@ -2897,7 +2908,7 @@ const AnalyticsUI = ({ stats, radarStats, securityLogs, chartData, pieData, setT
             <div className="stat-info">
               <p className="text-xs text-purple-500/70 font-bold mb-1 uppercase tracking-widest">تهديدات تم صدها</p>
               <h2 className="text-3xl font-black text-white leading-none">
-                {securityLogs.length} <small className="text-sm font-normal text-purple-500/50">محاولة</small>
+{securityLogs?.length || 0} <small className="text-sm font-normal text-purple-500/50">محاولة</small>
               </h2>
               <span className="text-[10px] text-green-400 mt-5 block font-bold border-r-2 border-green-500 pr-2 uppercase">Firewall Active</span>
             </div>
@@ -3177,7 +3188,7 @@ const AdminDashboard = () => {
       <div className="ledger-station w-64 border-l border-white/5 p-4 bg-white/5">
         <h4 className="text-xs font-bold mb-4 opacity-50 tracking-widest text-blue-400">RECENT TRANSACTIONS</h4>
         <div className="space-y-3">
-          {transactions.length > 0 ? (
+         { (transactions?.length || 0) > 0 ? (
             transactions.slice(0, 5).map(tx => (
               <div key={tx.id} className="ledger-item p-3 bg-white/5 rounded-lg border border-white/5">
                 <div className="flex justify-between items-center mb-1">
@@ -3195,6 +3206,7 @@ const AdminDashboard = () => {
     </div>
   );
 } 
+
 
 
 
