@@ -2874,7 +2874,7 @@ const AnalyticsUI = ({ stats, radarStats, securityLogs, chartData, pieData, setT
             <div className="stat-info">
               <p className="text-xs text-blue-500/70 font-bold mb-1 uppercase tracking-widest">الطلاب النشطون (أونلاين)</p>
               <h2 className="text-3xl font-black text-white leading-none">
-                {radarStats.online} <small className="text-sm font-normal text-blue-500/50">طالب</small>
+               { (radarStats?.online || 0).toLocaleString() } <small className="text-sm font-normal text-blue-500/50">طالب</small>
               </h2>
               <div className="flex items-center gap-2 mt-5">
                 <div className="pulse-indicator w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
@@ -3195,6 +3195,7 @@ const AdminDashboard = () => {
     </div>
   );
 } 
+
 
 
 
