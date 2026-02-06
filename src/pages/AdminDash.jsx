@@ -29,7 +29,7 @@ import {
   CreditCard, DollarSign, Ticket, 
 
   // الأيقونات الخاصة بالمكتبة والنظام (المصححة)
- Library as LibraryIcon, FilePlus, UploadCloud, Terminal, MapPin, 
+ Library as LibraryIcon, FilePlus, UploadCloud, Terminal, MapPin, Users,
   
   // إذا كنت تستخدم أيقونات بأسماء بديلة (Aliasing)
   CreditCard as CardIcon 
@@ -44,6 +44,7 @@ import {
   BarChart, Bar, Legend, ComposedChart  
 } from 'recharts';
 
+
 // 3. استيراد خدمات Firebase
 import { db, rtdb, auth, storage } from "../firebase";
 import {  
@@ -54,6 +55,8 @@ import {
 import { ref, set, onValue, update, remove, push, child, get, onDisconnect } from "firebase/database";
 import { ref as sRef, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import './AdminDash.css';
+
+
 
 export default function AdminDash() {
   // --- [1] منطقة تعريف الـ States (كلها في بداية المكون) ---
@@ -83,6 +86,7 @@ const [examId, setExamId] = useState(null); // لحفظ معرف الامتحا�
 const [showForensic, setShowForensic] = useState(false);
 const [selectedForensicData, setSelectedForensicData] = useState(null);
 
+  
   // States خاصة بمنشئ الاختبارات
   const [examMeta, setExamMeta] = useState({ title: '', courseId: '', duration: 30, passScore: 50 });
   const [questions, setQuestions] = useState([]);
@@ -1600,16 +1604,6 @@ const LibraryUI = () => {
  */
 const StudentsManagerUI = () => {
   const [localSearch, setLocalSearch] = useState("");
-
-  // نظام الفلترة الذكي للبيانات الرباعية
-  const filteredList = useMemo(() => {
-    return students.filter(s => 
-      s.fullName?.toLowerCase().includes(localSearch.toLowerCase()) || 
-      s.phone?.includes(localSearch) ||
-      s.parentPhone?.includes(localSearch) ||
-      s.id?.includes(localSearch)
-    );
-  }, [localSearch, students]);
 
   return (
     <div className="titan-student-vessel">
@@ -3174,6 +3168,7 @@ const AdminDashboard = () => {
     </div>
   );
 } 
+
 
 
 
