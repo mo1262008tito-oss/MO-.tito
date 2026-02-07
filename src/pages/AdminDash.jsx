@@ -194,7 +194,6 @@ useEffect(() => {
   const [globalSearch, setGlobalSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState('all');
 
-// [1] محرك توليد الأكواد (المفقود في قسم الموارد المالية)
 const generateRandomCode = (prefix, length = 8) => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // بدون الحروف المتشابهة مثل O و 0
   let result = '';
@@ -271,21 +270,20 @@ useEffect(() => {
 
   return () => unsubscribe();
 }, []);
-  /**
-   * [2] REAL-TIME RADAR INITIALIZATION
-   * مراقبة السيرفر والطلاب في هذه اللحظة
-   */
-  useEffect(() => {
-    // 1. مراقبة الجلسات الحية
+  
+
+useEffect(() => {
+    // 1. مراقبة الجلسات الحية (RTDB)
     const activeRef = ref(rtdb, 'active_sessions');
     const unsubRadar = onValue(activeRef, (snapshot) => {
       const data = snapshot.val() || {};
-setRadarStats(prev => ({ 
-  ...prev, 
-  online: data ? Object.keys(data).length : 0 
-}));  
+      setRadarStats(prev => ({ 
+        ...prev, 
+        online: data ? Object.keys(data).length : 0 
+      }));
+    });
 
-    // 2. مراقبة سجل التهديدات اللحظي
+    // 2. مراقبة سجل التهديدات اللحظي (Firestore)
     const qSecurity = query(collection(db, "security_incidents"), orderBy("timestamp", "desc"), limit(50));
     const unsubSecurity = onSnapshot(qSecurity, (snap) => {
       setSecurityLogs(snap.docs.map(d => ({ id: d.id, ...d.data() })));
@@ -300,14 +298,13 @@ setRadarStats(prev => ({
       })));
     });
 
-    return () => { unsubRadar(); unsubSecurity(); unsubStudents(); };
-  }, []);
-
-  /**
-   * [3] ACADEMY CONTENT CORE (AC-CORE)
-   * إدارة الكورسات، المحاضرات، والكتب
-   */
-
+    // دالة التنظيف لإلغاء جميع الاشتراكات عند إغلاق الصفحة
+    return () => { 
+      unsubRadar(); 
+      unsubSecurity(); 
+      unsubStudents(); 
+    };
+  }, []); // نهاية الـ useEffect الواحدة
 useEffect(() => {
   if (editingItem) {
     const fetchLectures = async () => {
@@ -979,73 +976,56 @@ const processStudentStats = useCallback(() => {
       
       setTerminalLogs(prev => [...prev, `[CONTENT] Lecture ${lectureObj.id} purged from system.`]);
     }
-  };
-
-  /**
-   * [16] TITAN LIVE COMMAND (TLC)
-   * محرك البث المباشر: إدارة الغرف، المحادثة الفورية، وحظر الطلاب أثناء البث
-   */
   
+  };
+  
+
+
 const LiveControl = {
-  // بدء بث مباشر جديد
+ 
   async startLiveSession(config) {
-    // 1. التأكد من وجود مستخدم مسجل وبياناته كاملة
-    const currentUser = auth.currentUser;
-    if (!currentUser) throw new Error("يجب تسجيل الدخول أولاً");
-
-    const liveRef = ref(rtdb, 'live_sessions/current');
-    
-    const sessionData = {
-      title: config.title,
-      streamUrl: config.url,
-      category: config.category,
-      teacherId: currentUser.uid, // ربط البث بـ ID المدرس
-      teacherName: config.teacher,
-      startedAt: Date.now(),
-      isActive: true,
-      allowChat: true,
-      viewerCount: 0,
-      moderators: [currentUser.uid]
-    };
-
     try {
-      // 2. تحديث حالة البث (أولوية قصوى)
+      const liveRef = ref(rtdb, 'live_sessions/current');
+      const sessionData = {
+        title: config.title,
+        streamUrl: config.url,
+        category: config.category,
+        startedAt: Date.now(),
+        isActive: true,
+        allowChat: true,
+        viewerCount: 0,
+        moderators: [auth.currentUser?.uid]
+      };
+
       await set(liveRef, sessionData);
 
-      // 3. إرسال الإشعار (عملية منفصلة عشان لو فشلت متبوظش البث)
       await addDoc(collection(db, "global_notifications"), {
         title: "بث مباشر بدأ الآن!",
         body: `انضم للمدرس ${config.teacher} في بث: ${config.title}`,
+
         category: config.category,
         type: 'LIVE_START',
-        timestamp: serverTimestamp(),
-        senderId: currentUser.uid
+        timestamp: serverTimestamp()
       });
-
-      return { success: true };
     } catch (error) {
-      console.error("Error starting live session:", error);
-      throw error; // عشان تعرض رسالة خطأ واضحة في الواجهة
+      console.error("Error starting session:", error);
     }
-  },
+  }, // تأكد من وجود هذه الفاصلة بين الدوال
 
   // إغلاق البث
   async terminateLive() {
     try {
-      await update(ref(rtdb, 'live_sessions/current'), { 
-        isActive: false, 
-        endedAt: Date.now() 
+      await update(ref(rtdb, 'live_sessions/current'), {
+        isActive: false,
+        endedAt: Date.now()
       });
     } catch (error) {
-      console.error("Error terminating live:", error);
+      console.error("Error terminating session:", error);
     }
   }
-};
+}; // القوس ده هو اللي كان بيعمل المشكلة (')' expected)
 
-  /**
-   * [18] TITAN EXAM ENGINE (TEE)
-   * محرك الاختبارات: نظام التصحيح التلقائي، إدارة بنك الأسئلة، والرقابة على الغش
-   */
+
   const ExamEngine = {
     // إنشاء اختبار جديد وربطه بمحتوى
     async createExam(targetId, examData) {
@@ -3176,10 +3156,9 @@ const AdminDashboard = () => {
             </motion.div>
           </AnimatePresence>
         </section>
-      </main>
+    </main>
 
       {/* Overlays - النوافذ العائمة */}
-      {/* تم إضافة شرط التحقق لضمان عدم حدوث Crash إذا لم تكن هناك بيانات فحص */}
       {showForensic && (
         <ForensicModal 
           isOpen={showForensic} 
@@ -3192,18 +3171,6 @@ const AdminDashboard = () => {
       <div className="titan-toast-container fixed bottom-8 left-8 z-[999] flex flex-col gap-3">
         {/* تدار عبر مصفوفة تنبيهات في الـ Logic */}
       </div>
-    </div>
-  );
-};
-
-  // --- [قسم الـ Return النهائي] ---
-  return (
-    <div className="admin-dash-container flex min-h-screen bg-[#050505] text-white">
-      {/* تأكد من وجود الـ Sidebar هنا أو استدعائه */}
-      
-      <main className="main-viewport flex-1 p-6">
-        {renderMainContent()}
-      </main>
 
       <div className="ledger-station w-64 border-l border-white/5 p-4 bg-white/5">
         <h4 className="text-xs font-bold mb-4 opacity-50 tracking-widest text-blue-400">RECENT TRANSACTIONS</h4>
@@ -3223,18 +3190,7 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-    </div>
-  );
-} 
-
-
-
-
-
-
-
-
-
-
-
-
+    </div> // قفلة الـ titan-admin-container
+  ); // قفلة الـ return
+}; // قفلة الـ AdminDashboard
+};
