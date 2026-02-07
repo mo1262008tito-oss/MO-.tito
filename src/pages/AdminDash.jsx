@@ -111,7 +111,7 @@ const handleDeploy = async () => {
   const coverUrl = document.getElementById('courseCoverUrl')?.value;
   const teacherFile = document.getElementById('teacherImgFile')?.files[0];
   const teacherUrl = document.getElementById('teacherImgUrl')?.value;
-
+const [msgData, setMsgData] = useState({ type: 'INFO', title: '', body: '' }); // لازم قيم ابتدائية
   // تحديد المصدر (ملف مرفوع أو رابط خارجي)
   const finalCover = coverFile || coverUrl;
   const finalTeacher = teacherFile || teacherUrl;
@@ -209,7 +209,12 @@ const generateRandomCode = (prefix, length = 8) => {
 useEffect(() => {
   const q = query(collection(db, "books"), orderBy("createdAt", "desc"));
   const unsub = onSnapshot(q, (snap) => {
-    const booksData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+   const booksData = snap.docs
+  .map(d => {
+    const data = d.data();
+    return data ? { id: d.id, ...data } : null;
+  })
+  .filter(item => item !== null); // عشان نشيل أي كتاب بياناته بايظة
     setBooks(booksData); // تأكد أن لديك [books, setBooks] في الـ State
   });
   return () => unsub();
@@ -288,11 +293,19 @@ useEffect(() => {
   
   // استخدام onSnapshot يجعل الواجهة تتحدث تلقائياً لحظة إضافة أي كورس أو محاضرة
   const unsubscribe = onSnapshot(q, (snapshot) => {
-    const coursesData = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-    setCourses(coursesData);
+// التعديل الآمن لـ CoursesData
+const coursesData = snapshot.docs ? snapshot.docs.map(doc => {
+  const data = doc.data();
+  return {
+    id: doc.id,
+    ...data,
+    // تأمين الحقول الهامة حتى لا ينهار الـ Component الذي يعرضها
+    sections: data.sections || [], 
+    lecturesCount: data.lecturesCount || 0
+  };
+}) : [];
+
+setCourses(coursesData);
   }, (error) => {
     console.error("خطأ في جلب الكورسات:", error);
   });
@@ -315,19 +328,46 @@ useEffect(() => {
     // 2. مراقبة سجل التهديدات اللحظي (Firestore)
     const qSecurity = query(collection(db, "security_incidents"), orderBy("timestamp", "desc"), limit(50));
     const unsubSecurity = onSnapshot(qSecurity, (snap) => {
-      setSecurityLogs(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    const unsubSecurity = onSnapshot(qSecurity, (snap) => {
+      if (snap && !snap.empty) {
+        const logs = snap.docs.map(d => {
+          const data = d.data();
+          return {
+            id: d.id,
+            // نضع قيم افتراضية لكل حقل حتى لا ينهار التصميم
+            type: data.type || 'UNKNOWN',
+            details: data.details || 'No details available',
+            timestamp: data.timestamp || { seconds: Date.now() / 1000 },
+            ...data
+          };
+        });
+        setSecurityLogs(logs);
+      } else {
+        setSecurityLogs([]); // نضمن أنها مصفوفة فارغة وليست null
+      }
+    }, (error) => {
+      console.error("Security Monitor Error:", error);
     });
-
     // 3. مزامنة بيانات الطلاب (الاسم الرباعي والبيانات)
-    const unsubStudents = onSnapshot(collection(db, "users"), (snap) => {
-      setStudents(snap.docs.map(d => ({ 
-        id: d.id, 
-        fullName: d.data().fullName || d.data().name, // دعم الاسم الرباعي
-        ...d.data() 
-      })));
-    });
-
-    // دالة التنظيف لإلغاء جميع الاشتراكات عند إغلاق الصفحة
+const unsubStudents = onSnapshot(collection(db, "users"), (snap) => {
+      try {
+        const studentsList = snap.docs.map(d => {
+          const userData = d.data() || {}; // تأمين لو البيانات رجعت undefined
+          return {
+            id: d.id,
+            fullName: userData.fullName || userData.name || "مستخدم بدون اسم",
+            email: userData.email || "لا يوجد بريد",
+            accountStatus: userData.accountStatus || "ACTIVE",
+            ...userData
+          };
+        });
+        setStudents(studentsList);
+      } catch (err) {
+        console.error("خطأ في معالجة بيانات الطلاب:", err);
+      }
+    }, (error) => {
+      console.error("Firebase Connection Error (Users):", error);
+    });  // دالة التنظيف لإلغاء جميع الاشتراكات عند إغلاق الصفحة
     return () => { 
       unsubRadar(); 
       unsubSecurity(); 
@@ -558,10 +598,33 @@ lecturesCount: (updatedSections?.length || 0),
   const StudentMiner = {
     // الحصول على سجل الدخول التفصيلي (بصمات الأجهزة والـ IPs)
     async getStudentForensics(uid) {
-      const loginLogs = await getDocs(query(collection(db, `users/${uid}/login_history`), orderBy("timestamp", "desc"), limit(20)));
-      return loginLogs.docs.map(d => d.data());
-    },
+      try {
+        if (!uid) {
+          console.warn("[TITAN] UID مفقود في عملية الفحص الجنائي");
+          return [];
+        }
 
+        const historyRef = collection(db, "users", uid, "login_history");
+        const q = query(historyRef, orderBy("timestamp", "desc"), limit(20));
+        const loginLogs = await getDocs(q);
+
+        if (loginLogs.empty) {
+          return [];
+        }
+
+        return loginLogs.docs.map(d => ({
+          id: d.id,
+          ...d.data(),
+          // تأمين الحقول عشان الـ UI ميتكسرش
+          ip: d.data().ip || "0.0.0.0",
+          device: d.data().device || "Unknown Device",
+          timestamp: d.data().timestamp?.toDate?.() || new Date()
+        }));
+      } catch (error) {
+        console.error("Forensic Mining Error:", error);
+        return []; // نرجع مصفوفة فاضية بدل ما نوقع الشاشة
+      }
+    },
     // تعديل بيانات الطالب الرباعية
     async updateFullProfile(uid, data) {
       const userRef = doc(db, "users", uid);
@@ -620,11 +683,18 @@ lecturesCount: (updatedSections?.length || 0),
         const userDoc = await getDoc(doc(db, "users", uid));
         const hardwareLogs = await getDocs(query(collection(db, `users/${uid}/device_history`), orderBy("timestamp", "desc")));
         const academicProgress = await getDocs(collection(db, `users/${uid}/enrolled_courses`));
-        
-        return {
-          profile: userDoc.data(),
-          devices: hardwareLogs.docs.map(d => d.data()),
-          progress: academicProgress.docs.map(d => d.data())
+      return {
+          profile: userDoc.exists() ? userDoc.data() : {},
+          devices: (hardwareLogs?.docs || []).map(d => ({
+            id: d.id,
+            ...d.data(),
+            lastUsed: d.data().lastUsed || new Date().toISOString()
+          })),
+          progress: (academicProgress?.docs || []).map(d => ({
+            id: d.id,
+            ...d.data(),
+            completionRate: d.data().completionRate || 0
+          }))
         };
       } catch (err) {
         console.error("Deep Fetch Error:", err);
@@ -1103,13 +1173,24 @@ setTerminalLogs(prev => [...prev, `[EXAM] New Exam Deployed: ${examData?.title} 
 
       let score = 0;
       
-      // 2. الآن نقوم بالعملية بأمان
-      const detailedResults = examData.questions.map((q, index) => {
-        const isCorrect = q?.correctAnswer === answers[index];
-        if (isCorrect) score++; // لا تنسَ تحديث السكور هنا إذا كنت تحتاجه
-        return { questionIndex: index, correct: isCorrect };
-      });
-      const finalScore = Math.round(score);
+   // 1. تأمين مصفوفة الأسئلة والإجابات قبل البدء
+      const questions = examData?.questions || [];
+      const userAnswers = answers || {}; // تأكدنا إنها Object أو Array حسب نظامك
+
+      // 2. العملية الآن محصنة ضد الـ undefined
+      const detailedResults = questions.map((q, index) => {
+        // استخدام Optional Chaining (?. ) مهم جداً هنا
+        const isCorrect = q?.correctAnswer === userAnswers[index];
+        
+        // تحديث السكور بأمان
+        if (isCorrect) score++; 
+
+        return { 
+          questionIndex: index, 
+          correct: isCorrect,
+          points: isCorrect ? (q?.points || 1) : 0 
+        };
+      }); const finalScore = Math.round(score);
       const passed = finalScore >= examData.passingScore;
 
       // حفظ النتيجة في سجل الطالب
@@ -1212,7 +1293,7 @@ setTerminalLogs(prev => [...prev, `[EXAM] New Exam Deployed: ${examData?.title} 
 
 
 const CommunicationsUI = () => {
-  const [msgData, setMsgData] = useState({ title: '', message: '', type: 'INFO', category: 'ALL' });
+ 
   const [supportTickets, setSupportTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [adminReply, setAdminReply] = useState("");
@@ -1225,10 +1306,31 @@ const CommunicationsUI = () => {
       where("status", "==", "OPEN"), 
       orderBy("lastUserActivity", "desc")
     );
-    const unsub = onSnapshot(q, (snap) => {
-      setSupportTickets(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-    return () => unsub();
+   const unsub = onSnapshot(q, (snap) => {
+      try {
+        if (!snap || snap.empty) {
+          setSupportTickets([]);
+          return;
+        }
+
+        const tickets = snap.docs.map(d => {
+          const data = d.data();
+          return {
+            id: d.id,
+            subject: data.subject || "بدون عنوان",
+            status: data.status || "OPEN",
+            priority: data.priority || "MEDIUM",
+            createdAt: data.createdAt?.toDate?.() || new Date(),
+            ...data
+          };
+        });
+        setSupportTickets(tickets);
+      } catch (err) {
+        console.error("خطأ في معالجة تذاكر الدعم:", err);
+      }
+    }, (error) => {
+      console.error("فشل الاتصال بتذاكر الدعم:", error);
+    }); return () => unsub();
   }, []);
 
   // 2. إرسال البث (Broadcast Logic)
@@ -1275,7 +1377,20 @@ const CommunicationsUI = () => {
             
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-2">
-                {['INFO', 'WARNING', 'EVENT'].map(t => (
+               {['INFO', 'WARNING', 'EVENT'].map(t => (
+    <button 
+      key={t}
+      // أضفنا حماية للتأكد من وجود setMsgData وقيمة msgData
+      onClick={() => typeof setMsgData === 'function' && setMsgData(prev => ({...(prev || {}), type: t}))}
+      className={`py-2 rounded border text-[10px] font-bold transition-all ${
+        (msgData?.type === t) 
+          ? 'bg-yellow-500 border-yellow-500 text-black' 
+          : 'border-white/10 text-gray-400 hover:bg-white/5'
+      }`}
+    >
+      {t}
+    </button>
+  ))}
                   <button 
                     key={t}
                     onClick={() => setMsgData({...msgData, type: t})}
@@ -1286,19 +1401,20 @@ const CommunicationsUI = () => {
                 ))}
               </div>
 
-              <input 
-                className="titan-input-v2" 
-                placeholder="رأس الرسالة..." 
-                value={msgData.title}
-                onChange={e => setMsgData({...msgData, title: e.target.value})}
-              />
-              
-              <textarea 
-                className="titan-input-v2 h-40 resize-none" 
-                placeholder="اكتب تعليماتك هنا..." 
-                value={msgData.message}
-                onChange={e => setMsgData({...msgData, message: e.target.value})}
-              ></textarea>
+            <input 
+  className="titan-input-v2" 
+  placeholder="رأس الرسالة..." 
+  // حماية بـ Optional Chaining وعلامة || لمنع السواد
+  value={msgData?.title || ''} 
+  onChange={e => setMsgData && setMsgData(prev => ({...prev, title: e.target.value}))}
+/>
+
+<textarea 
+  className="titan-input-v2 h-40 resize-none" 
+  placeholder="اكتب تعليماتك هنا..." 
+  value={msgData?.message || ''} 
+  onChange={e => setMsgData && setMsgData(prev => ({...prev, message: e.target.value}))}
+></textarea>
 
               <select 
                 className="titan-input-v2"
@@ -1329,33 +1445,40 @@ const CommunicationsUI = () => {
               <h3 className="font-bold flex items-center gap-2"><MessageCircle size={18}/> رادار الدعم النشط</h3>
               <span className="bg-green-500/20 text-green-400 text-[10px] px-2 py-1 rounded-full uppercase tracking-tighter">Live Traffic</span>
             </div>
-
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[500px]">
-              { (supportTickets?.length || 0) === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center opacity-20 italic text-sm">
-                  <ShieldCheck size={48} className="mb-2"/>
-                  لا توجد تهديدات أو تذاكر دعم معلقة
-                </div>
-              ) : (
-                supportTickets.map(ticket => (
-                  <motion.div 
-                    layout
-                    key={ticket.id} 
-                    onClick={() => setSelectedTicket(ticket)}
-                    className={`p-4 rounded-xl border transition-all cursor-pointer ${selectedTicket?.id === ticket.id ? 'bg-blue-600/20 border-blue-500/50' : 'bg-white/5 border-white/10 hover:border-white/20'}`}
-                  >
-                    <div className="flex justify-between mb-2">
-                      <span className="font-bold text-sm text-blue-300">{ticket.studentName || "طالب مجهول"}</span>
-                      <span className="text-[10px] text-gray-500 font-mono">
-                        {new Date(ticket.lastUserActivity?.seconds * 1000).toLocaleTimeString()}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-400 line-clamp-2 italic">"{ticket.lastMessage}"</p>
-                  </motion.div>
-                ))
-              )}
-            </div>
-
+<div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[500px]">
+  {/* استخدمنا الحماية هنا بـ (supportTickets || []) لضمان عدم الانهيار */}
+  { (!supportTickets || supportTickets.length === 0) ? (
+    <div className="h-full flex flex-col items-center justify-center opacity-20 italic text-sm">
+      <ShieldCheck size={48} className="mb-2"/>
+      لا توجد تهديدات أو تذاكر دعم معلقة
+    </div>
+  ) : (
+    supportTickets.map(ticket => (
+      <div 
+        key={ticket?.id || Math.random()} 
+        onClick={() => typeof setSelectedTicket === 'function' && setSelectedTicket(ticket)}
+        className={`p-4 rounded-xl border transition-all cursor-pointer ${
+          selectedTicket?.id === ticket?.id ? 'bg-blue-600/20 border-blue-500/50' : 'bg-white/5 border-white/10 hover:border-white/20'
+        }`}
+      >
+        <div className="flex justify-between mb-2">
+          <span className="font-bold text-sm text-blue-300">
+            {ticket?.studentName || "طالب مجهول"}
+          </span>
+          <span className="text-[10px] text-gray-500 font-mono">
+            {/* حماية التاريخ: لو مفيش ثواني ميعملش Crash للبرنامج */}
+            {ticket?.lastUserActivity?.seconds 
+              ? new Date(ticket.lastUserActivity.seconds * 1000).toLocaleTimeString() 
+              : '--:--'}
+          </span>
+        </div>
+        <p className="text-xs text-gray-400 line-clamp-2 italic">
+          "{ticket?.lastMessage || 'لا توجد رسالة'}"
+        </p>
+      </div>
+    ))
+  )}
+</div>
             {/* نافذة الرد السريع */}
             {selectedTicket && (
               <div className="p-4 bg-black/40 border-t border-white/10 animate-slide-up">
@@ -1403,28 +1526,59 @@ const getExamAnalytics = (results) => {
    * [26] TITAN ANALYTICS CORE (TAC)
    * محرك تحليل البيانات: معالجة سجلات البيع، نشاط الطلاب، ومؤشرات النمو
    */
-  const AnalyticsEngine = {
-    // معالجة البيانات وتحويلها لتنسيق صالح للرسم البياني (Recharts Format)
+const AnalyticsEngine = {
     processRevenueStats(transactions) {
+      // 1. حماية أولية: لو مفيش بيانات، نرجع مصفوفة فاضية بدل ما السيستم ينهار
+      if (!transactions || !Array.isArray(transactions)) return [];
+
       const dailyMap = {};
+      
       transactions.forEach(tx => {
-        const date = new Date(tx.timestamp?.seconds * 1000).toLocaleDateString('ar-EG');
-        if (!dailyMap[date]) dailyMap[date] = { date, revenue: 0, sales: 0 };
-        dailyMap[date].revenue += tx.amount || 0;
+        // 2. حماية التاريخ: التأكد من وجود التوقيت قبل الحساب
+        const seconds = tx.timestamp?.seconds || tx.createdAt?.seconds;
+        if (!seconds) return; // تخطي المعاملة لو مفيش تاريخ
+
+        const date = new Date(seconds * 1000).toLocaleDateString('en-CA'); // تنسيق YYYY-MM-DD أسهل للترتيب
+        
+        if (!dailyMap[date]) {
+          dailyMap[date] = { 
+            date, 
+            formattedDate: new Date(seconds * 1000).toLocaleDateString('ar-EG'), 
+            revenue: 0, 
+            sales: 0 
+          };
+        }
+        
+        dailyMap[date].revenue += Number(tx.amount || 0);
         dailyMap[date].sales += 1;
       });
-      return Object.values(dailyMap).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      // 3. الترتيب الصحيح وإرجاع البيانات
+      return Object.values(dailyMap).sort((a, b) => a.date.localeCompare(b.date));
     },
 
-    // تحليل توزيع الطلاب على الأقسام الأربعة
+  // تحليل توزيع الطلاب على الأقسام الأربعة (نسخة محمية)
     getCategoryDistribution(students) {
+      // 1. حماية أولية: لو مفيش طلاب، نرجع التوزيع صفري بدل الانهيار
       const dist = { 'high-school': 0, 'religious': 0, 'educational': 0, 'coding': 0 };
-      students.forEach(s => {
-        if (s.mainCategory) dist[s.mainCategory]++;
-      });
-      return Object.entries(dist).map(([name, value]) => ({ name, value }));
-    },
+      
+      if (!students || !Array.isArray(students)) {
+        return Object.entries(dist).map(([name, value]) => ({ name, value }));
+      }
 
+      // 2. معالجة البيانات بأمان
+      students.forEach(s => {
+        if (s && s.mainCategory && dist.hasOwnProperty(s.mainCategory)) {
+          dist[s.mainCategory]++;
+        }
+      });
+
+      // 3. تحويل البيانات لشكل الرسم البياني
+      return Object.entries(dist).map(([name, value]) => ({ 
+        name: name || 'unclassified', 
+        value: value || 0 
+      }));
+    },
     // نظام تصدير التقارير المالية لملف Excel احترافي
     exportFinancialReport(data) {
       const worksheet = XLSX.utils.json_to_sheet(data);
@@ -1584,7 +1738,8 @@ const LibraryUI = () => {
         {/* عرض الكتب */}
         <div className="books-display lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
           <AnimatePresence>
-            {books.filter(b => b.category === libCategory).map(book => (
+           {(books || []).filter(b => b?.category === libCategory).map(book => (
+  <div
               <motion.div key={book.id} layout initial={{scale: 0.9}} animate={{scale: 1}} className="book-item-card glass-card overflow-hidden">
                 <div className="flex gap-4 p-4">
                   <img src={book.coverUrl || 'placeholder.jpg'} className="w-24 h-32 object-cover rounded shadow-lg" />
@@ -1629,7 +1784,7 @@ const LibraryUI = () => {
           <div className="terminal-vessel glass-card">
             <div className="terminal-header">TITAN KERNEL TERMINAL v5.0.0</div>
             <div className="terminal-body">
-              {terminalLogs.map((log, i) => (
+             {(terminalLogs || []).map((log, i) => (
                 <div key={i} className="terminal-line">{`> ${log}`}</div>
               ))}
               <div className="terminal-input-line">
@@ -1704,7 +1859,7 @@ const StudentsManagerUI = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredList.map(student => (
+          {(filteredList || []).map(student => (
               <motion.tr 
                 layout 
                 key={student.id} 
@@ -1719,9 +1874,17 @@ const StudentsManagerUI = () => {
                 </td>
                 <td>
                   <div className="contact-info">
-                    <div className="item"><Wifi size={12}/> {student.phone}</div>
-                    <div className="item text-muted"><MapPin size={12}/> {student.governorate || 'غير محدد'}</div>
-                  </div>
+             <div className="item">
+  <Wifi size={12}/> 
+  {/* حماية في حالة عدم وجود رقم هاتف */}
+  {student?.phone || 'لا يوجد رقم'}
+</div>
+
+<div className="item text-muted">
+  <MapPin size={12}/> 
+  {/* حماية في حالة عدم وجود محافظة */}
+  {student?.governorate || 'غير محدد'}
+</div>
                 </td>
                 <td>
                   <div className="parent-tag">
@@ -1854,7 +2017,7 @@ const FinanceVaultUI = ({ stats, genConfig, setGenConfig, transactions, BillingE
            { (transactions?.length || 0) === 0 ? (
                <p className="text-center text-gray-600 py-10">لا توجد عمليات مسجلة حالياً</p>
              ) : (
-               transactions.slice(0, 10).map(tx => (
+      {(transactions || []).slice(0, 10).map(tx => (
                 <div key={tx.id} className="ledger-item flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5">
                    <div className="flex items-center gap-4">
                       <div className="l-icon p-2 bg-green-500/10 text-green-500 rounded-full"><DollarSign size={14}/></div>
@@ -2134,8 +2297,8 @@ const AcademyUI = ({ academyCategory, courses, setCourses }) => {
                 ) : lectures.length === 0 ? (
                   <p className="text-gray-500 text-center py-4 text-sm underline decoration-dotted">لا توجد محاضرات حالياً.</p>
                 ) : (
-                  <ul className="space-y-3 max-h-48 overflow-y-auto custom-scrollbar pr-2">
-                    {lectures.map((lecture, index) => (
+                  <ul className="space-y-3 max-h-48 over 
+                   {(lectures || []).map((lecture, index) => (
                       <li key={lecture.id || index} className="flex items-center justify-between bg-black/40 border border-white/5 p-3 rounded-xl hover:border-white/20 transition-all">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 text-xs font-bold">
@@ -2178,7 +2341,7 @@ const AcademyUI = ({ academyCategory, courses, setCourses }) => {
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-             {courses.filter(c => c.category === academyCategory).map(course => (
+          {(courses || []).filter(c => c?.category === academyCategory).map(course => (
                <div key={course.id} className="course-admin-card glass-card group overflow-hidden rounded-2xl border border-white/5 bg-white/5 hover:border-blue-500/50 transition-all">
                   <div className="card-top relative h-40 overflow-hidden">
                      <img src={course.thumbnail} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
@@ -2238,7 +2401,7 @@ const LectureManagerUI = ({ course }) => {
       {/* قائمة المحاضرات بنظام الكروت الذكية */}
       <div className="lectures-list-pro space-y-4">
        { (course?.sections?.length || 0) > 0 ? (
-          course.sections.map((lec, index) => (
+         {(course?.sections || []).map((lec, index) => (
             <div key={lec.id || index} className="lecture-item-card glass-card flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl hover:border-blue-500/30 transition-all">
               <div className="flex items-center gap-5">
                 <div className="lec-index w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 font-bold border border-blue-500/20">
@@ -2412,7 +2575,12 @@ const ExamBuilderUI = ({ courses, onSave }) => {
               onChange={e => setMeta({...meta, courseId: e.target.value})}
             >
               <option value="">اختر الكورس...</option>
-              {courses?.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+              {/* تأمين المصفوفة بالكامل لضمان عدم الانهيار */}
+{(courses || []).map(c => (
+  <option key={c?.id || Math.random()} value={c?.id}>
+    {c?.title || "كورس بدون عنوان"}
+  </option>
+))}
             </select>
           </div>
 
@@ -2437,18 +2605,48 @@ const ExamBuilderUI = ({ courses, onSave }) => {
           </div>
         </div>
       </div>
-
-      {/* 2. منطقة الأسئلة: التدفق الديناميكي */}
+{/* 2. منطقة الأسئلة: التدفق الديناميكي */}
       <div className="questions-flow space-y-6 max-h-[55vh] overflow-y-auto px-2 custom-scrollbar">
-        <AnimatePresence>
-          {questions.map((q, idx) => (
+        <AnimatePresence mode="popLayout">
+          {/* حماية المصفوفة: نستخدم || [] لضمان عدم الانهيار */}
+          {(questions || []).map((q, idx) => (
             <motion.div 
-              key={idx}
+              // استخدام ID فريد بدل الـ index لضمان استقرار الأنميشن
+              key={q?.id || idx} 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
               className="question-card glass-card p-6 bg-white/[0.02] border border-white/5 rounded-[2rem] group hover:border-blue-500/40 transition-all relative shadow-lg"
             >
+              {/* زر الحذف السريع */}
+              <button 
+                onClick={() => typeof removeQuestion === 'function' && removeQuestion(idx)}
+                className="absolute top-4 left-4 p-2 rounded-full bg-red-500/10 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Trash2 size={14} />
+              </button>
+
+              <div className="flex items-center gap-3 mb-4">
+                <span className="w-8 h-8 rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center text-xs font-bold">
+                  {idx + 1}
+                </span>
+                <p className="text-gray-300 font-medium line-clamp-1">
+                  {q?.text || "سؤال جديد..."}
+                </p>
+              </div>
+
+              {/* لو فيه خيارات، نعرضها بشكل مبسط */}
+              <div className="grid grid-cols-2 gap-2">
+                {(q?.options || []).map((opt, i) => (
+                  <div key={i} className="text-[10px] bg-white/5 p-2 rounded-lg text-gray-500 border border-white/5">
+                    {opt}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
               <div className="flex justify-between items-center mb-6">
                 <span className="flex items-center gap-2 bg-blue-500/10 text-blue-400 text-[10px] font-black px-4 py-1.5 rounded-full border border-blue-500/20 shadow-sm">
                   <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
@@ -2469,16 +2667,42 @@ const ExamBuilderUI = ({ courses, onSave }) => {
                 onChange={e => updateQuestion(idx, 'question', e.target.value)}
               />
 
-              <div className="options-grid grid grid-cols-1 md:grid-cols-2 gap-4">
-                {q.options.map((opt, oIdx) => (
-                  <div 
-                    key={oIdx}
-                    className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
-                      q.correctAnswer === oIdx 
-                      ? 'bg-green-500/10 border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.1)]' 
-                      : 'bg-black/20 border-white/5'
-                    }`}
-                  >
+          <div className="options-grid grid grid-cols-1 md:grid-cols-2 gap-4">
+  {/* حماية مزدوجة لضمان وجود مصفوفة خيارات */}
+  {(q?.options || []).map((opt, oIdx) => (
+    <div 
+      key={oIdx}
+      className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
+        // استخدام Optional Chaining لضمان عدم حدوث Crash لو correctAnswer مش موجود
+        q?.correctAnswer === oIdx 
+        ? 'bg-green-500/10 border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.1)]' 
+        : 'bg-black/20 border-white/5'
+      }`}
+    >
+      {/* أيقونة الحالة (صح أو اختيار عادي) */}
+      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${q?.correctAnswer === oIdx ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-400'}`}>
+        {oIdx + 1}
+      </div>
+      
+      <input
+        type="text"
+        value={opt || ''}
+        placeholder={`الخيار ${oIdx + 1}...`}
+        onChange={(e) => typeof updateOption === 'function' && updateOption(idx, oIdx, e.target.value)}
+        className="bg-transparent border-none outline-none text-sm text-gray-200 w-full"
+      />
+
+      {/* زر تحديد الإجابة الصحيحة */}
+      <button 
+        type="button"
+        onClick={() => typeof setCorrectAnswer === 'function' && setCorrectAnswer(idx, oIdx)}
+        className={`text-[10px] px-2 py-1 rounded-md transition-all ${q?.correctAnswer === oIdx ? 'bg-green-500/20 text-green-400' : 'text-gray-600 hover:text-gray-400'}`}
+      >
+        {q?.correctAnswer === oIdx ? 'إجابة صحيحة' : 'تحديد كصح'}
+      </button>
+    </div>
+  ))}
+</div>
                     <div className="relative flex items-center justify-center">
                       <input 
                         type="radio" 
@@ -2619,16 +2843,20 @@ const ExamBuilderUI = ({ courses, onSave }) => {
               <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span> LIVE SERVER
             </span>
           </div>
-
-          <div className="tickets-list space-y-3 overflow-y-auto max-h-[400px] custom-scrollbar pr-2">
-{(supportTickets?.length || 0) > 0 ? supportTickets.map(ticket => (              <div key={ticket.id} className="ticket-item group flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all border-l-4 border-l-green-500">
-                <div className="ticket-info flex flex-col">
-                  <strong className="text-gray-200 text-sm">{ticket.userName}</strong>
-                  <p className="text-xs text-gray-500 truncate max-w-[200px]">{ticket.lastMessage}</p>
-                  <small className="text-[10px] text-gray-600 mt-1 italic">
-                    نشط: {new Date(ticket.lastUserActivity?.seconds * 1000).toLocaleTimeString()}
-                  </small>
-                </div>
+<div className="tickets-list space-y-3 overflow-y-auto max-h-[400px] custom-scrollbar pr-2">
+  {(supportTickets || []).length > 0 ? supportTickets.map(ticket => (
+    <div key={ticket?.id || Math.random()} className="ticket-item group flex items-center justify-between p-4 bg-white/5 border border-white/5 rounded-2xl hover:bg-white/10 transition-all border-l-4 border-l-green-500">
+      <div className="ticket-info flex flex-col">
+        {/* حماية الأسماء والنصوص */}
+        <strong className="text-gray-200 text-sm">{ticket?.userName || 'مستخدم غير معروف'}</strong>
+        <p className="text-xs text-gray-500 truncate max-w-[200px]">{ticket?.lastMessage || 'لا توجد رسائل...'}</p>
+        
+        <small className="text-[10px] text-gray-600 mt-1 italic">
+          نشط: {ticket?.lastUserActivity?.seconds 
+            ? new Date(ticket.lastUserActivity.seconds * 1000).toLocaleTimeString('ar-EG') 
+            : 'غير متاح حالياً'}
+        </small>
+      </div>
                 <button 
                   className="bg-green-600 hover:bg-green-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all" 
                   onClick={() => setActiveChat(ticket)}
@@ -2704,8 +2932,7 @@ const DigitalLibraryUI = ({ books, setBooks, isUploading, setIsUploading, libCat
           <PlusSquare size={20}/> رفع كتاب أو مذكرة
         </button>
       </div>
-
-      {/* نظام التبويب (Tabs) المطور */}
+{/* نظام التبويب (Tabs) المطور - نسخة مؤمنة */}
       <div className="lib-tabs flex flex-wrap gap-3 bg-white/5 p-2 rounded-2xl border border-white/5 justify-center md:justify-start">
         {[
           { id: 'high-school', label: 'مذكرات الثانوي', icon: <GraduationCap size={16}/> },
@@ -2715,9 +2942,11 @@ const DigitalLibraryUI = ({ books, setBooks, isUploading, setIsUploading, libCat
         ].map(tab => (
           <button 
             key={tab.id} 
-            onClick={() => setLibCategory(tab.id)}
+            // تأمين الدالة: نتحقق إن setLibCategory موجودة كدالة قبل الاستدعاء
+            onClick={() => typeof setLibCategory === 'function' && setLibCategory(tab.id)}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all ${
-              libCategory === tab.id 
+              // تأمين المتغير: لو libCategory مش متعرف، نفترض القيمة الأولى كافتراضي
+              (libCategory || 'high-school') === tab.id 
               ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' 
               : 'text-gray-400 hover:bg-white/5'
             }`}
@@ -2725,18 +2954,20 @@ const DigitalLibraryUI = ({ books, setBooks, isUploading, setIsUploading, libCat
             {tab.icon} {tab.label}
           </button>
         ))}
-      </div>
-
-      {/* شبكة عرض الكتب (Responsive Grid) */}
+      </div>{/* شبكة عرض الكتب (Responsive Grid) */}
       <div className="books-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         <AnimatePresence mode='popLayout'>
-          {books.filter(b => b.category === libCategory).map(book => (
+          {/* حماية ثلاثية: نأمن المصفوفة، الفلترة، والتحميل */}
+          {(books || [])
+            .filter(b => b?.category === (libCategory || 'high-school'))
+            .map((book, bIdx) => (
             <motion.div 
               layout
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              key={book.id} 
+              // استخدام ID فريد مع ضمان عدم كونه undefined
+              key={book?.id || bIdx} 
               className="book-card glass-card group overflow-hidden rounded-[2rem] border border-white/5 bg-white/5 hover:border-blue-500/50 transition-all flex flex-col"
             >
               {/* غلاف الكتاب */}
@@ -2870,209 +3101,228 @@ const DigitalLibraryUI = ({ books, setBooks, isUploading, setIsUploading, libCat
     </div>
   );
 };
+  
 
 /**
- * [17] GUI COMPONENT: ADVANCED ANALYTICS RADAR
- * لوحة مراقبة الأداء: تتبع الأرباح، نشاط الطلاب، والعمليات الأمنية
- */
+ * [17] GUI COMPONENT: ADVANCED ANALYTICS RADAR
+ * لوحة مراقبة الأداء: تتبع الأرباح، نشاط الطلاب، والعمليات الأمنية
+ */
 const AnalyticsUI = ({ stats, radarStats, securityLogs, chartData, pieData, setTimeRange }) => {
-  return (
-    <div className="analytics-vessel space-y-8 p-1">
-      
-      {/* صف الكروت الإحصائية العليا - المؤشرات الحيوية */}
-      <div className="stats-grid-pro grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* كرت الدخل */}
-        <motion.div 
-          whileHover={{ y: -5, scale: 1.02 }} 
-          className="stat-card-gold glass-card p-6 rounded-[2rem] border border-yellow-500/20 bg-gradient-to-br from-yellow-500/10 to-transparent relative overflow-hidden group"
-        >
-          <div className="absolute top-0 left-0 w-1 h-full bg-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.5)]"></div>
-          <div className="flex items-start justify-between">
-            <div className="stat-info">
-              <p className="text-xs text-yellow-500/70 font-bold mb-1 uppercase tracking-widest">إجمالي الدخل الصافي</p>
-              <h2 className="text-3xl font-black text-white leading-none">
-                { (stats?.totalRevenue || stats?.revenue || 0).toLocaleString() } 
+  return (
+    <div className="analytics-vessel space-y-8 p-1">
+      
+      {/* صف الكروت الإحصائية العليا - المؤشرات الحيوية */}
+      <div className="stats-grid-pro grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* كرت الدخل */}
+        <motion.div 
+          whileHover={{ y: -5, scale: 1.02 }} 
+          className="stat-card-gold glass-card p-6 rounded-[2rem] border border-yellow-500/20 bg-gradient-to-br from-yellow-500/10 to-transparent relative overflow-hidden group"
+        >
+          <div className="absolute top-0 left-0 w-1 h-full bg-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.5)]"></div>
+          <div className="flex items-start justify-between">
+            <div className="stat-info">
+              <p className="text-xs text-yellow-500/70 font-bold mb-1 uppercase tracking-widest">إجمالي الدخل الصافي</p>
+              <h2 className="text-3xl font-black text-white leading-none">
+                { (stats?.totalRevenue || stats?.revenue || 0).toLocaleString() } 
 <small className="text-sm font-normal text-yellow-500/50">EGP</small>
-              </h2>
-              <span className="trend-up flex items-center gap-1 text-[10px] text-green-400 mt-4 bg-green-400/10 w-fit px-2 py-1 rounded-full border border-green-400/20">
-                <TrendingUp size={12}/> +12% هذا الشهر
-              </span>
-            </div>
-            <div className="stat-icon p-4 bg-yellow-500/10 rounded-2xl text-yellow-500 group-hover:rotate-12 transition-transform">
-              <DollarSign size={24} />
-            </div>
-          </div>
-        </motion.div>
+              </h2>
+              <span className="trend-up flex items-center gap-1 text-[10px] text-green-400 mt-4 bg-green-400/10 w-fit px-2 py-1 rounded-full border border-green-400/20">
+                <TrendingUp size={12}/> +12% هذا الشهر
+              </span>
+            </div>
+            <div className="stat-icon p-4 bg-yellow-500/10 rounded-2xl text-yellow-500 group-hover:rotate-12 transition-transform">
+              <DollarSign size={24} />
+            </div>
+          </div>
+        </motion.div>
 
-        {/* كرت النشاط */}
-        <motion.div 
-          whileHover={{ y: -5, scale: 1.02 }} 
-          className="stat-card-blue glass-card p-6 rounded-[2rem] border border-blue-500/20 bg-gradient-to-br from-blue-500/10 to-transparent relative overflow-hidden group"
-        >
-          <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
-          <div className="flex items-start justify-between">
-            <div className="stat-info">
-              <p className="text-xs text-blue-500/70 font-bold mb-1 uppercase tracking-widest">الطلاب النشطون (أونلاين)</p>
-              <h2 className="text-3xl font-black text-white leading-none">
-               { (radarStats?.online || 0).toLocaleString() } <small className="text-sm font-normal text-blue-500/50">طالب</small>
-              </h2>
-              <div className="flex items-center gap-2 mt-5">
-                <div className="pulse-indicator w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
-                <span className="text-[10px] text-blue-400 font-bold">بث حي من الخادم</span>
-              </div>
-            </div>
-            <div className="stat-icon p-4 bg-blue-500/10 rounded-2xl text-blue-500 group-hover:rotate-12 transition-transform">
-              <Users size={24} />
-            </div>
-          </div>
-        </motion.div>
+        {/* كرت النشاط */}
+        <motion.div 
+          whileHover={{ y: -5, scale: 1.02 }} 
+          className="stat-card-blue glass-card p-6 rounded-[2rem] border border-blue-500/20 bg-gradient-to-br from-blue-500/10 to-transparent relative overflow-hidden group"
+        >
+          <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
+          <div className="flex items-start justify-between">
+            <div className="stat-info">
+              <p className="text-xs text-blue-500/70 font-bold mb-1 uppercase tracking-widest">الطلاب النشطون (أونلاين)</p>
+              <h2 className="text-3xl font-black text-white leading-none">
+               { (radarStats?.online || 0).toLocaleString() } <small className="text-sm font-normal text-blue-500/50">طالب</small>
+              </h2>
+              <div className="flex items-center gap-2 mt-5">
+                <div className="pulse-indicator w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
+                <span className="text-[10px] text-blue-400 font-bold">بث حي من الخادم</span>
+              </div>
+            </div>
+            <div className="stat-icon p-4 bg-blue-500/10 rounded-2xl text-blue-500 group-hover:rotate-12 transition-transform">
+              <Users size={24} />
+            </div>
+          </div>
+        </motion.div>
 
-        {/* كرت الحماية */}
-        <motion.div 
-          whileHover={{ y: -5, scale: 1.02 }} 
-          className="stat-card-purple glass-card p-6 rounded-[2rem] border border-purple-500/20 bg-gradient-to-br from-purple-500/10 to-transparent relative overflow-hidden group"
-        >
-          <div className="absolute top-0 left-0 w-1 h-full bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)]"></div>
-          <div className="flex items-start justify-between">
-            <div className="stat-info">
-              <p className="text-xs text-purple-500/70 font-bold mb-1 uppercase tracking-widest">تهديدات تم صدها</p>
-              <h2 className="text-3xl font-black text-white leading-none">
+        {/* كرت الحماية */}
+        <motion.div 
+          whileHover={{ y: -5, scale: 1.02 }} 
+          className="stat-card-purple glass-card p-6 rounded-[2rem] border border-purple-500/20 bg-gradient-to-br from-purple-500/10 to-transparent relative overflow-hidden group"
+        >
+          <div className="absolute top-0 left-0 w-1 h-full bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)]"></div>
+          <div className="flex items-start justify-between">
+            <div className="stat-info">
+              <p className="text-xs text-purple-500/70 font-bold mb-1 uppercase tracking-widest">تهديدات تم صدها</p>
+              <h2 className="text-3xl font-black text-white leading-none">
 {securityLogs?.length || 0} <small className="text-sm font-normal text-purple-500/50">محاولة</small>
-              </h2>
-              <span className="text-[10px] text-green-400 mt-5 block font-bold border-r-2 border-green-500 pr-2 uppercase">Firewall Active</span>
-            </div>
-            <div className="stat-icon p-4 bg-purple-500/10 rounded-2xl text-purple-500 group-hover:rotate-12 transition-transform">
-              <ShieldAlert size={24} />
-            </div>
-          </div>
-        </motion.div>
-      </div>
+              </h2>
+              <span className="text-[10px] text-green-400 mt-5 block font-bold border-r-2 border-green-500 pr-2 uppercase">Firewall Active</span>
+            </div>
+            <div className="stat-icon p-4 bg-purple-500/10 rounded-2xl text-purple-500 group-hover:rotate-12 transition-transform">
+              <ShieldAlert size={24} />
+            </div>
+          </div>
+        </motion.div>
+      </div>
 
-      {/* شبكة الرسوم البيانية الكبرى */}
-      <div className="charts-main-grid grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* الرسم البياني للأرباح - يأخذ مساحة أكبر */}
-        <div className="chart-container lg:col-span-2 glass-card p-6 rounded-[2.5rem] border border-white/5 bg-black/20 shadow-2xl">
-          <div className="chart-header flex justify-between items-center mb-8">
-            <h3 className="text-lg font-bold text-gray-200 flex items-center gap-3">
-              <BarChart3 size={18} className="text-blue-500"/> تحليل التدفق المالي (Revenue Stream)
+      {/* شبكة الرسوم البيانية الكبرى */}
+      <div className="charts-main-grid grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* الرسم البياني للأرباح - يأخذ مساحة أكبر */}
+        <div className="chart-container lg:col-span-2 glass-card p-6 rounded-[2.5rem] border border-white/5 bg-black/20 shadow-2xl">
+          <div className="chart-header flex justify-between items-center mb-8">
+            <h3 className="text-lg font-bold text-gray-200 flex items-center gap-3">
+              <BarChart3 size={18} className="text-blue-500"/> تحليل التدفق المالي (Revenue Stream)
+            </h3>
+            <select 
+              className="bg-white/5 border border-white/10 text-xs text-gray-400 p-2 rounded-lg outline-none focus:border-blue-500 transition-all cursor-pointer"
+              onChange={(e) => setTimeRange(e.target.value)}
+            >
+              <option value="7d">آخر 7 أيام</option>
+              <option value="30d">آخر 30 يوم</option>
+            </select>
+          </div>
+          
+          <div className="chart-wrapper w-full h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                <XAxis dataKey="date" stroke="#475569" fontSize={10} tickLine={false} axisLine={false} />
+                <YAxis stroke="#475569" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => `${value} EGP`} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#0f172a', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.5)' }}
+                  itemStyle={{ color: '#3b82f6', fontSize: '12px', fontWeight: 'bold' }}
+                />
+                <Area type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={4} fillOpacity={1} fill="url(#colorRev)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* الجانب الأيمن: التوزيع والنشاط */}
+        <div className="chart-side-grid flex flex-col gap-6">
+          {/* Pie Chart: توزيع الأقسام */}
+          <div className="pie-chart-box glass-card p-6 rounded-[2.5rem] border border-white/5 bg-black/20 flex-1 flex flex-col items-center">
+            <h3 className="text-sm font-bold text-gray-400 mb-4 w-full text-right">توزيع الطلاب حسب الأقسام</h3>
+            <div className="w-full h-[180px]">
+              <ResponsiveContainer width="100%" height="100%">
+                {/* تأمين: لا نرسم الرسم البياني إلا لو البيانات موجودة فعلاً */}
+                {(pieData && pieData.length > 0) ? (
+                  <PieChart>
+                    <Pie data={pieData} innerRadius={50} outerRadius={70} paddingAngle={8} dataKey="value">
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'][index % 4]} stroke="none" />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1e293b', borderRadius: '12px', border: 'none', color: '#fff', fontSize: '11px' }}
+                    />
+                  </PieChart>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-[10px] text-gray-600">جاري تحليل البيانات...</div>
+                )}
+              </ResponsiveContainer>
+            </div>
+            <div className="pie-legend grid grid-cols-2 gap-2 mt-4 w-full">
+              {(pieData || []).map((d, i) => (
+                <div key={i} className="legend-item flex items-center gap-2 bg-white/5 p-2 rounded-xl">
+                  <span className="w-2 h-2 rounded-full" style={{background: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'][i]}}></span>
+                  <small className="text-[10px] text-gray-400 truncate">{d?.name}: {d?.value}</small>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* سجل النشاط اللحظي المطور */}
+          <div className="activity-stream glass-card p-6 rounded-[2.5rem] border border-white/5 bg-black/40 flex-1 overflow-hidden">
+            <h3 className="text-sm font-bold text-gray-200 mb-4 flex items-center gap-2">
+              <Activity size={16} className="text-purple-500"/> رادار العمليات اللحظي
             </h3>
-            <select 
-              className="bg-white/5 border border-white/10 text-xs text-gray-400 p-2 rounded-lg outline-none focus:border-blue-500 transition-all cursor-pointer"
-              onChange={(e) => setTimeRange(e.target.value)}
-            >
-              <option value="7d">آخر 7 أيام</option>
-              <option value="30d">آخر 30 يوم</option>
-            </select>
-          </div>
-          
-          <div className="chart-wrapper w-full h-[350px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                <XAxis dataKey="date" stroke="#475569" fontSize={10} tickLine={false} axisLine={false} />
-                <YAxis stroke="#475569" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => `${value} EGP`} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#0f172a', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.5)' }}
-                  itemStyle={{ color: '#3b82f6', fontSize: '12px', fontWeight: 'bold' }}
-                />
-                <Area type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={4} fillOpacity={1} fill="url(#colorRev)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* الجانب الأيمن: التوزيع والنشاط */}
-        <div className="chart-side-grid flex flex-col gap-6">
-          
-          {/* Pie Chart: توزيع الأقسام */}
-          <div className="pie-chart-box glass-card p-6 rounded-[2.5rem] border border-white/5 bg-black/20 flex-1 flex flex-col items-center">
-            <h3 className="text-sm font-bold text-gray-400 mb-4 w-full text-right">توزيع الطلاب حسب الأقسام</h3>
-            <div className="w-full h-[180px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={pieData} innerRadius={50} outerRadius={70} paddingAngle={8} dataKey="value">
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'][index % 4]} stroke="none" />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#1e293b', borderRadius: '12px', border: 'none', color: '#fff', fontSize: '11px' }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="pie-legend grid grid-cols-2 gap-2 mt-4 w-full">
-              {pieData.map((d, i) => (
-                <div key={i} className="legend-item flex items-center gap-2 bg-white/5 p-2 rounded-xl">
-                  <span className="w-2 h-2 rounded-full" style={{background: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'][i]}}></span>
-                  <small className="text-[10px] text-gray-400 truncate">{d.name}: {d.value}</small>
+            <div className="stream-list space-y-3">
+              {(securityLogs || []).slice(0, 4).map((log, idx) => (
+                <div key={log?.id || idx} className="stream-item flex gap-3 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.08] transition-all group">
+                  <div className={`s-icon shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${log?.type === 'alert' ? 'bg-red-500/20 text-red-500' : 'bg-purple-500/20 text-purple-500'}`}>
+                    <ShieldAlert size={14}/>
+                  </div>
+                  <div className="s-text overflow-hidden">
+                    <p className="text-[11px] text-gray-300 leading-tight truncate group-hover:text-clip group-hover:whitespace-normal">{log?.details || 'عملية غير مسجلة'}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[9px] text-gray-600 font-mono tracking-tighter uppercase">ID: {log?.id?.substring(0,6) || 'SEC-00'}</span>
+                      <span className="text-[9px] text-purple-500/50 italic">
+                        {log?.timestamp?.seconds ? new Date(log.timestamp.seconds * 1000).toLocaleTimeString() : '--:--'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
+          </div> {/* إغلاق نشاط الرادار */}
 
-          {/* سجل النشاط اللحظي المطور */}
-          <div className="activity-stream glass-card p-6 rounded-[2.5rem] border border-white/5 bg-black/40 flex-1 overflow-hidden">
-             <h3 className="text-sm font-bold text-gray-200 mb-4 flex items-center gap-2">
-               <Activity size={16} className="text-purple-500"/> رادار العمليات اللحظي
-             </h3>
-             <div className="stream-list space-y-3">
-                {securityLogs.slice(0, 4).map((log, idx) => (
-                  <div key={log.id || idx} className="stream-item flex gap-3 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.08] transition-all group">
-                     <div className={`s-icon shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${log.type === 'alert' ? 'bg-red-500/20 text-red-500' : 'bg-purple-500/20 text-purple-500'}`}>
-                        <ShieldAlert size={14}/>
-                     </div>
-                     <div className="s-text overflow-hidden">
-                        <p className="text-[11px] text-gray-300 leading-tight truncate group-hover:text-clip group-hover:whitespace-normal">{log.details}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[9px] text-gray-600 font-mono tracking-tighter uppercase">ID: {log.id?.substring(0,6) || 'SEC-00'}</span>
-                          <span className="text-[9px] text-purple-500/50 italic">{new Date(log.timestamp?.seconds * 1000).toLocaleTimeString()}</span>
-                        </div>
-                     </div>
-                  </div>
-                ))}
-             </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  );
-};
-
-
-/**
- * [MASTER] TITAN ENTERPRISE OS - ADMIN CORE
- * الواجهة الرئيسية المركزية: دمج جميع الوحدات والتحكم في حالة النظام
- */
+        </div> {/* إغلاق chart-side-grid (العمود الأيمن) */}
+      </div> {/* إغلاق charts-main-grid (الشبكة الكبرى) */}
+    </div> 
+  ); // إغلاق الـ return
+}; // إغلاق الـ AnalyticsUI
+      
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   
-  // دالة تحويل التبويبات (Content Router)
+  // دالة تحويل التبويبات (Content Router) مع تأمين البيانات المرسلة
   const renderMainContent = () => {
+    // التأكد من أن جميع المتغيرات مصفوفات قبل الإرسال لمنع الانهيار الداخلي
+    const props = {
+      stats: stats || {},
+      radarStats: radarStats || { online: 0 },
+      securityLogs: securityLogs || [],
+      chartData: chartData || [],
+      pieData: pieData || [],
+      students: students || [],
+      courses: courses || [],
+      lectures: lectures || [],
+      codes: codes || [],
+      books: books || [],
+      msgData: msgData || [],
+      supportTickets: supportTickets || [],
+      terminalLogs: terminalLogs || []
+    };
+
     switch (activeTab) {
-      case 'dashboard': return <AnalyticsUI stats={stats} radarStats={radarStats} securityLogs={securityLogs} chartData={chartData} pieData={pieData} />;
-      case 'students':  return <StudentManagementUI students={students} />;
-      case 'academy':   return <AcademyManagerUI courses={courses} lectures={lectures} />;
-      case 'finance':   return <FinanceManagerUI codes={codes} stats={stats} />;
-      case 'library':   return <DigitalLibraryUI books={books} />;
-      case 'comms':     return <CommsCenterUI msgData={msgData} supportTickets={supportTickets} />;
-      case 'terminal':  return <TerminalCore logs={terminalLogs} />;
-      default:          return <AnalyticsUI />;
+      case 'dashboard': return <AnalyticsUI {...props} setTimeRange={setTimeRange} />;
+      case 'students':  return <StudentManagementUI students={props.students} />;
+      case 'academy':   return <AcademyManagerUI courses={props.courses} lectures={props.lectures} />;
+      case 'finance':   return <FinanceManagerUI codes={props.codes} stats={props.stats} />;
+      case 'library':   return <DigitalLibraryUI books={props.books} />;
+      case 'comms':     return <CommsCenterUI msgData={props.msgData} supportTickets={props.supportTickets} />;
+      case 'terminal':  return <TerminalCore logs={props.terminalLogs} />;
+      default:          return <AnalyticsUI {...props} />;
     }
   };
 
   return (
     <div className="titan-admin-container flex h-screen bg-[#050505] text-white font-['Tajawal'] overflow-hidden">
       
-      {/* Sidebar - القائمة الجانبية الذكية بنمط Glassmorphism */}
+      {/* Sidebar */}
       <aside className="titan-sidebar w-72 bg-white/[0.02] border-l border-white/5 flex flex-col p-6 backdrop-blur-2xl z-50 shadow-2xl">
         <div className="sidebar-logo flex items-center gap-4 mb-12">
           <div className="p-2 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/30">
@@ -3092,7 +3342,7 @@ const AdminDashboard = () => {
             { id: 'finance', icon: <CreditCard size={18}/>, label: 'الخزنة والأكواد' },
             { id: 'library', icon: <BookOpen size={18}/>, label: 'المكتبة الرقمية' },
             { id: 'comms', icon: <Send size={18}/>, label: 'مركز الاتصالات' },
-            { id: 'terminal', icon: <Terminal size={18}/>, label: 'النواة (Terminal)' },
+            { id: 'terminal', icon: <Terminal size={18}/>, label: 'النواة (Root)' },
           ].map(item => (
             <button 
               key={item.id} 
@@ -3133,97 +3383,70 @@ const AdminDashboard = () => {
         </div>
       </aside>
 
-      {/* Main Viewport - منطقة العرض المركزية */}
-      <main className="titan-viewport flex-1 flex flex-col relative overflow-hidden bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent">
-        
-        {/* Header - العارضة العلوية */}
+      {/* Main Viewport */}
+      <main className="titan-viewport flex-1 flex flex-col relative overflow-hidden">
         <header className="viewport-header h-20 flex items-center justify-between px-10 border-b border-white/5 backdrop-blur-md bg-black/10 z-40">
           <div className="header-left">
-            <h2 className="tab-title text-xl font-black text-white">
-              {activeTab === 'dashboard' && 'نظرة عامة على النظام'}
-              {activeTab === 'students' && 'قاعدة بيانات الطلاب الفدرالية'}
-              {activeTab === 'academy' && 'إدارة المحتوى التعليمي'}
-              {activeTab === 'finance' && 'إدارة الموارد المالية'}
-              {activeTab === 'library' && 'المستودع الرقمي المركزي'}
-              {activeTab === 'comms' && 'وحدة البث والاتصالات'}
-              {activeTab === 'terminal' && 'نواة النظام (Root)'}
+            <h2 className="tab-title text-xl font-black text-white uppercase tracking-tight">
+              {activeTab} Monitoring
             </h2>
           </div>
 
           <div className="header-right flex items-center gap-6">
-             <div className="live-status flex items-center gap-3 bg-green-500/10 border border-green-500/20 px-4 py-2 rounded-full shadow-[0_0_15px_rgba(34,197,94,0.1)]">
-               <span className="pulse w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#22c55e]"></span>
-               <span className="text-xs font-bold text-green-500">{radarStats.online} طالب متصل الآن</span>
+             <div className="live-status flex items-center gap-3 bg-green-500/10 border border-green-500/20 px-4 py-2 rounded-full">
+               <span className="pulse w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+               {/* تأمين رادار ستاتس في الهيدر */}
+               <span className="text-xs font-bold text-green-500">{(radarStats?.online || 0)} طلاب متصلون</span>
              </div>
              
              <div className="flex gap-2 border-r border-white/10 pr-6 mr-2">
-               <button className="icon-btn-header p-2.5 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"><Bell size={20}/></button>
+               <button className="icon-btn-header p-2.5 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl"><Bell size={20}/></button>
                <button 
-                className="icon-btn-header p-2.5 text-red-500 hover:bg-red-500/10 rounded-xl transition-all shadow-lg hover:shadow-red-500/20" 
-                onClick={() => {
-                  if(window.confirm("⚠️ هل تريد تفعيل الإغلاق الطوارئ؟ سيتم طرد جميع المستخدمين فوراً!")) {
-                    SystemCommander.updatePlatformStatus('EMERGENCY_LOCK');
-                  }
-                }}
+                className="icon-btn-header p-2.5 text-red-500 hover:bg-red-500/10 rounded-xl" 
+                onClick={() => window.confirm("⚠️ تفعيل إغلاق الطوارئ؟") && SystemCommander.updatePlatformStatus('EMERGENCY_LOCK')}
                >
                  <Lock size={20}/>
                </button>
              </div>
           </div>
         </header>
-{/* Content Area - منطقة المحتوى المتغيرة */}
-        <section className="viewport-content flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar bg-[#050505]">
+
+        <section className="viewport-content flex-1 overflow-y-auto p-10 bg-[#050505] custom-scrollbar">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
             >
               {renderMainContent()}
             </motion.div>
           </AnimatePresence>
         </section>
-    </main>
+      </main>
 
-      {/* Overlays - النوافذ العائمة */}
-      {showForensic && (
-        <ForensicModal 
-          isOpen={showForensic} 
-          onClose={() => setShowForensic(false)} 
-          data={selectedForensicData} 
-        />
-      )}
-
-      {/* حاوية التنبيهات (Toasts) */}
-      <div className="titan-toast-container fixed bottom-8 left-8 z-[999] flex flex-col gap-3">
-        {/* تدار عبر مصفوفة تنبيهات في الـ Logic */}
-      </div>
-
-      <div className="ledger-station w-64 border-l border-white/5 p-4 bg-white/5">
-        <h4 className="text-xs font-bold mb-4 opacity-50 tracking-widest text-blue-400">RECENT TRANSACTIONS</h4>
+      {/* Side Ledger (Transactions) */}
+      <div className="ledger-station w-64 border-r border-white/5 p-4 bg-white/[0.01]">
+        <h4 className="text-[10px] font-black mb-6 opacity-30 tracking-[0.3em] text-blue-400 uppercase">Live Ledger</h4>
         <div className="space-y-3">
-         { (transactions?.length || 0) > 0 ? (
+         { (transactions || []).length > 0 ? (
             transactions.slice(0, 5).map(tx => (
-              <div key={tx.id} className="ledger-item p-3 bg-white/5 rounded-lg border border-white/5">
+              <div key={tx?.id || Math.random()} className="ledger-item p-4 bg-white/[0.02] rounded-2xl border border-white/5 hover:border-green-500/30 transition-all">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-green-400 font-bold">{tx.amount} EGP</span>
+                  <span className="text-green-400 font-mono text-xs font-bold">+{tx?.amount} EGP</span>
                 </div>
-                <small className="text-gray-500 block text-[10px] leading-tight">{tx.description}</small>
+                <small className="text-gray-500 block text-[10px] leading-tight truncate">{tx?.description || 'عملية مجهولة'}</small>
               </div>
             ))
           ) : (
-            <p className="text-xs text-gray-600 text-center py-4">لا توجد عمليات حالية</p>
+            <div className="text-center py-20 opacity-10">
+              <CreditCard size={32} className="mx-auto mb-2" />
+              <p className="text-[10px]">No Transactions</p>
+            </div>
           )}
         </div>
       </div>
-
-</div> 
-  ); // نهاية الـ return الخاص بـ AdminDashboard
-}; // نهاية مكون AdminDashboard
-
-// القفلة النهائية للملف (لإغلاق export default function AdminDash)
-  return <AdminDashboard />;
-}
-
+    </div> 
+  );
+};
