@@ -214,46 +214,75 @@ useEffect(() => {
   });
   return () => unsub();
 }, []);
-
   const SecurityCore = {
-    // تجميد حساب فوري
+    // 1. تجميد حساب فوري وقطع الاتصال
     async freezeAccount(uid, reason) {
-      const userRef = doc(db, "users", uid);
-      await updateDoc(userRef, {
-        accountStatus: 'FROZEN',
-        freezeReason: reason,
-        lastSecurityUpdate: serverTimestamp()
-      });
-      // قطع الاتصال اللحظي
-      await set(ref(rtdb, `active_sessions/${uid}/kill_signal`), {
-        type: 'BLOCK',
-        msg: reason,
-        at: Date.now()
-      });
-      this.logIncident(uid, 'MANUAL_BLOCK', `Admin blocked user: ${reason}`);
-    },
+      try {
+        if (!uid) {
+          console.error("خطأ: لم يتم تحديد معرف المستخدم (UID)");
+          return;
+        }
 
-    // تسجيل الحوادث الأمنية
+        // أ. تحديث حالة الحساب في Firestore
+        const userRef = doc(db, "users", uid);
+        await updateDoc(userRef, {
+          accountStatus: 'FROZEN',
+          freezeReason: reason,
+          lastSecurityUpdate: serverTimestamp()
+        });
+
+        // ب. إرسال إشارة طرد لحظية عبر RTDB
+        await set(ref(rtdb, `active_sessions/${uid}/kill_signal`), {
+          type: 'BLOCK',
+          msg: reason,
+          at: Date.now()
+        });
+
+        // ج. تسجيل الحادثة الأمنية
+        await this.logIncident(uid, 'MANUAL_BLOCK', `Admin blocked user: ${reason}`);
+        
+        console.log(`تم تجميد الحساب ${uid} وقطع الاتصال بنجاح`);
+        alert("تم تجميد الحساب وطرده من النظام فوراً.");
+
+      } catch (error) {
+        console.error("فشل تجميد الحساب:", error);
+        if (error.code === 'not-found') {
+          alert("تنبيه: هذا المستخدم لم يعد موجوداً في قاعدة البيانات.");
+        } else {
+          alert("حدث خطأ تقني أثناء محاولة التجميد.");
+        }
+      }
+    }, // نهاية دالة freezeAccount
+
+    // 2. تسجيل الحوادث الأمنية
     async logIncident(uid, type, details) {
-      await addDoc(collection(db, "security_incidents"), {
-        uid,
-        type,
-        details,
-        timestamp: serverTimestamp(),
-        severity: type === 'BRUTE_FORCE' ? 'CRITICAL' : 'MEDIUM'
-      });
+      try {
+        await addDoc(collection(db, "security_incidents"), {
+          uid,
+          type,
+          details,
+          timestamp: serverTimestamp(),
+          severity: type === 'BRUTE_FORCE' ? 'CRITICAL' : 'MEDIUM'
+        });
+      } catch (e) {
+        console.error("Error logging incident:", e);
+      }
     },
 
-    // مسح بصمة الجهاز (Hardware ID Reset)
+    // 3. مسح بصمة الجهاز (Hardware ID Reset)
     async resetDeviceBinding(uid) {
-      await updateDoc(doc(db, "users", uid), {
-        deviceId: null,
-        isHardwareLocked: false,
-        resetCounter: increment(1)
-      });
+      try {
+        await updateDoc(doc(db, "users", uid), {
+          deviceId: null,
+          isHardwareLocked: false,
+          resetCounter: increment(1)
+        });
+        alert("تم مسح بصمة الجهاز بنجاح.");
+      } catch (e) {
+        console.error("Error resetting device binding:", e);
+      }
     }
   };
-
   useEffect(() => {
   const q = query(collection(db, "courses"), orderBy("createdAt", "desc"));
   
@@ -3190,7 +3219,11 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-    </div> // قفلة الـ titan-admin-container
-  ); // قفلة الـ return
-}; // قفلة الـ AdminDashboard
-};
+</div> 
+  ); // نهاية الـ return الخاص بـ AdminDashboard
+}; // نهاية مكون AdminDashboard
+
+// القفلة النهائية للملف (لإغلاق export default function AdminDash)
+  return <AdminDashboard />;
+}
+
