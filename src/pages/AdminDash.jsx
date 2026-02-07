@@ -1734,13 +1734,18 @@ const LibraryUI = () => {
             </button>
           </div>
         </div>
-
-        {/* عرض الكتب */}
+{/* عرض الكتب */}
         <div className="books-display lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
           <AnimatePresence>
-           {(books || []).filter(b => b?.category === libCategory).map(book => (
-  <div
-              <motion.div key={book.id} layout initial={{scale: 0.9}} animate={{scale: 1}} className="book-item-card glass-card overflow-hidden">
+            {(books || []).filter(b => b?.category === libCategory).map(book => (
+              /* تم حذف الـ <div التائهة من هنا ليعمل الكود */
+              <motion.div 
+                key={book.id} 
+                layout 
+                initial={{scale: 0.9}} 
+                animate={{scale: 1}} 
+                className="book-item-card glass-card overflow-hidden"
+              >
                 <div className="flex gap-4 p-4">
                   <img src={book.coverUrl || 'placeholder.jpg'} className="w-24 h-32 object-cover rounded shadow-lg" />
                   <div className="flex-1">
@@ -1758,11 +1763,10 @@ const LibraryUI = () => {
             ))}
           </AnimatePresence>
         </div>
-      </div>
+      </div> {/* إغلاق الشبكة الداخلية */}
     </motion.div>
   );
 };
-
   const renderMainContent = () => {
     switch (activeTab) {
       case 'dashboard':
@@ -3450,3 +3454,4 @@ const AdminDashboard = () => {
     </div> 
   );
 };
+
