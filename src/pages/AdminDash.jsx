@@ -1848,6 +1848,7 @@ const StudentsManagerUI = () => {
         </div>
       </div>
 
+      
       {/* شبكة البيانات (Table System) */}
       <div className="data-table-container glass-card shadow-2xl">
         <table className="titan-master-table">
@@ -1862,77 +1863,78 @@ const StudentsManagerUI = () => {
               <th>إدارة</th>
             </tr>
           </thead>
-          <tbody>
-          {(filteredList || []).map(student => (
-              <motion.tr 
-                layout 
-                key={student.id} 
-                className={student.status === 'BANNED' ? 'banned-row' : ''}
-              >
-                <td className="name-cell">
-                  <div className="avatar">{student.fullName?.charAt(0) || 'U'}</div>
-                  <div className="info">
-                    <span className="fullname">{student.fullName || "غير مسجل"}</span>
-                    <small className="id">UID: {student.id?.substring(0, 12)}</small>
-                  </div>
-                </td>
-                <td>
-                  <div className="contact-info">
-             <div className="item">
-  <Wifi size={12}/> 
-  {/* حماية في حالة عدم وجود رقم هاتف */}
-  {student?.phone || 'لا يوجد رقم'}
-</div>
+          <tbody>
+          {(filteredList || []).map(student => (
+              <motion.tr 
+                layout 
+                key={student.id} 
+                className={student.status === 'BANNED' ? 'banned-row' : ''}
+              >
+                <td className="name-cell">
+                  <div className="avatar">{student.fullName?.charAt(0) || 'U'}</div>
+                  <div className="info">
+                    <span className="fullname">{student.fullName || "غير مسجل"}</span>
+                    <small className="id">UID: {student.id?.substring(0, 12)}</small>
+                  </div>
+                </td>
+                
+                <td>
+                  <div className="contact-info">
+                    <div className="item">
+                      <Wifi size={12}/> {student?.phone || 'لا يوجد رقم'}
+                    </div>
+                    <div className="item text-muted">
+                      <MapPin size={12}/> {student?.governorate || 'غير محدد'}
+                    </div>
+                  </div> {/* <--- هذا الإغلاق كان مفقوداً وهو سبب Build Failure */}
+                </td>
 
-<div className="item text-muted">
-  <MapPin size={12}/> 
-  {/* حماية في حالة عدم وجود محافظة */}
-  {student?.governorate || 'غير محدد'}
-</div>
-                </td>
-                <td>
-                  <div className="parent-tag">
-                    <Users size={14}/> {student.parentPhone || "غير مسجل"}
-                  </div>
-                </td>
-                <td>
-                  <div className={`status-pill ${student.status || 'ACTIVE'}`}>
-                    {student.status === 'BANNED' ? <Lock size={12}/> : <ShieldCheck size={12}/>}
-                    {student.status || 'ACTIVE'}
-                  </div>
-                </td>
-                <td>
-                  <div className="balance-box">
-                    <span className="amount">{student.balance || 0}</span>
-                    <span className="currency"> EGP</span>
-                  </div>
-                </td>
-                <td>
-                  <div className={`hardware-badge ${student.deviceId ? 'locked' : 'unlocked'}`}>
-                    {student.deviceId ? <Fingerprint size={16}/> : <ZapOff size={16}/>}
-                    <small>{student.deviceId ? 'جهاز مقيد' : 'متاح'}</small>
-                  </div>
-                </td>
-                <td className="ops-cell">
-                  <button className="op-btn info" onClick={() => setSelectedStudent(student)}>
-                    <Eye size={18}/>
-                  </button>
-                  <button className="op-btn warn" onClick={() => StudentController.clearHardwareLock(student.id)} title="Hardware Reset">
-                    <RefreshCcw size={18}/>
-                  </button>
-                  <button className="op-btn danger" onClick={() => StudentController.setSecurityStatus(student.id, 'BANNED', 'مخالفة السياسة')}>
-                    <ShieldAlert size={18}/>
-                  </button>
-                </td>
-              </motion.tr>
-            ))}
-          </tbody>
+                <td>
+                  <div className="parent-tag">
+                    <Users size={14}/> {student.parentPhone || "غير مسجل"}
+                  </div>
+                </td>
+
+                <td>
+                  <div className={`status-pill ${student.status || 'ACTIVE'}`}>
+                    {student.status === 'BANNED' ? <Lock size={12}/> : <ShieldCheck size={12}/>}
+                    {student.status || 'ACTIVE'}
+                  </div>
+                </td>
+
+                <td>
+                  <div className="balance-box">
+                    <span className="amount">{student.balance || 0}</span>
+                    <span className="currency"> EGP</span>
+                  </div>
+                </td>
+
+                <td>
+                  <div className={`hardware-badge ${student.deviceId ? 'locked' : 'unlocked'}`}>
+                    {student.deviceId ? <Fingerprint size={16}/> : <ZapOff size={16}/>}
+                    <small>{student.deviceId ? 'جهاز مقيد' : 'متاح'}</small>
+                  </div>
+                </td>
+
+                <td className="ops-cell">
+                  <button className="op-btn info" onClick={() => setSelectedStudent(student)}>
+                    <Eye size={18}/>
+                  </button>
+                  <button className="op-btn warn" onClick={() => StudentController.clearHardwareLock(student.id)} title="Hardware Reset">
+                    <RefreshCcw size={18}/>
+                  </button>
+                  <button className="op-btn danger" onClick={() => StudentController.setSecurityStatus(student.id, 'BANNED', 'مخالفة السياسة')}>
+                    <ShieldAlert size={18}/>
+                  </button>
+                </td>
+              </motion.tr>
+            ))}
+          </tbody>
         </table>
       </div>
     </div>
   );
 };
-
 
   
 /**
@@ -3454,4 +3456,5 @@ const AdminDashboard = () => {
     </div> 
   );
 };
+
 
