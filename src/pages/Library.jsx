@@ -12,7 +12,7 @@ import {
   Clock // <--- أضف هذه الكلمة هنا
 } from 'lucide-react';
 
-
+import './library.css';
 
 // --- الميزات المدمجة (20 ميزة): ---
 // 1. نظام الـ XP  2. مستويات القراءة  3. التصفية الذكية  4. البحث اللحظي  5. المفضلة المحلية
@@ -335,5 +335,6 @@ const Library = () => {
 
 
 export default Library;
+
 
 
