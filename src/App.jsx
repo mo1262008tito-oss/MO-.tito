@@ -37,6 +37,14 @@ import About from './pages/About.jsx';
 import Library from './pages/Library.jsx'; // التصحيح النهائي هنا
 import CompleteProfile from './pages/CompleteProfile';
 
+
+import StudentAnalyticsSystem. from './pages/StudentAnalyticsSystem.jsx';
+import HallOfLegends. from './pages/HallOfLegends.jsx';
+
+import SupportColossus. from './pages/SupportColossus.jsx';
+
+
+
 import './Global.css';
 
 function App() {
@@ -98,6 +106,9 @@ function App() {
             <Route path="/highschool" element={<HighSchool />} />
             <Route path="/religious" element={<Religious />} />
             <Route path="/admin" element={userData?.role === 'admin' ? <AdminDash /> : <Navigate to="/" />} />
+             <Route path="/studentAnalyticsSystem" element={<StudentAnalyticsSystem />} />
+              <Route path="/hallOfLegends" element={<HallOfLegends />} />
+              <Route path="/supportColossus" element={<SupportColossus />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </div>
@@ -107,4 +118,5 @@ function App() {
 }
 
 export default App;
+
 
