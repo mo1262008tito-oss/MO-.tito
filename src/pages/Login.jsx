@@ -21,7 +21,7 @@ import {
   sendPasswordResetEmail, confirmPasswordReset
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc, increment } from 'firebase/firestore';
-
+import './Login.css';
 const Login = () => {
   // --- [ميزة 26-30]: إدارة الحالات المعقدة (State Machine) ---
   const [isLogin, setIsLogin] = useState(true);
@@ -267,4 +267,5 @@ const Login = () => {
 };
 
 export default Login;
+
 
