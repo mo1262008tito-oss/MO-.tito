@@ -27,7 +27,8 @@ const Navbar = ({ user, userData }) => {
     { name: 'لوحة الطالب', path: '/student-dash', icon: <Layout size={18}/> },
     { name: 'المكتبة', path: '/library', icon: <Library size={18}/> },
     { name: 'المحفظة', path: '/wallet', icon: <Wallet size={18}/> },
-
+ { name: 'الدعم ', path: '/supportColossus', icon: <SupportColossus size={18}/> },
+     { name: 'صفحة التكريم', path: '/hallOfLegends', icon: <HallOfLegends size={18}/> },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -92,5 +93,6 @@ const Navbar = ({ user, userData }) => {
     </nav>
   );
 };
+
 
 export default Navbar;
