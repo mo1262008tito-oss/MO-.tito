@@ -38,10 +38,10 @@ import Library from './pages/Library.jsx'; // التصحيح النهائي هن
 import CompleteProfile from './pages/CompleteProfile';
 
 
-import StudentAnalyticsSystem. from './pages/StudentAnalyticsSystem.jsx';
-import HallOfLegends. from './pages/HallOfLegends.jsx';
+import StudentAnalyticsSystem from './pages/StudentAnalyticsSystem.jsx';
+import HallOfLegends from './pages/HallOfLegends.jsx';
 
-import SupportColossus. from './pages/SupportColossus.jsx';
+import SupportColossus from './pages/SupportColossus.jsx';
 
 
 
@@ -118,5 +118,6 @@ function App() {
 }
 
 export default App;
+
 
 
