@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import * as XLSX from 'xlsx';
@@ -691,10 +692,8 @@ export default function AdminDash() {
 
       // ✅ التعديل الصحيح: استخدم setTerminalLogs مباشرة
       setTerminalLogs(prev => [...prev, `[SECURITY] تم تحديث حالة ${uid} إلى ${status}`]);
-    }
-  };
-
-  async clearHardwareLock(uid) {
+    },
+    async clearHardwareLock(uid) {
       const userRef = doc(db, "users", uid);
       await updateDoc(userRef, {
         deviceId: null,
@@ -2000,7 +1999,7 @@ const FinanceVaultUI = ({ stats, genConfig, setGenConfig, transactions, BillingE
   );
 };
 
-
+const AcademyMainGridUI = ({ academyCategory, AcademyManager, setCourses, editingItem, setEditingItem, lectures, isLectureLoading, setLectures }) => (
 <div className="academy-main-grid">
         {/* نموذج رفع كورس جديد - النسخة الضخمة */}
         <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="upload-section glass-card">
@@ -2169,6 +2168,7 @@ const FinanceVaultUI = ({ stats, genConfig, setGenConfig, transactions, BillingE
           </motion.div>
         )}
       </div>
+);
 
 /**
  * [12] GUI COMPONENT: ACADEMY MANAGER
@@ -2661,139 +2661,59 @@ const ExamBuilderUI = ({ courses, onSave }) => {
   ); // إغلاق الـ return
 }; // إغلاق المكون ExamBuilderUI
 
-
-              <div className="flex justify-between items-center mb-6">
-                <span className="flex items-center gap-2 bg-blue-500/10 text-blue-400 text-[10px] font-black px-4 py-1.5 rounded-full border border-blue-500/20 shadow-sm">
-                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
-                  سؤال رقم {idx + 1}
-                </span>
-                <button 
-                  onClick={() => removeQuestion(idx)}
-                  className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all opacity-0 group-hover:opacity-100"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
-
-              <textarea 
-                className="w-full bg-transparent border-b border-white/10 p-2 mb-8 text-lg font-bold text-white outline-none focus:border-blue-500 transition-all resize-none"
-                placeholder="ادخل نص السؤال الفقهي أو العلمي هنا..."
-                value={q.question}
-                onChange={e => updateQuestion(idx, 'question', e.target.value)}
-              />
-
-          <div className="options-grid grid grid-cols-1 md:grid-cols-2 gap-4">
-  {/* حماية مزدوجة لضمان وجود مصفوفة خيارات */}
-  {(q?.options || []).map((opt, oIdx) => (
-    <div 
-      key={oIdx}
-      className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
-        // استخدام Optional Chaining لضمان عدم حدوث Crash لو correctAnswer مش موجود
-        q?.correctAnswer === oIdx 
-        ? 'bg-green-500/10 border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.1)]' 
-        : 'bg-black/20 border-white/5'
-      }`}
-    >
-      {/* أيقونة الحالة (صح أو اختيار عادي) */}
-      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${q?.correctAnswer === oIdx ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-400'}`}>
-        {oIdx + 1}
-      </div>
-      
-      <input
-        type="text"
-        value={opt || ''}
-        placeholder={`الخيار ${oIdx + 1}...`}
-        onChange={(e) => typeof updateOption === 'function' && updateOption(idx, oIdx, e.target.value)}
-        className="bg-transparent border-none outline-none text-sm text-gray-200 w-full"
-      />
-{/* حلقة الخيارات */}
-        {q.options.map((opt, oIdx) => (
-          <div key={oIdx} className="flex items-center gap-2 mb-2">
-            {/* زر تحديد الإجابة الصحيحة */}
-            <button
-              type="button"
-              onClick={() => updateQuestion(idx, 'correctAnswer', oIdx)}
-              className={`text-[10px] px-2 py-1 rounded-md transition-all ${q?.correctAnswer === oIdx ? 'bg-green-500/20 text-green-400' : 'text-gray-600 hover:text-gray-400'}`}
-            >
-              {q?.correctAnswer === oIdx ? 'إجابة صحيحة' : 'تحديد كصح'}
-            </button>
-
-            <div className="relative flex items-center justify-center">
-              <input
-                type="radio"
-                name={`q_${idx}_correct`}
-                checked={q.correctAnswer === oIdx}
-                onChange={() => updateQuestion(idx, 'correctAnswer', oIdx)}
-                className="w-5 h-5 accent-green-500 cursor-pointer relative z-10"
-              />
-            </div>
-
-            <input
-              className="bg-transparent w-full text-sm text-gray-300 outline-none"
-              placeholder={`الخيار ${oIdx + 1}`}
-              value={opt}
-              onChange={(e) => {
-                const newOpts = [...q.options];
-                newOpts[oIdx] = e.target.value;
-                updateQuestion(idx, 'options', newOpts);
-              }}
-            />
-            {/* --- بداية الجزء المصحح --- */}
-<div className="exam-preview-area space-y-4 mb-8">
-  <AnimatePresence>
-    {questions.map((q, qIdx) => (
-      <motion.div 
-        key={qIdx}
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 20 }}
-        className="p-6 bg-white/[0.02] border border-white/10 rounded-[2rem] relative group"
+const QuestionCardPreview = ({ idx, removeQuestion, q, updateQuestion, updateOption }) => (
+  <div className="question-card-preview">
+    <div className="flex justify-between items-center mb-6">
+      <span className="flex items-center gap-2 bg-blue-500/10 text-blue-400 text-[10px] font-black px-4 py-1.5 rounded-full border border-blue-500/20 shadow-sm">
+        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
+        سؤال رقم {idx + 1}
+      </span>
+      <button
+        onClick={() => removeQuestion(idx)}
+        className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all opacity-0 group-hover:opacity-100"
       >
-        <h4 className="text-gray-200 font-bold mb-4 flex items-center gap-2">
-          <span className="bg-blue-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-[10px]">{qIdx + 1}</span>
-          {q.questionText}
-        </h4>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {q.options.map((opt, oIdx) => (
-            <div 
-              key={oIdx} 
-              className={`p-3 rounded-xl border flex justify-between items-center ${
-                q.correctAnswer === oIdx 
-                ? 'border-green-500/50 bg-green-500/10' 
-                : 'border-white/5 bg-black/20'
-              }`}
-            >
-              <span className="text-xs text-gray-400">{opt}</span>
-              {q.correctAnswer === oIdx && <CheckCircle2 size={16} className="text-green-500 shrink-0" />}
-            </div>
-          ))}
+        <Trash2 size={18} />
+      </button>
+    </div>
+
+    <textarea
+      className="w-full bg-transparent border-b border-white/10 p-2 mb-8 text-lg font-bold text-white outline-none focus:border-blue-500 transition-all resize-none"
+      placeholder="ادخل نص السؤال الفقهي أو العلمي هنا..."
+      value={q.question}
+      onChange={e => updateQuestion(idx, 'question', e.target.value)}
+    />
+
+    <div className="options-grid grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* حماية مزدوجة لضمان وجود مصفوفة خيارات */}
+      {(q?.options || []).map((opt, oIdx) => (
+        <div
+          key={oIdx}
+          className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${
+            // استخدام Optional Chaining لضمان عدم حدوث Crash لو correctAnswer مش موجود
+            q?.correctAnswer === oIdx
+            ? 'bg-green-500/10 border-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.1)]'
+            : 'bg-black/20 border-white/5'
+          }`}
+        >
+          {/* أيقونة الحالة (صح أو اختيار عادي) */}
+          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${q?.correctAnswer === oIdx ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-400'}`}>
+            {oIdx + 1}
+          </div>
+          
+          <input
+            type="text"
+            value={opt || ''}
+            placeholder={`الخيار ${oIdx + 1}...`}
+            onChange={(e) => typeof updateOption === 'function' && updateOption(idx, oIdx, e.target.value)}
+            className="bg-transparent border-none outline-none text-sm text-gray-200 w-full"
+          />
         </div>
-      </motion.div>
-    ))}
-  </AnimatePresence>
-</div>
-
-{/* 3. التحكم النهائي: الأزرار الإجرائية */}
-<div className="builder-controls flex flex-col md:flex-row gap-4 items-center justify-between bg-black/40 p-6 rounded-[2.5rem] border border-white/5 shadow-xl">
-  <button 
-    onClick={addQuestionToPool} // تم الربط مع الدالة المعرفة سابقاً
-    className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-white/5 hover:bg-white/10 text-gray-200 font-bold rounded-2xl border border-white/10 transition-all active:scale-95"
-  >
-    <PlusSquare size={20} className="text-blue-500" /> إضافة سؤال جديد
-  </button>
-
-  <div className="flex gap-4 w-full md:w-auto">
-    <button 
-      className="flex-1 md:flex-none flex items-center justify-center gap-3 px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl shadow-xl shadow-blue-600/20 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
-      // تم تصحيح شروط التعطيل لتطابق الـ States
-      disabled={!examMeta.title || questions.length === 0}
-      onClick={() => handleDeploy()} // أو onSave حسب دالتك
-    >
-      <UploadCloud size={20} /> حفظ ونشر الاختبار
-    </button>
+      ))}
+    </div>
   </div>
-</div>
+);
+
+
 
 {/* --- مكون مركز الاتصالات --- */}
 const CommsCenterUI = ({ msgData, setMsgData, supportTickets, setActiveChat, NotificationHub }) => { 
@@ -2877,8 +2797,6 @@ const CommsCenterUI = ({ msgData, setMsgData, supportTickets, setActiveChat, Not
       </div>
     </div>
   );
-};
-{/* لوحة الدعم الفني المباشر - إدارة المحادثات */}
         <div className="support-panel glass-card p-6 border border-white/5 bg-black/30 rounded-[2rem] flex flex-col h-full">
           <div className="panel-header flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-white flex items-center gap-3">
@@ -2918,7 +2836,8 @@ const CommsCenterUI = ({ msgData, setMsgData, supportTickets, setActiveChat, Not
             )}
           </div>
         </div>
-      </div>
+      
+    
 
       {/* سجل الإشعارات المرسلة سابقاً - أرشيف البيانات */}
       <div className="notification-history glass-card p-6 border border-white/5 bg-black/20 rounded-[2rem]">
@@ -2949,8 +2868,8 @@ const CommsCenterUI = ({ msgData, setMsgData, supportTickets, setActiveChat, Not
             </table>
          </div>
       </div>
-    </div>
-  );
+
+ 
 };
 
 
@@ -3390,11 +3309,11 @@ const AdminDashboard = () => {
             { id: 'comms', icon: <Send size={18}/>, label: 'مركز الاتصالات' },
             { id: 'terminal', icon: <Terminal size={18}/>, label: 'النواة (Root)' },
           ].map(item => (
-            <button 
-              key={item.id} 
+            <button
+              key={item.id}
               className={`nav-item group relative w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-300 ${
-                activeTab === item.id 
-                ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/20' 
+                activeTab === item.id
+                ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/20'
                 : 'text-gray-500 hover:bg-white/5 hover:text-gray-200'
               }`}
               onClick={() => setActiveTab(item.id)}
@@ -3403,17 +3322,15 @@ const AdminDashboard = () => {
               <span className="label text-sm font-bold">{item.label}</span>
               
               {activeTab === item.id && (
-                <motion.div 
-                  layoutId="activeNavIndicator" 
-                  className="absolute left-[-24px] w-1.5 h-8 bg-blue-500 rounded-r-full shadow-[4px_0_15px_rgba(59,130,246,0.8)]" 
+                <motion.div
+                  layoutId="activeNavIndicator"
+                  className="absolute left-[-24px] w-1.5 h-8 bg-blue-500 rounded-r-full shadow-[4px_0_15px_rgba(59,130,246,0.8)]"
                 />
               )}
             </button>
           ))}
         </nav>
-</div> // إغلاق titan-admin-container
-  );
-};
+
         <div className="sidebar-footer pt-6 border-t border-white/5">
           <div className="user-profile flex items-center gap-3 p-3 bg-white/5 rounded-2xl mb-4">
             <div className="user-avatar-mini w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center font-black text-white">A</div>
@@ -3422,7 +3339,7 @@ const AdminDashboard = () => {
               <span className="role block text-[10px] text-green-500 font-medium">إذن وصول فائق ✓</span>
             </div>
           </div>
-          <button 
+          <button
             className="logout-btn w-full flex items-center justify-center gap-2 py-3 text-red-400 hover:bg-red-400/10 rounded-xl transition-all text-sm font-bold"
             onClick={() => auth.signOut()}
           >
@@ -3449,8 +3366,8 @@ const AdminDashboard = () => {
              
              <div className="flex gap-2 border-r border-white/10 pr-6 mr-2">
                <button className="icon-btn-header p-2.5 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl"><Bell size={20}/></button>
-               <button 
-                className="icon-btn-header p-2.5 text-red-500 hover:bg-red-500/10 rounded-xl" 
+               <button
+                className="icon-btn-header p-2.5 text-red-500 hover:bg-red-500/10 rounded-xl"
                 onClick={() => window.confirm("⚠️ تفعيل إغلاق الطوارئ؟") && SystemCommander.updatePlatformStatus('EMERGENCY_LOCK')}
                >
                  <Lock size={20}/>
@@ -3472,9 +3389,10 @@ const AdminDashboard = () => {
             </motion.div>
           </AnimatePresence>
         </section>
-      </main>
+     
+      </main> 
 
- 
+  ); // إغلاق الـ return
 
 
 {/* الميزة 11: نظام إضافة المحاضرات البديل */}
@@ -4772,12 +4690,12 @@ const AdminDashboard = () => {
      </div>
   </div>
 </div>
+              </motion.div>
+            </AnimatePresence>
+          </section>
+        </main>
+      </div>
+    );
+}
 
-</div> {/* إغلاق شبكة الميزات 141 - 150 */}
 
-  {/* إغلاق مساحة المحتوى الرئيسية التي تحتوي على كل الأجزاء السابقة */}
-  {/* تأكد أن هذا الـ div هو نفسه الذي فتحته في بداية الـ return باسم titan-admin-container */}
-  
-    </div> 
-  ); 
-};
