@@ -4,6 +4,7 @@
   Author: TITo-TEC 
 */
 
+
 :root {
   /* الألوان الأساسية - سيتم تجاوزها ديناميكياً من React */
   --primary: #3b82f6;
@@ -41,6 +42,7 @@ body {
 ::-webkit-scrollbar-track {
   background: var(--bg-dark);
 }
+
 
 ::-webkit-scrollbar-thumb {
   background: var(--border-color);
@@ -95,6 +97,7 @@ header {
   opacity: 0.6;
 }
 
+
 /* 7. Components - Course Cards */
 .course-card {
   background: var(--card-bg);
@@ -118,6 +121,8 @@ header {
 .course-card:hover img {
   transform: scale(1.1);
 }
+
+
 
 /* 8. Buttons & Interactivity */
 .btn-mafa {
@@ -151,6 +156,7 @@ header {
   -webkit-backdrop-filter: blur(15px);
   border: 1px solid var(--border-color);
 }
+
 
 /* 10. Notifications Panel */
 .notif-panel {
@@ -1560,3 +1566,4 @@ input, textarea {
     background: radial-gradient(circle at top, #0a0a0a 0%, #000 100%);
   }
 }
+
