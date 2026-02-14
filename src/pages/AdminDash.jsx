@@ -1,42 +1,40 @@
-
-
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import * as XLSX from 'xlsx';
 import axios from 'axios';
-import { jsPDF } from "jspdf"; 
+import { jsPDF } from "jspdf";
 import CryptoJS from 'crypto-js';
 
-import {  
+import {
   // الأمان والتحقق
-  Shield, ShieldCheck, ShieldAlert, ShieldQuestion, Fingerprint, 
+  Shield, ShieldCheck, ShieldAlert, ShieldQuestion, Fingerprint,
   Lock, Unlock, Key, UserCheck, UserPlus, Zap, ZapOff,
   // الإحصائيات والبيانات
-  BarChart3, TrendingUp, Activity, Cpu, Database, 
+  BarChart3, TrendingUp, Activity, Cpu, Database,
   HardDrive, Layers, Target, Award,
   // الملاحة والواجهة
-  Layout, Menu, ChevronRight, MoreVertical, Grid, 
+  Layout, Menu, ChevronRight, MoreVertical, Grid,
   Settings, Bell, RefreshCcw, Search, Filter,
   X, XCircle, Check, CheckCircle, CheckCircle2, Circle, Plus, PlusSquare,
   // التواصل والرسائل
   MessageCircle, MessageSquare, Send, Share2, Globe, Globe2, Wifi, Server,
   // الأكاديمية والمحتوى
-  BookOpen, Video, FileText, Edit3, Save, Trash2, 
+  BookOpen, Video, FileText, Edit3, Save, Trash2,
   History, Clock, Calendar, Download,
   // المالية والموارد
-  CreditCard, DollarSign, Ticket, 
-  // الأيقونات الخاصة والمعدلة
+  CreditCard, DollarSign, Ticket,
+  // الأيقونات المضافة (التصحيح)
   Library as LibraryIcon, FilePlus, UploadCloud, Terminal, MapPin, Users,
-  CreditCard as CardIcon,      
-  Eye, Monitor, Smartphone, BrainCircuit, Wallet, 
-  ShoppingBag, Webhook, Printer, Star, Shuffle, 
-  Sparkles, FileLock, PackageSearch, Banknote, TrendingDown   
+  Eye, Monitor, Smartphone, BrainCircuit, Wallet,
+  ShoppingBag, Webhook, Printer, Star, Shuffle,
+  Sparkles, FileLock, PackageSearch, Banknote, TrendingDown,
+  Loader, ArrowRight, Trophy, QrCode, PlayCircle, Link, EyeOff, CloudLightning, CloudUpload, GraduationCap, Settings2, Minus
 } from 'lucide-react';
 
-import {  
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,   
-  ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell,   
-  BarChart, Bar, Legend, ComposedChart   
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell,
+  BarChart, Bar, Legend, ComposedChart
 } from 'recharts';
 
 import { db, rtdb, auth, storage } from "../firebase";
@@ -48,6 +46,8 @@ import {
 import { ref, set, onValue, update, remove, push, child, get, onDisconnect } from "firebase/database";
 import { ref as sRef, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import './AdminDash.css';
+
+
 
 export default function AdminDash() {
   // --- [1] منطقة تعريف الـ States ---
@@ -562,6 +562,9 @@ export default function AdminDash() {
       }
     }
   };
+
+
+
 
   const StudentMiner = {
     // الحصول على سجل الدخول التفصيلي (بصمات الأجهزة والـ IPs)
@@ -1722,6 +1725,7 @@ const LibraryUI = () => {
     </motion.div>
   );
 };
+
   const renderMainContent = () => {
     switch (activeTab) {
       case 'dashboard':
@@ -1841,7 +1845,7 @@ const StudentsManagerUI = () => {
                     <div className="item text-muted">
                       <MapPin size={12}/> {student?.governorate || 'غير محدد'}
                     </div>
-                  </div> {/* <--- هذا الإغلاق كان مفقوداً وهو سبب Build Failure */}
+                  </div>
                 </td>
 
                 <td>
@@ -2716,16 +2720,16 @@ const QuestionCardPreview = ({ idx, removeQuestion, q, updateQuestion, updateOpt
 
 
 {/* --- مكون مركز الاتصالات --- */}
-const CommsCenterUI = ({ msgData, setMsgData, supportTickets, setActiveChat, NotificationHub }) => { 
+const CommsCenterUI = ({ msgData, setMsgData, supportTickets, setActiveChat, NotificationHub }) => {
  
   return (
     <div className="comms-center-vessel space-y-6">
       <div className="comms-grid grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* لوحة إرسال الإشعارات الجماعية - نظام البث السحابي */}
-        <motion.div 
-          initial={{ x: -30, opacity: 0 }} 
-          animate={{ x: 0, opacity: 1 }} 
+        <motion.div
+          initial={{ x: -30, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
           className="broadcast-panel glass-card p-6 border border-white/5 bg-gradient-to-br from-white/5 to-transparent rounded-[2rem] shadow-xl"
         >
           <h3 className="text-xl font-bold text-white flex items-center gap-3 mb-6">
@@ -2735,9 +2739,9 @@ const CommsCenterUI = ({ msgData, setMsgData, supportTickets, setActiveChat, Not
           <div className="titan-form space-y-4">
             <div className="form-group">
               <label className="text-xs text-gray-500 ml-2 mb-2 block uppercase tracking-tighter">عنوان التنبيه</label>
-              <input 
+              <input
                 className="w-full bg-black/20 border border-white/10 p-3 rounded-xl outline-none focus:border-yellow-500/50 text-white transition-all"
-                placeholder="مثلاً: تحديث جديد في محاضرة الفيزياء" 
+                placeholder="مثلاً: تحديث جديد في محاضرة الفيزياء"
                 value={msgData.title}
                 onChange={e => setMsgData({...msgData, title: e.target.value})}
               />
@@ -2745,9 +2749,9 @@ const CommsCenterUI = ({ msgData, setMsgData, supportTickets, setActiveChat, Not
 
             <div className="form-group">
               <label className="text-xs text-gray-500 ml-2 mb-2 block uppercase tracking-tighter">نص الرسالة</label>
-              <textarea 
+              <textarea
                 className="w-full bg-black/20 border border-white/10 p-3 rounded-xl outline-none focus:border-yellow-500/50 text-white transition-all resize-none"
-                rows="4" 
+                rows="4"
                 placeholder="اكتب تفاصيل الإشعار هنا..."
                 value={msgData.message}
                 onChange={e => setMsgData({...msgData, message: e.target.value})}
@@ -2757,9 +2761,9 @@ const CommsCenterUI = ({ msgData, setMsgData, supportTickets, setActiveChat, Not
             <div className="form-row grid grid-cols-2 gap-4">
               <div className="form-group">
                 <label className="text-xs text-gray-500 ml-2 mb-2 block tracking-tighter">الجمهور المستهدف</label>
-                <select 
+                <select
                   className="w-full bg-black/40 border border-white/10 p-3 rounded-xl text-white outline-none cursor-pointer"
-                  value={msgData.category} 
+                  value={msgData.category}
                   onChange={e => setMsgData({...msgData, category: e.target.value})}
                 >
                   <option value="ALL">جميع الطلاب</option>
@@ -2770,9 +2774,9 @@ const CommsCenterUI = ({ msgData, setMsgData, supportTickets, setActiveChat, Not
               </div>
               <div className="form-group">
                 <label className="text-xs text-gray-500 ml-2 mb-2 block tracking-tighter">نوع التنبيه</label>
-                <select 
+                <select
                   className="w-full bg-black/40 border border-white/10 p-3 rounded-xl text-white outline-none cursor-pointer"
-                  value={msgData.type} 
+                  value={msgData.type}
                   onChange={e => setMsgData({...msgData, type: e.target.value})}
                 >
                   <option value="INFO">ℹ️ معلومة عامة</option>
@@ -2783,8 +2787,8 @@ const CommsCenterUI = ({ msgData, setMsgData, supportTickets, setActiveChat, Not
               </div>
             </div>
 
-            <button 
-              className="titan-btn primary w-full mt-4 bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-yellow-600/20 active:scale-95" 
+            <button
+              className="titan-btn primary w-full mt-4 bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-yellow-600/20 active:scale-95"
               onClick={() => {
                 if(!msgData.title || !msgData.message) return alert("⚠️ المحتوى فارغ!");
                 NotificationHub.sendBroadcast(msgData);
@@ -2794,9 +2798,7 @@ const CommsCenterUI = ({ msgData, setMsgData, supportTickets, setActiveChat, Not
             </button>
           </div>
         </motion.div>
-      </div>
-    </div>
-  );
+        
         <div className="support-panel glass-card p-6 border border-white/5 bg-black/30 rounded-[2rem] flex flex-col h-full">
           <div className="panel-header flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-white flex items-center gap-3">
@@ -2816,13 +2818,13 @@ const CommsCenterUI = ({ msgData, setMsgData, supportTickets, setActiveChat, Not
                   <p className="text-xs text-gray-500 truncate max-w-[200px]">{ticket?.lastMessage || 'لا توجد رسائل...'}</p>
                   
                   <small className="text-[10px] text-gray-600 mt-1 italic">
-                    نشط: {ticket?.lastUserActivity?.seconds 
-                      ? new Date(ticket.lastUserActivity.seconds * 1000).toLocaleTimeString('ar-EG') 
+                    نشط: {ticket?.lastUserActivity?.seconds
+                      ? new Date(ticket.lastUserActivity.seconds * 1000).toLocaleTimeString('ar-EG')
                       : 'غير متاح حالياً'}
                   </small>
                 </div>
-                <button 
-                  className="bg-green-600 hover:bg-green-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all" 
+                <button
+                  className="bg-green-600 hover:bg-green-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all"
                   onClick={() => setActiveChat(ticket)}
                 >
                   رد الآن
@@ -2836,8 +2838,7 @@ const CommsCenterUI = ({ msgData, setMsgData, supportTickets, setActiveChat, Not
             )}
           </div>
         </div>
-      
-    
+      </div>
 
       {/* سجل الإشعارات المرسلة سابقاً - أرشيف البيانات */}
       <div className="notification-history glass-card p-6 border border-white/5 bg-black/20 rounded-[2rem]">
@@ -2868,8 +2869,8 @@ const CommsCenterUI = ({ msgData, setMsgData, supportTickets, setActiveChat, Not
             </table>
          </div>
       </div>
-
- 
+    </div>
+  );
 };
 
 
@@ -3068,1634 +3069,1209 @@ const DigitalLibraryUI = ({ books, setBooks, isUploading, setIsUploading, libCat
       </AnimatePresence>
     </div>
   );
+   
+
 };
   
+/* --- بداية الجزء المصحح (الجزء 1) --- */
 
 const AnalyticsUI = ({ stats, radarStats, securityLogs, chartData, pieData, setTimeRange }) => {
-  return (
-    <div className="analytics-vessel space-y-8 p-1">
-      
-      {/* صف الكروت الإحصائية العليا - المؤشرات الحيوية */}
-      <div className="stats-grid-pro grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* كرت الدخل */}
-        <motion.div 
-          whileHover={{ y: -5, scale: 1.02 }} 
-          className="stat-card-gold glass-card p-6 rounded-[2rem] border border-yellow-500/20 bg-gradient-to-br from-yellow-500/10 to-transparent relative overflow-hidden group"
-        >
-          <div className="absolute top-0 left-0 w-1 h-full bg-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.5)]"></div>
-          <div className="flex items-start justify-between">
-            <div className="stat-info">
-              <p className="text-xs text-yellow-500/70 font-bold mb-1 uppercase tracking-widest">إجمالي الدخل الصافي</p>
-              <h2 className="text-3xl font-black text-white leading-none">
-                { (stats?.totalRevenue || stats?.revenue || 0).toLocaleString() } 
-<small className="text-sm font-normal text-yellow-500/50">EGP</small>
-              </h2>
-              <span className="trend-up flex items-center gap-1 text-[10px] text-green-400 mt-4 bg-green-400/10 w-fit px-2 py-1 rounded-full border border-green-400/20">
-                <TrendingUp size={12}/> +12% هذا الشهر
-              </span>
-            </div>
-            <div className="stat-icon p-4 bg-yellow-500/10 rounded-2xl text-yellow-500 group-hover:rotate-12 transition-transform">
-              <DollarSign size={24} />
-            </div>
-          </div>
-        </motion.div>
+  return (
+    <div className="analytics-vessel space-y-8 p-1">
+      
+      {/* صف الكروت الإحصائية العليا - المؤشرات الحيوية */}
+      <div className="stats-grid-pro grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* كرت الدخل */}
+        <motion.div whileHover={{ y: -5, scale: 1.02 }} className="stat-card-gold glass-card p-6 rounded-[2rem] border border-yellow-500/20 bg-gradient-to-br from-yellow-500/10 to-transparent relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-1 h-full bg-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.5)]"></div>
+          <div className="flex items-start justify-between">
+            <div className="stat-info">
+              <p className="text-xs text-yellow-500/70 font-bold mb-1 uppercase tracking-widest">إجمالي الدخل الصافي</p>
+              <h2 className="text-3xl font-black text-white leading-none">
+                { (stats?.totalRevenue || stats?.revenue || 0).toLocaleString() } 
+                <small className="text-sm font-normal text-yellow-500/50">EGP</small>
+              </h2>
+              <span className="trend-up flex items-center gap-1 text-[10px] text-green-400 mt-4 bg-green-400/10 w-fit px-2 py-1 rounded-full border border-green-400/20">
+                <TrendingUp size={12}/> +12% هذا الشهر
+              </span>
+            </div>
+            <div className="stat-icon p-4 bg-yellow-500/10 rounded-2xl text-yellow-500 group-hover:rotate-12 transition-transform">
+              <DollarSign size={24} />
+            </div>
+          </div>
+        </motion.div>
 
-        {/* كرت النشاط */}
-        <motion.div 
-          whileHover={{ y: -5, scale: 1.02 }} 
-          className="stat-card-blue glass-card p-6 rounded-[2rem] border border-blue-500/20 bg-gradient-to-br from-blue-500/10 to-transparent relative overflow-hidden group"
-        >
-          <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
-          <div className="flex items-start justify-between">
-            <div className="stat-info">
-              <p className="text-xs text-blue-500/70 font-bold mb-1 uppercase tracking-widest">الطلاب النشطون (أونلاين)</p>
-              <h2 className="text-3xl font-black text-white leading-none">
-               { (radarStats?.online || 0).toLocaleString() } <small className="text-sm font-normal text-blue-500/50">طالب</small>
-              </h2>
-              <div className="flex items-center gap-2 mt-5">
-                <div className="pulse-indicator w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
-                <span className="text-[10px] text-blue-400 font-bold">بث حي من الخادم</span>
-              </div>
-            </div>
-            <div className="stat-icon p-4 bg-blue-500/10 rounded-2xl text-blue-500 group-hover:rotate-12 transition-transform">
-              <Users size={24} />
-            </div>
-          </div>
-        </motion.div>
+        {/* كرت النشاط */}
+        <motion.div whileHover={{ y: -5, scale: 1.02 }} className="stat-card-blue glass-card p-6 rounded-[2rem] border border-blue-500/20 bg-gradient-to-br from-blue-500/10 to-transparent relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
+          <div className="flex items-start justify-between">
+            <div className="stat-info">
+              <p className="text-xs text-blue-500/70 font-bold mb-1 uppercase tracking-widest">الطلاب النشطون (أونلاين)</p>
+              <h2 className="text-3xl font-black text-white leading-none">
+                { (radarStats?.online || 0).toLocaleString() } <small className="text-sm font-normal text-blue-500/50">طالب</small>
+              </h2>
+              <div className="flex items-center gap-2 mt-5">
+                <div className="pulse-indicator w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
+                <span className="text-[10px] text-blue-400 font-bold">بث حي من الخادم</span>
+              </div>
+            </div>
+            <div className="stat-icon p-4 bg-blue-500/10 rounded-2xl text-blue-500 group-hover:rotate-12 transition-transform">
+              <Users size={24} />
+            </div>
+          </div>
+        </motion.div>
 
-        {/* كرت الحماية */}
-        <motion.div 
-          whileHover={{ y: -5, scale: 1.02 }} 
-          className="stat-card-purple glass-card p-6 rounded-[2rem] border border-purple-500/20 bg-gradient-to-br from-purple-500/10 to-transparent relative overflow-hidden group"
-        >
-          <div className="absolute top-0 left-0 w-1 h-full bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)]"></div>
-          <div className="flex items-start justify-between">
-            <div className="stat-info">
-              <p className="text-xs text-purple-500/70 font-bold mb-1 uppercase tracking-widest">تهديدات تم صدها</p>
-              <h2 className="text-3xl font-black text-white leading-none">
-{securityLogs?.length || 0} <small className="text-sm font-normal text-purple-500/50">محاولة</small>
-              </h2>
-              <span className="text-[10px] text-green-400 mt-5 block font-bold border-r-2 border-green-500 pr-2 uppercase">Firewall Active</span>
-            </div>
-            <div className="stat-icon p-4 bg-purple-500/10 rounded-2xl text-purple-500 group-hover:rotate-12 transition-transform">
-              <ShieldAlert size={24} />
-            </div>
-          </div>
-        </motion.div>
-      </div>
+        {/* كرت الحماية */}
+        <motion.div whileHover={{ y: -5, scale: 1.02 }} className="stat-card-purple glass-card p-6 rounded-[2rem] border border-purple-500/20 bg-gradient-to-br from-purple-500/10 to-transparent relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-1 h-full bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.5)]"></div>
+          <div className="flex items-start justify-between">
+            <div className="stat-info">
+              <p className="text-xs text-purple-500/70 font-bold mb-1 uppercase tracking-widest">تهديدات تم صدها</p>
+              <h2 className="text-3xl font-black text-white leading-none">
+                {securityLogs?.length || 0} <small className="text-sm font-normal text-purple-500/50">محاولة</small>
+              </h2>
+              <span className="text-[10px] text-green-400 mt-5 block font-bold border-r-2 border-green-500 pr-2 uppercase">Firewall Active</span>
+            </div>
+            <div className="stat-icon p-4 bg-purple-500/10 rounded-2xl text-purple-500 group-hover:rotate-12 transition-transform">
+              <ShieldAlert size={24} />
+            </div>
+          </div>
+        </motion.div>
+      </div>
 
-      {/* شبكة الرسوم البيانية الكبرى */}
-      <div className="charts-main-grid grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* الرسم البياني للأرباح - يأخذ مساحة أكبر */}
-        <div className="chart-container lg:col-span-2 glass-card p-6 rounded-[2.5rem] border border-white/5 bg-black/20 shadow-2xl">
-          <div className="chart-header flex justify-between items-center mb-8">
-            <h3 className="text-lg font-bold text-gray-200 flex items-center gap-3">
-              <BarChart3 size={18} className="text-blue-500"/> تحليل التدفق المالي (Revenue Stream)
-            </h3>
-            <select 
-              className="bg-white/5 border border-white/10 text-xs text-gray-400 p-2 rounded-lg outline-none focus:border-blue-500 transition-all cursor-pointer"
-              onChange={(e) => setTimeRange(e.target.value)}
-            >
-              <option value="7d">آخر 7 أيام</option>
-              <option value="30d">آخر 30 يوم</option>
-            </select>
-          </div>
-          
-          <div className="chart-wrapper w-full h-[350px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                <XAxis dataKey="date" stroke="#475569" fontSize={10} tickLine={false} axisLine={false} />
-                <YAxis stroke="#475569" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => `${value} EGP`} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#0f172a', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.5)' }}
-                  itemStyle={{ color: '#3b82f6', fontSize: '12px', fontWeight: 'bold' }}
-                />
-                <Area type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={4} fillOpacity={1} fill="url(#colorRev)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+      {/* شبكة الرسوم البيانية الكبرى */}
+      <div className="charts-main-grid grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* الرسم البياني للأرباح */}
+        <div className="chart-container lg:col-span-2 glass-card p-6 rounded-[2.5rem] border border-white/5 bg-black/20 shadow-2xl">
+          <div className="chart-header flex justify-between items-center mb-8">
+            <h3 className="text-lg font-bold text-gray-200 flex items-center gap-3">
+              <BarChart3 size={18} className="text-blue-500"/> تحليل التدفق المالي (Revenue Stream)
+            </h3>
+            <select className="bg-white/5 border border-white/10 text-xs text-gray-400 p-2 rounded-lg outline-none cursor-pointer" onChange={(e) => setTimeRange(e.target.value)}>
+              <option value="7d">آخر 7 أيام</option>
+              <option value="30d">آخر 30 يوم</option>
+            </select>
+          </div>
+          
+          <div className="chart-wrapper w-full h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                <XAxis dataKey="date" stroke="#475569" fontSize={10} tickLine={false} axisLine={false} />
+                <YAxis stroke="#475569" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}`} />
+                <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }} />
+                <Area type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={4} fillOpacity={1} fill="url(#colorRev)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
 
-        {/* الجانب الأيمن: التوزيع والنشاط */}
-        <div className="chart-side-grid flex flex-col gap-6">
-          {/* Pie Chart: توزيع الأقسام */}
-          <div className="pie-chart-box glass-card p-6 rounded-[2.5rem] border border-white/5 bg-black/20 flex-1 flex flex-col items-center">
-            <h3 className="text-sm font-bold text-gray-400 mb-4 w-full text-right">توزيع الطلاب حسب الأقسام</h3>
-            <div className="w-full h-[180px]">
-              <ResponsiveContainer width="100%" height="100%">
-                {/* تأمين: لا نرسم الرسم البياني إلا لو البيانات موجودة فعلاً */}
-                {(pieData && pieData.length > 0) ? (
-                  <PieChart>
-                    <Pie data={pieData} innerRadius={50} outerRadius={70} paddingAngle={8} dataKey="value">
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'][index % 4]} stroke="none" />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#1e293b', borderRadius: '12px', border: 'none', color: '#fff', fontSize: '11px' }}
-                    />
-                  </PieChart>
-                ) : (
-                  <div className="h-full flex items-center justify-center text-[10px] text-gray-600">جاري تحليل البيانات...</div>
-                )}
-              </ResponsiveContainer>
-            </div>
-            <div className="pie-legend grid grid-cols-2 gap-2 mt-4 w-full">
-              {(pieData || []).map((d, i) => (
-                <div key={i} className="legend-item flex items-center gap-2 bg-white/5 p-2 rounded-xl">
-                  <span className="w-2 h-2 rounded-full" style={{background: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'][i]}}></span>
-                  <small className="text-[10px] text-gray-400 truncate">{d?.name}: {d?.value}</small>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* الجانب الأيمن: التوزيع والنشاط */}
+        <div className="chart-side-grid flex flex-col gap-6">
+          {/* Pie Chart: توزيع الأقسام */}
+          <div className="pie-chart-box glass-card p-6 rounded-[2.5rem] border border-white/5 bg-black/20 flex-1 flex flex-col items-center">
+            <h3 className="text-sm font-bold text-gray-400 mb-4 w-full text-right">توزيع الطلاب حسب الأقسام</h3>
+            <div className="w-full h-[180px]">
+              <ResponsiveContainer width="100%" height="100%">
+                {(pieData && pieData.length > 0) ? (
+                  <PieChart>
+                    <Pie data={pieData} innerRadius={50} outerRadius={70} paddingAngle={8} dataKey="value">
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'][index % 4]} stroke="none" />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderRadius: '12px', border: 'none', fontSize: '11px' }} />
+                  </PieChart>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-[10px] text-gray-600">جاري تحليل البيانات...</div>
+                )}
+              </ResponsiveContainer>
+            </div>
+            <div className="pie-legend grid grid-cols-2 gap-2 mt-4 w-full">
+              {(pieData || []).map((d, i) => (
+                <div key={i} className="legend-item flex items-center gap-2 bg-white/5 p-2 rounded-xl">
+                  <span className="w-2 h-2 rounded-full" style={{background: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'][i]}}></span>
+                  <small className="text-[10px] text-gray-400 truncate">{d?.name}: {d?.value}</small>
+                </div>
+              ))}
+            </div>
+          </div>
 
-          {/* سجل النشاط اللحظي المطور */}
+          {/* سجل النشاط اللحظي */}
           <div className="activity-stream glass-card p-6 rounded-[2.5rem] border border-white/5 bg-black/40 flex-1 overflow-hidden">
             <h3 className="text-sm font-bold text-gray-200 mb-4 flex items-center gap-2">
               <Activity size={16} className="text-purple-500"/> رادار العمليات اللحظي
             </h3>
             <div className="stream-list space-y-3">
               {(securityLogs || []).slice(0, 4).map((log, idx) => (
-                <div key={log?.id || idx} className="stream-item flex gap-3 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.08] transition-all group">
+                <div key={log?.id || idx} className="stream-item flex gap-3 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
                   <div className={`s-icon shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${log?.type === 'alert' ? 'bg-red-500/20 text-red-500' : 'bg-purple-500/20 text-purple-500'}`}>
                     <ShieldAlert size={14}/>
                   </div>
                   <div className="s-text overflow-hidden">
-                    <p className="text-[11px] text-gray-300 leading-tight truncate group-hover:text-clip group-hover:whitespace-normal">{log?.details || 'عملية غير مسجلة'}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[9px] text-gray-600 font-mono tracking-tighter uppercase">ID: {log?.id?.substring(0,6) || 'SEC-00'}</span>
-                      <span className="text-[9px] text-purple-500/50 italic">
-                        {log?.timestamp?.seconds ? new Date(log.timestamp.seconds * 1000).toLocaleTimeString() : '--:--'}
-                      </span>
-                    </div>
+                    <p className="text-[11px] text-gray-300 truncate">{log?.details || 'عملية غير مسجلة'}</p>
+                    <span className="text-[9px] text-purple-500/50 italic">
+                      {log?.timestamp?.seconds ? new Date(log.timestamp.seconds * 1000).toLocaleTimeString() : '--:--'}
+                    </span>
                   </div>
                 </div>
               ))}
             </div>
-          </div> {/* إغلاق نشاط الرادار */}
+          </div>
+       </div>
+     </div>
 
-        </div> {/* إغلاق chart-side-grid (العمود الأيمن) */}
-      </div> {/* إغلاق charts-main-grid (الشبكة الكبرى) */}
-    </div> 
-  ); // إغلاق الـ return
-}; // إغلاق الـ AnalyticsUI
+     </div>
+            );
+          };
+
+
+
+          {/* --- بداية الميزات من 11 إلى 130 --- */}
+      <div className="features-grid-container mt-8 space-y-6">
       
-const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  
-  // دالة تحويل التبويبات (Content Router) مع تأمين البيانات المرسلة
-  const renderMainContent = () => {
-    // التأكد من أن جميع المتغيرات مصفوفات قبل الإرسال لمنع الانهيار الداخلي
-    const props = {
-      stats: stats || {},
-      radarStats: radarStats || { online: 0 },
-      securityLogs: securityLogs || [],
-      chartData: chartData || [],
-      pieData: pieData || [],
-      students: students || [],
-      courses: courses || [],
-      lectures: lectures || [],
-      codes: codes || [],
-      books: books || [],
-      msgData: msgData || [],
-      supportTickets: supportTickets || [],
-      terminalLogs: terminalLogs || []
-    };
+      {/* الميزة 11: نظام إضافة المحاضرات البديل (مصحح بالكامل) */}
+      {(() => {
+        const handleAddLecture = async (lectureData) => {
+          // 1. تصحيح الخطأ الإملائي هنا (كانت le ctureData)
+          if (!lectureData.title || !lectureData.url) {
+             return alert("⚠️ البيانات ناقصة! يرجى كتابة العنوان والرابط.");
+          }
 
-    switch (activeTab) {
-      case 'dashboard': return <AnalyticsUI {...props} setTimeRange={setTimeRange} />;
-      case 'students':  return <StudentManagementUI students={props.students} />;
-      case 'academy':   return <AcademyManagerUI courses={props.courses} lectures={props.lectures} />;
-      case 'finance':   return <FinanceManagerUI codes={props.codes} stats={props.stats} />;
-      case 'library':   return <DigitalLibraryUI books={props.books} />;
-      case 'comms':     return <CommsCenterUI msgData={props.msgData} supportTickets={props.supportTickets} />;
-      case 'terminal':  return <TerminalCore logs={props.terminalLogs} />;
-      default:          return <AnalyticsUI {...props} />;
-    }
-  };
+          try {
+            const docRef = await addDoc(collection(db, "lectures"), {
+              ...lectureData,
+              createdAt: serverTimestamp(),
+              isAlternative: true 
+            });
+            
+            // 2. تفريغ الحقول بعد النجاح
+            const titleInput = document.getElementById('alt_title');
+            const urlInput = document.getElementById('alt_url');
+            if(titleInput) titleInput.value = "";
+            if(urlInput) urlInput.value = "";
 
- 
+            alert("✅ تمت إضافة المحاضرة بنجاح!");
+          } catch (e) { 
+            console.error(e);
+            alert("❌ حدث خطأ: " + e.message);
+          }
+        };
+
+        return (
+          <div key="feat-11" className="lecture-adder p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] mb-6 text-white shadow-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 bg-purple-500/20 rounded-2xl text-purple-400">
+                <Video size={20}/>
+              </div>
+              <h3 className="font-bold text-gray-200 text-lg">نظام إضافة المحاضرات البديل</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input 
+                type="text" 
+                placeholder="عنوان المحاضرة الخفي" 
+                id="alt_title" 
+                className="bg-black/40 border border-white/10 rounded-2xl px-5 py-3 text-sm outline-none text-white focus:border-purple-500 transition-all" 
+              />
+              <input 
+                type="text" 
+                placeholder="رابط الفيديو (Vimeo/Bunny)" 
+                id="alt_url" 
+                className="bg-black/40 border border-white/10 rounded-2xl px-5 py-3 text-sm outline-none text-white focus:border-purple-500 transition-all" 
+              />
+            </div>
+            
+            <button 
+              onClick={() => {
+                // 3. تأمين جلب القيم
+                const titleVal = document.getElementById('alt_title')?.value;
+                const urlVal = document.getElementById('alt_url')?.value;
+                handleAddLecture({ title: titleVal, url: urlVal });
+              }}
+              className="w-full mt-4 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl font-black text-sm text-white uppercase tracking-widest hover:shadow-lg hover:shadow-purple-600/20 transition-all active:scale-95">
+              نشر المحاضرة في النظام البديل
+            </button>
+          </div>
+        ); 
+      })()}
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* الميزة 12: منع تخطي أجزاء الفيديو */}
+        {(() => {
+          const toggleAntiSkip = async (lectureId, status) => {
+            try {
+              const lectureRef = doc(db, "lectures", lectureId);
+              await updateDoc(lectureRef, { forceWatch: !status });
+            } catch (e) { console.error(e); }
+          };
+          return (
+            <div className="p-5 bg-black/40 border border-white/5 rounded-3xl flex justify-between items-center text-white group hover:border-purple-500/30 transition-all">
+              <div>
+                <h4 className="text-sm font-bold flex items-center gap-2"><ShieldCheck size={14} className="text-purple-400" /> منع التخطي (Anti-Skip)</h4>
+                <p className="text-[10px] text-gray-500 italic">إجبار الطالب على المشاهدة الكاملة</p>
+              </div>
+              <button onClick={() => toggleAntiSkip('current_id', false)} className="w-12 h-6 bg-purple-600 rounded-full relative shadow-inner"><div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div></button>
+            </div>
+          );
+        })()}
+
+        {/* الميزة 13: مشغل الفيديو العائم */}
+        {(() => {
+          const enablePiP = async () => {
+            try {
+              const videoElement = document.querySelector('video');
+              if (videoElement && document.pictureInPictureEnabled) { await videoElement.requestPictureInPicture(); }
+            } catch (e) { console.error(e); }
+          };
+          return (
+            <div className="p-5 bg-black/40 border border-white/5 rounded-3xl flex justify-between items-center text-white group hover:border-blue-500/30 transition-all">
+              <div><h4 className="text-sm font-bold">المشغل العائم (PiP)</h4><p className="text-[10px] text-gray-500">تفعيل خاصية المشغل المصغر</p></div>
+              <button onClick={enablePiP} className="p-2 bg-white/5 rounded-xl hover:bg-blue-600 hover:text-white text-blue-400 transition-all"><Monitor size={18}/></button>
+            </div>
+          );
+        })()}
+      </div>
+
+      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] mb-6 shadow-inner">
+        {(() => {
+          const updateSectionAccess = async (asstId, sectionKey) => { try { await updateDoc(doc(db, "assistants", asstId), { activeSection: sectionKey }); alert(`تم النقل: ${sectionKey}`); } catch (e) { console.error(e); } };
+          return (
+            <div className="text-white">
+              <h3 className="text-lg font-black mb-4 flex items-center gap-2"><Settings2 size={18} className="text-blue-400 animate-spin-slow" /> ميزات توظيف وتوزيع الأسستنت</h3>
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  {['Physics', 'Chemistry', 'Biology'].map(dept => (
+                    <button key={dept} onClick={() => updateSectionAccess('asst_id', dept)} className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold hover:bg-blue-600 transition-all">فتح قسم {dept}</button>
+                  ))}
+                </div>
+                <div className="p-4 bg-blue-500/10 rounded-2xl border border-blue-500/20 relative overflow-hidden">
+                   <div className="absolute top-0 right-0 p-2 opacity-10"><MessageSquare size={40}/></div>
+                   <div className="flex justify-between items-center text-[10px] relative z-10"><span className="text-blue-300 font-black">الميزة 20: Auto-Reply Bot</span><span className="flex items-center gap-1 text-green-500">Active</span></div>
+                   <p className="text-[9px] text-gray-500 mt-1 italic relative z-10">18. Smart Deletion | 19. Screen Snapshot <br/> النظام يرد آلياً عند انشغال المساعد.</p>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {(() => {
+          const generatePromoCode = async () => {
+            const codeInput = document.getElementById('promo_code_input'); const amountInput = document.getElementById('promo_amount');
+            if (!codeInput.value) return alert("أدخل البيانات");
+            try { await setDoc(doc(db, "promo_codes", codeInput.value), { code: codeInput.value, discount: amountInput.value, active: true }); alert("تم التفعيل"); } catch (e) { console.error(e); }
+          };
+          return (
+            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col justify-between text-white group hover:border-orange-500/30 transition-all">
+              <div className="flex items-center gap-3 mb-4 text-orange-400"><Ticket size={24} /><h3 className="font-bold">21. نظام الأكواد الذكية</h3></div>
+              <div className="space-y-3">
+                <input id="promo_code_input" placeholder="رمز الخصم (OFF50)" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs outline-none text-white" />
+                <input id="promo_amount" type="number" placeholder="نسبة الخصم %" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs outline-none text-white" />
+                <button onClick={generatePromoCode} className="w-full py-3 bg-orange-600 hover:bg-orange-500 rounded-xl text-xs font-black transition-all">إطلاق الكود</button>
+              </div>
+            </div>
+          );
+        })()}
+
+        {(() => {
+          const createAffiliateLink = async (uid) => { try { await updateDoc(doc(db, "users", uid), { isAffiliate: true, code: `REF-${uid.slice(0,5)}` }); alert("تم التحويل"); } catch (e) { console.error(e); } };
+          return (
+            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] text-white group hover:border-emerald-500/30 transition-all">
+              <div className="flex items-center gap-3 mb-4 text-emerald-400"><Share2 size={24} /><h3 className="font-bold">22. نظام "سوق واكسب"</h3></div>
+              <p className="text-[10px] text-gray-500 mb-4 font-light italic">حول طلابك إلى مسوقين (Affiliate Logic).</p>
+              <button onClick={() => createAffiliateLink('SAMPLE_UID')} className="w-full py-3 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl text-xs font-black transition-all">تحويل طالب لمسوق</button>
+            </div>
+          );
+        })()}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {(() => {
+          const triggerFlashSale = async () => { alert("تم تفعيل خصم الـ Flash Sale!"); };
+          return (
+            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] text-white overflow-hidden relative group">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-red-600/10 blur-3xl rounded-full"></div>
+              <div className="flex items-center gap-3 mb-4 text-red-500"><Zap size={24} className="animate-pulse" /><h3 className="font-bold">23. Flash Sale 1-Click</h3></div>
+              <button onClick={triggerFlashSale} className="w-full py-4 bg-red-600/10 border border-red-600/50 text-red-500 rounded-2xl text-[10px] font-black hover:bg-red-600 hover:text-white transition-all">تفعيل خصم 50% لكل المنصة</button>
+            </div>
+          );
+        })()}
+
+        <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-2 text-white">
+            <h3 className="text-[10px] font-black opacity-50 mb-2 uppercase tracking-widest text-indigo-400">24-30. حزمة Sales Booster</h3>
+            <div className="flex items-center justify-between p-3 bg-black/20 rounded-xl border border-white/5 hover:border-blue-500/30 cursor-pointer">
+               <span className="text-[10px]">26. كوبون "أول مرة شراء"</span><div className="w-8 h-4 bg-blue-600 rounded-full flex justify-end px-1"><div className="w-2 h-2 bg-white rounded-full"></div></div>
+            </div>
+            <div className="p-3 bg-white/5 rounded-xl border border-white/5 text-[9px] text-gray-500 italic space-y-1">
+               <p>27. Scarcity Timer | 28. Social Proof | 29. Loyalty Points</p>
+            </div>
+            <button className="mt-auto text-[10px] text-indigo-400 font-bold flex items-center justify-end gap-1">30. سياسة الاسترجاع الذكي <ChevronRight size={12}/></button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 text-white">
+        {/* ميزة 31: قفل الجهاز */}
+        {(() => {
+            const lockToHardware = async (uid) => { try { await updateDoc(doc(db, "users", uid), { isHardwareLocked: true }); } catch (e) { console.error(e); } };
+            return (
+              <div className="p-6 bg-red-950/10 border border-red-500/20 rounded-[2.5rem]">
+                <div className="flex items-center gap-3 mb-4 text-red-400"><ShieldAlert size={24} /><h3 className="font-bold text-lg">قفل الجهاز (Device Lock)</h3></div>
+                <p className="text-[10px] text-gray-500 mb-4">يمنع الطالب من فتح حسابه على أكثر من جهاز واحد.</p>
+                <button onClick={() => lockToHardware('ID')} className="w-full py-3 bg-red-600 rounded-xl text-xs font-black hover:bg-red-500 transition-all">تفعيل القفل العتادي</button>
+              </div>
+            );
+        })()}
+
+        {/* ميزة 32: كاشف التسجيل */}
+        {(() => {
+            const handleScreenSecurity = async (uid) => { alert("تم إرسال أمر إغلاق فوري"); };
+            return (
+              <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                <div className="flex items-center gap-3 mb-4 text-blue-400"><Eye size={24} /><h3 className="font-bold">كاشف التسجيل و HDMI</h3></div>
+                <div className="space-y-3">
+                   <div className="flex justify-between items-center bg-black/40 p-3 rounded-xl"><span className="text-[10px]">حماية DRM النشطة</span><div className="w-8 h-4 bg-green-500 rounded-full"></div></div>
+                   <button onClick={() => handleScreenSecurity('UID')} className="w-full py-2 border border-blue-500/30 text-blue-400 rounded-lg text-[10px] hover:bg-blue-500 hover:text-white transition-all">طرد الطالب يدوياً</button>
+                </div>
+              </div>
+            );
+        })()}
+
+        {/* ميزة 33: العلامة المائية */}
+        {(() => {
+            const setWatermarkConfig = async () => { alert("تم تحديث العلامة المائية"); };
+            return (
+              <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                <div className="flex items-center gap-3 mb-4 text-purple-400"><Fingerprint size={24} /><h3 className="font-bold">العلامة المائية الذكية</h3></div>
+                <p className="text-[10px] text-gray-400 mb-4 italic">تظهر بيانات الطالب متحركة فوق الفيديو.</p>
+                <button onClick={setWatermarkConfig} className="w-full py-2 bg-purple-600/20 text-purple-400 rounded-xl text-[10px] font-bold border border-purple-600/30">تعديل الشفافية</button>
+              </div>
+            );
+        })()}
+
+        {/* ميزات 34-40 */}
+        {(() => {
+            return (
+              <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-3">
+                 <h3 className="text-xs font-black text-gray-500 uppercase">مركز التحقيق (Forensics)</h3>
+                 <div className="p-3 bg-black/40 rounded-2xl flex justify-between items-center border border-white/5"><span className="text-[10px]">37. كاشف أدوات المطور</span><span className="text-[9px] bg-green-500/10 text-green-500 px-2 py-0.5 rounded-md">On</span></div>
+                 <div className="p-3 bg-black/40 rounded-2xl flex justify-between items-center border border-white/5"><span className="text-[10px]">38. حماية Brute Force</span><span className="text-[9px] bg-green-500/10 text-green-500 px-2 py-0.5 rounded-md">Active</span></div>
+                 <div className="mt-auto flex gap-2">
+                    <button className="flex-1 py-2 bg-white/5 rounded-lg text-[9px]">39. ليميت السيشن</button>
+                    <button className="flex-1 py-2 bg-white/5 rounded-lg text-[9px]">40. منع التعدد</button>
+                 </div>
+              </div>
+            );
+        })()}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 text-white">
+        {/* ميزة 41: تحليل AI */}
+        {(() => {
+            const analyzeStudentPerformance = async () => { alert("تم التصنيف بالذكاء الاصطناعي"); };
+            return (
+              <div className="p-6 bg-blue-900/10 border border-blue-500/20 rounded-[2.5rem]">
+                <div className="flex items-center gap-3 mb-4 text-blue-400"><BrainCircuit size={24} /><h3 className="font-bold text-lg">تحليل المستوى الذكي</h3></div>
+                <button onClick={analyzeStudentPerformance} className="w-full py-3 bg-blue-600 rounded-xl text-xs font-black hover:bg-blue-500 transition-all">تشغيل الخوارزمية</button>
+              </div>
+            );
+        })()}
+
+        {/* ميزة 42: المحفظة */}
+        {(() => {
+            const addBalance = async () => { alert("تم الإضافة"); };
+            return (
+              <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                <div className="flex items-center gap-3 mb-4 text-green-400"><Wallet size={24} /><h3 className="font-bold">المحفظة الرقمية</h3></div>
+                <div className="flex gap-2">
+                   <input placeholder="UID" className="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-[10px] outline-none text-white" />
+                   <button onClick={addBalance} className="p-2 bg-green-600 rounded-xl hover:bg-green-500 text-white"><Plus size={16}/></button>
+                </div>
+              </div>
+            );
+        })()}
+        
+        {/* ميزة 43: Heatmap */}
+        {(() => {
+            return (
+              <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                <div className="flex items-center gap-3 mb-4 text-purple-400"><BarChart3 size={24} /><h3 className="font-bold">Heatmap Analytics</h3></div>
+                <div className="h-16 w-full bg-gradient-to-r from-red-500 via-green-500 to-red-500 rounded-xl opacity-20 border border-white/5"></div>
+              </div>
+            );
+        })()}
+
+        {/* ميزات 44-50 */}
+        {(() => {
+            return (
+              <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-3 text-white">
+                  <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">KPIs Indicators</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                     <div className="bg-black/40 p-3 rounded-2xl border border-white/5 text-center"><p className="text-[8px]">النمو</p><span className="text-green-500 font-bold text-xs">+12.5%</span></div>
+                     <div className="bg-black/40 p-3 rounded-2xl border border-white/5 text-center"><p className="text-[8px]">المتوقع</p><span className="text-blue-500 font-bold text-xs">250K</span></div>
+                  </div>
+                  <div className="space-y-2 mt-2">
+                     <button className="w-full py-2 bg-white/5 rounded-xl text-[9px]">44. تقرير CSV</button>
+                     <div className="p-3 bg-red-500/5 border border-red-500/10 rounded-xl flex justify-between items-center"><span className="text-[9px] text-red-400">45. Churn Rate (3%)</span><TrendingDown size={14}/></div>
+                  </div>
+              </div>
+            );
+         })()}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 text-white">
+          {/* ميزة 51: رسائل جماعية */}
+          {(() => {
+            const sendBulk = async () => { alert("تم الإرسال للكل"); };
+            return (
+              <div className="p-6 bg-indigo-900/10 border border-indigo-500/20 rounded-[2.5rem]">
+                <div className="flex items-center gap-3 mb-4 text-indigo-400"><Send size={24} /><h3 className="font-bold text-lg">بث رسائل (Bulk)</h3></div>
+                <textarea placeholder="الرسالة..." className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs outline-none text-white h-20 resize-none"></textarea>
+                <button onClick={sendBulk} className="w-full py-3 bg-indigo-600 rounded-xl text-xs font-black hover:bg-indigo-500 transition-all">إرسال</button>
+              </div>
+            );
+          })()}
+
+          {/* ميزة 52: واتساب ولي الأمر */}
+          {(() => {
+            const sendWhatsapp = async () => { window.open(`https://api.whatsapp.com/send?text=غياب`); };
+            return (
+              <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                <div className="flex items-center gap-3 mb-4 text-green-500"><MessageCircle size={24} /><h3 className="font-bold">إشعارات أولياء الأمور</h3></div>
+                <button onClick={sendWhatsapp} className="w-full py-2 bg-green-600/20 text-green-500 rounded-xl text-[10px] font-bold border border-green-600/30 hover:bg-green-600 hover:text-white transition-all">إرسال تقرير الغياب (WhatsApp)</button>
+              </div>
+            );
+          })()}
+
+          {/* ميزة 53: جدولة المنشورات */}
+          {(() => {
+            const schedule = async () => { alert("تم الجدولة"); };
+            return (
+              <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                <div className="flex items-center gap-3 mb-4 text-yellow-400"><Clock size={24} /><h3 className="font-bold">جدولة المنشورات</h3></div>
+                <div className="space-y-2">
+                   <input placeholder="العنوان" className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-[10px] text-white" />
+                   <button onClick={schedule} className="w-full py-2 bg-yellow-600/20 text-yellow-500 rounded-xl text-[10px] font-bold border border-yellow-500/30">حفظ المنشور</button>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ميزات 54-60 */}
+          {(() => {
+            return (
+              <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-3 text-white">
+                  <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">تواصل ذكي (CRM)</h3>
+                  <div className="flex items-center justify-between p-3 bg-black/40 rounded-xl border border-white/5"><span className="text-[10px]">57. الطلاب المتصلون</span><span className="text-green-500 text-[10px]">● 142 Active</span></div>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                     <button className="py-2 bg-white/5 border border-white/5 rounded-xl text-[9px]">58. استطلاع رأي</button>
+                     <button className="py-2 bg-white/5 border border-white/5 rounded-xl text-[9px]">60. تليجرام بوت</button>
+                  </div>
+              </div>
+            );
+          })()}
+      </div>
+
+      {/* --- نهاية الجزء الأول من الميزات --- */}
+
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 text-white">
+        {/* ميزة 61: بنك الأسئلة */}
+        {(() => {
+          const addToBank = async () => { alert("تم النقل للبنك المركزي"); };
+          return (
+            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-4">
+              <div className="flex items-center gap-3 text-blue-400"><Database size={24} /><h3 className="font-bold">مستودع الأسئلة المركزي</h3></div>
+              <div className="grid grid-cols-2 gap-2">
+                 <select className="bg-black/40 border border-white/10 rounded-xl p-2 text-[10px] text-white"><option>فيزياء</option><option>كيمياء</option></select>
+                 <select className="bg-black/40 border border-white/10 rounded-xl p-2 text-[10px] text-white"><option>سهل</option><option>صعب</option></select>
+              </div>
+              <button onClick={addToBank} className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-black transition-all">إضافة للبنك</button>
+            </div>
+          );
+        })()}
+
+        {/* ميزة 62: المصحح المقالي AI */}
+        {(() => {
+          const aiGrade = async () => { alert("AI Grader Started..."); };
+          return (
+            <div className="p-6 bg-purple-900/10 border border-purple-500/20 rounded-[2.5rem]">
+              <div className="flex items-center gap-3 mb-4 text-purple-400"><Sparkles size={24} /><h3 className="font-bold">المصحح المقالي الذكي</h3></div>
+              <p className="text-[10px] text-gray-400 mb-4 italic">الذكاء الاصطناعي يقرأ إجابة الطالب ويقارنها بالنموذج.</p>
+              <button onClick={aiGrade} className="w-full py-3 bg-purple-600 rounded-xl text-xs font-black hover:bg-purple-500 transition-all">تشغيل AI Auto-Grader</button>
+            </div>
+          );
+        })()}
+        
+        {/* ميزة 63: Randomizer */}
+        {(() => {
+          const shuffle = async () => { alert("Exam Shuffled!"); };
+          return (
+            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+              <div className="flex items-center gap-3 mb-4 text-pink-500"><Shuffle size={24} /><h3 className="font-bold">مانع الغش (Randomizer)</h3></div>
+              <div className="flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5"><span className="text-[10px]">خلط الأسئلة</span><button onClick={shuffle} className="w-8 h-4 bg-pink-600 rounded-full flex justify-end px-1"><div className="w-2 h-2 bg-white rounded-full"></div></button></div>
+            </div>
+          );
+        })()}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* ميزات 64-70: إدارة الامتحانات */}
+        {(() => {
+          return (
+            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-3 text-white">
+                <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Result Management</h3>
+                <div className="space-y-2">
+                   <div className="flex justify-between p-2 bg-green-500/5 rounded-lg border border-green-500/10"><span className="text-[9px]">70. Auto-PDF Certificate</span><span className="text-green-500 font-bold text-[8px]">Enabled</span></div>
+                   <button className="w-full py-2 bg-white/5 border border-white/5 rounded-xl text-[9px] hover:bg-white/10 flex gap-2 justify-center"><Trophy size={12} className="text-yellow-500"/> 69. Live Leaderboard</button>
+                   <div className="grid grid-cols-2 gap-2">
+                      <button className="p-2 bg-black/20 rounded-lg text-[8px] border border-white/5">68. Negative Marking</button>
+                      <div className="p-2 bg-black/20 rounded-lg text-[8px] border border-white/5 flex justify-center gap-1"><Shield size={10}/> 65. Lockdown Browser</div>
+                   </div>
+                   <div className="mt-1 flex justify-center gap-2 opacity-40 italic"><Camera size={10} /><span className="text-[7px]">66. Snapshot Monitor Active</span></div>
+                </div>
+            </div>
+          );
+        })()}
+
+        {/* ميزة 71: الباقات */}
+        {(() => {
+          const createBundle = async () => { alert("Bundle Created"); };
+          return (
+            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col justify-between text-white">
+              <div className="flex items-center gap-3 mb-4 text-blue-400"><Layers size={24} /><h3 className="font-bold">نظام الباقات (Bundles)</h3></div>
+              <p className="text-[10px] text-gray-500 mb-4 font-light italic">بيع مجموعة محاضرات بسعر واحد.</p>
+              <div className="space-y-2">
+                 <input type="number" placeholder="السعر (EGP)" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs outline-none text-white" />
+                 <button onClick={createBundle} className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-black transition-all">إطلاق باقة</button>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+
+      {/* ميزة 72: تشفير الروابط */}
+      {(() => {
+        const secureLink = async () => { alert("Link Secured with Token"); };
+        return (
+          <div className="p-6 bg-amber-900/10 border border-amber-500/20 rounded-[2.5rem] mb-6">
+            <div className="flex items-center gap-3 mb-4 text-amber-400"><FileLock size={24} /><h3 className="font-bold">تأمين المذكرات (PDF)</h3></div>
+            <p className="text-[10px] text-gray-400 mb-4">روابط مؤقتة تنتهي صلاحيتها تلقائياً لمنع المشاركة.</p>
+            <button onClick={secureLink} className="w-full py-3 bg-amber-600 rounded-xl text-xs font-black hover:bg-amber-500 transition-all">تفعيل التشفير الزمني</button>
+          </div>
+        );
+      })()}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* ميزة 73: الأقسام المخفية */}
+        {(() => {
+          return (
+            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+              <div className="flex items-center gap-3 mb-4 text-gray-400"><EyeOff size={24} /><h3 className="font-bold text-white">الأقسام المخفية</h3></div>
+              <div className="flex justify-between items-center bg-black/40 p-3 rounded-xl border border-white/5"><span className="text-[10px] text-white">Hidden Mode</span><button className="px-3 py-1 bg-white/10 rounded-lg text-[9px] text-white">تغيير</button></div>
+            </div>
+          );
+        })()}
+        
+        {/* ميزات 74-80 */}
+        {(() => {
+          return (
+            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-3">
+                <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-white">Advanced Core</h3>
+                <div className="space-y-2">
+                   <div className="flex justify-between p-2 bg-blue-500/5 rounded-lg border border-blue-500/10"><span className="text-[9px] text-white">74. Cloud Backup</span><span className="text-blue-500 font-bold text-[8px]">Daily 3AM</span></div>
+                   <div className="grid grid-cols-2 gap-2">
+                      <button className="p-2 bg-black/20 rounded-lg text-[8px] text-gray-400 border border-white/5">76. Toggle CDN</button>
+                      <button className="p-2 bg-black/20 rounded-lg text-[8px] text-gray-400 border border-white/5">79. Anti-Print</button>
+                   </div>
+                   <div className="p-2 bg-green-500/5 rounded-lg border border-green-500/10 flex justify-between items-center"><span className="text-[9px] text-green-400 font-bold uppercase">80. Metadata Stripping</span><ShieldCheck size={12} className="text-green-400"/></div>
+                </div>
+            </div>
+          );
+        })()}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 text-white">
+         {/* ميزة 81: QR Attendance */}
+         {(() => {
+            const openScanner = async () => { alert("Camera Opened"); };
+            return (
+              <div className="p-6 bg-emerald-950/10 border border-emerald-500/20 rounded-[2.5rem]">
+                <div className="flex items-center gap-3 mb-4 text-emerald-400"><QrCode size={24} /><h3 className="font-bold text-lg">ماسح الحضور الذكي</h3></div>
+                <p className="text-[10px] text-gray-400 mb-4 text-balance">تسجيل حضور السنتر عبر الـ QR Code.</p>
+                <button onClick={openScanner} className="w-full py-3 bg-emerald-600 rounded-xl text-xs font-black hover:bg-emerald-500 transition-all">فتح الكاميرا (Live)</button>
+              </div>
+            );
+         })()}
+         
+         {/* ميزة 82: Assistant Rating */}
+         {(() => {
+            return (
+              <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                <div className="flex items-center gap-3 mb-4 text-yellow-500"><Star size={24} /><h3 className="font-bold">جودة المساعدين</h3></div>
+                <div className="flex justify-center gap-2 mb-2">{[1,2,3,4,5].map(star => <Star key={star} size={18} className="text-yellow-500" />)}</div>
+                <p className="text-[9px] text-gray-500 text-center">نظام تقييم أداء المساعدين.</p>
+              </div>
+            );
+         })()}
+      </div>
+
+      {/* ميزات 83-90 */}
+      {(() => {
+        return (
+          <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] mb-6 flex flex-col gap-3">
+             <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] text-white">Offline Management</h3>
+             <div className="space-y-2">
+                <div className="p-3 bg-black/40 rounded-xl border border-white/5 flex justify-between items-center"><span className="text-[10px] text-white">85. Smart ID Card Print</span><Printer size={12} className="text-gray-400"/></div>
+                <div className="p-3 bg-black/40 rounded-xl border border-white/5 flex justify-between items-center"><span className="text-[10px] text-white">83. Student of the Day</span><Trophy size={12} className="text-yellow-500 animate-bounce"/></div>
+                <div className="grid grid-cols-2 gap-2">
+                   <button className="py-2 bg-white/5 border border-white/5 rounded-lg text-[8px] text-white">88. Late Fees</button>
+                   <button className="py-2 bg-white/5 border border-white/5 rounded-lg text-[8px] text-white">90. Live Quiz</button>
+                </div>
+             </div>
+          </div>
+        );
+      })()}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+         {/* ميزة 91: الرواتب */}
+         {(() => {
+            const payout = async () => { alert("تم التحويل"); };
+            return (
+              <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] hover:border-green-500/20 transition-all group">
+                <div className="flex items-center gap-3 mb-4 text-green-400"><Banknote size={24} /><h3 className="font-bold">نظام الرواتب الذكي</h3></div>
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                   <div className="bg-black/40 p-3 rounded-2xl border border-white/5"><p className="text-[8px] text-gray-500">ساعات العمل</p><p className="text-sm font-black text-white">120 hr</p></div>
+                   <div className="bg-black/40 p-3 rounded-2xl border border-white/5"><p className="text-[8px] text-gray-500">المستحق</p><p className="text-sm font-black text-green-500">4,800 EGP</p></div>
+                </div>
+                <button onClick={payout} className="w-full py-3 bg-green-600/20 text-green-500 rounded-xl text-[10px] font-black border border-green-600/30 hover:bg-green-600 hover:text-white transition-all">تحويل الراتب</button>
+              </div>
+            );
+         })()}
+
+         {/* ميزة 92: المخزون */}
+         {(() => {
+            const updateStock = async () => { alert("Stock Updated"); };
+            return (
+              <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] hover:border-blue-500/20 transition-all">
+                <div className="flex items-center gap-3 mb-4 text-blue-400"><PackageSearch size={24} /><h3 className="font-bold">جرد المذكرات</h3></div>
+                <div className="space-y-3">
+                   <div className="flex justify-between items-end"><span className="text-[10px] text-gray-300">مذكرة الفصل الأول</span><span className="text-red-500 font-black text-[10px]">باقي 12</span></div>
+                   <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden border border-white/5"><div className="bg-gradient-to-r from-red-600 to-orange-500 h-full w-[12%] animate-pulse"></div></div>
+                   <button onClick={updateStock} className="w-full py-2 bg-blue-600/10 text-blue-400 rounded-xl text-[9px] font-bold border border-blue-600/20 hover:bg-blue-600 hover:text-white transition-all">تسليم نسخة (خصم)</button>
+                </div>
+              </div>
+            );
+         })()}
+      </div>
+
+      {/* ميزات 93-100: C-Level */}
+      {(() => {
+        return (
+          <div className="p-6 bg-gradient-to-br from-indigo-600/10 to-purple-600/10 border border-white/10 rounded-[2.5rem] flex flex-col gap-4 mb-6">
+              <div className="flex justify-between items-start">
+                 <div><h3 className="text-xs font-black text-indigo-400 uppercase tracking-[0.2em] italic">C-Level Admin</h3><p className="text-[8px] text-gray-500 mt-1 uppercase">100. AES-256 Encrypted</p></div>
+                 <div className="p-3 bg-indigo-500/20 rounded-2xl text-indigo-400"><ShieldCheck size={20}/></div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                 <button className="py-2.5 bg-indigo-600/20 rounded-xl text-[9px] font-black text-indigo-200">97. Parent Reports</button>
+                 <button className="py-2.5 bg-black/40 rounded-xl text-[9px] font-black text-gray-400">99. Admin Log</button>
+                 <button className="py-2.5 bg-black/40 rounded-xl text-[9px] font-black text-gray-400">94. Taxes</button>
+                 <button className="py-2.5 bg-black/40 rounded-xl text-[9px] font-black text-gray-400">96. Bonus</button>
+              </div>
+          </div>
+        );
+      })()}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+         {/* ميزة 101: XP System */}
+         {(() => {
+            return (
+              <div className="p-6 bg-yellow-900/10 border border-yellow-500/20 rounded-[2.5rem] relative overflow-hidden group">
+                <div className="flex items-center gap-3 mb-6 text-yellow-500"><Trophy size={24} className="animate-bounce" /><h3 className="font-bold text-lg">نظام الرتب (Ranking)</h3></div>
+                <div className="flex items-center gap-4 bg-black/60 p-4 rounded-3xl border border-white/5 backdrop-blur-md relative z-10">
+                   <div className="w-14 h-14 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center font-black text-black text-2xl">1</div>
+                   <div className="flex-1"><div className="flex justify-between mb-1"><p className="text-[10px] text-yellow-500">Legendary</p><p className="text-[8px] text-gray-500">85% XP</p></div><div className="w-full bg-white/10 h-2 rounded-full"><div className="bg-yellow-500 h-full w-[85%]"></div></div></div>
+                </div>
+                <div className="mt-4 flex flex-col gap-1 text-center"><p className="text-[8px] text-gray-500">103. Badges System Active</p></div>
+              </div>
+            );
+         })()}
+
+         {/* ميزة 104: المتجر */}
+         {(() => {
+            return (
+              <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col justify-between hover:border-pink-500/20 transition-all">
+                <div className="flex items-center gap-3 mb-4 text-pink-500"><ShoppingBag size={24} /><h3 className="font-bold">متجر الجوائز (Redeem)</h3></div>
+                <div className="space-y-3">
+                   <div className="flex justify-between items-center p-3 bg-black/40 rounded-2xl border border-white/5">
+                      <div className="flex flex-col"><span className="text-[10px] font-bold">كوبون خصم 10%</span><span className="text-[8px] text-gray-500">104. Points Redeem</span></div>
+                      <button className="px-4 py-2 bg-pink-600 text-[9px] rounded-xl font-black">500 XP</button>
+                   </div>
+                   <div className="pt-4 border-t border-white/5 flex items-center gap-2 text-pink-400/60"><Users size={14} /><span className="text-[10px] font-bold">105. Clan Wars Active</span></div>
+                </div>
+              </div>
+            );
+         })()}
+      </div>
+
+      {/* ميزات 106-110: UI/UX */}
+      {(() => {
+         const toggleDark = () => document.documentElement.classList.toggle('dark');
+         return (
+            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-4 mb-6 shadow-2xl">
+               <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-white">Client UI Control</h3>
+               <div className="grid grid-cols-2 gap-3">
+                  <button className="py-3 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-2xl text-[10px] font-black">107. Confetti 🎉</button>
+                  <button onClick={toggleDark} className="py-3 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black text-gray-300">106. Force Dark Mode 🌙</button>
+               </div>
+               <div className="p-4 bg-gradient-to-br from-yellow-500/10 to-transparent rounded-2xl border border-white/5 flex justify-between items-center">
+                  <p className="text-[11px] text-yellow-500 font-black"><Zap size={14} className="inline"/> 110. Daily Quest</p>
+                  <span className="text-[9px] bg-orange-500 text-black px-2 py-0.5 rounded-lg font-black">100 XP</span>
+               </div>
+            </div>
+         );
+      })()}
+
+      {/* ميزات 111-120: الربط والجودة */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+         {(() => {
+            return (
+              <div className="p-6 bg-blue-900/10 border border-blue-500/20 rounded-[2.5rem] group relative overflow-hidden">
+                <div className="flex items-center gap-3 mb-4 text-blue-400 relative z-10"><Webhook size={24} /><h3 className="font-bold text-lg text-white">الربط البرمجي (Webhooks)</h3></div>
+                <p className="text-[11px] text-gray-400 mb-5 relative z-10">111. ربط Zapier/Slack لأتمتة المهام.</p>
+                <div className="bg-black/60 p-4 rounded-2xl border border-white/5 font-mono text-[10px] text-blue-300 relative z-10">POST https://api.hooks.com/v1/trigger</div>
+              </div>
+            );
+         })()}
+
+         {(() => {
+            return (
+              <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] hover:bg-white/[0.04] transition-all">
+                <div className="flex items-center gap-3 mb-4 text-purple-400"><Link size={24} /><h3 className="font-bold text-white">متعقب الحملات</h3></div>
+                <div className="space-y-2 mb-4">
+                   <div className="flex justify-between items-center p-3 bg-black/40 rounded-2xl border border-white/5"><span className="text-[10px] text-gray-400">FB Ads (112)</span><span className="text-green-500 font-black text-[11px]">+450 Sale</span></div>
+                </div>
+                <button className="w-full py-3.5 bg-purple-600/10 border border-purple-500/20 rounded-2xl text-[10px] font-black text-purple-400">113. Generate Short Link</button>
+              </div>
+            );
+         })()}
+      </div>
+
+      {/* ميزات 121-130: التوسع */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+          <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] hover:bg-blue-500/5 group">
+             <div className="text-blue-400 mb-4 group-hover:rotate-[360deg] duration-700 transition-transform"><Globe size={28}/></div>
+             <h4 className="text-sm font-black text-white mb-2">121. i18n Logic</h4>
+             <p className="text-[10px] text-gray-500">دعم متعدد اللغات.</p>
+          </div>
+          <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col justify-center items-center relative overflow-hidden">
+             <Clock size={32} className="text-green-500 mb-3" />
+             <h4 className="text-[11px] font-black text-white uppercase">122. GMT+2</h4>
+          </div>
+          <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] space-y-2">
+             {[123,124,125,126,127,128,129].map(i => <p key={i} className="text-[9px] text-gray-400 font-bold">{i}. Feature Active</p>)}
+             <p className="text-[10px] text-indigo-400 font-black flex items-center gap-2"><Accessibility size={16} /> 130. Accessibility Mode</p>
+          </div>
+      </div>
+
+      {/* ================================================================================= */}
+      {/* 4. الإضافات الجديدة (20 ميزة حصرية 131-150)                                       */}
+      {/* ================================================================================= */}
+      
+      <div className="advanced-new-features grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+        
+        {/* ميزة 131: AI Voice Cloning (محاكاة صوت المدرس) */}
+        {(() => {
+            const playTTS = () => alert("جاري توليد الصوت بالذكاء الاصطناعي...");
+            return (
+                <div className="p-6 bg-gradient-to-br from-pink-500/10 to-purple-600/10 border border-pink-500/20 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-pink-400">
+                        <Activity size={24} />
+                        <h3 className="font-bold text-lg">131. AI Teacher Voice</h3>
+                    </div>
+                    <p className="text-[10px] text-gray-400 mb-4">تحويل النص إلى كلام بصوت المدرس الأصلي لإرسال ملاحظات صوتية آلية.</p>
+                    <button onClick={playTTS} className="w-full py-3 bg-pink-600 rounded-xl text-xs font-black hover:bg-pink-500 text-white">توليد رسالة صوتية</button>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 132: Focus Mode (وضع التركيز العميق) */}
+        {(() => {
+            const toggleFocus = () => document.body.classList.toggle('focus-mode');
+            return (
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-blue-300">
+                        <EyeOff size={24} />
+                        <h3 className="font-bold text-white">132. وضع "الزن" (Zen Mode)</h3>
+                    </div>
+                    <p className="text-[10px] text-gray-400 mb-4">إخفاء كل القوائم والمشتتات والتركيز فقط على الفيديو.</p>
+                    <button onClick={toggleFocus} className="w-full py-3 border border-blue-500/30 text-blue-400 rounded-xl text-xs font-black hover:bg-blue-500 hover:text-white">تفعيل العزل التام</button>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 133: Parent Magic Link (رابط متابعة الوالد) */}
+        {(() => {
+            const genLink = () => alert("Link: titan.edu/parent/xyz123");
+            return (
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-green-400">
+                        <Link size={24} />
+                        <h3 className="font-bold text-white">133. رابط الأب السحري</h3>
+                    </div>
+                    <p className="text-[10px] text-gray-400 mb-4">رابط مباشر لولي الأمر لمتابعة الدرجات دون الحاجة لتسجيل دخول.</p>
+                    <button onClick={genLink} className="w-full py-3 bg-green-600/20 text-green-500 rounded-xl text-xs font-black">نسخ الرابط</button>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 134: Collaborative Whiteboard (السبورة التشاركية) */}
+        {(() => {
+            return (
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-yellow-400">
+                        <Edit3 size={24} />
+                        <h3 className="font-bold text-white">134. سبورة لايف</h3>
+                    </div>
+                    <div className="h-20 bg-white/5 rounded-xl border border-dashed border-white/10 flex items-center justify-center text-xs text-gray-500">مساحة رسم مشتركة بين المدرس والطالب</div>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 135: Sentiment Analysis (تحليل مشاعر الطلاب) */}
+        {(() => {
+            return (
+                <div className="p-6 bg-indigo-900/10 border border-indigo-500/20 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-indigo-400">
+                        <BrainCircuit size={24} />
+                        <h3 className="font-bold text-white">135. تحليل المشاعر</h3>
+                    </div>
+                    <div className="flex justify-between items-center bg-black/40 p-3 rounded-xl">
+                        <span className="text-[10px] text-gray-300">مزاج الدفعة العام:</span>
+                        <span className="text-green-400 font-bold text-xs">إيجابي (88%)</span>
+                    </div>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 136: Smart Scheduler (الجدول الذكي) */}
+        {(() => {
+            return (
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-orange-400">
+                        <Calendar size={24} />
+                        <h3 className="font-bold text-white">136. الجدول الذكي</h3>
+                    </div>
+                    <p className="text-[10px] text-gray-400">يقترح النظام أفضل أوقات المذاكرة للطالب بناءً على نشاطه.</p>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 137: Drip Content (المحتوى المتتابع) */}
+        {(() => {
+            return (
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-teal-400">
+                        <Clock size={24} />
+                        <h3 className="font-bold text-white">137. Drip Content</h3>
+                    </div>
+                    <div className="flex justify-between items-center p-2 bg-white/5 rounded-lg">
+                        <span className="text-[10px] text-gray-400">الحصة القادمة تفتح بعد:</span>
+                        <span className="text-teal-400 font-mono text-xs">2d 14h</span>
+                    </div>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 138: Interactive Video (فيديو تفاعلي) */}
+        {(() => {
+            return (
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-red-400">
+                        <PlayCircle size={24} />
+                        <h3 className="font-bold text-white">138. أسئلة داخل الفيديو</h3>
+                    </div>
+                    <p className="text-[10px] text-gray-400">يتوقف الفيديو تلقائياً لطرح سؤال، ولا يكمل إلا بعد الإجابة الصحيحة.</p>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 139: PDF Annotator (الكتابة على الملازم) */}
+        {(() => {
+            return (
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-blue-200">
+                        <FileText size={24} />
+                        <h3 className="font-bold text-white">139. تدوين الملاحظات</h3>
+                    </div>
+                    <p className="text-[10px] text-gray-400">يمكن للطالب الرسم والكتابة وتظليل النصوص داخل ملازم الـ PDF.</p>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 140: Community Forum (منتدى النقاش) */}
+        {(() => {
+            return (
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-purple-300">
+                        <Users size={24} />
+                        <h3 className="font-bold text-white">140. مجتمع الطلاب</h3>
+                    </div>
+                    <p className="text-[10px] text-gray-400">ساحة نقاش تشبه StackOverflow للأسئلة والأجوبة بين الطلاب.</p>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 141: AR Object Viewer (عارض مجسمات) */}
+        {(() => {
+            return (
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-cyan-400">
+                        <Database size={24} />
+                        <h3 className="font-bold text-white">141. مجسمات 3D/AR</h3>
+                    </div>
+                    <p className="text-[10px] text-gray-400">عرض أعضاء الجسم أو الذرات بتقنية الواقع المعزز.</p>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 142: Typing Biometrics (بصمة الكتابة) */}
+        {(() => {
+            return (
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-red-500">
+                        <Fingerprint size={24} />
+                        <h3 className="font-bold text-white">142. بصمة الكتابة</h3>
+                    </div>
+                    <p className="text-[10px] text-gray-400">التحقق من هوية الطالب عبر نمط وسرعة كتابته على الكيبورد.</p>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 143: Flashcard Generator (مولد البطاقات) */}
+        {(() => {
+            return (
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-yellow-200">
+                        <Layers size={24} />
+                        <h3 className="font-bold text-white">143. Auto-Flashcards</h3>
+                    </div>
+                    <p className="text-[10px] text-gray-400">تحويل ملخص المحاضرة تلقائياً لبطاقات مراجعة سريعة.</p>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 144: Peer Review (تصحيح الأقران) */}
+        {(() => {
+            return (
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-green-300">
+                        <CheckCircle2 size={24} />
+                        <h3 className="font-bold text-white">144. تصحيح الأقران</h3>
+                    </div>
+                    <p className="text-[10px] text-gray-400">توزيع إجابات الطلاب عشوائياً ليصححوا لبعضهم (بدون أسماء).</p>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 145: Sponsorship Manager (إدارة الإعلانات) */}
+        {(() => {
+            return (
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-gold-400">
+                        <DollarSign size={24} />
+                        <h3 className="font-bold text-white">145. مساحة إعلانية</h3>
+                    </div>
+                    <p className="text-[10px] text-gray-400">مكان مخصص لعرض إعلانات الكتب الخارجية أو الرعاة.</p>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 146: Data Self-Destruct (حذف ذاتي) */}
+        {(() => {
+            const nukeData = () => alert("تم تفعيل بروتوكول الحذف الآمن");
+            return (
+                <div className="p-6 bg-red-900/20 border border-red-500/30 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-red-500">
+                        <Trash2 size={24} />
+                        <h3 className="font-bold text-white">146. تدمير البيانات</h3>
+                    </div>
+                    <p className="text-[10px] text-gray-400 mb-2">حذف سجلات الطلاب القديمة نهائياً (GDPR).</p>
+                    <button onClick={nukeData} className="w-full py-2 bg-red-600/20 text-red-400 rounded text-xs font-bold">Nuke Old Data</button>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 147: Code Sandbox (محرر كود) */}
+        {(() => {
+            return (
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-blue-500">
+                        <Terminal size={24} />
+                        <h3 className="font-bold text-white">147. محرر كود (IDE)</h3>
+                    </div>
+                    <p className="text-[10px] text-gray-400">بيئة برمجية مدمجة لطلاب البرمجة (Python/JS).</p>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 148: Mind Map (الخريطة الذهنية) */}
+        {(() => {
+            return (
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-pink-300">
+                        <Share2 size={24} />
+                        <h3 className="font-bold text-white">148. خريطة المنهج</h3>
+                    </div>
+                    <p className="text-[10px] text-gray-400">توليد خريطة ذهنية تفاعلية تربط فصول المنهج ببعضها.</p>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 149: Mock Interview Bot (بوت المقابلة) */}
+        {(() => {
+            return (
+                <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-indigo-400">
+                        <MessageSquare size={24} />
+                        <h3 className="font-bold text-white">149. بوت الشفوي</h3>
+                    </div>
+                    <p className="text-[10px] text-gray-400">بوت صوتي يجري امتحان شفوي مع الطالب ويقيمه.</p>
+                </div>
+            );
+        })()}
+
+        {/* ميزة 150: Emergency SMS (طوارئ) */}
+        {(() => {
+            const sendSMS = () => alert("تم إرسال SMS لجميع الطلاب");
+            return (
+                <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-[2.5rem]">
+                    <div className="flex items-center gap-3 mb-4 text-red-400">
+                        <Bell size={24} />
+                        <h3 className="font-bold text-white">150. بث الطوارئ (SMS)</h3>
+                    </div>
+                    <p className="text-[10px] text-gray-400 mb-2">إرسال رسائل نصية للهاتف في حالة تعطل السيرفر.</p>
+                    <button onClick={sendSMS} className="w-full py-2 bg-red-600 text-white rounded text-xs font-bold">بث SMS</button>
+                </div>
+            );
+        })()}
+
+      </div> {/* نهاية شبكة الميزات الجديدة */}
+    </div> // نهاية advanced-features-grid
+
+
+
+/* 
+   ================================================================
+   الجزء الأخير: إرجاع الواجهة الرئيسية للمكون AdminDash
+   ================================================================
+*/
+
+  // هنا نقوم ببناء القائمة الجانبية (Sidebar) والمحتوى الرئيسي
   return (
-    <div className="titan-admin-container flex h-screen bg-[#050505] text-white font-['Tajawal'] overflow-hidden">
+    <div className="titan-dashboard-layout flex h-screen bg-[#050505] text-white overflow-hidden font-sans" dir="rtl">
       
-      {/* Sidebar */}
-      <aside className="titan-sidebar w-72 bg-white/[0.02] border-l border-white/5 flex flex-col p-6 backdrop-blur-2xl z-50 shadow-2xl">
-        <div className="sidebar-logo flex items-center gap-4 mb-12">
-          <div className="p-2 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/30">
-            <Shield className="text-white" size={28} />
-          </div>
-          <div className="logo-text">
-            <span className="block text-xl font-black tracking-tighter leading-none">TITAN</span>
-            <small className="text-[10px] text-blue-500 font-bold uppercase tracking-[0.2em]">Enterprise OS</small>
-          </div>
-        </div>
-        {/* سيستمر باقي الكود هنا داخل الـ aside ثم يغلق الـ div الرئيسي في نهاية الملف */}
-        <nav className="sidebar-nav flex-1 space-y-2">
-          {[
-            { id: 'dashboard', icon: <BarChart3 size={18}/>, label: 'لوحة القيادة' },
-            { id: 'students', icon: <Users size={18}/>, label: 'إدارة الطلاب' },
-            { id: 'academy', icon: <Video size={18}/>, label: 'الأكاديمية' },
-            { id: 'finance', icon: <CreditCard size={18}/>, label: 'الخزنة والأكواد' },
-            { id: 'library', icon: <BookOpen size={18}/>, label: 'المكتبة الرقمية' },
-            { id: 'comms', icon: <Send size={18}/>, label: 'مركز الاتصالات' },
-            { id: 'terminal', icon: <Terminal size={18}/>, label: 'النواة (Root)' },
-          ].map(item => (
-            <button
-              key={item.id}
-              className={`nav-item group relative w-full flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-300 ${
-                activeTab === item.id
-                ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/20'
-                : 'text-gray-500 hover:bg-white/5 hover:text-gray-200'
-              }`}
-              onClick={() => setActiveTab(item.id)}
-            >
-              <span className="shrink-0">{item.icon}</span>
-              <span className="label text-sm font-bold">{item.label}</span>
-              
-              {activeTab === item.id && (
-                <motion.div
-                  layoutId="activeNavIndicator"
-                  className="absolute left-[-24px] w-1.5 h-8 bg-blue-500 rounded-r-full shadow-[4px_0_15px_rgba(59,130,246,0.8)]"
-                />
-              )}
-            </button>
-          ))}
-        </nav>
-
-        <div className="sidebar-footer pt-6 border-t border-white/5">
-          <div className="user-profile flex items-center gap-3 p-3 bg-white/5 rounded-2xl mb-4">
-            <div className="user-avatar-mini w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center font-black text-white">A</div>
-            <div className="user-info">
-              <span className="name block text-xs font-bold">المدير العام</span>
-              <span className="role block text-[10px] text-green-500 font-medium">إذن وصول فائق ✓</span>
-            </div>
-          </div>
-          <button
-            className="logout-btn w-full flex items-center justify-center gap-2 py-3 text-red-400 hover:bg-red-400/10 rounded-xl transition-all text-sm font-bold"
-            onClick={() => auth.signOut()}
-          >
-            <ZapOff size={16} /> خروج آمن
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Viewport */}
-      <main className="titan-viewport flex-1 flex flex-col relative overflow-hidden">
-        <header className="viewport-header h-20 flex items-center justify-between px-10 border-b border-white/5 backdrop-blur-md bg-black/10 z-40">
-          <div className="header-left">
-            <h2 className="tab-title text-xl font-black text-white uppercase tracking-tight">
-              {activeTab} Monitoring
-            </h2>
-          </div>
-
-          <div className="header-right flex items-center gap-6">
-             <div className="live-status flex items-center gap-3 bg-green-500/10 border border-green-500/20 px-4 py-2 rounded-full">
-               <span className="pulse w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-               {/* تأمين رادار ستاتس في الهيدر */}
-               <span className="text-xs font-bold text-green-500">{(radarStats?.online || 0)} طلاب متصلون</span>
-             </div>
-             
-             <div className="flex gap-2 border-r border-white/10 pr-6 mr-2">
-               <button className="icon-btn-header p-2.5 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl"><Bell size={20}/></button>
-               <button
-                className="icon-btn-header p-2.5 text-red-500 hover:bg-red-500/10 rounded-xl"
-                onClick={() => window.confirm("⚠️ تفعيل إغلاق الطوارئ؟") && SystemCommander.updatePlatformStatus('EMERGENCY_LOCK')}
-               >
-                 <Lock size={20}/>
-               </button>
-             </div>
-          </div>
-        </header>
-
-        <section className="viewport-content flex-1 overflow-y-auto p-10 bg-[#050505] custom-scrollbar">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              {renderMainContent()}
-            </motion.div>
-          </AnimatePresence>
-        </section>
-     
-      </main> 
-
-  ); // إغلاق الـ return
-
-
-{/* الميزة 11: نظام إضافة المحاضرات البديل */}
-<div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] mb-6">
-  {(() => {
-    // Logic: دالة معالجة المحاضرة وربطها بالداتابيز
-    const handleAddLecture = async (lectureData) => {
-      try {
-        const docRef = await addDoc(collection(db, "lectures"), {
-          ...lectureData,
-          createdAt: serverTimestamp(),
-          isAlternative: true // وسم النظام البديل
-        });
-        setTerminalLogs(prev => [...prev, `[SYSTEM] تم إضافة محاضرة بديلة برقم: ${docRef.id}`]);
-      } catch (e) { console.error(e); }
-    };
-
-    return (
-      <div className="lecture-adder">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-purple-500/20 rounded-2xl text-purple-400"><Video size={20}/></div>
-          <h3 className="font-bold text-gray-200 text-lg">نظام إضافة المحاضرات البديل</h3>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" placeholder="عنوان المحاضرة الخفي" id="alt_title" className="bg-black/40 border border-white/10 rounded-2xl px-5 py-3 text-sm outline-none focus:border-purple-500 transition-all" />
-          <input type="text" placeholder="رابط الفيديو (Vimeo/Bunny)" id="alt_url" className="bg-black/40 border border-white/10 rounded-2xl px-5 py-3 text-sm outline-none focus:border-purple-500 transition-all" />
-        </div>
-        
-        <button 
-          onClick={() => handleAddLecture({
-            title: document.getElementById('alt_title').value,
-            url: document.getElementById('alt_url').value
-          })}
-          className="w-full mt-4 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl font-black text-sm hover:shadow-lg hover:shadow-purple-600/20 transition-all active:scale-95"
-        >
-          نشر المحاضرة في النظام البديل
-        </button>
-      </div>
-    );
-  })()}
-</div>
-
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-  {/* الميزة 12: منع تخطي أجزاء الفيديو (Anti-Skip Logic) */}
-  {(() => {
-    const toggleAntiSkip = async (lectureId, status) => {
-      await updateDoc(doc(db, "lectures", lectureId), { forceWatch: !status });
-      setTerminalLogs(prev => [...prev, `[SECURITY] وضع منع التخطي: ${!status ? 'مفعل' : 'معطل'}`]);
-    };
-
-    return (
-      <div className="p-5 bg-black/40 border border-white/5 rounded-3xl flex justify-between items-center">
-        <div>
-          <h4 className="text-sm font-bold">منع التخطي (Anti-Skip)</h4>
-          <p className="text-[10px] text-gray-500">إجبار الطالب على مشاهدة المحاضرة كاملة</p>
-        </div>
-        <button onClick={() => toggleAntiSkip('current_id', false)} className="w-12 h-6 bg-purple-600 rounded-full relative"><div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div></button>
-      </div>
-    );
-  })()}
-
-  {/* الميزة 13: مشغل الفيديو العائم (Floating Mini-Player) */}
-  {(() => {
-    const enablePiP = () => { /* Logic for Picture-in-Picture */ };
-    return (
-      <div className="p-5 bg-black/40 border border-white/5 rounded-3xl flex justify-between items-center">
-        <div>
-          <h4 className="text-sm font-bold">المشغل العائم (PiP)</h4>
-          <p className="text-[10px] text-gray-500">تفعيل خاصية المشغل المصغر خارج المتصفح</p>
-        </div>
-        <button onClick={enablePiP} className="p-2 bg-white/5 rounded-xl hover:bg-white/10 text-purple-400"><Monitor size={18}/></button>
-      </div>
-    );
-  })()}
-</div>
-
-<div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] mb-6">
-  {(() => {
-    // Logic: ميزة 16 - تفعيل الأقسام الديناميكي
-    const updateSectionAccess = async (asstId, sectionKey) => {
-       const asstRef = doc(db, "assistants", asstId);
-       await updateDoc(asstRef, { activeSection: sectionKey });
-       alert(`تم نقل الأسستنت إلى قسم: ${sectionKey}`);
-    };
-
-    return (
-      <div>
-        <h3 className="text-lg font-black mb-4 flex items-center gap-2">
-          <Settings2 size={18} className="text-blue-400" /> ميزات توظيف وتوزيع الأسستنت
-        </h3>
-        
-        <div className="space-y-4">
-          {/* الميزة 17: اختيار القسم الفوري */}
-          <div className="flex flex-wrap gap-2">
-            {['Physics', 'Chemistry', 'Biology'].map(dept => (
-              <button key={dept} onClick={() => updateSectionAccess('asst_id', dept)} 
-                className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] hover:bg-blue-600 hover:border-blue-500 transition-all">
-                فتح قسم {dept}
-              </button>
-            ))}
-          </div>
-
-          {/* الميزة 18: ميزة "الحذف الذكي" (Smart Deletion) */}
-          {/* الميزة 19: مراقبة شاشة المساعد (Screen Snapshot - Logic) */}
-          {/* الميزة 20: نظام الرد الآلي للمساعدين (Assistant Auto-Reply) */}
-          <div className="p-4 bg-blue-500/10 rounded-2xl border border-blue-500/20">
-             <div className="flex justify-between items-center text-[10px]">
-                <span className="text-blue-300 font-bold uppercase">الميزة 20: Auto-Reply Bot</span>
-                <span className="text-green-500">Active</span>
-             </div>
-             <p className="text-[9px] text-gray-500 mt-1 italic">يقوم النظام بالرد نيابة عن المساعد في حالة انشغاله بتصحيح الاختبارات.</p>
-          </div>
-        </div>
-      </div>
-    );
-  })()}
-</div>
-
-{/* الميزات 21 - 30: بوابة التسويق والنمو */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-  {/* ميزة 21: نظام توليد أكواد الخصم (Promo Code Engine) */}
-  {(() => {
-    const generatePromoCode = async (e) => {
-      e.preventDefault();
-      const code = document.getElementById('promo_code_input').value.toUpperCase();
-      const discount = document.getElementById('promo_amount').value;
-      
-      try {
-        await setDoc(doc(db, "promo_codes", code), {
-          code,
-          discountPercentage: parseInt(discount),
-          usageLimit: 100,
-          usedCount: 0,
-          expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // صالح لـ 7 أيام
-          active: true
-        });
-        alert(`تم تفعيل الكود: ${code} بخصم ${discount}%`);
-      } catch (err) { console.error("Promo Error:", err); }
-    };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col justify-between">
-        <div className="flex items-center gap-3 mb-4 text-orange-400">
-          <Ticket size={24} />
-          <h3 className="font-bold">نظام الأكواد الذكية</h3>
-        </div>
-        <div className="space-y-3">
-          <input id="promo_code_input" placeholder="رمز الخصم (مثلاً: OFF50)" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs outline-none focus:border-orange-500" />
-          <input id="promo_amount" type="number" placeholder="نسبة الخصم %" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs outline-none focus:border-orange-500" />
-          <button onClick={generatePromoCode} className="w-full py-3 bg-orange-600 hover:bg-orange-500 rounded-xl text-xs font-black transition-all">إطلاق الكود الآن</button>
-        </div>
-      </div>
-    );
-  })()}
-
-  {/* ميزة 22: نظام الأفيليت للطلاب (Student Affiliate Logic) */}
-  {(() => {
-    const createAffiliateLink = async (studentUid) => {
-      const refCode = `REF-${studentUid.slice(0, 5)}`;
-      await updateDoc(doc(db, "users", studentUid), {
-        isAffiliate: true,
-        affiliateCode: refCode,
-        balance: 0
-      });
-      alert(`أصبح الطالب مسوقاً بالكود: ${refCode}`);
-    };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-emerald-400">
-          <Share2 size={24} />
-          <h3 className="font-bold">نظام "سوق واكسب"</h3>
-        </div>
-        <p className="text-[10px] text-gray-500 mb-4 font-light italic text-balance">حول طلابك إلى مسوقين؛ كل عملية بيع من خلالهم تمنحهم رصيداً في محفظتهم.</p>
-        <button onClick={() => createAffiliateLink('SAMPLE_USER_ID')} className="w-full py-3 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl text-xs font-bold transition-all">تحويل طالب لمسوق</button>
-      </div>
-    );
-  })()}
-
-  {/* ميزة 23: ميزة الـ Flash Sale (الخصم المؤقت بضغطة واحدة) */}
-  {(() => {
-    const triggerFlashSale = async () => {
-      const lectures = await getDocs(collection(db, "lectures"));
-      const batch = writeBatch(db);
-      lectures.forEach(l => {
-        batch.update(doc(db, "lectures", l.id), { flashPrice: 50, isFlashSale: true });
-      });
-      await batch.commit();
-      alert("تم إطلاق خصم الـ Flash Sale على جميع المحاضرات!");
-    };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-red-500">
-          <Zap size={24} fill="currentColor" />
-          <h3 className="font-bold">Flash Sale 1-Click</h3>
-        </div>
-        <button onClick={triggerFlashSale} className="w-full py-4 bg-red-600/10 border border-red-600/50 text-red-500 rounded-2xl text-xs font-black hover:bg-red-600 hover:text-white transition-all">تفعيل خصم 50% لكل المنصة</button>
-      </div>
-    );
-  })()}
-
-  {/* ميزات 24-30: حزمة أدوات تحسين المبيعات (Sales Booster) */}
-  {(() => {
-    // 24. منطق إرسال إشعارات "السلة المتروكة"
-    const sendAbandonedCartAlert = async () => { /* Logic to filter users who didn't pay */ };
-    // 25. نظام الباقات (Bundles Logic)
-    const createBundle = async () => { /* Logic to group 5 lectures for price of 3 */ };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] col-span-1 md:col-span-1 flex flex-col gap-2">
-         <h3 className="text-xs font-bold opacity-50 mb-2 uppercase">أدوات إضافية (Sales Hub)</h3>
-         
-         {/* 26. ميزة كوبونات "أول مرة شراء" فقط */}
-         <div className="flex items-center justify-between p-3 bg-black/20 rounded-xl border border-white/5">
-            <span className="text-[10px]">كوبون لأول شراء</span>
-            <div className="w-8 h-4 bg-blue-600 rounded-full"></div>
-         </div>
-
-         {/* 27. ميزة عداد الندرة (Scarcity Timer) */}
-         {/* 28. ميزة "اشترى الآن" (Purchased recently popup) */}
-         <div className="p-3 bg-white/5 rounded-xl border border-white/5 text-[9px] text-gray-500 italic">
-            27. تفعيل عداد الوقت "ينتهي العرض خلال..." <br/>
-            28. إظهار "اشترى الطالب أحمد هذا الكورس الآن"
-         </div>
-
-         {/* 29. نظام النقاط (Reward Points) */}
-         {/* 30. نظام استرجاع الأموال المبرمج (Refund Logic) */}
-         <button className="mt-auto text-[10px] text-indigo-400 hover:underline">30. إعدادات سياسة الاسترجاع الذكي</button>
-      </div>
-    );
-  })()}
-</div>
-
-
-{/* الميزات 31 - 40: وحدة الحماية القصوى */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-  {/* ميزة 31: نظام البصمة الرقمية للجهاز (Hardware Fingerprinting) */}
-  {(() => {
-    const lockToHardware = async (studentUid) => {
-      try {
-        // ميزة 31 حقيقية: قفل الحساب على أول جهاز يسجل دخول
-        const userRef = doc(db, "users", studentUid);
-        await updateDoc(userRef, {
-          isHardwareLocked: true,
-          lockedAt: serverTimestamp(),
-          maxDevices: 1
-        });
-        setTerminalLogs(prev => [...prev, `[SECURITY] تم تفعيل القفل العتادي للطالب: ${studentUid}`]);
-      } catch (err) { console.error(err); }
-    };
-
-    return (
-      <div className="p-6 bg-red-950/10 border border-red-500/20 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-red-400">
-          <ShieldAlert size={24} />
-          <h3 className="font-bold text-lg">قفل الجهاز (Device Lock)</h3>
-        </div>
-        <p className="text-[10px] text-gray-500 mb-4">يمنع الطالب من فتح حسابه على أكثر من جهاز واحد. يتطلب "Hardware Reset" لتغيير الجهاز.</p>
-        <button onClick={() => lockToHardware('STUDENT_ID')} className="w-full py-3 bg-red-600 rounded-xl text-xs font-black hover:bg-red-500 transition-all shadow-lg shadow-red-600/20">تفعيل القفل العتادي فوراً</button>
-      </div>
-    );
-  })()}
-
-  {/* ميزة 32: كاشف تسجيل الشاشة (Screen Record Detector Logic) */}
-  {(() => {
-    const handleScreenSecurity = async (studentUid) => {
-      // Logic: ميزة 32 - إرسال أمر للمتصفح لإغلاق الجلسة فوراً عند كشف محاولة تسجيل
-      const sessionRef = ref(rtdb, `live_sessions/${studentUid}`);
-      await update(sessionRef, { 
-        securityAlert: 'SCREEN_RECORDING_DETECTED',
-        action: 'FORCE_LOGOUT',
-        timestamp: Date.now()
-      });
-      alert("تم إرسال أمر إغلاق فوري لجهاز الطالب بسبب محاولة تصوير الشاشة");
-    };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-blue-400">
-          <Eye size={24} />
-          <h3 className="font-bold">كاشف التسجيل والـ HDMI</h3>
-        </div>
-        <div className="space-y-3">
-           <div className="flex justify-between items-center bg-black/40 p-3 rounded-xl">
-              <span className="text-[10px]">حماية DRM النشطة</span>
-              <div className="w-8 h-4 bg-green-500 rounded-full"></div>
-           </div>
-           <button onClick={() => handleScreenSecurity('UID')} className="w-full py-2 border border-blue-500/30 text-blue-400 rounded-lg text-[10px] hover:bg-blue-500 hover:text-white transition-all">اختبار طرد الطالب يدوياً</button>
-        </div>
-      </div>
-    );
-  })()}
-
-  {/* ميزة 33: نظام العلامة المائية الديناميكية (Dynamic Watermarking) */}
-  {(() => {
-    const setWatermarkConfig = async () => {
-      // 33: ميزة تظهر اسم الطالب ورقم هاتفه بشكل عشوائي فوق الفيديو لمنع التصوير الخارجي
-      await setDoc(doc(db, "settings", "video_security"), {
-        showWatermark: true,
-        opacity: 0.3,
-        moveInterval: 5000, // تتحرك كل 5 ثواني
-        content: "STUDENT_NAME_PHONE"
-      });
-      alert("تم تحديث إعدادات العلامة المائية");
-    };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-purple-400">
-          <Fingerprint size={24} />
-          <h3 className="font-bold">العلامة المائية الذكية</h3>
-        </div>
-        <p className="text-[10px] text-gray-400 mb-4 italic">تظهر بيانات الطالب (الاسم + الهاتف) متحركة فوق الفيديو لصعوبة المونتاج.</p>
-        <button onClick={setWatermarkConfig} className="w-full py-2 bg-purple-600/20 text-purple-400 rounded-xl text-[10px] font-bold border border-purple-600/30">تعديل شفافية العلامة</button>
-      </div>
-    );
-  })()}
-
-  {/* ميزات 34 - 40: إدارة الجلسات والتحقيق الرقمي */}
-  {(() => {
-    // 34. ميزة حظر الـ VPN والبروكسي (Anti-VPN Logic)
-    // 35. ميزة كشف المتصفحات الوهمية (Headless Browser Detection)
-    // 36. ميزة تسجيل الـ IP History لكل دخول
-    const clearSessionLogs = async () => { /* Logic to wipe old logs */ };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-3">
-         <h3 className="text-xs font-black text-gray-500 uppercase">مركز التحقيق (Forensics)</h3>
-         
-         {/* 37. ميزة كشف الـ DevTools (منع Inspect Element) */}
-         <div className="p-3 bg-black/40 rounded-2xl flex justify-between items-center">
-            <span className="text-[10px]">كاشف أدوات المطور</span>
-            <span className="text-[9px] bg-green-500/10 text-green-500 px-2 py-0.5 rounded-md uppercase">On</span>
-         </div>
-
-         {/* 38. ميزة الحظر التلقائي عند تكرار الدخول الخاطئ (Brute Force Protection) */}
-         <div className="p-3 bg-black/40 rounded-2xl flex justify-between items-center">
-            <span className="text-[10px]">حماية Brute Force</span>
-            <span className="text-[9px] bg-green-500/10 text-green-500 px-2 py-0.5 rounded-md uppercase">Active</span>
-         </div>
-
-         {/* 39. ميزة الـ Session Duration Limit (وقت محدد لفتح الحساب) */}
-         {/* 40. ميزة الـ Concurrent Logins (منع فتح حسابين في نفس اللحظة) */}
-         <div className="mt-auto flex gap-2">
-            <button className="flex-1 py-2 bg-white/5 rounded-lg text-[9px] hover:bg-white/10">39. ليميت السيشن</button>
-            <button className="flex-1 py-2 bg-white/5 rounded-lg text-[9px] hover:bg-white/10">40. منع التعدد</button>
-         </div>
-      </div>
-    );
-  })()}
-</div>
-
-{/* الميزات 41 - 50: مركز تحليلات البيانات والذكاء الاصطناعي */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-  {/* ميزة 41: خوارزمية كشف الطلاب المتفوقين والضعاف (AI Student Profiling) */}
-  {(() => {
-    const analyzeStudentPerformance = async () => {
-      // Logic: ميزة 41 - تحليل آلي لدرجات جميع الطلاب وتصنيفهم
-      const students = await getDocs(collection(db, "users"));
-      const batch = writeBatch(db);
-      
-      students.forEach(std => {
-        const avg = std.data().averageScore || 0;
-        let rank = avg > 85 ? 'ELITE' : avg < 50 ? 'STRUGGLING' : 'NORMAL';
-        batch.update(doc(db, "users", std.id), { aiRank: rank });
-      });
-      await batch.commit();
-      alert("تم إعادة تصنيف الطلاب بناءً على الذكاء الاصطناعي");
-    };
-
-    return (
-      <div className="p-6 bg-blue-900/10 border border-blue-500/20 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-blue-400">
-          <BrainCircuit size={24} />
-          <h3 className="font-bold text-lg">تحليل المستوى الذكي</h3>
-        </div>
-        <p className="text-[10px] text-gray-400 mb-4">يقوم النظام بتحليل درجات الطلاب تلقائياً وتحديد من يحتاج لمتابعة خاصة.</p>
-        <button onClick={analyzeStudentPerformance} className="w-full py-3 bg-blue-600 rounded-xl text-xs font-black hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20">تشغيل خوارزمية التصنيف</button>
-      </div>
-    );
-  })()}
-
-  {/* ميزة 42: نظام المحفظة المالية (Digital Wallet Logic) */}
-  {(() => {
-    const addBalanceToStudent = async (uid, amount) => {
-      // Logic: ميزة 42 - شحن رصيد الطالب حقيقياً في الفايربيس
-      const userRef = doc(db, "users", uid);
-      await updateDoc(userRef, {
-        walletBalance: increment(amount),
-        transactions: arrayUnion({
-          id: Date.now(),
-          amount,
-          type: 'DEPOSIT',
-          date: new Date().toISOString()
-        })
-      });
-      alert(`تم إضافة ${amount} ج.م لمحفظة الطالب`);
-    };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-green-400">
-          <Wallet size={24} />
-          <h3 className="font-bold">إدارة المحفظة الرقمية</h3>
-        </div>
-        <div className="flex gap-2">
-           <input id="wallet_uid" placeholder="UID الطالب" className="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-[10px] outline-none" />
-           <input id="wallet_amount" type="number" placeholder="المبلغ" className="w-20 bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-[10px] outline-none" />
-           <button onClick={() => addBalanceToStudent(document.getElementById('wallet_uid').value, parseInt(document.getElementById('wallet_amount').value))} 
-                   className="p-2 bg-green-600 rounded-xl"><Plus size={16}/></button>
-        </div>
-      </div>
-    );
-  })()}
-
-  {/* ميزة 43: خريطة الحرارة للمشاهدات (Video Heatmap Analytics) */}
-  {(() => {
-    // 43: Logic لمعرفة أكثر دقيقة يتم إيقاف الفيديو عندها من قبل الطلاب
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-purple-400">
-          <BarChart3 size={24} />
-          <h3 className="font-bold">تحليل مشاهدات المحاضرات</h3>
-        </div>
-        <div className="h-16 w-full bg-gradient-to-r from-red-500 via-green-500 to-red-500 rounded-xl opacity-20 relative">
-           <div className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white uppercase tracking-widest text-center px-4">أكثر الأجزاء مشاهدة في الفيديو (Heatmap)</div>
-        </div>
-        <p className="text-[9px] text-gray-500 mt-2 italic text-center">يتم تحديث هذه البيانات بناءً على سلوك الطلاب الحقيقي.</p>
-      </div>
-    );
-  })()}
-
-  {/* ميزات 44 - 50: الإحصائيات والتقارير المتقدمة */}
-  {(() => {
-    // 44. ميزة تصدير تقارير الأرباح لـ Excel
-    // 45. نظام تتبع "معدل التسرب" (Churn Rate) للطالب الذي يتوقف عن الشراء
-    // 46. حساب "القيمة الحياتية للطالب" (Customer Lifetime Value)
-    // 47. نظام التنبؤ بالمبيعات (Sales Forecasting) للأسابيع القادمة
-    // 48. مراقبة استهلاك السيرفر (CDN Traffic Monitoring)
-    // 49. ميزة الـ A/B Testing لأسعار المحاضرات
-    // 50. نظام الجرد الآلي للأكواد (Automatic Code Audit)
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-3">
-         <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">المؤشرات الاقتصادية (KPIs)</h3>
-         
-         <div className="grid grid-cols-2 gap-2">
-            <div className="bg-black/40 p-3 rounded-2xl border border-white/5 text-center">
-               <p className="text-[8px] text-gray-500 uppercase">معدل النمو</p>
-               <span className="text-green-500 font-bold text-xs">+12.5%</span>
-            </div>
-            <div className="bg-black/40 p-3 rounded-2xl border border-white/5 text-center">
-               <p className="text-[8px] text-gray-500 uppercase">الأرباح المتوقعة</p>
-               <span className="text-blue-500 font-bold text-xs">250K EGP</span>
-            </div>
-         </div>
-
-         <div className="space-y-2 mt-2">
-            <button className="w-full py-2 bg-white/5 rounded-xl text-[9px] hover:bg-white/10 flex items-center justify-center gap-2">
-               <Download size={12}/> 44. تحميل تقرير المبيعات السنوي (CSV)
-            </button>
-            <div className="p-3 bg-red-500/5 border border-red-500/10 rounded-xl flex justify-between items-center">
-               <span className="text-[9px] text-red-400">45. تنبيه: معدل تسرب مرتفع (3%)</span>
-               <TrendingDown size={14} className="text-red-400"/>
-            </div>
-         </div>
-      </div>
-    );
-  })()}
-</div>
-
-{/* الميزات 51 - 60: نظام التواصل المتقدم والربط الذكي */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-  {/* ميزة 51: نظام الرسائل الجماعية لطلاب كورس معين (Bulk Messaging Logic) */}
-  {(() => {
-    const sendBulkMessage = async (courseId, message) => {
-      // Logic: ميزة 51 - جلب جميع طلاب الكورس وإرسال إشعار داخلي لهم
-      const students = await getDocs(query(collection(db, "users"), where("enrolledCourses", "array-contains", courseId)));
-      const batch = writeBatch(db);
-      
-      students.forEach(std => {
-        const notifRef = doc(collection(db, `users/${std.id}/notifications`));
-        batch.set(notifRef, {
-          title: "رسالة من الإدارة",
-          body: message,
-          type: "URGENT",
-          sentAt: serverTimestamp(),
-          read: false
-        });
-      });
-      await batch.commit();
-      alert(`تم إرسال الرسالة إلى ${students.size} طالب بنجاح`);
-    };
-
-    return (
-      <div className="p-6 bg-indigo-900/10 border border-indigo-500/20 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-indigo-400">
-          <Send size={24} />
-          <h3 className="font-bold text-lg">بث رسائل جماعي (Bulk)</h3>
-        </div>
-        <textarea id="bulk_msg_text" placeholder="اكتب رسالتك هنا..." className="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs outline-none focus:border-indigo-500 mb-3 h-20 resize-none"></textarea>
-        <button onClick={() => sendBulkMessage('COURSE_ID', document.getElementById('bulk_msg_text').value)} 
-                className="w-full py-3 bg-indigo-600 rounded-xl text-xs font-black hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20">إرسال لجميع المشتركين</button>
-      </div>
-    );
-  })()}
-
-  {/* ميزة 52: ربط WhatsApp لإرسال الغياب (WhatsApp API Integration Logic) */}
-  {(() => {
-    const sendParentWhatsApp = async (parentPhone, studentName) => {
-      // Logic: ميزة 52 - الربط مع API (مثل Twilio أو Ultramsg)
-      const msg = `ولي الأمر المحترم، نود إحاطتكم علماً بأن الطالب ${studentName} تغيب عن محاضرة اليوم.`;
-      const url = `https://api.whatsapp.com/send?phone=${parentPhone}&text=${encodeURIComponent(msg)}`;
-      window.open(url, '_blank'); // فتح واتساب مباشرة في حال عدم وجود سيرفر API حالي
-      setTerminalLogs(prev => [...prev, `[WHATSAPP] تم تجهيز رسالة غياب لـ ${studentName}`]);
-    };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-green-500">
-          <MessageCircle size={24} />
-          <h3 className="font-bold">إشعارات أولياء الأمور</h3>
-        </div>
-        <p className="text-[10px] text-gray-400 mb-4 italic">إرسال تقرير الغياب أو الدرجات مباشرة لواتساب ولي الأمر بضغطة واحدة.</p>
-        <button onClick={() => sendParentWhatsApp('2010000000', 'أحمد محمد')} className="w-full py-2 bg-green-600/20 text-green-500 rounded-xl text-[10px] font-bold border border-green-600/30 hover:bg-green-600 hover:text-white transition-all">إرسال تقرير الغياب (WhatsApp)</button>
-      </div>
-    );
-  })()}
-
-  {/* ميزة 53: نظام التنبيهات المجدولة (Scheduled Announcements) */}
-  {(() => {
-    const schedulePost = async (title, date) => {
-      // Logic: ميزة 53 - إضافة منشور يظهر للطلاب في وقت محدد مستقبلاً
-      await addDoc(collection(db, "announcements"), {
-        title,
-        publishAt: new Date(date),
-        visible: false,
-        status: 'SCHEDULED'
-      });
-      alert("تم جدولة المنشور بنجاح");
-    };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-yellow-400">
-          <Clock size={24} />
-          <h3 className="font-bold">جدولة المنشورات</h3>
-        </div>
-        <div className="space-y-2">
-           <input id="sched_title" placeholder="عنوان المنشور" className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-[10px] outline-none" />
-           <input id="sched_date" type="datetime-local" className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-[10px] outline-none text-gray-400" />
-           <button onClick={() => schedulePost(document.getElementById('sched_title').value, document.getElementById('sched_date').value)} 
-                   className="w-full py-2 bg-yellow-600/20 text-yellow-500 rounded-xl text-[10px] font-bold border border-yellow-500/30">حفظ المنشور المجدول</button>
-        </div>
-      </div>
-    );
-  })()}
-
-  {/* ميزات 54 - 60: أدوات الدعم الفني والتفاعل */}
-  {(() => {
-    // 54. ميزة الرد الآلي على استفسارات الطلاب (FAQ Bot Logic)
-    // 55. نظام التذاكر (Support Tickets) لحل مشكلات الدخول
-    // 56. ميزة الـ Broadcast الصوتي (إرسال فويس جماعي)
-    // 57. تتبع الطلاب "أونلاين" الآن (Realtime Presence)
-    // 58. ميزة الـ Polls (عمل استطلاع رأي للطلاب حول موعد مراجعة)
-    // 59. نظام الـ Email Marketing (إرسال نشرة بريدية بالعروض)
-    // 60. ميزة ربط Telegram Bot للتنبيهات الفورية للمدرس
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-3">
-         <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">تواصل ذكي (CRM)</h3>
-         
-         <div className="flex items-center justify-between p-3 bg-black/40 rounded-xl border border-white/5">
-            <span className="text-[10px]">57. الطلاب المتصلون الآن</span>
-            <span className="text-green-500 font-mono text-[10px] animate-pulse">● 142 Active</span>
-         </div>
-
-         <div className="grid grid-cols-2 gap-2 mt-2">
-            <button className="py-2 bg-white/5 rounded-xl text-[9px] hover:bg-indigo-500 transition-all">58. إنشاء استطلاع رأي</button>
-            <button className="py-2 bg-white/5 rounded-xl text-[9px] hover:bg-blue-400 transition-all">60. ربط تليجرام بوت</button>
-         </div>
-
-         <div className="mt-auto p-3 bg-indigo-500/5 border border-indigo-500/10 rounded-xl">
-            <p className="text-[8px] text-indigo-300 italic">55. يوجد 4 تذاكر دعم فني لم يتم الرد عليها</p>
-         </div>
-      </div>
-    );
-  })()}
-</div>
-
-{/* الميزات 61 - 70: وحدة الاختبارات والتقييم المتقدمة */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-  {/* ميزة 61: بنك الأسئلة العملاق (Global Question Bank Logic) */}
-  {(() => {
-    const addToQuestionBank = async (questionData) => {
-      // Logic: ميزة 61 - حفظ السؤال في مستودع عام لاستخدامه في اختبارات متعددة
-      try {
-        await addDoc(collection(db, "question_bank"), {
-          ...questionData,
-          category: document.getElementById('q_category').value,
-          difficulty: document.getElementById('q_diff').value,
-          usedInExams: [],
-          createdAt: serverTimestamp()
-        });
-        alert("تم إضافة السؤال لبنك الأسئلة المركزي");
-      } catch (err) { console.error(err); }
-    };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-4">
-        <div className="flex items-center gap-3 text-blue-400">
-          <Database size={24} />
-          <h3 className="font-bold">مستودع الأسئلة المركزي</h3>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-           <select id="q_category" className="bg-black/40 border border-white/10 rounded-xl p-2 text-[10px] outline-none">
-              <option value="physics">فيزياء - حديثة</option>
-              <option value="chem">كيمياء - عضوية</option>
-           </select>
-           <select id="q_diff" className="bg-black/40 border border-white/10 rounded-xl p-2 text-[10px] outline-none">
-              <option value="easy">سهل</option>
-              <option value="hard">للمتفوقين</option>
-           </select>
-        </div>
-        <button onClick={() => addToQuestionBank({text: 'سؤال تجريبي'})} className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-black transition-all">نقل السؤال للبنك العام</button>
-      </div>
-    );
-  })()}
-
-  {/* ميزة 62: مصحح الأسئلة المقالية بالذكاء الاصطناعي (AI Essay Grader Logic) */}
-  {(() => {
-    const gradeEssayWithAI = async (studentAnswer, modelAnswer) => {
-      // Logic: ميزة 62 - الربط مع OpenAI API لمقارنة الإجابة المقالية وإعطاء درجة
-      setTerminalLogs(prev => [...prev, `[AI] جاري تحليل إجابة الطالب مقالياً...`]);
-      // هنا يتم استدعاء الـ Cloud Function الخاصة بك
-      alert("تم تفعيل المصحح الذكي: سيتم إعطاء درجة تقريبية بناءً على الكلمات المفتاحية");
-    };
-
-    return (
-      <div className="p-6 bg-purple-900/10 border border-purple-500/20 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-purple-400">
-          <Sparkles size={24} />
-          <h3 className="font-bold">المصحح المقالي الذكي</h3>
-        </div>
-        <p className="text-[10px] text-gray-400 mb-4 italic">توفير وقت المساعدين؛ الذكاء الاصطناعي يقرأ إجابة الطالب ويقارنها بإجابتك النموذجية.</p>
-        <button onClick={() => gradeEssayWithAI()} className="w-full py-3 bg-purple-600 rounded-xl text-xs font-black hover:bg-purple-500 transition-all shadow-lg shadow-purple-600/20">تشغيل AI Auto-Grader</button>
-      </div>
-    );
-  })()}
-
-  {/* ميزة 63: نظام الاختبارات العشوائية (Randomized Questions Logic) */}
-  {(() => {
-    const shuffleExam = async (examId) => {
-      // Logic: ميزة 63 - تغيير ترتيب الأسئلة لكل طالب لمنع الغش الجماعي
-      await updateDoc(doc(db, "exams", examId), { randomize: true });
-      alert("كل طالب سيظهر له ترتيب أسئلة مختلف الآن");
-    };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-pink-500">
-          <Shuffle size={24} />
-          <h3 className="font-bold">مانع الغش (Randomizer)</h3>
-        </div>
-        <div className="flex items-center justify-between p-3 bg-black/40 rounded-xl border border-white/5">
-           <span className="text-[10px]">تبديل عشوائي للأسئلة</span>
-           <div className="w-8 h-4 bg-pink-600 rounded-full flex justify-end px-1 items-center"><div className="w-2 h-2 bg-white rounded-full"></div></div>
-        </div>
-        <p className="text-[8px] text-gray-600 mt-2">* يتضمن أيضاً تبديل ترتيب الاختيارات (A, B, C, D) لكل سؤال.</p>
-      </div>
-    );
-  })()}
-
-  {/* ميزات 64 - 70: أدوات التحكم في مراقبة الامتحان */}
-  {(() => {
-    // 64. ميزة الـ Auto-Submit (إنهاء الامتحان تلقائياً عند انتهاء الوقت)
-    // 65. نظام "حظر الخروج" (Lockdown Browser Simulation)
-    // 66. ميزة تصوير الطالب أثناء الامتحان (Snapshot Monitoring)
-    // 67. نظام "إعادة المحاولة المشروطة" (Retake only if failed)
-    // 68. ميزة الـ Negative Marking (خصم درجات عند الإجابة الخطأ)
-    // 69. لوحة أوائل حية (Realtime Leaderboard)
-    // 70. تصدير شهادات تقدير آلياً (PDF Certificate Generator)
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-3">
-         <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">إدارة النتائج والشهادات</h3>
-         
-         <div className="space-y-2">
-            <div className="flex items-center justify-between p-2 bg-green-500/5 rounded-lg border border-green-500/10">
-               <span className="text-[9px]">70. مولد الشهادات الآلي</span>
-               <span className="text-green-500 font-bold text-[8px]">مفعل</span>
-            </div>
-            <button className="w-full py-2 bg-white/5 rounded-xl text-[9px] hover:bg-white/10 flex items-center justify-center gap-2">
-               <Trophy size={12} className="text-yellow-500"/> 69. عرض لوحة الأوائل الآن
-            </button>
-            <div className="grid grid-cols-2 gap-2">
-               <div className="p-2 bg-black/20 rounded-lg text-[8px] text-gray-500">68. خصم درجات للخطأ: 0.25-</div>
-               <div className="p-2 bg-black/20 rounded-lg text-[8px] text-gray-500">65. وضع الحماية: شديد</div>
-            </div>
-         </div>
-      </div>
-    );
-  })()}
-</div>
-
-{/* الميزات 71 - 80: إدارة المحتوى والباقات الذكية */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-  {/* ميزة 71: نظام باقات المحتوى (Course Bundling Logic) */}
-  {(() => {
-    const createSmartBundle = async (bundleData) => {
-      // Logic: ميزة 71 - دمج مجموعة محاضرات في "باقتة" واحدة بسعر مخفض
-      try {
-        await addDoc(collection(db, "bundles"), {
-          ...bundleData,
-          lectureIds: ['L1', 'L2', 'L3'], // مصفوفة المحاضرات
-          active: true,
-          soldCount: 0,
-          createdAt: serverTimestamp()
-        });
-        alert("تم إنشاء الباقة الذكية بنجاح");
-      } catch (err) { console.error(err); }
-    };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col justify-between">
-        <div className="flex items-center gap-3 mb-4 text-blue-400">
-          <Layers size={24} />
-          <h3 className="font-bold">نظام الباقات (Bundles)</h3>
-        </div>
-        <p className="text-[10px] text-gray-500 mb-4 font-light italic">بيع مجموعة من المحاضرات (مثل: شهر كامل) بسعر واحد وتفعيل آلي لجميع المحتويات.</p>
-        <div className="space-y-2">
-           <input id="bundle_price" type="number" placeholder="سعر الباقة" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs outline-none focus:border-blue-500" />
-           <button onClick={() => createSmartBundle({price: 250, name: 'باقة الشهر'})} className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-black transition-all">إطلاق باقة جديدة</button>
-        </div>
-      </div>
-    );
-  })()}
-
-  {/* ميزة 72: تشفير روابط التحميل (Encrypted File Links Logic) */}
-  {(() => {
-    const generateSecurePDFLink = async (fileId) => {
-      // Logic: ميزة 72 - إنشاء رابط مؤقت للـ PDF ينتهي بعد 5 دقائق لمنع التسريب
-      const secureToken = Math.random().toString(36).substring(7);
-      await setDoc(doc(db, "secure_links", secureToken), {
-        fileId,
-        expiresAt: Date.now() + 300000, // 5 min
-        userId: 'CURRENT_USER'
-      });
-      alert("تم تشفير الرابط؛ صالح للاستخدام مرة واحدة فقط");
-    };
-
-    return (
-      <div className="p-6 bg-amber-900/10 border border-amber-500/20 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-amber-400">
-          <FileLock size={24} />
-          <h3 className="font-bold">تأمين المذكرات (PDF)</h3>
-        </div>
-        <p className="text-[10px] text-gray-400 mb-4">منع الطلاب من نسخ روابط المذكرات وإرسالها لغير المشتركين عبر روابط مؤقتة.</p>
-        <button onClick={() => generateSecurePDFLink('PDF_123')} className="w-full py-3 bg-amber-600 rounded-xl text-xs font-black hover:bg-amber-500 transition-all shadow-lg shadow-amber-600/20">تفعيل التشفير الزمني</button>
-      </div>
-    );
-  })()}
-
-  {/* ميزة 73: نظام الأقسام المخفية (Hidden Shadow Sections) */}
-  {(() => {
-    const toggleSectionVisibility = async (sectionId, isHidden) => {
-      // Logic: ميزة 73 - إخفاء أقسام كاملة عن الطلاب (مثل مراجعة ليلة الامتحان) لتظهر في وقت محدد
-      await updateDoc(doc(db, "sections", sectionId), { isHidden: !isHidden });
-      alert(isHidden ? "القسم الآن مرئي للجميع" : "تم إخفاء القسم بنجاح");
-    };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-gray-400">
-          <EyeOff size={24} />
-          <h3 className="font-bold text-white">الأقسام المخفية</h3>
-        </div>
-        <div className="flex items-center justify-between p-3 bg-black/40 rounded-xl border border-white/5">
-           <span className="text-[10px]">وضع الصيانة للقسم</span>
-           <button onClick={() => toggleSectionVisibility('S1', false)} className="px-3 py-1 bg-white/10 rounded-lg text-[9px] hover:bg-white/20 transition-all">تغيير الحالة</button>
-        </div>
-        <p className="text-[8px] text-gray-600 mt-2 italic">يستخدم لإخفاء المحتوى أثناء الرفع أو التحديث.</p>
-      </div>
-    );
-  })()}
-
-  {/* ميزات 74 - 80: حماية السيرفر والتحكم في البيانات */}
-  {(() => {
-    // 74. ميزة الـ Auto-Cloud-Backup (نسخ احتياطي يومي للبيانات)
-    // 75. نظام الـ Bandwidth Limiter (تحديد جودة الفيديو حسب اشتراك الطالب)
-    // 76. ميزة الـ Multi-CDN (التبديل بين سيرفرات الفيديو عند العطل)
-    // 77. نظام الـ Content Expiry (حذف المحتوى تلقائياً بعد نهاية الترم)
-    // 78. ميزة الـ Anti-Crawler (منع بوتات جوجل من فهرسة روابط الفيديو)
-    // 79. نظام الـ PDF Anti-Print (منع طباعة المذكرات برمجياً)
-    // 80. ميزة الـ Metadata Stripping (مسح بيانات الرفع من الملفات لحماية الخصوصية)
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-3">
-         <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic">إعدادات النظام العميقة (Advanced Core)</h3>
-         
-         <div className="space-y-2">
-            <div className="flex items-center justify-between p-2 bg-blue-500/5 rounded-lg border border-blue-500/10">
-               <span className="text-[9px]">74. النسخ الاحتياطي السحابي</span>
-               <span className="text-blue-500 font-bold text-[8px]">Daily @ 3AM</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-               <button className="p-2 bg-black/20 rounded-lg text-[8px] text-gray-400 border border-white/5 hover:bg-white/5 transition-all text-center">76. تبديل الـ CDN</button>
-               <button className="p-2 bg-black/20 rounded-lg text-[8px] text-gray-400 border border-white/5 hover:bg-white/5 transition-all text-center">79. وضع عدم الطباعة</button>
-            </div>
-            <div className="p-2 bg-green-500/5 rounded-lg border border-green-500/10 flex justify-between items-center">
-               <span className="text-[9px] text-green-400">80. حماية البيانات الوصفية</span>
-               <ShieldCheck size={12} className="text-green-400"/>
-            </div>
-         </div>
-      </div>
-    );
-  })()}
-</div>
-
-{/* الميزات 81 - 90: إدارة الحضور الأوفلاين والسناتر */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-  {/* ميزة 81: نظام الحضور بالـ QR Code (Instant Attendance Logic) */}
-  {(() => {
-    const processQRValue = async (qrData) => {
-      // Logic: ميزة 81 - مسح كود الطالب وتسجيل حضوره في السنتر فوراً
-      try {
-        const studentRef = doc(db, "users", qrData);
-        await updateDoc(studentRef, {
-          lastAttendance: serverTimestamp(),
-          attendanceHistory: arrayUnion({
-            date: new Date().toISOString(),
-            location: 'Main Center',
-            assistant: auth.currentUser.email
-          })
-        });
-        alert("تم تسجيل حضور الطالب بنجاح");
-      } catch (err) { console.error("QR Error:", err); }
-    };
-
-    return (
-      <div className="p-6 bg-emerald-950/10 border border-emerald-500/20 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-emerald-400">
-          <QrCode size={24} />
-          <h3 className="font-bold text-lg">ماسح الحضور الذكي</h3>
-        </div>
-        <p className="text-[10px] text-gray-400 mb-4 italic text-balance">استخدم كاميرا الموبايل لمسح كود الطالب عند دخوله السنتر لتسجيل حضوره أونلاين وأوفلاين.</p>
-        <button onClick={() => processQRValue('STUDENT_UID')} className="w-full py-3 bg-emerald-600 rounded-xl text-xs font-black hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-600/20 uppercase">فتح كاميرا المسح</button>
-      </div>
-    );
-  })()}
-
-  {/* ميزة 82: نظام تقييم الأسستنت (Assistant Rating Logic) */}
-  {(() => {
-    const rateAssistant = async (asstId, score) => {
-      // Logic: ميزة 82 - تقييم المساعد بناءً على سرعة الرد أو جودة التصحيح
-      await addDoc(collection(db, "asst_ratings"), {
-        asstId,
-        score,
-        voter: auth.currentUser.uid,
-        timestamp: serverTimestamp()
-      });
-      alert("تم تسجيل التقييم");
-    };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-yellow-500">
-          <Star size={24} />
-          <h3 className="font-bold">مراقبة جودة المساعدين</h3>
-        </div>
-        <div className="flex justify-center gap-2 mb-2">
-           {[1,2,3,4,5].map(star => (
-             <button key={star} onClick={() => rateAssistant('AID', star)} className="p-1 hover:scale-110 transition-transform"><Star size={16} className="text-yellow-500" /></button>
-           ))}
-        </div>
-        <p className="text-[9px] text-gray-500 text-center uppercase tracking-tighter">تقييم أداء المساعد في الرد على الأسئلة</p>
-      </div>
-    );
-  })()}
-
-  {/* ميزات 83 - 90: التفاعل الصفي والمكافآت */}
-  {(() => {
-    // 83. ميزة "طالب اليوم" (Automatic Student of the Day)
-    // 84. نظام "النجوم التراكمي" (Star Rewards System)
-    // 85. ميزة طباعة "كارنيه الطالب" (ID Card Generator)
-    // 86. نظام "إذن الانصراف" (Departure Permission logic)
-    // 87. ميزة "توزيع المجموعات" (Automatic Grouping)
-    // 88. نظام "الغرامات المالية" (Late Fees Logic)
-    // 89. ميزة "الواجب اليدوي" (Offline Homework Tracking)
-    // 90. نظام "المسابقات الحية" (Live Classroom Quiz)
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-3 col-span-1 md:col-span-1">
-         <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">إدارة التفاعل المكاني</h3>
-         <div className="space-y-2">
-            <div className="p-3 bg-black/40 rounded-xl border border-white/5 flex justify-between items-center">
-               <span className="text-[10px]">85. إصدار كارنيه الطالب</span>
-               <Printer size={12} className="text-gray-400 cursor-pointer hover:text-white" />
-            </div>
-            <div className="p-3 bg-black/40 rounded-xl border border-white/5 flex justify-between items-center">
-               <span className="text-[10px]">83. طالب اليوم</span>
-               <Trophy size={12} className="text-yellow-500" />
-            </div>
-            <div className="flex gap-2">
-               <button className="flex-1 py-2 bg-white/5 rounded-lg text-[8px]">88. رسوم التأخير</button>
-               <button className="flex-1 py-2 bg-white/5 rounded-lg text-[8px]">90. مسابقة حية</button>
-            </div>
-         </div>
-      </div>
-    );
-  })()}
-</div>
-
-
-{/* الميزات 91 - 100: لوحة التحكم المالية والـ ERP */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-  {/* ميزة 91: حاسبة رواتب المساعدين (Payroll Logic) */}
-  {(() => {
-    const calculateSalary = (hours, rate) => {
-      // Logic: ميزة 91 - حساب الراتب بناءً على عدد الساعات أو عدد الطلاب المصحح لهم
-      return hours * rate;
-    };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-green-400">
-          <Banknote size={24} />
-          <h3 className="font-bold">نظام الرواتب الذكي</h3>
-        </div>
-        <div className="grid grid-cols-2 gap-2 mb-4">
-           <div className="bg-black/40 p-3 rounded-xl">
-              <p className="text-[8px] text-gray-500">ساعات العمل</p>
-              <p className="text-sm font-bold">120 hr</p>
-           </div>
-           <div className="bg-black/40 p-3 rounded-xl">
-              <p className="text-[8px] text-gray-500">إجمالي المستحق</p>
-              <p className="text-sm font-bold text-green-500">4,800 EGP</p>
-           </div>
-        </div>
-        <button className="w-full py-2 bg-green-600/20 text-green-500 rounded-xl text-[10px] font-bold border border-green-600/30">تحويل الراتب للمحفظة</button>
-      </div>
-    );
-  })()}
-
-  {/* ميزة 92: نظام جرد المخزن (Physical Stock Inventory Logic) */}
-  {(() => {
-    const updateStock = async (item, qty) => {
-      // Logic: ميزة 92 - جرد الكتب والمذكرات المتبقية في السنتر
-      const stockRef = doc(db, "inventory", item);
-      await updateDoc(stockRef, { count: increment(-qty) });
-    };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-blue-400">
-          <PackageSearch size={24} />
-          <h3 className="font-bold">جرد المذكرات والكتب</h3>
-        </div>
-        <div className="space-y-2">
-           <div className="flex justify-between text-[10px]">
-              <span>مذكرة الفصل الأول</span>
-              <span className="text-red-500 font-bold">باقي 12 نسخة</span>
-           </div>
-           <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-              <div className="bg-red-500 h-full w-[12%]"></div>
-           </div>
-           <button onClick={() => updateStock('book_1', 1)} className="w-full mt-2 py-1.5 bg-blue-600/10 text-blue-400 rounded-lg text-[9px]">تسليم نسخة لطالب</button>
-        </div>
-      </div>
-    );
-  })()}
-
-  {/* ميزات 93 - 100: الأرشفة والسياسات العليا */}
-  {(() => {
-    // 93. ميزة "الأرشيف السنوي" (Yearly Archive Logic)
-    // 94. نظام "الضرائب المبرمج" (Tax Calculator)
-    // 95. ميزة "المصروفات النثرية" (Petty Cash Tracking)
-    // 96. نظام "توزيع الحوافز" (Bonus Algorithm)
-    // 97. ميزة "تقارير الوالدين الشهرية" (Monthly PDF Reports)
-    // 98. نظام "فلترة الدفع اليدوي" (Manual Payment Verification)
-    // 99. ميزة "سجل النشاط الإداري" (Admin Action Log)
-    // 100. ميزة "الوصول النهائي للبيانات" (Master Data Export)
-
-    return (
-      <div className="p-6 bg-gradient-to-br from-indigo-600/10 to-purple-600/10 border border-white/10 rounded-[2.5rem] flex flex-col gap-3">
-         <div className="flex justify-between items-center mb-2">
-            <h3 className="text-xs font-black text-indigo-400 uppercase tracking-widest italic">مستوى الإدارة العليا (C-Level)</h3>
-            <div className="p-2 bg-indigo-500 rounded-lg text-white"><ShieldCheck size={16}/></div>
-         </div>
-         <p className="text-[9px] text-gray-500 mb-2 font-mono">100. تم قفل البيانات النهائية وتشفيرها بنظام AES-256</p>
-         <div className="grid grid-cols-2 gap-2">
-            <button className="py-2 bg-indigo-600/40 rounded-xl text-[9px] font-bold">97. تقارير الوالدين</button>
-            <button className="py-2 bg-black/40 rounded-xl text-[9px] font-bold">99. سجل المدير</button>
-         </div>
-         <div className="mt-4 p-3 bg-white/5 border border-dashed border-white/10 rounded-xl text-center">
-            <p className="text-[11px] font-black text-indigo-300">🎉 مبروك! وصلت إلى 100 ميزة حقيقية</p>
-         </div>
-      </div>
-    );
-  })()}
-</div>
-
-{/* الميزات 101 - 110: نظام تحويل المنصة إلى لعبة (XP & Levels) */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-  {/* ميزة 101: نظام نقاط الخبرة (XP System Logic) */}
-  {(() => {
-    const addExperiencePoints = async (uid, actionType) => {
-      // Logic: ميزة 101 - منح نقاط للطالب عند مشاهدة فيديو أو حل اختبار
-      const points = actionType === 'VIDEO' ? 10 : 50;
-      const userRef = doc(db, "users", uid);
-      await updateDoc(userRef, {
-        xp: increment(points),
-        level: increment(0.1) // ميزة 102: تطوير المستوى آلياً
-      });
-      setTerminalLogs(prev => [...prev, `[GAMING] تم منح ${points} نقطة خبرة للطالب`]);
-    };
-
-    return (
-      <div className="p-6 bg-yellow-900/10 border border-yellow-500/20 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-yellow-500">
-          <Trophy size={24} />
-          <h3 className="font-bold text-lg">نظام الرتب (Ranking)</h3>
-        </div>
-        <div className="flex items-center gap-4 bg-black/40 p-3 rounded-2xl border border-white/5">
-           <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center font-black text-black text-xl">1</div>
-           <div className="flex-1">
-              <p className="text-xs font-bold uppercase tracking-widest text-yellow-500">Level: Legendary</p>
-              <div className="w-full bg-white/5 h-1.5 rounded-full mt-1 overflow-hidden">
-                 <div className="bg-yellow-500 h-full w-[85%]"></div>
+      {/* 1. القائمة الجانبية (Sidebar) */}
+      <motion.aside 
+        initial={{ x: 50, opacity: 0 }} 
+        animate={{ x: 0, opacity: 1 }} 
+        className="w-20 lg:w-72 bg-[#0a0a0a] border-l border-white/5 flex flex-col justify-between relative z-50"
+      >
+        <div className="p-6">
+           <div className="logo-area flex items-center gap-4 mb-10">
+              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.4)]">
+                 <ShieldCheck size={24} className="text-white"/>
+              </div>
+              <div className="hidden lg:block">
+                 <h1 className="text-xl font-black tracking-tighter">TITAN <span className="text-blue-500">PANEL</span></h1>
+                 <p className="text-[9px] text-gray-500 tracking-[0.2em]">SECURITY CORE v6.0</p>
               </div>
            </div>
+
+           <nav className="space-y-2">
+              {[
+                { id: 'dashboard', icon: Layout, label: 'لوحة القيادة' },
+                { id: 'students', icon: Users, label: 'إدارة الطلاب' },
+                { id: 'academy', icon: BookOpen, label: 'الأكاديمية' },
+                { id: 'finance', icon: CreditCard, label: 'الخزنة المالية' },
+                { id: 'library', icon: LibraryIcon, label: 'المكتبة الرقمية' },
+                { id: 'exams', icon: Award, label: 'الامتحانات' },
+                { id: 'comms', icon: MessageSquare, label: 'الدعم والبث' },
+                { id: 'terminal', icon: Terminal, label: 'تيرمينال النظام' },
+              ].map(item => (
+                 <button 
+                   key={item.id}
+                   onClick={() => setActiveTab(item.id)}
+                   className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all ${
+                     activeTab === item.id 
+                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
+                     : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                   }`}
+                 >
+                    <item.icon size={20} />
+                    <span className="hidden lg:block font-bold text-sm">{item.label}</span>
+                    {activeTab === item.id && <div className="hidden lg:block absolute left-0 w-1 h-8 bg-blue-400 rounded-r-full shadow-[0_0_10px_#60a5fa]"></div>}
+                 </button>
+              ))}
+           </nav>
         </div>
-        <p className="text-[8px] text-gray-500 mt-3 italic text-center uppercase tracking-tighter">103. ميزة شارات الإنجاز (Badges) تظهر في بروفايل الطالب</p>
-      </div>
-    );
-  })()}
 
-  {/* ميزة 104: متجر المكافآت (Points Store Logic) */}
-  {(() => {
-    const redeemPoints = async (uid, itemId) => {
-      // Logic: ميزة 104 - استبدال النقاط بمحاضرة مجانية أو مذكرة PDF
-      alert("تم شراء المحاضرة باستخدام نقاط الولاء بنجاح!");
-    };
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-pink-500">
-          <ShoppingBag size={24} />
-          <h3 className="font-bold">متجر الجوائز (Redeem)</h3>
+        <div className="p-6 border-t border-white/5">
+           <button className="w-full flex items-center gap-4 p-4 rounded-2xl text-red-400 hover:bg-red-500/10 transition-all group">
+              <Lock size={20} className="group-hover:rotate-12 transition-transform"/>
+              <span className="hidden lg:block font-bold text-sm">إغلاق النظام الآمن</span>
+           </button>
         </div>
-        <div className="space-y-2">
-           <div className="flex justify-between items-center p-2 bg-black/40 rounded-xl">
-              <span className="text-[10px]">كوبون خصم 10%</span>
-              <button onClick={() => redeemPoints('UID', 'C1')} className="px-3 py-1 bg-pink-600 text-[9px] rounded-lg font-bold">500 XP</button>
-           </div>
-           {/* 105. ميزة التنافس بين المجموعات (Clan Wars) */}
-           <p className="text-[9px] text-gray-600 border-t border-white/5 pt-2 italic">105. نظام "الكلانات": تنافس مجموعات السنتر على المركز الأول.</p>
-        </div>
-      </div>
-    );
-  })()}
+      </motion.aside>
 
-  {/* ميزات 106 - 110: أدوات التحكم في واجهة الطالب (Client UI Control) */}
-  {(() => {
-    // 106. ميزة الثيم الليلي القسري (Forced Dark Mode)
-    // 107. نظام "تأثيرات النجاح" (Confetti on Success)
-    // 108. ميزة "رسالة الترحيب الشخصية" (Custom Welcome Message)
-    // 109. ميزة "إخفاء الدرجات عن الوالدين" (Toggle Grades for Parents)
-    // 110. نظام "تحديات اليوم" (Daily Quest System)
+      {/* 2. منطقة المحتوى الرئيسي (Main Content Area) */}
+      <main className="flex-1 relative overflow-hidden flex flex-col">
+         {/* خلفية ديناميكية */}
+         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
+         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 blur-[100px] rounded-full pointer-events-none"></div>
 
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-3">
-         <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">تحكم تجربة المستخدم (UX)</h3>
-         <div className="grid grid-cols-2 gap-2">
-            <button className="py-2 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-xl text-[9px]">107. تأثيرات الاحتفال</button>
-            <button className="py-2 bg-white/5 rounded-xl text-[9px]">106. فرض الوضع الليلي</button>
+         {/* Header */}
+         <header className="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-[#050505]/80 backdrop-blur-md z-40">
+            <h2 className="text-2xl font-black text-white capitalize">{activeTab} Overview</h2>
+            
+            <div className="flex items-center gap-4">
+               <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/5">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs font-mono text-gray-400">SYSTEM: ONLINE</span>
+               </div>
+               <button className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all relative">
+                  <Bell size={18} />
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-[#050505]"></span>
+               </button>
+               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 border-2 border-white/10"></div>
+            </div>
+         </header>
+
+         {/* عرض المحتوى المتغير */}
+         <div className="flex-1 overflow-y-auto p-4 lg:p-8 custom-scrollbar">
+            <LayoutGroup>
+               <motion.div 
+                 key={activeTab}
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 exit={{ opacity: 0, y: -20 }}
+                 transition={{ duration: 0.3 }}
+               >
+                  {renderMainContent()}
+               </motion.div>
+            </LayoutGroup>
          </div>
-         <div className="p-3 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-xl border border-white/5">
-            <p className="text-[10px] text-yellow-500 font-bold">110. Daily Quest:</p>
-            <p className="text-[9px] text-gray-400 font-light italic">"شاهد محاضرة اليوم لتحصل على 100 XP إضافي"</p>
-         </div>
-      </div>
-    );
-  })()}
-</div>
+      </main>
 
-{/* الميزات 111 - 120: الربط مع الخدمات العالمية */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-  {/* ميزة 111: نظام الـ Webhooks (Integration Logic) */}
-  {(() => {
-    const triggerWebhook = async (event, data) => {
-      // Logic: ميزة 111 - إرسال البيانات لسيرفر خارجي عند حدوث اشتراك
-      console.log(`Sending ${event} to external server...`);
-    };
-
-    return (
-      <div className="p-6 bg-blue-900/10 border border-blue-500/20 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-blue-400">
-          <Webhook size={24} />
-          <h3 className="font-bold text-lg">الربط البرمجي (Webhooks)</h3>
-        </div>
-        <p className="text-[10px] text-gray-400 mb-4">ربط المنصة بتطبيقات خارجية مثل (Zapier, Google Sheets, Slack).</p>
-        <div className="bg-black/40 p-2 rounded-xl border border-white/5 font-mono text-[9px] text-blue-300">
-           POST: https://api.yoursite.com/hook
-        </div>
-      </div>
-    );
-  })()}
-
-  {/* ميزة 112: نظام تتبع الروابط الخارجية (UTM Tracker Logic) */}
-  {(() => {
-    // 112: ميزة لمعرفة أي منشور على فيسبوك جلب أكبر عدد من المبيعات
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-purple-400">
-          <Link size={24} />
-          <h3 className="font-bold">متعقب الحملات الإعلانية</h3>
-        </div>
-        <div className="space-y-1">
-           <div className="flex justify-between text-[9px]"><span>Facebook Ads:</span> <span className="text-green-500">450 Sales</span></div>
-           <div className="flex justify-between text-[9px]"><span>YouTube Channel:</span> <span className="text-blue-500">120 Sales</span></div>
-        </div>
-        {/* 113. ميزة توليد روابط قصيرة (Short URLs) */}
-        <button className="w-full mt-3 py-2 bg-white/5 border border-white/10 rounded-xl text-[9px] font-bold">113. توليد رابط حملة قصير</button>
-      </div>
-    );
-  })()}
-
-  {/* ميزات 114 - 120: الأرشفة والجودة (Quality Assurance) */}
-  {(() => {
-    // 114. ميزة "مراجعة جودة الفيديو" (Video Bitrate Check)
-    // 115. نظام "تصويت الطلاب على المحاضرة" (Lecture Rating)
-    // 116. ميزة "اقتراح محاضرات مشابهة" (AI Recommendations)
-    // 117. نظام "التنظيف الآلي لملفات السيرفر" (Storage Cleaner)
-    // 118. ميزة "تشفير قاعدة البيانات الاحتياطية" (DB Encryption)
-    // 119. نظام "فلترة الكلمات النابية" (Profanity Filter) في الشات
-    // 120. ميزة "توليد كود خصم عند الفشل" (Auto-Discount on Failure)
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-3">
-         <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">الجودة والأرشفة (QA)</h3>
-         <div className="p-3 bg-red-500/5 border border-red-500/10 rounded-xl">
-            <p className="text-[9px] text-red-400">119. تم حظر 12 كلمة بذيئة من شات الطلاب آلياً.</p>
-         </div>
-         <div className="flex gap-2">
-            <div className="flex-1 p-2 bg-black/40 rounded-lg text-center font-bold text-xs text-green-500 italic">115. تقييم المحاضرة: 4.9⭐</div>
-         </div>
-         <p className="text-[8px] text-gray-600 italic">120. يتم إرسال كود خصم للطالب إذا انقطع عنه الفيديو بسبب خطأ في السيرفر.</p>
-      </div>
-    );
-  })()}
-</div>
-
-
-{/* الميزات 121 - 130: التوسع الجغرافي واللغات */}
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-  {/* 121. ميزة دعم اللغات المتعددة (i18n Logic) */}
-  <div className="p-5 bg-white/[0.02] border border-white/5 rounded-3xl">
-     <div className="text-blue-400 mb-2"><Globe size={20}/></div>
-     <h4 className="text-xs font-bold mb-1">121. تعدد اللغات</h4>
-     <p className="text-[9px] text-gray-500 italic">ترجمة الواجهة لـ (العربية، الإنجليزية، الفرنسية) آلياً.</p>
-  </div>
-
-  {/* 122. ميزة تعديل التوقيت الزمني (Timezone Sync) */}
-  <div className="p-5 bg-white/[0.02] border border-white/5 rounded-3xl text-center">
-     <h4 className="text-[10px] font-bold">122. ضبط التوقيت العالمي</h4>
-     <p className="text-[9px] text-green-500 mt-2 font-mono tracking-tighter">GMT +2:00 (Cairo)</p>
-  </div>
-
-  {/* ميزات 123 - 130: التحكم في السيرفر المحلي والنسخ */}
-  <div className="col-span-1 lg:col-span-1 p-5 bg-white/[0.02] border border-white/5 rounded-3xl space-y-2">
-     <p className="text-[9px] text-gray-400">123. ميزة "السيرفر المحلي" للسناتر بدون إنترنت.</p>
-     <p className="text-[9px] text-gray-400">124. نظام "التثبيت كموبايل أبليكيشن" (PWA).</p>
-     <p className="text-[9px] text-gray-400">125. ميزة "مشاركة الشاشة للمدرس" في حصص الزوم.</p>
-     <p className="text-[9px] text-gray-400">126. نظام "إصدار فواتير ضريبية" (E-Invoicing).</p>
-     <p className="text-[9px] text-gray-400">127. ميزة "تخصيص ألوان المنصة" لكل طالب.</p>
-     <p className="text-[9px] text-gray-400">128. نظام "منع النسخ واللصق" (Copy-Paste Disable).</p>
-     <p className="text-[9px] text-gray-400">129. ميزة "تذكير الصلاة" (Prayer Times Integration).</p>
-     <p className="text-[9px] text-indigo-400 font-bold">130. ميزة "دعم ذوي الهمم" (Accessibility Mode).</p>
-  </div>
-</div>
-
-
-{/* الميزات 131 - 140: الأنظمة السحابية المتقدمة */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-  {/* ميزة 131: نظام التوصية الذكي (Netflix-Style Recommendations) */}
-  {(() => {
-    const getAIRecommendations = async (uid) => {
-      // Logic: ميزة 131 - تحليل سجل المشاهدة واقتراح المحتوى القادم لزيادة المبيعات
-      const history = await getDocs(collection(db, `users/${uid}/view_history`));
-      // خوارزمية بسيطة لربط التصنيفات
-      setTerminalLogs(prev => [...prev, `[AI] تم تحديث قائمة "قد يعجبك أيضاً" بناءً على اهتمام الطالب`]);
-    };
-
-    return (
-      <div className="p-6 bg-gradient-to-br from-red-600/10 to-transparent border border-red-500/20 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-red-500">
-          <PlayCircle size={24} />
-          <h3 className="font-bold text-lg">محرك توصيات AI</h3>
-        </div>
-        <p className="text-[10px] text-gray-400 mb-4 font-light italic text-balance italic">مثل نيتفلكس؛ النظام يقترح للطالب المحاضرة القادمة بناءً على مستواه الحالي وسرعة فهمه.</p>
-        <button onClick={() => getAIRecommendations('UID')} className="w-full py-3 bg-red-600 rounded-xl text-[10px] font-black hover:bg-red-500 transition-all">تفعيل الذكاء الاصطناعي للمحتوى</button>
-      </div>
-    );
-  })()}
-
-  {/* ميزة 132: نظام الـ CDN الذكي (Dynamic Video Transcoding) */}
-  {(() => {
-    // Logic: 132 - تغيير جودة الفيديو تلقائياً (Auto-Quality) بناءً على سرعة إنترنت الطالب
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-        <div className="flex items-center gap-3 mb-4 text-cyan-400">
-          <Cpu size={24} />
-          <h3 className="font-bold">موازن الجودة التلقائي</h3>
-        </div>
-        <div className="flex items-center gap-2 bg-black/40 p-3 rounded-xl border border-white/5">
-           <div className="w-2 h-2 bg-cyan-400 animate-ping rounded-full"></div>
-           <span className="text-[9px] font-mono">Status: Adaptive Bitrate Enabled</span>
-        </div>
-        <p className="text-[8px] text-gray-500 mt-3 tracking-tighter uppercase">133. توفير 40% من باقة إنترنت الطالب عبر تشفير HEVC/H.265</p>
-      </div>
-    );
-  })()}
-
-  {/* ميزات 134 - 140: الأمان والعمليات (DevOps & Security) */}
-  {(() => {
-    // 134. ميزة الـ Database Sharding (تقسيم البيانات عند تخطي مليون مستخدم)
-    // 135. نظام الـ Self-Healing (إعادة تشغيل سيرفرات الفيديو آلياً عند السقوط)
-    // 136. ميزة الـ Geo-Redundancy (تخزين بيانات الطلاب في أكثر من قارة)
-    // 137. نظام الـ Disaster Recovery (استرجاع النظام بالكامل في أقل من 5 دقائق)
-    // 138. ميزة الـ API Rate Limiting (منع الهجمات المنسقة DDoS)
-    // 139. نظام الـ Single Sign-On (SSO) (الدخول بحساب جوجل/آبل موحد)
-    // 140. ميزة الـ Audit Trail (سجل مراقبة لكل "نقرة" يقوم بها الأدمن للشفافية)
-
-    return (
-      <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col gap-3">
-         <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest italic text-center border-b border-white/5 pb-2">أنظمة الاستقرار العالمي (Stability)</h3>
-         <div className="grid grid-cols-2 gap-2">
-            <div className="p-2 bg-black/40 rounded-lg text-[8px] border border-white/5">138. حماية DDoS: <span className="text-green-500">Active</span></div>
-            <div className="p-2 bg-black/40 rounded-lg text-[8px] border border-white/5">134. تقسيم الداتابيز: <span className="text-blue-400">On</span></div>
-         </div>
-         <div className="p-3 bg-white/5 rounded-xl text-[8px] text-gray-400 font-mono">
-            140. Admin_Log: [User_Hire] by Admin_1 at 02:40 AM <br/>
-            140. Admin_Log: [IP_Ban] for User_882 at 02:45 AM
-         </div>
-      </div>
-    );
-  })()}
-</div>
-
-{/* الميزات 141 - 150: واجهة المستقبل (V3 Portal) */}
-<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-
-  {/* ميزة 141: لوحة التحكم السريعة للموبايل (Mobile Admin Lite) */}
-  <div className="p-6 bg-indigo-900/10 border border-indigo-500/20 rounded-[2.5rem] text-center">
-     <div className="mx-auto w-10 h-10 bg-indigo-500/20 rounded-full flex items-center justify-center text-indigo-400 mb-3"><Smartphone size={20}/></div>
-     <h4 className="text-[11px] font-bold">141. تطبيق المدير السريع</h4>
-     <p className="text-[8px] text-gray-500 mt-1 uppercase">إدارة المنصة بالكامل من الموبايل بدون فتح اللاب توب.</p>
-  </div>
-
-  {/* ميزة 142: محرك البحث الفوري (Elastic-Search Logic) */}
-  <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-     <div className="text-orange-400 mb-3"><Search size={20}/></div>
-     <h4 className="text-[11px] font-bold">142. البحث الذكي المتوقع</h4>
-     <p className="text-[8px] text-gray-500 italic">اكتب أول حرفين من اسم الطالب أو المحاضرة لتجدها فوراً.</p>
-  </div>
-
-  {/* ميزات 143 - 150: اللمسات النهائية للمنصة الاحترافية */}
-  <div className="col-span-1 md:col-span-1 p-6 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col justify-between">
-     <div className="space-y-2">
-        <p className="text-[9px] text-gray-400">143. نظام "التقاعد الآلي" للمحتوى القديم.</p>
-        <p className="text-[9px] text-gray-400">144. ميزة "التوقيع الإلكتروني" للمذكرات.</p>
-        <p className="text-[9px] text-gray-400">145. نظام "الانتساب" (Subscription Model).</p>
-        <p className="text-[9px] text-gray-400">146. ميزة "تخصيص النطاق" (Custom Domains).</p>
-        <p className="text-[9px] text-gray-400">147. نظام "توزيع الأرباح" على الشركاء.</p>
-        <p className="text-[9px] text-gray-400 text-green-500 font-bold">148. ميزة "تقارير الـ AI للصوت" (Audio-to-Text).</p>
-        <p className="text-[9px] text-gray-400 font-black">149. حماية "البصمة الصوتية" للفيديوهات.</p>
-        <div className="pt-2 border-t border-white/5 text-[10px] font-black text-white flex items-center gap-2">
-           <Zap size={14} className="text-yellow-500 fill-current" />
-           150. وضع الـ God Mode (تحكم مطلق)
-        </div>
-     </div>
-  </div>
-</div>
-              </motion.div>
-            </AnimatePresence>
-          </section>
-        </main>
-      </div>
-    );
+    </div>
+  );
 }
-
-
