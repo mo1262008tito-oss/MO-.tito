@@ -364,6 +364,7 @@ footer li:hover {
   transform: rotateY(10deg) rotateX(5deg);
 }
 
+
 /* 28. Smart Sidebar Navigation (تنسيق القائمة الجانبية العميق) */
 .nav-link {
   position: relative;
@@ -406,6 +407,7 @@ footer li:hover {
   overflow: hidden;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
+
 
 .lesson-list-item {
   border-right: 3px solid transparent;
@@ -560,6 +562,7 @@ footer li:hover {
   box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.7);
 }
 
+
 /* 44. Cyber-Buttons (أزرار سيبرانية) */
 .btn-cyber {
   position: relative;
@@ -628,6 +631,7 @@ footer li:hover {
   border-spacing: 0 12px;
 }
 
+
 .mafa-table tr {
   @apply bg-white/[0.02] transition-all;
 }
@@ -690,6 +694,7 @@ footer li:hover {
   @apply scale-105 origin-right;
 }
 
+  
 /* 50. Scroll Animation (أنيميشن الظهور عند التمرير) */
 .reveal {
   opacity: 0;
@@ -719,16 +724,20 @@ footer li:hover {
   border-radius: 50%;
 }
 
+  
 /* 52. Custom Checkbox (مربعات الاختيار) */
 .mafa-checkbox {
   @apply w-6 h-6 rounded-lg border-2 border-white/10 bg-white/5 appearance-none cursor-pointer transition-all;
 }
 
+
+  
 .mafa-checkbox:checked {
   @apply bg-primary border-primary;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/%3E%3C/svg%3E");
 }
 
+  
 /* 53. Card Tilt Effect (إمالة الكروت) */
 .tilt-card {
   transform-style: preserve-3d;
@@ -746,6 +755,7 @@ footer li:hover {
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+  
 
 /* 55. Loading Spinner V2 (مؤشر التحميل) */
 .loader-mafa {
@@ -759,6 +769,7 @@ footer li:hover {
   animation: rotation 1s linear infinite;
 }
 
+  
 .loader-mafa::after {
   content: '';  
   box-sizing: border-box;
@@ -800,6 +811,7 @@ footer li:hover {
   to { top: 40px; }
 }
 
+  
 /* 59. Interactive Map Placeholder */
 .map-canvas {
   @apply w-full h-80 rounded-[40px] bg-white/5 border border-white/10 overflow-hidden relative grayscale;
@@ -815,6 +827,8 @@ footer li:hover {
   mask-image: linear-gradient(to bott
                               om, black 50%, transparent 100%);
 }
+
+  
 
 /* 61. Chat System UI (واجهة المحادثة مع الدعم والمدرسين) */
 .chat-bubble {
@@ -854,6 +868,8 @@ footer li:hover {
   @apply p-2 rounded-full border-2 border-white/20;
 }
 
+
+  
 .level-up-anim {
   animation: level-up 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -917,6 +933,8 @@ footer li:hover {
   clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%);
 }
 
+
+  
 /* 69. Sidebar Profile Section (قسم الملف الشخصي في القائمة) */
 .sidebar-user-gradient {
   background: linear-gradient(135deg, var(--primary-glow) 0%, transparent 100%);
@@ -984,6 +1002,8 @@ footer li:hover {
   overflow: hidden;
 }
 
+
+  
 .shimmer::after {
   content: '';
   @apply absolute inset-0 -translate-x-full;
@@ -1049,6 +1069,7 @@ html {
   height: var(--size);
 }
 
+  
 .circle-progress-svg {
   transform: rotate(-90deg);
 }
@@ -1059,6 +1080,7 @@ html {
   stroke-width: var(--stroke-width);
 }
 
+  
 .circle-progress-fill {
   fill: none;
   stroke: var(--primary);
@@ -1566,4 +1588,5 @@ input, textarea {
     background: radial-gradient(circle at top, #0a0a0a 0%, #000 100%);
   }
 }
+
 
