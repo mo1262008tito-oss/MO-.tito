@@ -8,7 +8,7 @@ import CryptoJS from 'crypto-js';
 import {
   // الأمان والتحقق
   Shield, ShieldCheck, ShieldAlert, ShieldQuestion, Fingerprint,
-  Lock, Unlock, Key, UserCheck, UserPlus, Zap, ZapOff,
+  Lock, Unlock, Key, UserCheck, UserPlus, Zap, ZapOff, Camera,
   // الإحصائيات والبيانات
   BarChart3, TrendingUp, Activity, Cpu, Database,
   HardDrive, Layers, Target, Award,
@@ -4274,4 +4274,5 @@ const AnalyticsUI = ({ stats, radarStats, securityLogs, chartData, pieData, setT
     </div>
   );
 }
+
 
