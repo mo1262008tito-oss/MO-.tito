@@ -15,100 +15,452 @@ import {
 // 🌌 THE TITAN COLOSSUS CSS (ULTRA-PREMIUM 2026)
 // ==========================================================
 const TitanStyles = () => (
-  <style dangerouslySetInnerHTML={{ __html: `
+<style dangerouslySetInnerHTML={{ __html: `
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;400;700;900&family=Orbitron:wght@400;600;900&family=Syncopate:wght@400;700&display=swap');
 
     :root {
       --titan-blue: #3b82f6;
       --titan-cyan: #00f2ff;
       --titan-gold: #fbbf24;
+      --titan-purple: #8b5cf6;
       --titan-bg: #010409;
       --glass: rgba(15, 23, 42, 0.6);
-      --border: rgba(255, 255, 255, 0.05);
+      --border-glow: rgba(59, 130, 246, 0.3);
     }
 
+    /* 1. نظام الإضاءة المحيطة - World Lighting */
     body {
       background: var(--titan-bg);
-      color: #f8fafc;
-      font-family: 'Cairo', sans-serif;
-      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 40%);
       cursor: crosshair;
     }
 
-    .orbitron { font-family: 'Orbitron', sans-serif; }
-    .syncopate { font-family: 'Syncopate', sans-serif; }
-
-    /* 💎 Advanced Holographic Tech */
+    /* 2. تأثير الهولوجرام العالي الدقة - Ultra-HD Hologram */
     .colossus-card {
-      background: var(--glass);
-      backdrop-filter: blur(40px) saturate(200%);
-      border: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+      backdrop-filter: blur(30px) saturate(150%);
+      border: 1px solid rgba(255, 255, 255, 0.05);
       position: relative;
       overflow: hidden;
-      box-shadow: 0 40px 100px -20px rgba(0,0,0,0.8);
-      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .colossus-card::before {
       content: '';
       position: absolute;
-      top: -150%; left: -150%; width: 300%; height: 300%;
-      background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%);
-      animation: rotate-slow 20s linear infinite;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+      transform: translateX(-100%);
+      transition: 0.6s;
     }
 
-    @keyframes rotate-slow {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+    .colossus-card:hover {
+      transform: translateY(-15px) scale(1.03) rotateX(5deg);
+      border-color: var(--titan-blue);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 20px rgba(59, 130, 246, 0.2);
     }
 
-    /* 👑 The Sovereign Glow (Rank 1) */
+    .colossus-card:hover::before {
+      transform: translateX(100%);
+    }
+
+    /* 3. تأثير "توهج الإمبراطور" - The Sovereign Aura */
     .emperor-glow {
       border: 2px solid var(--titan-gold) !important;
-      box-shadow: 0 0 80px rgba(251, 191, 36, 0.2) !important;
+      background: radial-gradient(circle at top, rgba(251, 191, 36, 0.1), transparent) !important;
+      animation: pulse-gold 4s infinite alternate;
     }
 
+    @keyframes pulse-gold {
+      0% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.1); }
+      100% { box-shadow: 0 0 60px rgba(251, 191, 36, 0.3); }
+    }
+
+    /* 4. محرك الـ XP السيبراني - Cyber XP Shimmer */
     .xp-shimmer {
-      background: linear-gradient(90deg, #60a5fa, #a855f7, #00f2ff, #60a5fa);
+      background: linear-gradient(90deg, #fff, var(--titan-cyan), var(--titan-purple), #fff);
       background-size: 300% auto;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      animation: shimmer 4s linear infinite;
-      font-weight: 900;
+      animation: shimmer 5s linear infinite;
+      font-family: 'Orbitron', sans-serif;
+      text-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
     }
 
     @keyframes shimmer {
-      to { background-position: 300% center; }
+      0% { background-position: 0% center; }
+      100% { background-position: 300% center; }
     }
 
-    /* 🌊 Cyber Floor Grid */
+    /* 5. الشبكة الأرضية الثلاثية الأبعاد - 3D Cyber Grid */
     .cyber-floor {
       position: fixed;
-      inset: 0;
+      bottom: -100px;
+      width: 200%;
+      height: 400px;
       background-image: 
-        linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
-      background-size: 80px 80px;
-      mask-image: radial-gradient(circle at 50% 50%, black, transparent);
-      transform: perspective(1000px) rotateX(60deg) translateY(200px);
+        linear-gradient(var(--titan-blue) 1px, transparent 1px),
+        linear-gradient(90deg, var(--titan-blue) 1px, transparent 1px);
+      background-size: 60px 60px;
+      transform: rotateX(70deg) translateX(-25%);
+      opacity: 0.1;
       z-index: -1;
+      mask-image: linear-gradient(to top, black, transparent);
     }
 
-    /* 📱 Responsive Excellence */
-    @media (max-width: 768px) {
-      .text-giant { font-size: 3.5rem !important; }
-      .colossus-card { border-radius: 30px !important; margin-bottom: 20px; }
-    }
-
+    /* 6. تأثير الأوسمة - Badge Glitch Effect */
     .badge-chip {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.05);
-      padding: 4px 12px;
-      border-radius: 10px;
-      font-size: 10px;
-      font-weight: 900;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid var(--titan-blue);
+      color: var(--titan-cyan);
+      padding: 5px 15px;
+      border-radius: 8px;
+      font-family: 'Orbitron';
+      font-size: 9px;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      position: relative;
+    }
+
+    .badge-chip:hover {
+      background: var(--titan-blue);
+      color: white;
+      box-shadow: 0 0 15px var(--titan-blue);
+    }
+
+    /* 7. شريط التنقل الزجاجي - Frosted Nav */
+    nav {
+      background: rgba(1, 4, 9, 0.8) !important;
+      backdrop-filter: blur(20px) !important;
+      border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+    }
+
+    /* 8. محرك حركة الصور - Reflection FX */
+    .profile-img-container {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .profile-img-container::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 50%; height: 100%;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
+      transform: skewX(-25deg);
+      transition: 0.5s;
+    }
+
+    .colossus-card:hover .profile-img-container::after {
+      left: 150%;
+    }
+
+    /* 9. قسم الطامحين - Strivers Neo-Glass */
+    .strivers-panel {
+      background: rgba(255,255,255,0.01);
+      border: 1px dashed rgba(255,255,255,0.1);
+      border-radius: 40px;
+      padding: 40px;
+      position: relative;
+    }
+
+    /* 10. شريط التمرير المخصص - Titan Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--titan-bg); }
+    ::-webkit-scrollbar-thumb { 
+      background: linear-gradient(transparent, var(--titan-blue), transparent);
+      border-radius: 10px;
+    }
+
+    /* 11. تأثير النص العملاق - Giant Background Text */
+    .bg-text-giant {
+      position: absolute;
+      font-size: 20vw;
+      font-weight: 900;
+      color: rgba(255,255,255,0.02);
+      z-index: -1;
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    /* 12. حركات التحميل - Loading States */
+    .loading-pulse {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+      from { background-position: 200% 0; }
+      to { background-position: -200% 0; }
+    }
+    /* 13. تأثير هالة الطاقة للمركز الأول - Power Halo */
+    .colossus-card.emperor-glow::after {
+      content: '';
+      position: absolute;
+      inset: -5px;
+      background: linear-gradient(45deg, #fbbf24, #f59e0b, #fbbf24);
+      border-radius: 50px;
+      filter: blur(15px);
+      z-index: -1;
+      opacity: 0.5;
+    }
+
+    /* 14. نظام "التفاعل بالمؤشر" - Mouse Spotlight FX */
+    .colossus-card:hover::before {
+      background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(59, 130, 246, 0.15), transparent 40%);
+    }
+
+    /* 15. حركات التحفيز لنادي الطامحين - Striver Hover Pulse */
+    .strivers-panel .group:hover {
+      border-color: var(--titan-blue);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+      transform: scale(1.01);
+    }
+
+    /* 16. الوهج السيبراني للنصوص - Cyber Text Glow */
+    .font-black, .orbitron {
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+
+    /* 17. تأثير العد التنازلي - Countdown Glitch */
+    .countdown-text {
+      font-family: 'Syncopate', sans-serif;
+      color: var(--titan-cyan);
+      text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+    }
+
+    /* 18. تخصيص صور الطلاب - Avatar Perfection */
+    .colossus-card img {
+      transition: transform 0.5s ease;
+    }
+
+    .colossus-card:hover img {
+      transform: scale(1.1) rotate(2deg);
+    }
+
+    /* 19. تأثير "الدعم" - Support Button Shine */
+    .support-btn {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .support-btn::after {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%; width: 200%; height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+      transform: rotate(45deg);
+      transition: 0.5s;
+    }
+
+    .support-btn:hover::after {
+      left: 100%;
+    }
+
+    /* 20. تحسين الأداء على الهواتف - Mobile Optimization */
+    @media (max-width: 640px) {
+      .syncopate { font-size: 2rem !important; }
+      .colossus-card { padding: 20px !important; }
+    }
+
+    /* ========================================================== */
+    /* 📱 300+ LINES OF TITAN RESPONSIVE & ELITE FX (2026 EDITION) */
+    /* ========================================================== */
+
+    /* 21. نظام السيولة البصرية (Visual Fluidity) */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      scroll-behavior: smooth;
+    }
+
+    /* 22. استجابة الهواتف الذكية (Mobile Core Optimization) */
+    @media (max-width: 480px) {
+      .container { padding: 0 12px !important; }
+      
+      /* تصغير النصوص العملاقة لتناسب الشاشة الصغيرة */
+      .syncopate.text-6xl, .syncopate.text-giant { 
+        font-size: 2.8rem !important; 
+        letter-spacing: -2px !important;
+      }
+
+      /* تحويل البطاقات لنظام الصف الواحد بلمسة فخمة */
+      .colossus-card {
+        padding: 25px 15px !important;
+        border-radius: 25px !important;
+        margin-bottom: 30px !important;
+      }
+
+      .colossus-card.emperor-glow {
+        transform: scale(1) !important; /* إلغاء التكبير المفرط في الموبايل لثبات العرض */
+      }
+
+      /* إخفاء العناصر غير الضرورية لتسريع الأداء */
+      .cyber-floor { opacity: 0.05 !important; }
+      .bg-text-giant { display: none; }
+    }
+
+    /* 23. توافق الأجهزة المتوسطة (Tablets & Foldables) */
+    @media (min-width: 481px) and (max-width: 1024px) {
+      .grid-cols-5 {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+      .colossus-card.emperor-glow {
+        grid-column: span 2;
+      }
+    }
+
+    /* 24. تأثير "زجاج النيون" المتطور (Advanced Neon Glass) */
+    .strivers-panel {
+      box-shadow: 
+        inset 0 0 50px rgba(59, 130, 246, 0.05),
+        0 20px 50px rgba(0,0,0,0.5);
+      border: 1px solid rgba(59, 130, 246, 0.1) !important;
+    }
+
+    /* 25. نظام الحركة "البارالكس" للصور (Avatar Parallax) */
+    .avatar-wrapper {
+      perspective: 1000px;
+    }
+
+    .avatar-wrapper:hover img {
+      transform: rotateY(15deg) rotateX(10deg) scale(1.1);
+      box-shadow: -10px 10px 30px rgba(0,0,0,0.5);
+    }
+
+    /* 26. ميزة "النبض المعلوماتي" (Data Pulse) */
+    .xp-shimmer::after {
+      content: ' UP';
+      font-size: 10px;
+      vertical-align: top;
+      opacity: 0.5;
+      animation: pulse-up 1s ease-out infinite;
+    }
+
+    @keyframes pulse-up {
+      0% { opacity: 0; transform: translateY(0); }
+      50% { opacity: 1; }
+      100% { opacity: 0; transform: translateY(-10px); }
+    }
+
+    /* 27. مظهر "زر الدعم" المستقبلي (Striver Action Button) */
+    .group:hover .support-btn-icon {
+      animation: rocket-launch 0.8s cubic-bezier(0.95, 0.05, 0.795, 0.035);
+    }
+
+    @keyframes rocket-launch {
+      0% { transform: translateY(0); }
+      30% { transform: translateY(5px); }
+      100% { transform: translateY(-50px); opacity: 0; }
+    }
+
+    /* 28. تحسين شريط البحث (Cyber Search Input) */
+    input::placeholder {
+      color: rgba(255,255,255,0.2);
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 2px;
+    }
+
+    /* 29. تأثير "الغبار الكوني" (Cosmic Dust Particles) */
+    .particle-bg {
+      position: absolute;
+      width: 2px; height: 2px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--titan-blue);
+      animation: float-particle 20s linear infinite;
+    }
+
+    @keyframes float-particle {
+      from { transform: translateY(0); }
+      to { transform: translateY(-100vh); }
+    }
+
+    /* 30. نظام "البروز المغناطيسي" (Magnetic Pop) */
+    .badge-chip {
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .badge-chip:active {
+      transform: scale(0.9);
+      background: var(--titan-gold);
+      color: black;
+    }
+
+    /* 31. حماية المحتوى عند عدم وجود طلاب (Empty State FX) */
+    .empty-state-glow {
+      filter: grayscale(1) opacity(0.2);
+      animation: ghost-float 3s ease-in-out infinite;
+    }
+
+    @keyframes ghost-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    /* 32. تحسينات التمرير الأفقي للجوال (Horizontal Swipe Hint) */
+    .mobile-scroll-hint {
+      display: none;
+    }
+    @media (max-width: 640px) {
+      .mobile-scroll-hint {
+        display: block;
+        text-align: center;
+        color: var(--titan-blue);
+        font-size: 10px;
+        margin-bottom: 20px;
+        animation: side-to-side 2s infinite;
+      }
+    }
+
+    @keyframes side-to-side {
+      0%, 100% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+    }
+
+    /* 33. تأثير "تشتت النيون" عند الحواف (Neon Edge Blur) */
+    .edge-glow-top {
+      position: fixed;
+      top: 0; left: 0; right: 0; height: 100px;
+      background: linear-gradient(to bottom, var(--titan-blue), transparent);
+      opacity: 0.05;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* 34. نظام "بطاقة التميز" (Elite Border FX) */
+    .elite-border {
+      position: relative;
+    }
+    .elite-border::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      background: linear-gradient(45deg, var(--titan-blue), var(--titan-purple), var(--titan-gold));
+      z-index: -1;
+      border-radius: inherit;
+      animation: border-rotate 4s linear infinite;
+    }
+
+    @keyframes border-rotate {
+      0% { filter: hue-rotate(0deg); }
+      100% { filter: hue-rotate(360deg); }
+    }
+
+    /* 35. الـ Footer الرقمي المطور (Footer 2.0) */
+    footer p {
+      text-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    footer:hover p {
+      color: var(--titan-cyan);
+      letter-spacing: 1.8em !important;
     }
   ` }} />
 );
@@ -370,189 +722,7 @@ const HallOfLegends = () => {
             <div className="w-1 h-1 bg-blue-600 rounded-full" />
          </div>
       </footer>
-<style dangerouslySetInnerHTML={{ __html: `
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;400;700;900&family=Orbitron:wght@400;600;900&family=Syncopate:wght@400;700&display=swap');
 
-    :root {
-      --titan-blue: #3b82f6;
-      --titan-cyan: #00f2ff;
-      --titan-gold: #fbbf24;
-      --titan-purple: #8b5cf6;
-      --titan-bg: #010409;
-      --glass: rgba(15, 23, 42, 0.6);
-      --border-glow: rgba(59, 130, 246, 0.3);
-    }
-
-    /* 1. نظام الإضاءة المحيطة - World Lighting */
-    body {
-      background: var(--titan-bg);
-      background-image: 
-        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 40%),
-        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 40%);
-      cursor: crosshair;
-    }
-
-    /* 2. تأثير الهولوجرام العالي الدقة - Ultra-HD Hologram */
-    .colossus-card {
-      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
-      backdrop-filter: blur(30px) saturate(150%);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      position: relative;
-      overflow: hidden;
-      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .colossus-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-      transform: translateX(-100%);
-      transition: 0.6s;
-    }
-
-    .colossus-card:hover {
-      transform: translateY(-15px) scale(1.03) rotateX(5deg);
-      border-color: var(--titan-blue);
-      box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 20px rgba(59, 130, 246, 0.2);
-    }
-
-    .colossus-card:hover::before {
-      transform: translateX(100%);
-    }
-
-    /* 3. تأثير "توهج الإمبراطور" - The Sovereign Aura */
-    .emperor-glow {
-      border: 2px solid var(--titan-gold) !important;
-      background: radial-gradient(circle at top, rgba(251, 191, 36, 0.1), transparent) !important;
-      animation: pulse-gold 4s infinite alternate;
-    }
-
-    @keyframes pulse-gold {
-      0% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.1); }
-      100% { box-shadow: 0 0 60px rgba(251, 191, 36, 0.3); }
-    }
-
-    /* 4. محرك الـ XP السيبراني - Cyber XP Shimmer */
-    .xp-shimmer {
-      background: linear-gradient(90deg, #fff, var(--titan-cyan), var(--titan-purple), #fff);
-      background-size: 300% auto;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: shimmer 5s linear infinite;
-      font-family: 'Orbitron', sans-serif;
-      text-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
-    }
-
-    @keyframes shimmer {
-      0% { background-position: 0% center; }
-      100% { background-position: 300% center; }
-    }
-
-    /* 5. الشبكة الأرضية الثلاثية الأبعاد - 3D Cyber Grid */
-    .cyber-floor {
-      position: fixed;
-      bottom: -100px;
-      width: 200%;
-      height: 400px;
-      background-image: 
-        linear-gradient(var(--titan-blue) 1px, transparent 1px),
-        linear-gradient(90deg, var(--titan-blue) 1px, transparent 1px);
-      background-size: 60px 60px;
-      transform: rotateX(70deg) translateX(-25%);
-      opacity: 0.1;
-      z-index: -1;
-      mask-image: linear-gradient(to top, black, transparent);
-    }
-
-    /* 6. تأثير الأوسمة - Badge Glitch Effect */
-    .badge-chip {
-      background: rgba(59, 130, 246, 0.1);
-      border: 1px solid var(--titan-blue);
-      color: var(--titan-cyan);
-      padding: 5px 15px;
-      border-radius: 8px;
-      font-family: 'Orbitron';
-      font-size: 9px;
-      text-transform: uppercase;
-      position: relative;
-    }
-
-    .badge-chip:hover {
-      background: var(--titan-blue);
-      color: white;
-      box-shadow: 0 0 15px var(--titan-blue);
-    }
-
-    /* 7. شريط التنقل الزجاجي - Frosted Nav */
-    nav {
-      background: rgba(1, 4, 9, 0.8) !important;
-      backdrop-filter: blur(20px) !important;
-      border-bottom: 1px solid rgba(255,255,255,0.05) !important;
-    }
-
-    /* 8. محرك حركة الصور - Reflection FX */
-    .profile-img-container {
-      position: relative;
-      overflow: hidden;
-    }
-
-    .profile-img-container::after {
-      content: '';
-      position: absolute;
-      top: 0; left: -100%; width: 50%; height: 100%;
-      background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
-      transform: skewX(-25deg);
-      transition: 0.5s;
-    }
-
-    .colossus-card:hover .profile-img-container::after {
-      left: 150%;
-    }
-
-    /* 9. قسم الطامحين - Strivers Neo-Glass */
-    .strivers-panel {
-      background: rgba(255,255,255,0.01);
-      border: 1px dashed rgba(255,255,255,0.1);
-      border-radius: 40px;
-      padding: 40px;
-      position: relative;
-    }
-
-    /* 10. شريط التمرير المخصص - Titan Scrollbar */
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: var(--titan-bg); }
-    ::-webkit-scrollbar-thumb { 
-      background: linear-gradient(transparent, var(--titan-blue), transparent);
-      border-radius: 10px;
-    }
-
-    /* 11. تأثير النص العملاق - Giant Background Text */
-    .bg-text-giant {
-      position: absolute;
-      font-size: 20vw;
-      font-weight: 900;
-      color: rgba(255,255,255,0.02);
-      z-index: -1;
-      pointer-events: none;
-      user-select: none;
-      white-space: nowrap;
-    }
-
-    /* 12. حركات التحميل - Loading States */
-    .loading-pulse {
-      width: 100%;
-      height: 200px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-      background-size: 200% 100%;
-      animation: loading 1.5s infinite;
-    }
-
-    @keyframes loading {
-      from { background-position: 200% 0; }
-      to { background-position: -200% 0; }
-    }
-  ` }} />
     </div>
   );
 };
