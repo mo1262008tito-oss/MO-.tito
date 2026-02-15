@@ -7,7 +7,7 @@ import React, {
   useLayoutEffect 
 } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import './HighSchool.css'; // تأكد من ربط الملف هنا
+
 // استيراد مكتبات Firebase الأساسية
 import { db, auth, storage } from '../firebase';
 import { 
@@ -41,7 +41,7 @@ import {
   LayoutDashboard, BellDot, ShieldCheck, UserCheck, Briefcase, FileText,
   MapPin, Phone, Mail, Globe, Cpu, Database, CloudLightning
 } from 'lucide-react';
-
+import './HighSchool.css';
 // --- الثوابت والبيانات الثابتة للنظام (Constants) ---
 const STAGES = ['ابتدائي', 'اعدادي', 'ثانوي'];
 const GRADES = {
@@ -1054,6 +1054,7 @@ const HighSchool = () => {
 };
 
 export default HighSchool;
+
 
 
 
