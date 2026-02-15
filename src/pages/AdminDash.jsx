@@ -28,9 +28,8 @@ import {
   Eye, Monitor, Smartphone, BrainCircuit, Wallet,
   ShoppingBag, Webhook, Printer, Star, Shuffle,
   Sparkles, FileLock, PackageSearch, Banknote, TrendingDown,
-  Loader, ArrowRight, Trophy, QrCode, PlayCircle, Link, EyeOff, CloudLightning, CloudUpload, GraduationCap, Settings2, Minus
+  Loader, ArrowRight, Trophy, QrCode, PlayCircle, Link, EyeOff, CloudLightning, GraduationCap, Settings2, Minus
 } from 'lucide-react';
-
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell,
@@ -4275,3 +4274,4 @@ const AnalyticsUI = ({ stats, radarStats, securityLogs, chartData, pieData, setT
     </div>
   );
 }
+
