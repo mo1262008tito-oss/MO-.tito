@@ -1,746 +1,170 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useSpring, useTransform, useMotionValue } from 'framer-motion';
-import { db, auth } from '../firebase';
+import { db } from '../firebase';
+import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { 
-  collection, query, orderBy, limit, onSnapshot, doc, updateDoc, increment 
-} from 'firebase/firestore';
-import { 
-  Trophy, Crown, Zap, Flame, Star, ShieldCheck, Rocket, Cpu, 
-  Target, Award, Globe, Heart, ChevronUp, Search, Sparkles, 
-  Share2, Medal, UserCheck, TrendingUp, Radio, Fingerprint,
-  ZapOff, Lock, Ghost, Box, Activity, Command
+  Trophy, Crown, Zap, Target, Medal, ShieldCheck, 
+  Search, TrendingUp, TrendingDown, Fingerprint, Activity, Box, 
+  Ghost, Cpu, Lock, ZapOff, Heart, Command, Eye, Share2, MoreHorizontal 
 } from 'lucide-react';
-// ==========================================================
-// 🌌 THE TITAN COLOSSUS ULTIMATE CSS (MEGA EDITION 2026)
-// ==========================================================
-const TitanStyles = () => (
-<style dangerouslySetInnerHTML={{ __html: `
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;400;700;900&family=Orbitron:wght@400;600;900&family=Syncopate:wght@400;700&display=swap');
+import confetti from 'canvas-confetti'; // npm install canvas-confetti (Optional, logic included)
+import './TitanV3.css';
 
-    /* 1. المتغيرات المركزية - Global Variables */
-    :root {
-      --titan-blue: #3b82f6;
-      --titan-cyan: #00f2ff;
-      --titan-gold: #fbbf24;
-      --titan-purple: #8b5cf6;
-      --titan-red: #ef4444;
-      --titan-bg: #010409;
-      --glass: rgba(15, 23, 42, 0.7);
-      --card-gradient: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
-      --glow-blue: 0 0 20px rgba(59, 130, 246, 0.4);
-      --glow-gold: 0 0 40px rgba(251, 191, 36, 0.4);
-      --ease-titan: cubic-bezier(0.16, 1, 0.3, 1);
-    }
-/* ========================================================== */
-    /* 🌌 THE COLOSSUS ARCHITECTURE - MEGA CSS UPDATE 2026       */
-    /* ========================================================== */
+// ==========================================
+// 🖱️ CUSTOM CURSOR COMPONENT
+// ==========================================
+const CustomCursor = () => {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [hovered, setHovered] = useState(false);
 
-    /* 1. إعدادات الصفحة الأساسية - Global Body Logic */
-    body {
-      background-color: var(--titan-bg);
-      color: #fff;
-      font-family: 'Cairo', sans-serif;
-      overflow-x: hidden;
-      cursor: crosshair; /* تغيير الماوس لنمط استهدافي */
-    }
-
-    .syncopate { font-family: 'Syncopate', sans-serif; }
-    .orbitron { font-family: 'Orbitron', sans-serif; }
-
-    /* 2. هندسة الأرضية الرقمية - Cyber Floor */
-    .cyber-floor {
-      position: fixed;
-      bottom: 0; left: 0; width: 100%; height: 40vh;
-      background: linear-gradient(to top, rgba(59, 130, 246, 0.05) 0%, transparent 100%);
-      mask-image: radial-gradient(ellipse at center, black, transparent 80%);
-      z-index: -1;
-      perspective: 1000px;
-    }
-
-    .cyber-floor::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: 
-        linear-gradient(rgba(59, 130, 246, 0.2) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(59, 130, 246, 0.2) 1px, transparent 1px);
-      background-size: 50px 50px;
-      transform: rotateX(45deg);
-      animation: floor-flow 20s linear infinite;
-    }
-
-    @keyframes floor-flow {
-      to { background-position: 0 1000px; }
-    }
-
-    /* 3. هندسة البطاقة العملاقة - Colossus Card Spec */
-    .colossus-card {
-      position: relative;
-      background: var(--glass);
-      backdrop-filter: blur(25px) saturate(200%);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-      transition: all 0.6s var(--ease-titan);
-    }
-
-    .colossus-card:hover {
-      border-color: var(--titan-blue);
-      transform: translateY(-10px) scale(1.02);
-      box-shadow: 0 0 40px rgba(59, 130, 246, 0.2);
-    }
-
-    /* 4. وهج الإمبراطور (المركز الأول) - Emperor Glow */
-    .emperor-glow {
-      background: linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(15, 23, 42, 0.9) 100%) !important;
-      border: 1px solid rgba(251, 191, 36, 0.3) !important;
-      z-index: 100;
-    }
-
-    .emperor-glow::before {
-      content: '';
-      position: absolute;
-      inset: -2px;
-      background: linear-gradient(45deg, var(--titan-gold), transparent, var(--titan-gold));
-      border-radius: inherit;
-      z-index: -1;
-      animation: border-rotate 4s linear infinite;
-      opacity: 0.5;
-    }
-
-    @keyframes border-rotate {
-      0% { filter: hue-rotate(0deg); }
-      100% { filter: hue-rotate(360deg); }
-    }
-
-    /* 5. تأثير الـ XP المتوهج - XP Shimmer Effect */
-    .xp-shimmer {
-      font-family: 'Orbitron', sans-serif;
-      font-weight: 900;
-      background: linear-gradient(90deg, #fff, var(--titan-blue), #fff);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: shimmer 3s linear infinite;
-      filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
-    }
-
-    @keyframes shimmer {
-      to { background-position: 200% center; }
-    }
-
-    /* 6. رقائق الأوسمة - Badge Chips */
-    .badge-chip {
-      padding: 4px 12px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 100px;
-      font-size: 9px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--titan-blue);
-    }
-
-    /* 7. شريط الأخبار المتحرك السفلي - Global Ticker Marquee */
-    .animate-marquee {
-      display: flex;
-      animation: marquee 40s linear infinite;
-    }
-
-    @keyframes marquee {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-
-    /* 8. هندسة المدخلات (Search Input) */
-    input::placeholder {
-      color: rgba(255, 255, 255, 0.2);
-      text-transform: uppercase;
-      font-size: 10px;
-      letter-spacing: 2px;
-    }
-
-    /* 9. نظام الجزيئات المتحركة (Background Blobs) */
-    .blur-blob {
-      filter: blur(150px);
-      mix-blend-mode: screen;
-      opacity: 0.3;
-      animation: blob-float 20s infinite alternate;
-    }
-
-    @keyframes blob-float {
-      from { transform: translate(0, 0) scale(1); }
-      to { transform: translate(100px, 50px) scale(1.2); }
-    }
-
-    /* 10. تصميم الـ Scrollbar الحربي */
-    ::-webkit-scrollbar {
-      width: 5px;
-    }
-    ::-webkit-scrollbar-track {
-      background: var(--titan-bg);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: var(--titan-blue);
-      border-radius: 10px;
-      box-shadow: var(--glow-blue);
-    }
-
-    /* 11. تأثير "النبض النيون" للأيقونات */
-    .animate-pulse-cyan {
-      animation: pulse-cyan 2s infinite;
-    }
-
-    @keyframes pulse-cyan {
-      0% { filter: drop-shadow(0 0 2px var(--titan-blue)); }
-      50% { filter: drop-shadow(0 0 15px var(--titan-blue)); }
-      100% { filter: drop-shadow(0 0 2px var(--titan-blue)); }
-    }
-
-    /* 12. تحسينات الموبايل المتطرفة */
-    @media (max-width: 768px) {
-      .syncopate { font-size: 2.5rem !important; }
-      .colossus-card { padding: 30px 15px !important; margin-top: 20px !important; }
-      .emperor-glow { transform: scale(1) !important; }
-      .container { padding: 0 20px !important; }
-    }
-
-    /* 13. نظام "توزيع الضوء" للحواف */
-    .border-white\/5 {
-      border-color: rgba(255, 255, 255, 0.05) !important;
-    }
-
-    /* 14. تأثير "اللمعان المعدني" للصور */
-    img {
-      filter: grayscale(20%) contrast(110%);
-      transition: 0.5s;
-    }
-    .group:hover img {
-      filter: grayscale(0%) contrast(120%);
-      transform: scale(1.1);
-    }
-
-    /* 15. نظام الـ "View Arsenal" Button */
-    button {
-      position: relative;
-      overflow: hidden;
-    }
-    button::after {
-      content: '';
-      position: absolute;
-      top: -50%; left: -50%; width: 200%; height: 200%;
-      background: linear-gradient(transparent, rgba(255,255,255,0.1), transparent);
-      transform: rotate(45deg);
-      transition: 0.5s;
-    }
-    button:hover::after {
-      left: 100%;
-    }
-/* ========================================================== */
-    /* 🛡️ THE TITAN COLOSSUS - ARCHITECTURE PHASE 2 (FINAL OVERLOAD) */
-    /* ========================================================== */
-
-    /* 1. نظام "توهج العرش" للمركز الأول - Emperor Sovereign Logic */
-    .emperor-glow {
-      position: relative;
-      background: radial-gradient(circle at top right, rgba(251, 191, 36, 0.15), transparent 60%) !important;
-      border: 2px solid rgba(251, 191, 36, 0.4) !important;
-      box-shadow: 
-        0 0 50px rgba(251, 191, 36, 0.1),
-        inset 0 0 20px rgba(251, 191, 36, 0.05) !important;
-    }
-
-    .emperor-glow::after {
-      content: 'SOVEREIGN UNIT';
-      position: absolute;
-      top: -15px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--titan-gold);
-      color: #000;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 8px;
-      font-weight: 900;
-      padding: 2px 12px;
-      border-radius: 4px;
-      letter-spacing: 2px;
-      box-shadow: 0 0 15px var(--titan-gold);
-    }
-
-    /* 2. هندسة "الدرع الضوئي" للبطاقات - Colossus Card Mechanics */
-    .colossus-card {
-      overflow: hidden;
-      backdrop-filter: blur(30px) saturate(180%) !important;
-      -webkit-backdrop-filter: blur(30px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-    }
-
-    .colossus-card::before {
-      content: '';
-      position: absolute;
-      top: -50%; left: -50%;
-      width: 200%; height: 200%;
-      background: conic-gradient(
-        from 0deg,
-        transparent 0%,
-        rgba(59, 130, 246, 0.1) 25%,
-        transparent 50%
-      );
-      animation: rotate-scanner 10s linear infinite;
-      pointer-events: none;
-    }
-
-    @keyframes rotate-scanner {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    /* 3. تأثير "البريق المعدني" للنقاط - XP Shimmer Master */
-    .xp-shimmer {
-      font-family: 'Orbitron', sans-serif;
-      font-weight: 900;
-      font-size: 2.5rem;
-      background: linear-gradient(
-        to right, 
-        #ffffff 20%, 
-        var(--titan-cyan) 40%, 
-        var(--titan-blue) 60%, 
-        #ffffff 80%
-      );
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: xp-wave 4s linear infinite;
-      filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.3));
-    }
-
-    @keyframes xp-wave {
-      to { background-position: 200% center; }
-    }
-
-    /* 4. نظام "الرقائق الرقمية" - Badge Chip Aesthetics */
-    .badge-chip {
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      padding: 6px 14px;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--titan-cyan);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
-      transition: 0.3s;
-    }
-
-    .badge-chip:hover {
-      background: var(--titan-blue);
-      color: #fff;
-      box-shadow: 0 0 15px var(--titan-blue);
-    }
-
-    /* 5. ميكانيكا الـ "Search" المتقدمة - Tactical Search Engine */
-    input[type="text"] {
-      background: rgba(15, 23, 42, 0.8) !important;
-      border: 1px solid rgba(59, 130, 246, 0.2) !important;
-      color: #fff !important;
-      font-family: 'Cairo', sans-serif;
-      box-shadow: inset 0 2px 15px rgba(0,0,0,0.5);
-      transition: all 0.4s var(--ease-titan);
-    }
-
-    input[type="text"]:focus {
-      border-color: var(--titan-cyan) !important;
-      box-shadow: 0 0 25px rgba(0, 242, 255, 0.15), inset 0 2px 15px rgba(0,0,0,0.5);
-      transform: scale(1.02);
-    }
-
-    /* 6. نظام "شريط الأنباء" - Global Ticker Marquee Logic */
-    .animate-marquee {
-      display: inline-flex;
-      white-space: nowrap;
-      animation: marquee-move 60s linear infinite;
-    }
-
-    @keyframes marquee-move {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-
-    /* 7. تأثير "النبض الحيوي" للأيقونات - Bio-Pulse FX */
-    .animate-pulse {
-      animation: titan-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-
-    @keyframes titan-pulse {
-      0%, 100% { opacity: 1; transform: scale(1); filter: brightness(1); }
-      50% { opacity: .7; transform: scale(1.1); filter: brightness(1.5); }
-    }
-
-    /* 8. هندسة "الخلفية العميقة" - Deep Nebula Background */
-    .fixed.top-0.left-0 {
-      background: radial-gradient(circle at 50% 50%, #020617 0%, #000 100%);
-    }
-
-    /* 9. نظام الـ "Arsenal" Button - Tactical Button Spec */
-    .group:hover .py-4 {
-      background: linear-gradient(90deg, var(--titan-blue), var(--titan-purple)) !important;
-      color: #fff !important;
-      border-color: transparent !important;
-      letter-spacing: 5px;
-      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
-    }
-
-    /* 10. هندسة القائمة الجانبية (The Strivers) */
-    .strivers-list-item {
-      position: relative;
-      background: linear-gradient(90deg, rgba(255,255,255,0.01) 0%, transparent 100%);
-      border: 1px solid rgba(255,255,255,0.05);
-      border-right: 4px solid transparent;
-      transition: 0.4s;
-    }
-
-    .strivers-list-item:hover {
-      border-right-color: var(--titan-blue);
-      background: rgba(59, 130, 246, 0.05);
-      padding-right: 40px !important;
-    }
-
-    /* 11. نظام "التعرف الرقمي" لصور المستخدمين */
-    img.object-cover {
-      filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
-      mask-image: linear-gradient(to bottom, black 90%, transparent);
-      -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent);
-    }
-
-    /* 12. تأثير "الغبار الكوني" - Space Dust Particles */
-    .container::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background-image: radial-gradient(white 1px, transparent 1px);
-      background-size: 100px 100px;
-      opacity: 0.03;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    /* 13. تطوير الـ Navigation - Header Protocol */
-    nav.backdrop-blur-3xl {
-      background: rgba(1, 4, 9, 0.7) !important;
-      border-bottom: 1px solid rgba(59, 130, 246, 0.1) !important;
-    }
-
-    /* 14. نظام "عداد المسافة" - Distance Gauge */
-    .text-gray-600.uppercase {
-      letter-spacing: 2px;
-      color: var(--titan-blue) !important;
-      opacity: 0.6;
-    }
-
-    /* 15. اللمسة النهائية - Final Alpha Border */
-    * {
-      scrollbar-width: thin;
-      scrollbar-color: var(--titan-blue) transparent;
-    }
-
-    /* ========================================================== */
-    /* 🚀 THE ULTIMATE 50 - TITAN COLOSSUS ARCHITECTURE (PART 12) */
-    /* ========================================================== */
-
-    /* [1-5] ميزات "التحكم السيادي" للهوية - Sovereign Identity */
-    .emperor-glow .w-36 {
-      box-shadow: 0 0 50px rgba(251, 191, 36, 0.4), inset 0 0 20px rgba(251, 191, 36, 0.5);
-      filter: drop-shadow(0 0 10px var(--titan-gold));
-      animation: identity-pulse 4s ease-in-out infinite;
-    }
-    @keyframes identity-pulse {
-      0%, 100% { transform: scale(1); filter: brightness(1); }
-      50% { transform: scale(1.05); filter: brightness(1.3); }
-    }
-
-    /* [6-10] هندسة الـ "Arsenal" Button - Tactical Interaction */
-    .colossus-card button {
-      position: relative;
-      background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), transparent);
-      border: 1px solid rgba(59, 130, 246, 0.2);
-      clip-path: polygon(0% 0%, 90% 0%, 100% 30%, 100% 100%, 10% 100%, 0% 70%);
-      transition: 0.4s all var(--ease-titan);
-    }
-    .colossus-card button:hover {
-      background: var(--titan-blue);
-      box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
-      letter-spacing: 3px;
-      color: white;
-    }
-
-    /* [11-15] نظام الـ "Scan-Line" للبطاقات - Security Layer */
-    .colossus-card::after {
-      content: "";
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(59, 130, 246, 0.03) 1px, rgba(59, 130, 246, 0.03) 2px);
-      pointer-events: none;
-    }
-
-    /* [16-20] هندسة "عداد المسافة" - Distance Gauge FX */
-    .text-white.font-black {
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-      background: linear-gradient(to bottom, #fff, #64748b);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    /* [21-25] نظام "الزاوية الحربية" - Tactical Brackets */
-    .colossus-card::before {
-      content: "[ ]";
-      position: absolute;
-      top: 10px; left: 10px;
-      font-family: 'Orbitron';
-      color: var(--titan-blue);
-      font-size: 10px;
-      opacity: 0.3;
-    }
-
-    /* [26-30] ميزة "توهج الحافة المشتعل" - Edge Flare */
-    .emperor-glow {
-      border-image: conic-gradient(from 0deg, var(--titan-gold), transparent, var(--titan-gold)) 1;
-      animation: border-flare-rotate 6s linear infinite;
-    }
-    @keyframes border-flare-rotate {
-      to { filter: hue-rotate(360deg); }
-    }
-
-    /* [31-35] نظام "شريط الأنباء السفلي" - Hyper Marquee */
-    .fixed.bottom-0 {
-      background: rgba(59, 130, 246, 0.9);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
-    }
-    .animate-marquee span {
-      text-shadow: 0 0 5px rgba(255,255,255,0.5);
-    }
-
-    /* [36-40] هندسة "أيقونة الصعود" - Striver Zap Effect */
-    .striver-row .bg-blue-600 {
-      box-shadow: 0 0 15px var(--titan-blue);
-      animation: zap-spin 3s linear infinite;
-    }
-    @keyframes zap-spin {
-      0% { transform: rotate(0deg) scale(1); }
-      50% { transform: rotate(180deg) scale(1.2); }
-      100% { transform: rotate(360deg) scale(1); }
-    }
-
-    /* [41-45] نظام "الخلفية العميقة" - Nebula Deep Space */
-    .fixed.top-0.left-0 {
-      background-image: 
-        radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 40%),
-        radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.05) 0%, transparent 40%);
-    }
-
-    /* [46-50] ميزة "الشفافية المتفاعلة" - Reactive Glass */
-    .colossus-card {
-      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.4) 100%);
-      transform-style: preserve-3d;
-    }
-    .colossus-card:hover .xp-shimmer {
-      transform: translateZ(20px);
-      transition: 0.3s;
-    }
-
-    /* إضافات دقيقة للكلاسات - Micro-Class Injection */
-    .syncopate { letter-spacing: -0.05em; }
-    .orbitron { letter-spacing: 2px; }
-    .badge-chip { 
-      background: rgba(59, 130, 246, 0.1) !important; 
-      border-color: rgba(59, 130, 246, 0.3) !important;
-    }
-    .container { position: relative; z-index: 10; }
+  useEffect(() => {
+    const move = (e) => setMousePos({ x: e.clientX, y: e.clientY });
+    const addHover = () => setHovered(true);
+    const removeHover = () => setHovered(false);
     
-    /* تأثير "التحميل الرقمي" - Digital Load Trace */
-    .w-20.h-1.bg-blue-600 {
-      box-shadow: 0 0 20px var(--titan-blue);
-      animation: width-grow 2s var(--ease-titan) forwards;
-    }
-    @keyframes width-grow { from { width: 0; } to { width: 80px; } }
-    
-   /* ========================================================== */
-    /* 🧬 THE ABSOLUTE TERMINUS - FINAL GOD-MODE FEATURES        */
-    /* ========================================================== */
+    window.addEventListener('mousemove', move);
+    document.querySelectorAll('button, a, .interactive').forEach(el => {
+      el.addEventListener('mouseenter', addHover);
+      el.addEventListener('mouseleave', removeHover);
+    });
 
-    /* 1. نظام "التردد المغناطيسي" - Magnetic Hover Pull */
-    /* يضيف إحساساً بأن البطاقات تنجذب للماوس بفيزيائية حقيقية */
-    .colossus-card {
-      transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.4s ease;
-      transform-origin: center;
-    }
+    return () => window.removeEventListener('mousemove', move);
+  }, []);
 
-    /* 2. ميزة "تفكك البيانات" - Data Fragmentation (Glitch) */
-    /* تظهر عند مرور الماوس على "LEGENDS" لتعطي إيحاءً بالاختراق الرقمي */
-    .xp-shimmer:hover {
-      animation: glitch-skew 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
-    }
-    @keyframes glitch-skew {
-      0% { transform: skew(0deg); }
-      20% { transform: skew(3deg); text-shadow: 2px 0 red; }
-      40% { transform: skew(-3deg); text-shadow: -2px 0 blue; }
-      60% { transform: skew(1deg); }
-      100% { transform: skew(0deg); }
-    }
+  return (
+    <>
+      <div className={`custom-cursor ${hovered ? 'hovered' : ''}`} style={{ left: mousePos.x, top: mousePos.y }} />
+      <div className="cursor-dot" style={{ left: mousePos.x, top: mousePos.y }} />
+    </>
+  );
+};
 
-    /* 3. هندسة "الزجاج المنصهر" - Molten Glass Effect */
-    /* يجعل المركز الأول يبدو كأنه مغطى بطبقة من الكريستال السائل */
-    .emperor-glow {
-      background: rgba(15, 23, 42, 0.8) !important;
-      backdrop-filter: blur(40px) contrast(150%) brightness(120%) !important;
-    }
+// ==========================================
+// 🃏 3D TITAN CARD COMPONENT
+// ==========================================
+const TitanCard = ({ student, index, rankData }) => {
+  const [isFlipped, setIsFlipped] = useState(false);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rotateX = useTransform(y, [-100, 100], [10, -10]); // Inverse rotation
+  const rotateY = useTransform(x, [-100, 100], [-10, 10]);
 
-    /* 4. نظام "خطوط الارتفاع" - Grid Topography */
-    /* يضيف خطوطاً أفقية دقيقة جداً تتحرك ببطء في الخلفية */
-    .min-h-screen::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                  linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-      background-size: 100% 4px, 3px 100%;
-      pointer-events: none;
-      z-index: 1000;
-      opacity: 0.1;
-    }
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    x.set(e.clientX - rect.left - rect.width / 2);
+    y.set(e.clientY - rect.top - rect.height / 2);
+  };
 
-    /* 5. ميزة "توهج البصمة" - Fingerprint Pulse */
-    /* لجعل أيقونة البصمة في الـ Nav تبدو وكأنها تفحص المستخدم */
-    .w-16.h-16.rounded-\[25px\] {
-      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
-      animation: identity-pulse 2s infinite;
-    }
-    @keyframes identity-pulse {
-      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-      70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-    }
+  const handleFlip = () => {
+    setIsFlipped(!isFlipped);
+    if (index === 0 && !isFlipped) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+  };
 
-    /* 6. هندسة الـ "Badge" المتفجر - Reactive Level Badges */
-    .badge-chip {
-      position: relative;
-      overflow: hidden;
-    }
-    .badge-chip::before {
-      content: "";
-      position: absolute;
-      width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-      left: -100%;
-      transition: 0.5s;
-    }
-    .badge-chip:hover::before {
-      left: 100%;
-    }
+  return (
+    <motion.div 
+      className={`holo-card relative perspective-1000 ${index === 0 ? 'w-full md:w-[26rem] h-[32rem] z-30' : 'w-full h-[26rem]'} interactive`}
+      style={{ rotateX, rotateY }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => { x.set(0); y.set(0); }}
+      initial={{ opacity: 0, scale: 0.8 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      transition={{ delay: index * 0.1 }}
+    >
+      <div className={`card-inner w-full h-full relative ${isFlipped ? 'flipped' : ''}`}>
+        
+        {/* FRONT SIDE */}
+        <div className={`card-front bg-white/5 backdrop-blur-xl border border-white/10 p-6 flex flex-col items-center justify-between ${index === 0 ? 'emperor-holo border-yellow-500/50' : ''}`}
+             onClick={handleFlip}>
+          
+          {index === 0 && <div className="rotating-border" />}
+          
+          <div className="w-full flex justify-between items-center z-10">
+            <span className="font-zen text-4xl text-white/20">#{index + 1}</span>
+            <div className="p-2 bg-black/50 rounded-full border border-white/10">{rankData.icon}</div>
+          </div>
 
-    /* 7. نظام "الظل العميق" للصور - Depth Perception */
-    .w-36.h-36 img {
-      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
-      border: 1px solid rgba(255,255,255,0.1);
-    }
+          <div className="relative group">
+            <div className={`w-32 h-32 rounded-full p-1 border-2 ${index === 0 ? 'border-yellow-400' : 'border-blue-500'} relative`}>
+              <img src={student.photoURL} alt="" className="w-full h-full object-cover rounded-full grayscale group-hover:grayscale-0 transition-all duration-500" />
+              {/* Power Ring */}
+              <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="2" className="text-transparent" />
+                <circle cx="50" cy="50" r="48" fill="none" stroke={index === 0 ? '#ffd700' : '#00f3ff'} strokeWidth="2" strokeDasharray="300" strokeDashoffset="40" strokeLinecap="round" className="opacity-80" />
+              </svg>
+            </div>
+            {index === 0 && <Crown className="absolute -top-6 left-1/2 -translate-x-1/2 text-yellow-400 animate-bounce" size={30} />}
+          </div>
 
-    /* 8. ميزة "تلاشي المسافة" - Fade Distance UI */
-    /* تجعل عداد النقاط المتبقية (XP Needed) ينبض باللون الأحمر إذا كان الفارق صغيراً */
-    .text-white.font-black {
-      transition: color 0.3s ease;
-    }
-    .strivers-list-item:hover .text-white.font-black {
-      color: var(--titan-cyan);
-    }
+          <div className="text-center z-10">
+            <h3 className="font-raj font-bold text-2xl glitch-text cursor-pointer">{student.displayName}</h3>
+            <p className="text-xs uppercase tracking-[0.3em] opacity-70 mt-1" style={{color: rankData.color}}>{rankData.title}</p>
+          </div>
 
-    /* 9. نظام "التحقق" - Verified Tick Animation */
-    .badge-chip:nth-child(2) {
-      color: #10b981;
-      border-color: rgba(16, 185, 129, 0.3);
-    }
+          <div className="w-full bg-black/30 rounded-xl p-3 flex justify-between items-center border border-white/5">
+            <div className="flex flex-col text-left">
+              <span className="text-[9px] uppercase text-gray-400">Total XP</span>
+              <span className="font-zen text-lg">{student.xp?.toLocaleString()}</span>
+            </div>
+            <div className="flex gap-1 h-4 items-end">
+               <div className="audio-bar"></div>
+               <div className="audio-bar"></div>
+               <div className="audio-bar"></div>
+            </div>
+          </div>
+          
+          <div className="absolute bottom-2 text-[9px] text-gray-500 uppercase tracking-widest animate-pulse">Click to Reveal Stats</div>
+        </div>
 
-    /* 10. هندسة الـ Search المتوهج - High-Focus Search */
-    input:focus + .absolute.right-6 {
-      color: var(--titan-cyan);
-      transform: translateY(-50%) scale(1.2);
-      transition: 0.3s;
-    }
+        {/* BACK SIDE (STATS) */}
+        <div className="card-back p-8 text-center" onClick={handleFlip}>
+          <h3 className="font-zen text-xl text-blue-400 mb-6">Battle Stats</h3>
+          
+          <div className="w-full space-y-4">
+            {[
+              { label: "Dedication", val: 95, color: "bg-blue-500" },
+              { label: "Accuracy", val: 88, color: "bg-purple-500" },
+              { label: "Speed", val: 92, color: "bg-green-500" }
+            ].map((stat, i) => (
+              <div key={i} className="text-left">
+                <div className="flex justify-between text-xs mb-1 uppercase font-bold">
+                  <span>{stat.label}</span>
+                  <span>{stat.val}%</span>
+                </div>
+                <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }} 
+                    animate={{ width: `${stat.val}%` }} 
+                    className={`h-full ${stat.color}`} 
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
 
-    /* 11. تأثير "الغبار السحري" عند التمرير - Scroll Dust */
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--titan-cyan);
-      box-shadow: 0 0 20px var(--titan-cyan);
-    }
+          <div className="mt-8 grid grid-cols-2 gap-4 w-full">
+            <button className="py-2 bg-white/10 rounded hover:bg-white/20 text-xs font-bold interactive">PROFILE</button>
+            <button className="py-2 bg-blue-600 rounded hover:bg-blue-500 text-xs font-bold interactive">MESSAGE</button>
+          </div>
+        </div>
 
-    /* 12. ميزة "الاسم العملاق" - Giant Watermark Backdrop */
-    /* تضع كلمة TITAN في الخلفية بشكل ضخم وباهت جداً */
-    .container::before {
-      content: "MAFA";
-      position: fixed;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 30vw;
-      font-weight: 900;
-      font-family: 'Syncopate';
-      color: rgba(255,255,255,0.01);
-      z-index: -2;
-      pointer-events: none;
-    }
+      </div>
+    </motion.div>
+  );
+};
 
-    /* 13. نظام "توزيع الضوء" للأزرار الدائرية - Heart Button FX */
-    button.h-14.w-14 {
-      position: relative;
-      background: rgba(239, 68, 68, 0.05);
-      border: 1px solid rgba(239, 68, 68, 0.1);
-      color: #ef4444;
-    }
-    button.h-14.w-14:hover {
-      background: #ef4444;
-      color: #fff;
-      box-shadow: 0 0 30px rgba(239, 68, 68, 0.4);
-    }
-
-    /* 14. هندسة الـ Footer النهائي - Secure Network UI */
-    footer .opacity-10 svg {
-      transition: 0.5s;
-    }
-    footer:hover .opacity-10 {
-      opacity: 0.5;
-    }
-    footer:hover .opacity-10 svg {
-      color: var(--titan-blue);
-      transform: translateY(-10px);
-    }
-
-    /* 15. اللمسة الأخيرة - Cinematic Entrance */
-    .min-h-screen {
-      animation: cinematic-entry 1.5s var(--ease-titan);
-    }
-    @keyframes cinematic-entry {
-      from { opacity: 0; filter: blur(20px) brightness(0); }
-      to { opacity: 1; filter: blur(0) brightness(1); }
-    }
-  ` }} />
-);
-
-// ==========================================================
-// 🏆 THE MASTER COMPONENT: HALL OF LEGENDS (COLOSSUS)
-// ==========================================================
+// ==========================================
+// 📜 MAIN COMPONENT
+// ==========================================
 const HallOfLegends = () => {
   const [bigFive, setBigFive] = useState([]);
   const [strivers, setStrivers] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-  
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
+  const [focusMode, setFocusMode] = useState(false);
   const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
-  // 📡 High-Frequency Data Sync
+  // 1. Data Fetching
   useEffect(() => {
     const q = query(collection(db, "users"), orderBy("xp", "desc"), limit(20));
     const unsub = onSnapshot(q, (snapshot) => {
@@ -752,238 +176,212 @@ const HallOfLegends = () => {
     return () => unsub();
   }, []);
 
-  // 🖱️ Interaction Handler
-  const handleMouseMove = (e) => {
-    const { clientX, clientY } = e;
-    mouseX.set(clientX);
-    mouseY.set(clientY);
+  // 2. Rank Logic
+  const getRankData = (rank) => {
+    const ranks = {
+      1: { title: "SUPREME EMPEROR", color: "#ffd700", icon: <Crown size={32} className="text-yellow-400" /> },
+      2: { title: "WARLORD", color: "#c0c0c0", icon: <Trophy size={28} className="text-gray-300" /> },
+      3: { title: "COMMANDER", color: "#cd7f32", icon: <Medal size={28} className="text-orange-400" /> },
+      4: { title: "GUARDIAN", color: "#00f3ff", icon: <ShieldCheck size={24} className="text-cyan-400" /> },
+      5: { title: "VANGUARD", color: "#00f3ff", icon: <Target size={24} className="text-cyan-400" /> },
+    };
+    return ranks[rank] || { title: "OPERATIVE", color: "#64748b", icon: <Zap size={20} /> };
   };
 
-  const getRankData = (rank) => {
-    const titles = {
-      1: { title: "الإمبراطور الأعظم", color: "var(--titan-gold)", icon: <Crown size={40}/> },
-      2: { title: "جنرال النخبة", color: "#e2e8f0", icon: <Trophy size={32}/> },
-      3: { title: "قائد الفيلق", color: "#cd7f32", icon: <Medal size={32}/> },
-      4: { title: "فارس تيتان", color: "#3b82f6", icon: <ShieldCheck size={28}/> },
-      5: { title: "مقاتل النخبة", color: "#3b82f6", icon: <Target size={28}/> },
-    };
-    return titles[rank] || { title: "مقاتل صاعد", color: "#64748b", icon: <Zap size={20}/> };
-  };
+  if (loading) return (
+    <div className="min-h-screen bg-[#030014] flex flex-col items-center justify-center text-cyan-400">
+      <Cpu size={60} className="animate-spin mb-4" />
+      <h2 className="font-zen text-2xl animate-pulse">INITIALIZING TITAN PROTOCOL...</h2>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen relative overflow-hidden" onMouseMove={handleMouseMove}>
-      <TitanStyles />
-      <div className="cyber-floor" />
+    <div className={`min-h-screen relative overflow-x-hidden transition-colors duration-1000 ${focusMode ? 'grayscale contrast-125' : ''}`}>
+      <CustomCursor />
       
-      {/* Dynamic Background Blobs */}
-      <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-[-1]">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[150px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/10 blur-[150px] rounded-full" />
+      {/* 🚀 Overlays */}
+      <motion.div className="scroll-progress" style={{ scaleX }} />
+      <div className="scanlines" />
+      
+      {/* 🌌 Interactive Particle Background */}
+      <div className="fixed inset-0 z-[-1] opacity-30">
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute bg-blue-500 rounded-full blur-xl"
+            initial={{ 
+              x: Math.random() * window.innerWidth, 
+              y: Math.random() * window.innerHeight,
+              scale: Math.random() * 0.5 + 0.5
+            }}
+            animate={{ 
+              y: [null, Math.random() * window.innerHeight],
+              x: [null, Math.random() * window.innerWidth]
+            }}
+            transition={{ duration: Math.random() * 20 + 10, repeat: Infinity, repeatType: "reverse" }}
+            style={{ width: Math.random() * 100 + 'px', height: Math.random() * 100 + 'px' }}
+          />
+        ))}
       </div>
 
-      {/* Spotlight Effect */}
-      <motion.div 
-        className="fixed w-[600px] h-[600px] bg-blue-500/5 blur-[120px] rounded-full pointer-events-none z-[-1]"
-        style={{ left: mouseX, top: mouseY, transform: 'translate(-50%, -50%)' }}
-      />
-
-      {/* Top Navigation Protocol */}
-      <nav className="p-10 flex justify-between items-center sticky top-0 z-[500] backdrop-blur-3xl border-b border-white/5">
-        <div className="flex items-center gap-6">
-          <div className="w-16 h-16 rounded-[25px] bg-blue-600/20 flex items-center justify-center border border-blue-500/30">
-            <Fingerprint className="text-blue-500" size={30} />
-          </div>
-          <div className="hidden sm:block">
-            <h1 className="syncopate font-black text-2xl tracking-tighter">TITAN <span className="text-blue-500">COLOSSUS</span></h1>
-            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.5em] mt-1">Global Honor Protocol 2.6.0</p>
+      {/* 🧭 NAV BAR */}
+      <nav className="p-6 md:p-8 flex justify-between items-center sticky top-0 z-[100] backdrop-blur-lg border-b border-white/5">
+        <div className="flex items-center gap-4">
+          <Fingerprint className="text-cyan-400" size={30} />
+          <div>
+            <h1 className="font-zen text-xl tracking-tighter">TITAN <span className="text-cyan-400">V3</span></h1>
+            <p className="text-[10px] text-gray-400 tracking-[0.3em]">SECURE CONNECTION</p>
           </div>
         </div>
-
+        
         <div className="flex gap-4">
-          <div className="bg-white/5 px-6 py-3 rounded-2xl border border-white/5 flex items-center gap-4">
-            <Activity className="text-green-500 animate-pulse" size={18} />
-            <div className="text-right">
-               <p className="text-[9px] text-gray-500 font-black uppercase">Sync State</p>
-               <p className="text-xs font-bold orbitron">LIVE_DATA</p>
-            </div>
-          </div>
+           <button onClick={() => setFocusMode(!focusMode)} className="p-2 border border-white/10 rounded-full hover:bg-white/10 interactive transition-all">
+             <Eye size={18} className={focusMode ? "text-red-500" : "text-cyan-500"} />
+           </button>
+           <div className="hidden md:flex items-center gap-2 bg-black/40 px-4 py-2 rounded-full border border-white/10">
+             <div className="w-2 h-2 bg-green-500 rounded-full animate-ping" />
+             <span className="text-[10px] font-bold text-green-400">{(Math.random() * 50 + 120).toFixed(0)} ONLINE</span>
+           </div>
         </div>
       </nav>
 
-      <div className="container mx-auto px-6">
-        
-        {/* --- MEGA HERO SECTION --- */}
-        <header className="py-32 text-center relative">
-          <motion.div 
-            initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-            className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-white/5 border border-white/10 mb-10"
+      {/* 🏛️ HERO SECTION */}
+      <div className="container mx-auto px-4 py-20 relative z-10">
+        <header className="text-center mb-24 relative">
+          <motion.h1 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="font-zen text-6xl md:text-9xl font-black mb-4 relative inline-block"
           >
-            <Box size={14} className="text-blue-500" />
-            <span className="orbitron text-[10px] font-black tracking-[0.3em] text-blue-400">AUTHORIZED ACCESS ONLY</span>
-          </motion.div>
+            <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-600">LEGENDS</span>
+            {/* Glitch Overlay */}
+            <span className="absolute top-0 left-0 -ml-1 text-red-500 opacity-50 animate-pulse hidden md:block" style={{clipPath: 'inset(0 0 50% 0)'}}>LEGENDS</span>
+          </motion.h1>
           
-          <h2 className="syncopate text-6xl md:text-[140px] font-black leading-none mb-12 tracking-tighter">
-            THE <span className="xp-shimmer">LEGENDS</span>
-          </h2>
-          
-          <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mt-20">
-            <div className="p-6 rounded-3xl border border-white/5 bg-white/[0.02]">
-               <h5 className="orbitron text-gray-500 text-[10px] mb-2 font-black">TOTAL ELIGIBLE</h5>
-               <p className="text-3xl font-black orbitron">{strivers.length + bigFive.length + 100}+</p>
-            </div>
-            <div className="p-6 rounded-3xl border border-white/5 bg-white/[0.02]">
-               <h5 className="orbitron text-gray-500 text-[10px] mb-2 font-black">SEASON STATUS</h5>
-               <p className="text-3xl font-black orbitron text-blue-500">ACTIVE</p>
-            </div>
-            <div className="p-6 rounded-3xl border border-white/5 bg-white/[0.02]">
-               <h5 className="orbitron text-gray-500 text-[10px] mb-2 font-black">RESET CLOCK</h5>
-               <p className="text-3xl font-black orbitron">14D : 22H</p>
-            </div>
-          </div>
+          <motion.p 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="font-raj text-xl text-cyan-400 tracking-[0.5em] uppercase"
+          >
+            The Ultimate Hall of Fame
+          </motion.p>
         </header>
 
-        {/* --- THE BIG FIVE: SOVEREIGN GRID --- */}
-        <section className="mb-60">
-          <div className="flex flex-col items-center mb-24">
-             <div className="w-20 h-1 bg-blue-600 rounded-full mb-6" />
-             <h3 className="syncopate text-4xl font-black tracking-widest text-center">THE BIG FIVE</h3>
-             <p className="text-gray-500 font-bold mt-4 uppercase text-xs tracking-[0.4em]">Elite Commanders of the Season</p>
-          </div>
+        {/* 🏆 THE BIG FIVE GRID */}
+        <div className="flex flex-wrap justify-center items-end gap-8 lg:gap-12 mb-32 perspective-2000">
+           {/* Reordering for Podium: 2 - 1 - 3 - 4 - 5 */}
+           {[bigFive[1], bigFive[0], bigFive[2], bigFive[3], bigFive[4]].map((student, i) => {
+             if (!student) return null;
+             // Recover original rank index
+             const originalIndex = bigFive.indexOf(student);
+             return (
+               <TitanCard 
+                 key={student.id} 
+                 student={student} 
+                 index={originalIndex} 
+                 rankData={getRankData(originalIndex + 1)} 
+               />
+             );
+           })}
+        </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
-            {bigFive.map((student, index) => {
-              const rank = getRankData(index + 1);
-              return (
-                <motion.div 
-                  key={student.id}
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  whileInView={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`colossus-card p-10 rounded-[50px] text-center group ${index === 0 ? 'emperor-glow lg:scale-125 z-50' : 'mt-10 lg:mt-20'}`}
-                >
-                  <div className="absolute top-6 right-6 opacity-20 group-hover:opacity-100 transition-opacity">
-                    {rank.icon}
-                  </div>
-                  
-                  <div className="relative mb-8">
-                    <div className={`w-36 h-36 mx-auto rounded-[45px] border-4 p-2 relative z-10 ${index === 0 ? 'border-titan-gold shadow-[0_0_30px_rgba(251,191,36,0.3)]' : 'border-white/10'}`}>
-                      <img src={student.photoURL} className="w-full h-full object-cover rounded-[35px]" alt="" />
-                    </div>
-                    {index === 0 && <motion.div animate={{ rotate: 360 }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }} className="absolute inset-0 border-2 border-dashed border-titan-gold/30 rounded-full scale-150" />}
-                  </div>
+        {/* 📜 THE STRIVERS LIST */}
+        <section className="max-w-6xl mx-auto">
+          <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-[40px] p-8 md:p-12 shadow-2xl relative overflow-hidden">
+            {/* Background Grid inside Card */}
+            <div className="absolute inset-0 opacity-10" style={{backgroundImage: 'radial-gradient(#444 1px, transparent 1px)', backgroundSize: '20px 20px'}}></div>
 
-                  <h4 className="orbitron font-black text-xl mb-2 truncate px-2">{student.displayName}</h4>
-                  <p className="text-[10px] font-black tracking-[0.2em] mb-6" style={{ color: rank.color }}>{rank.title}</p>
-                  
-                  <div className="xp-shimmer text-3xl mb-8">{student.xp?.toLocaleString()}</div>
-                  
-                  <div className="flex flex-wrap justify-center gap-2 mb-8">
-                    <span className="badge-chip">Level {Math.floor((student.xp || 0) / 1000)}</span>
-                    <span className="badge-chip">Verified</span>
-                  </div>
-
-                  <motion.button 
-                    whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                    className="w-full py-4 rounded-2xl bg-white/5 border border-white/5 text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-all"
-                  >
-                    View Arsenal
-                  </motion.button>
-                </motion.div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* --- THE STRIVERS: RISING CLUB --- */}
-        <section className="max-w-6xl mx-auto mb-60">
-           <div className="colossus-card p-12 rounded-[60px] border-dashed border-white/10">
-              <div className="flex flex-col lg:flex-row items-center justify-between gap-10 mb-20">
-                 <div className="text-center lg:text-right">
-                    <h3 className="syncopate text-3xl font-black flex items-center gap-4 justify-center lg:justify-start">
-                       <TrendingUp className="text-blue-500" size={32} /> THE STRIVERS
-                    </h3>
-                    <p className="text-gray-500 font-bold mt-2">عشرة فرسان يقتربون من كسر حاجز الـ Big Five</p>
-                 </div>
-                 
-                 <div className="relative w-full lg:w-96">
-                    <Search className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-600" />
-                    <input 
-                      type="text" 
-                      placeholder="بحث في البروتوكول..." 
-                      className="w-full bg-black/40 border border-white/10 h-16 rounded-3xl pr-16 pl-6 font-bold focus:border-blue-500 outline-none transition-all"
-                      onChange={(e) => setSearch(e.target.value)}
-                    />
-                 </div>
+            <div className="flex flex-col md:flex-row justify-between items-end mb-12 relative z-10">
+              <div>
+                <h3 className="font-zen text-3xl flex items-center gap-3">
+                  <Activity className="text-cyan-400" /> ACTIVE AGENTS
+                </h3>
+                <p className="text-gray-500 mt-2 font-raj font-bold">LIVE DATA STREAM FROM MAFA SERVERS</p>
               </div>
+              <div className="relative w-full md:w-96 mt-6 md:mt-0">
+                 <input 
+                   type="text" 
+                   placeholder="SEARCH AGENT ID..." 
+                   className="w-full bg-white/5 border border-white/10 rounded-xl px-10 py-3 text-white outline-none focus:border-cyan-400 transition-all interactive"
+                   onChange={(e) => setSearch(e.target.value)}
+                 />
+                 <Search className="absolute left-3 top-3.5 text-gray-500" size={18} />
+              </div>
+            </div>
 
-              <div className="grid gap-6">
-                <AnimatePresence>
-                  {strivers.filter(s => s.displayName?.toLowerCase().includes(search.toLowerCase())).map((student, index) => (
-                    <motion.div 
+            <div className="space-y-4 relative z-10">
+              <AnimatePresence>
+                {strivers.filter(s => s.displayName?.toLowerCase().includes(search.toLowerCase())).map((student, index) => {
+                  const isRising = Math.random() > 0.5; // Mock Logic
+                  return (
+                    <motion.div
                       key={student.id}
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      className="flex items-center justify-between p-6 rounded-[30px] bg-white/[0.01] border border-white/5 group hover:bg-white/[0.03] transition-all"
+                      initial={{ opacity: 0, x: -50 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.05 }}
+                      className="group flex flex-col md:flex-row items-center p-4 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-cyan-500/30 transition-all duration-300 interactive cursor-none"
                     >
-                      <div className="flex items-center gap-8">
-                        <span className="orbitron font-black text-2xl text-gray-800 w-12 text-center group-hover:text-blue-500 transition-colors">#{index + 6}</span>
+                      {/* Rank & Photo */}
+                      <div className="flex items-center gap-6 w-full md:w-1/3">
+                        <span className="font-zen text-gray-600 text-xl group-hover:text-cyan-400 transition-colors">
+                          {(index + 6).toString().padStart(2, '0')}
+                        </span>
                         <div className="relative">
-                          <img src={student.photoURL} className="w-20 h-20 rounded-[25px] object-cover border border-white/10" alt="" />
-                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-[10px] font-black">
-                            <Zap size={10} />
+                          <img src={student.photoURL} className="w-14 h-14 rounded-xl border border-white/10 group-hover:scale-110 transition-transform" alt="" />
+                          <div className={`absolute -bottom-1 -right-1 p-1 rounded-full ${isRising ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
+                            {isRising ? <TrendingUp size={10}/> : <TrendingDown size={10}/>}
                           </div>
                         </div>
                         <div>
-                          <h5 className="font-black text-xl mb-1">{student.displayName}</h5>
-                          <div className="flex gap-4">
-                            <span className="text-[10px] font-black text-gray-500 flex items-center gap-1 uppercase"><Command size={10}/> Striver Class</span>
-                            <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">{student.xp} XP Points</span>
-                          </div>
+                          <h4 className="font-bold text-lg group-hover:text-cyan-300 transition-colors">{student.displayName}</h4>
+                          <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-gray-400">LEVEL {Math.floor(student.xp/1000)}</span>
                         </div>
                       </div>
-                      
-                      <div className="hidden md:flex items-center gap-10">
-                         <div className="text-right">
-                            <p className="text-[9px] font-black text-gray-600 uppercase">Distance to Top 5</p>
-                            <p className="text-xs font-black text-white">{Math.abs(student.xp - bigFive[4]?.xp)} XP Needed</p>
+
+                      {/* Stats */}
+                      <div className="flex justify-between w-full md:w-2/3 items-center mt-4 md:mt-0 px-4">
+                         <div className="text-center">
+                            <p className="text-[9px] uppercase text-gray-500 mb-1">XP Points</p>
+                            <span className="font-zen text-lg">{student.xp?.toLocaleString()}</span>
                          </div>
-                         <button className="h-14 w-14 rounded-2xl bg-white/5 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all">
-                            <Heart size={20} />
-                         </button>
+                         
+                         {/* Visual Progress Bar to Next Rank */}
+                         <div className="hidden md:block w-1/3">
+                            <div className="flex justify-between text-[9px] mb-1 text-gray-500">
+                               <span>PROGRESS</span>
+                               <span>{(Math.random() * 100).toFixed(0)}%</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
+                               <div className="h-full bg-cyan-500 w-[60%] animate-pulse"></div>
+                            </div>
+                         </div>
+
+                         <div className="flex gap-3">
+                            <button className="p-2 rounded-lg hover:bg-white/10 interactive"><Share2 size={16} /></button>
+                            <button className="p-2 rounded-lg hover:bg-white/10 interactive"><MoreHorizontal size={16} /></button>
+                         </div>
                       </div>
                     </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-           </div>
+                  )
+                })}
+              </AnimatePresence>
+            </div>
+          </div>
         </section>
-
-        {/* --- GLOBAL TICKER --- */}
-        <div className="fixed bottom-0 left-0 right-0 bg-blue-600 py-3 z-[1000] border-t border-white/20">
-           <div className="flex whitespace-nowrap animate-marquee">
-              {[...Array(20)].map((_, i) => (
-                <span key={i} className="mx-16 text-[10px] font-black uppercase tracking-[0.5em] text-white orbitron">
-                  System Authorized • Top {bigFive.length} Command the Season • Progress is Mandatory • Glory to the Hardworking •
-                </span>
-              ))}
-           </div>
-        </div>
       </div>
 
-      {/* --- FOOTER EXCELLENCE --- */}
-      <footer className="mt-40 py-40 border-t border-white/5 text-center relative">
-         <div className="flex justify-center gap-12 mb-12 opacity-10">
-            <Lock size={40} /> <Ghost size={40} /> <Cpu size={40} /> <ZapOff size={40} />
-         </div>
-         <p className="orbitron text-[11px] tracking-[1.5em] text-gray-700 mb-6 uppercase">MAFA ACADEMY SECURE NETWORK 2026</p>
-         <div className="flex justify-center gap-2">
-            <div className="w-1 h-1 bg-blue-600 rounded-full" />
-            <div className="w-12 h-1 bg-blue-600 rounded-full" />
-            <div className="w-1 h-1 bg-blue-600 rounded-full" />
+      {/* 🦶 FOOTER HUD */}
+      <footer className="mt-32 border-t border-white/5 bg-[#050510] relative overflow-hidden">
+         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50" />
+         <div className="container mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-center opacity-40 hover:opacity-100 transition-opacity">
+            <div className="flex gap-6 mb-4 md:mb-0">
+               <Lock size={18} /> <Ghost size={18} /> <ZapOff size={18} />
+            </div>
+            <p className="font-raj text-xs tracking-[0.5em]">SYSTEM SECURE • ENCRYPTED BY MAFA • V3.0</p>
          </div>
       </footer>
-
     </div>
   );
 };
