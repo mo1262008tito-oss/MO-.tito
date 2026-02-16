@@ -16,6 +16,22 @@ import './Religious.css'; // هذا السطر يربط التصميم بالب�
 // ==========================================================
 // 1. CONSTANTS & API CONFIGURATIONS
 // ==========================================================
+/* ========================================================== */
+/* 🛡️ TITAN SMART GUARDIAN - نظام حماية تيتان من الانهيار       */
+/* ========================================================== */
+window.onerror = function(message, source, lineno, colno, error) {
+  console.group("%c🚨 تنبيه أمان تيتان", "color:white; background:red; padding:3px; border-radius:5px;");
+  console.log("المشكلة:", message);
+  console.groupEnd();
+  return true; // يمنع انهيار الصفحة (Crash)
+};
+
+// منع تعطل التطبيق بسبب الـ Unhandled Rejections (مثل فشل الـ API)
+window.onunhandledrejection = event => {
+  console.warn("⚠️ فشل في جلب بيانات خارجية:", event.reason);
+  event.preventDefault();
+};
+
 const WAHA_CONFIG = {
   PRAYER_API: "https://api.aladhan.com/v1/timingsByCity",
   QURAN_API: "https://api.alquran.cloud/v1",
@@ -1855,5 +1871,6 @@ const Religious = ({ user, profile }) => {
 
 
 export default Religious;
+
 
 
