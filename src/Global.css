@@ -1,24 +1,19 @@
-/* 🚨 بروتوكول استعادة السكرول العالمي */
+/* إجبار السكرول على المستوى الجذري */
 html, body {
-    overflow-y: auto !important; /* السماح بالتمرير الإجباري */
-    overflow-x: hidden !important; /* منع العرض العشوائي */
-    height: auto !important; /* السماح للصفحة بأن تأخذ طول محتواها */
-    margin: 0;
-    padding: 0;
-    display: block !important; /* التأكد من أن التخطيط ليس متجمداً */
+    overflow-y: scroll !important; /* إظهار شريط التمرير دائماً */
+    overflow-x: hidden !important;
+    height: auto !important;
+    position: static !important; /* منع المكتبات من تثبيت الصفحة */
 }
 
+/* في حال كانت المكتبة تضيف كلاس خاص عند فتح المودال، سنقوم بإلغاء تأثيره */
+body[style] {
+    overflow: auto !important;
+    padding-right: 0 !important; /* لمنع القفزة التي تحدثها بعض المكتبات */
+}
+
+/* التأكد من أن حاوية ريأكت لا تقيد الارتفاع */
 #root {
-    min-height: 100vh;
-    overflow: visible !important;
-}
-
-/* تحسين شكل السكرول ليعرف المستخدم أنه يعمل */
-::-webkit-scrollbar {
-    width: 10px;
+    min-height: 100vh !important;
     display: block !important;
-}
-::-webkit-scrollbar-thumb {
-    background: #3b82f6;
-    border-radius: 10px;
 }
