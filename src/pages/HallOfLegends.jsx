@@ -190,11 +190,31 @@ const HallOfLegends = () => {
     };
     return ranks[rank] || { title: "OPERATIVE", color: "#64748b", icon: <Zap size={20} /> };
   };
-
-  if (loading) return (
-    <div className="min-h-screen bg-[#030014] flex flex-col items-center justify-center text-cyan-400">
-      <Cpu size={60} className="animate-spin mb-4" />
-      <h2 className="font-zen text-2xl animate-pulse">INITIALIZING TITAN PROTOCOL...</h2>
+if (loading) return (
+    <div className="min-h-screen bg-[#030014] flex flex-col items-center justify-center text-cyan-400 font-raj">
+      <motion.div 
+        animate={{ rotate: 360 }}
+        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+        className="mb-8"
+      >
+        <Cpu size={80} strokeWidth={1} />
+      </motion.div>
+      <motion.h2 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: [0, 1, 0] }}
+        transition={{ duration: 2, repeat: Infinity }}
+        className="text-2xl tracking-[0.5em] font-zen"
+      >
+        ESTABLISHING NEURAL LINK...
+      </motion.h2>
+      <div className="mt-4 w-48 h-[2px] bg-white/10 relative overflow-hidden">
+        <motion.div 
+          className="absolute inset-0 bg-cyan-500"
+          initial={{ x: '-100%' }}
+          animate={{ x: '100%' }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </div>
     </div>
   );
 
