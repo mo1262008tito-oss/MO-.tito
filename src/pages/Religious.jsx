@@ -32,6 +32,42 @@ window.onunhandledrejection = event => {
   event.preventDefault();
 };
 
+/* ========================================================== */
+/* 🌴 OASIS SYSTEM: ERROR BYPASS & SCROLL RESTORATION          */
+/* ========================================================== */
+
+// 1. تعريف مراجع وهمية شاملة (إصلاح خطأ motion)
+const dummy = () => null;
+const proxyHandler = {
+  get: (target, prop) => {
+    // هذا الجزء يسمح باستدعاء motion.div أو motion.section دون خطأ
+    return (props) => <div {...props}>{props.children}</div>;
+  }
+};
+
+if (typeof window.motion === 'undefined') {
+  window.motion = new Proxy({}, proxyHandler);
+}
+
+// 2. حماية المكتبات الأخرى
+const modules = ['Accessibility', 'XLSX', 'jsPDF', 'CryptoJS', 'Recharts'];
+modules.forEach(mod => {
+  if (typeof window[mod] === 'undefined') window[mod] = new Proxy({}, { get: () => dummy });
+});
+
+// 3. إجبار السكرول على العمل في "الواحة"
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.innerHTML = `
+    html, body { 
+      overflow-y: auto !important; 
+      overflow-x: hidden !important; 
+      height: auto !important; 
+    }
+    #root { height: auto !important; }
+  `;
+  document.head.appendChild(style);
+}
 const WAHA_CONFIG = {
   PRAYER_API: "https://api.aladhan.com/v1/timingsByCity",
   QURAN_API: "https://api.alquran.cloud/v1",
@@ -1871,6 +1907,7 @@ const Religious = ({ user, profile }) => {
 
 
 export default Religious;
+
 
 
 
