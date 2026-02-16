@@ -1,11 +1,17 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { db, auth } from '../firebase';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   doc, updateDoc, onSnapshot, increment, arrayUnion, 
-  setDoc, getDoc, collection, query, orderBy, limit,  Library 
-   
+  setDoc, getDoc, collection, query, orderBy, limit, getDocs, addDoc, where 
 } from 'firebase/firestore';
+import { db, auth } from '../firebase';
 import axios from 'axios';
+// تأكد من استيراد الأيقونات التي استخدمتها في الواحة
+import { 
+  ShieldCheck, Layout, Users, BookOpen, CreditCard, 
+  Library as LibraryIcon, Award, MessageSquare, Terminal, 
+  Bell, Lock, Zap, Search, MapPin, Wifi, Globe, Heart, Star
+} from 'lucide-react';
 import './Religious.css'; // هذا السطر يربط التصميم بالبرمجة فوراً
 // ==========================================================
 // 1. CONSTANTS & API CONFIGURATIONS
@@ -241,32 +247,33 @@ export const useWahaEnginePartOne = () => {
   // ==========================================================
   // 7. EXPORTED LOGIC (واجهة الربط مع الـ UI)
   // ==========================================================
-
+// --- هذا هو الجزء الصحيح والمدمج لنهاية دالة useWahaEnginePartOne ---
   return {
-    // Prayer System
+    // البيانات (States)
     prayerTimes,
     nextPrayer,
+    userLocation,
     isAthanPlaying,
-    stopAthan: () => { athanAudio.current.pause(); setIsAthanPlaying(false); },
-    
-    // Zikir System
-    counter,
+    faithStats,
     activeDhikr,
+    counter,
+    spiritualMood,
+
+    // الوظائف (Actions)
+    fetchDetailedPrayerTimes,
     incrementZikir,
+    triggerAthan,
+    stopAthan: () => { athanAudio.current.pause(); setIsAthanPlaying(false); },
     resetCounter: () => setCounter(0),
     changeDhikr: (d) => { setActiveDhikr(d); setCounter(0); },
-    
-    // Stats & Leveling
-    faithStats,
-    faithLevelName: getFaithLevelName(faithStats.faithXP),
-    xpPercentage: (faithStats.faithXP % 1000) / 10, // Progress to next level
-    
-    // Actions
     updateLocation: (city, country) => setUserLocation({ city, country, method: 5 }),
-    setSpiritualMood
-  };
-};
+    setSpiritualMood,
 
+    // الحسابات (Computed)
+    faithLevelName: getFaithLevelName(faithStats.faithXP),
+    xpPercentage: (faithStats.faithXP % 1000) / 10
+  };
+}; // نهاية الهوك الواحدة فقط
 // END OF PART 1 (500+ Lines Logic Structure initiated)
 // ==========================================================
 // 8. QURAN & TAFSIR ENGINE (محرك القرآن الكريم)
@@ -1050,46 +1057,81 @@ export const useWahaAnalytics = (user) => {
  * يتم تصديره للـ UI لضمان عمل الـ 100 ميزة معاً.
  */
 export const useUltimateWahaOS = (user, profile) => {
-  const engine = useWahaEnginePartOne(); // من الجزء 1
-  const quran = useWahaQuranLogic(user); // من الجزء 2
-  const azkar = useWahaAzkarLogic(user); // من الجزء 2
-  const prayerTree = usePrayerTreeLogic(user, profile); // من الجزء 3
-  const seerah = useSeerahLogic(user); // من الجزء 4
-  const accountability = useAccountabilityLogic(user); // من الجزء 4
-  const radio = useWahaRadio(); // من الجزء 5
-  const ai = useWahaAI(); // من الجزء 5
+  const engine = useWahaEnginePartOne();
+  const quran = useWahaQuranLogic(user);
+  const azkar = useWahaAzkarLogic(user);
+  const prayerTree = usePrayerTreeLogic(user, profile);
+  const seerah = useSeerahLogic(user);
+  const accountability = useAccountabilityLogic(user);
+  const radio = useWahaRadio();
+  const ai = useWahaAI();
+  const zakat = useZakatCalculator();
+  const names = useNamesOfAllahLogic(user);
+  const challenges = useFaithChallenges(user);
+  const khalwa = useKhalwaMode();
+
+  return {
+    ...engine,
+    ...quran,
+    ...azkar,
+    ...prayerTree,
+    ...seerah,
+    ...accountability,
+    ...radio,
+    ...ai,
+    ...zakat,
+    ...names,
+    ...challenges,
+    ...khalwa,
+    activateSOS: () => {
+      engine.setSpiritualMood('distracted');
+      quran.loadSurah(1);
+      alert("تم تفعيل ورد الطوارئ.");
+    }
+  };
 };
 
-  // ميزة 100: "نظام الطوارئ الإيماني" - زر واحد عند الخطر يفتح كل الأذكار والقبلة
-  const activateSOS = () => {
-    engine.setSpiritualMood('distracted');
-    quran.loadSurah(1); // الفاتحة
-    alert("استعن بالله، تم فتح ورد الطوارئ.");
-  };
 
-
-// END OF FAITH WAHA SYSTEM (100+ FEATURES COMPLETE)
-// 1. تعريف المكون الأساسي (تأكد أن الاسم هو Religious كما في ملفك)
 const Religious = ({ user, profile }) => {
-  
-  // 2. استدعاء المحرك الشامل الذي صنعته أنت (useUltimateWahaOS)
+  // 1. استدعاء المحرك الشامل
   const waha = useUltimateWahaOS(user, profile);
 
-// حساب النسبة المئوية بناءً على الـ XP الحالي والـ XP المطلوب للمستوى التالي
-const xpPercentage = (waha?.faithStats?.faithXP && waha?.faithStats?.nextLevelXP) 
-  ? (waha.faithStats.faithXP / waha.faithStats.nextLevelXP) * 100 
-  : 0;
-  const faithLevelName = waha.faithLevelName || "مبتدئ";
-  const spiritualMood = waha.spiritualMood || "default";
-  const isKhalwaActive = waha.isKhalwaActive || false;
-  const userLocation = waha.userLocation || { city: 'القاهرة', country: 'مصر' };
+  // 2. فك كل المتغيرات والدوال لكي يراها الـ JSX مباشرة (Destructuring)
+  // هذا السطر يمنع الـ Crash لأنه يوفر كل ما يحتاجه التصميم
+  const {
+    faithStats, faithLevelName, xpPercentage, spiritualMood,
+    isKhalwaActive, toggleKhalwa, userLocation, updateLocation,
+    heading, qiblaDirection, activateSOS, nextPrayer,
+    prayerTimes, triggerAthan, treeState, counter,
+    activeDhikr, incrementZikir, resetCounter, changeDhikr,
+    quranData, quranView, searchQuran, setFontSize,
+    loadSurah, getTafsir, saveBookmark, currentCategory,
+    setCurrentCategory, progress, filteredAzkar, handleAzkarStep,
+    seerahTimeline, activeEra, setActiveEra, completeEvent,
+    globalChallenges, contributeToChallenge, faithLeaderboard,
+    currentName, learnedNames, markNameAsLearned, dailyChecklist,
+    updateItem, submitDailyAccountability, radio, askWaha,
+    aiResponse, goldPrice, calculateZakat, contributeToSadaqa,
+    yearlyReport, generateReport
+  } = waha;
 
+  // 3. تعريف الـ Refs والأسماء المستعارة المستخدمة في التصميم
+  const audioRef = React.useRef(null); // ضروري للتحكم في صوت الخلوة
+  const sessionCount = counter; // لأنك استخدمت sessionCount في التصميم و counter في اللوجيك
 
+  // 4. حماية من الانهيار إذا كانت البيانات لم تجهز بعد
+  if (!waha || !faithStats) {
+    return (
+      <div className="waha-loading-screen">
+        <div className="loader-spinner"></div>
+        <p>جاري تهيئة محرابك الإيماني...</p>
+      </div>
+    );
+  }
 
-  // 4. هنا نضع الـ return الذي كان يسبب الخطأ
+  // 5. الآن الـ return الخاص بك سيعمل بأمان
   return (
   
-
 
 
   /* 1. الحاوية العظمى (Main OS Wrapper) - لا تغلقها الآن */
@@ -1813,4 +1855,5 @@ const xpPercentage = (waha?.faithStats?.faithXP && waha?.faithStats?.nextLevelXP
 
 
 export default Religious;
+
 
