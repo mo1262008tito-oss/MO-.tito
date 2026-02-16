@@ -1,149 +1,24 @@
-/* 
-================================================================
-🌐 TITAN OS - GLOBAL MASTER STYLES & SCROLL FIX
-================================================================
-*/
-
-/* 1. إعادة ضبط المصنع (Global Reset) */
-* {
+/* 🚨 بروتوكول استعادة السكرول العالمي */
+html, body {
+    overflow-y: auto !important; /* السماح بالتمرير الإجباري */
+    overflow-x: hidden !important; /* منع العرض العشوائي */
+    height: auto !important; /* السماح للصفحة بأن تأخذ طول محتواها */
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-    outline: none;
-    /* منع الوميض الأزرق في الموبايل */
-    -webkit-tap-highlight-color: transparent;
+    display: block !important; /* التأكد من أن التخطيط ليس متجمداً */
 }
 
-/* 2. إصلاح السكرول الأساسي (The Scroll Fix) */
-html, body {
-    width: 100%;
-    /* السماح بالسكرول في الجسم الرئيسي */
-    height: auto; 
-    min-height: 100%;
-    background-color: #050505; /* لون تيتان الأساسي */
-    color: #f8fafc;
-    font-family: 'Cairo', 'Tajawal', sans-serif;
-    /* منع السكرول الأفقي المزعج */
-    overflow-x: hidden; 
-    /* جعل السكرول ناعم */
-    scroll-behavior: smooth;
-}
-
-/* 3. حاوية التطبيق الرئيسية (Root Fix) */
 #root {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+    min-height: 100vh;
+    overflow: visible !important;
 }
 
-/* 4. تصميم السكرول بار الهولوغرافي (Titan Scrollbar) */
-/* هذا التصميم سيطبق على المتصفح بالكامل */
+/* تحسين شكل السكرول ليعرف المستخدم أنه يعمل */
 ::-webkit-scrollbar {
-    width: 8px; /* عرض السكرول */
-    height: 8px; /* طول السكرول للأفقي */
+    width: 10px;
+    display: block !important;
 }
-
-::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 10px;
-}
-
 ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgba(59, 130, 246, 0.2), rgba(0, 255, 255, 0.5));
+    background: #3b82f6;
     border-radius: 10px;
-    border: 2px solid rgba(0, 0, 0, 0.1);
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, #3b82f6, #00ffff);
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-}
-
-/* 5. كلاس السكرول الخاص (للحاويات الداخلية) */
-/* أي Div تريد تفعيل السكرول داخلها، أعطها هذا الكلاس */
-.custom-scrollbar {
-    overflow-y: auto !important;
-    scrollbar-width: thin;
-    scrollbar-color: #00ffff rgba(0, 0, 0, 0.2);
-}
-
-/* 6. منع الاختيار (Security Mode) */
-.no-select {
-    user-select: none;
-    -webkit-user-select: none;
-}
-
-/* 7. تأثيرات النصوص الهولوغرافية العامة */
-.text-hologram {
-    color: #00ffff;
-    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-}
-
-/* 8. أدوات المساعدة (Utility Classes) */
-.flex-center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.full-screen {
-    width: 100vw;
-    height: 100vh;
-}
-
-/* 9. تأثيرات الظهور العامة (Global Entry Animations) */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fade {
-    animation: fadeIn 0.5s ease-out forwards;
-}
-
-/* 10. الحماية من الـ Layout Shift */
-img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-}
-
-/* 11. إصلاح مشكلة السكرول في المودالات (Modals) */
-.modal-open {
-    overflow: hidden !important; /* منع سكرول الخلفية عند فتح نافذة منبثقة */
-}
-
-/* 12. طبقة الحماية الهولوغرافية (Scanlines) */
-/* تضاف كخلفية لتعطي شكل شاشات المستقبل */
-.titan-scanlines {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        rgba(18, 16, 16, 0) 50%, 
-        rgba(0, 0, 0, 0.1) 50%
-    ), linear-gradient(
-        90deg, 
-        rgba(255, 0, 0, 0.02), 
-        rgba(0, 255, 0, 0.01), 
-        rgba(0, 0, 255, 0.02)
-    );
-    background-size: 100% 4px, 3px 100%;
-    pointer-events: none;
-    z-index: 9999;
-}
-
-/* 13. تنسيق الروابط العامة */
-a {
-    text-decoration: none;
-    color: inherit;
-    transition: 0.3s;
-}
-
-a:hover {
-    color: #3b82f6;
 }
