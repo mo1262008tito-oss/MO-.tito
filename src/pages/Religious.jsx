@@ -84,6 +84,7 @@ if (typeof window !== 'undefined') {
 }
 
 
+
 const WAHA_CONFIG = {
   PRAYER_API: "https://api.aladhan.com/v1/timingsByCity",
   QURAN_API: "https://api.alquran.cloud/v1",
