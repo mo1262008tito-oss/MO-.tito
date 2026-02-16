@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+
 import { 
   doc, updateDoc, onSnapshot, increment, arrayUnion, 
   setDoc, getDoc, collection, query, orderBy, limit, getDocs, addDoc, where 
@@ -1871,6 +1871,7 @@ const Religious = ({ user, profile }) => {
 
 
 export default Religious;
+
 
 
 
