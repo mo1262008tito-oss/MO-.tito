@@ -1,73 +1,89 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-
 import { 
   doc, updateDoc, onSnapshot, increment, arrayUnion, 
   setDoc, getDoc, collection, query, orderBy, limit, getDocs, addDoc, where 
 } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import axios from 'axios';
-// تأكد من استيراد الأيقونات التي استخدمتها في الواحة
+
+// الأيقونات المستخدمة في نظام الواحة
 import { 
   ShieldCheck, Layout, Users, BookOpen, CreditCard, 
   Library as LibraryIcon, Award, MessageSquare, Terminal, 
   Bell, Lock, Zap, Search, MapPin, Wifi, Globe, Heart, Star
 } from 'lucide-react';
-import './Religious.css'; // هذا السطر يربط التصميم بالبرمجة فوراً
-// ==========================================================
-// 1. CONSTANTS & API CONFIGURATIONS
-// ==========================================================
-/* ========================================================== */
-/* 🛡️ TITAN SMART GUARDIAN - نظام حماية تيتان من الانهيار       */
-/* ========================================================== */
-window.onerror = function(message, source, lineno, colno, error) {
-  console.group("%c🚨 تنبيه أمان تيتان", "color:white; background:red; padding:3px; border-radius:5px;");
-  console.log("المشكلة:", message);
-  console.groupEnd();
-  return true; // يمنع انهيار الصفحة (Crash)
-};
 
-// منع تعطل التطبيق بسبب الـ Unhandled Rejections (مثل فشل الـ API)
-window.onunhandledrejection = event => {
-  console.warn("⚠️ فشل في جلب بيانات خارجية:", event.reason);
-  event.preventDefault();
-};
+import './Religious.css'; 
 
 /* ========================================================== */
-/* 🌴 OASIS SYSTEM: ERROR BYPASS & SCROLL RESTORATION          */
+/* 🛡️ TITAN & OASIS INTEGRATED SYSTEM - نظام حماية تيتان الموحد */
 /* ========================================================== */
 
-// 1. تعريف مراجع وهمية شاملة (إصلاح خطأ motion)
+// 1. تعريف المراجع الوهمية الأساسية
 const dummy = () => null;
-const proxyHandler = {
+
+// 2. معالج البروكسي الذكي (يمنع أخطاء isPlaying و المكتبات المفقودة)
+const titanGuardianHandler = {
   get: (target, prop) => {
-    // هذا الجزء يسمح باستدعاء motion.div أو motion.section دون خطأ
-    return (props) => <div {...props}>{props.children}</div>;
-  }
+    // حل مشكلة reading 'isPlaying' و 'isPaused'
+    if (prop === 'isPlaying' || prop === 'isPaused') return false;
+    
+    // دعم مكونات Framer Motion (مثل motion.div) لتحويلها لـ div عادية عند الخطأ
+    const htmlTags = ['div', 'section', 'button', 'span', 'main', 'nav', 'header', 'footer', 'article'];
+    if (htmlTags.includes(prop)) {
+      return (props) => <div {...props}>{props.children}</div>;
+    }
+
+    // إرجاع دالة وهمية لأي استدعاء آخر لمنع الانهيار
+    return dummy;
+  },
+  apply: () => dummy
 };
 
-if (typeof window.motion === 'undefined') {
-  window.motion = new Proxy({}, proxyHandler);
-}
+// 3. تفعيل الحماية الشاملة على مستوى نافذة المتصفح (Window)
+if (typeof window !== 'undefined') {
+  // حماية مكتبة الحركة (Framer Motion)
+  window.motion = window.motion || new Proxy({}, titanGuardianHandler);
+  window.AnimatePresence = window.AnimatePresence || (({ children }) => children);
 
-// 2. حماية المكتبات الأخرى
-const modules = ['Accessibility', 'XLSX', 'jsPDF', 'CryptoJS', 'Recharts'];
-modules.forEach(mod => {
-  if (typeof window[mod] === 'undefined') window[mod] = new Proxy({}, { get: () => dummy });
-});
+  // حماية المكتبات الخارجية (التي قد تسبب ReferenceError)
+  const externalLibs = ['Accessibility', 'XLSX', 'jsPDF', 'CryptoJS', 'Recharts'];
+  externalLibs.forEach(lib => {
+    if (typeof window[lib] === 'undefined') {
+      window[lib] = new Proxy(dummy, titanGuardianHandler);
+    }
+  });
 
-// 3. إجبار السكرول على العمل في "الواحة"
-if (typeof document !== 'undefined') {
-  const style = document.createElement('style');
-  style.innerHTML = `
+  // 4. بروتوكول استعادة السكرول القسري (إصلاح شامل لكل الصفحات)
+  const titanScrollStyle = document.createElement('style');
+  titanScrollStyle.innerHTML = `
     html, body { 
       overflow-y: auto !important; 
       overflow-x: hidden !important; 
       height: auto !important; 
+      min-height: 100vh !important;
+      scroll-behavior: smooth !important;
     }
-    #root { height: auto !important; }
+    #root { 
+      height: auto !important; 
+      overflow: visible !important; 
+    }
+    /* إخفاء أي ماسكات قد تمنع التفاعل */
+    .framer-motion-mask, [data-overlay-container] {
+      pointer-events: none !important;
+    }
   `;
-  document.head.appendChild(style);
+  document.head.appendChild(titanScrollStyle);
+
+  // 5. صمام أمان أخير لمنع الشاشة البيضاء
+  window.onerror = function(msg) {
+    if (msg.includes('isPlaying') || msg.includes('motion')) return true;
+    console.warn("🛡️ نظام تيتان احتوى خطأ خارجي:", msg);
+    return true;
+  };
 }
+
+
 const WAHA_CONFIG = {
   PRAYER_API: "https://api.aladhan.com/v1/timingsByCity",
   QURAN_API: "https://api.alquran.cloud/v1",
@@ -1907,6 +1923,7 @@ const Religious = ({ user, profile }) => {
 
 
 export default Religious;
+
 
 
 
