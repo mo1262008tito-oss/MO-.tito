@@ -10,6 +10,7 @@ import {
 import confetti from 'canvas-confetti'; // npm install canvas-confetti (Optional, logic included)
 import './TitanV3.css';
 
+
 // ==========================================
 // 🖱️ CUSTOM CURSOR COMPONENT
 // ==========================================
@@ -21,6 +22,7 @@ const CustomCursor = () => {
     const move = (e) => setMousePos({ x: e.clientX, y: e.clientY });
     const addHover = () => setHovered(true);
     const removeHover = () => setHovered(false);
+
     
     window.addEventListener('mousemove', move);
     document.querySelectorAll('button, a, .interactive').forEach(el => {
@@ -31,6 +33,7 @@ const CustomCursor = () => {
     return () => window.removeEventListener('mousemove', move);
   }, []);
 
+  
   return (
     <>
       <div className={`custom-cursor ${hovered ? 'hovered' : ''}`} style={{ left: mousePos.x, top: mousePos.y }} />
