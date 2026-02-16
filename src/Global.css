@@ -1,1 +1,44 @@
+/* ========================================================== */
+/* 🚀 GLOBAL SCROLL RESTORATION PROTOCOL                      */
+/* ========================================================== */
+
+/* إعادة ضبط المحرك الأساسي للتمرير */
+html {
+    overflow-y: scroll !important; /* إجبار وجود مسار التمرير */
+    scroll-behavior: smooth !important; /* تمرير ناعم في كل الموقع */
+    height: auto !important;
+}
+
+body {
+    overflow-y: auto !important; /* السماح بالتمرير التلقائي */
+    overflow-x: hidden !important; /* منع التمرير الأفقي المزعج */
+    min-height: 100vh !important;
+    position: relative !important;
+    -webkit-overflow-scrolling: touch; /* تمرير سلس جداً على أجهزة iPhone */
+}
+
+/* إزالة أي قيود قد تكون فرضتها مكتبات التصميم الأخرى */
+#root, .App {
+    overflow: visible !important;
+    height: auto !important;
+}
+
+/* تخصيص شكل التمرير ليكون موحداً واحترافياً في كل الصفحات */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #010409; /* لون خلفية الموقع الداكن */
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #3b82f6, #00f2ff);
+    border-radius: 10px;
+    border: 2px solid #010409;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #fbbf24; /* الوهج الذهبي عند اللمس */
+}
 
