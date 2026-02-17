@@ -414,12 +414,6 @@ const HeroCard = ({ agent, rank, isEmperor = false }) => (
     </div>
   </div>
 );
-// ========================================================================
-// 🛡️ TITAN OS V3 - CORE LOGIC & EXTENDED FEATURES (PART 3/5)
-// ========================================================================
-
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-// يتم استخدام المكتبات التي تم استيرادها في الجزء الأول
 
 const TitanGrandLogic = ({ currentUserUid }) => {
   
