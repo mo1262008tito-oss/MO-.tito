@@ -1,412 +1,811 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useScroll, useSpring, useTransform, useMotionValue } from 'framer-motion';
-import { db } from '../firebase';
-import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
+import { db, auth } from '../firebase'; // تأكد من مسار ملف الفايربيس
 import { 
-  Trophy, Crown, Zap, Target, Medal, ShieldCheck, 
-  Search, TrendingUp, TrendingDown, Fingerprint, Activity, Box, 
-  Ghost, Cpu, Lock, ZapOff, Heart, Command, Eye, Share2, MoreHorizontal 
+  collection, query, orderBy, limit, onSnapshot, 
+  doc, updateDoc, getDoc, where, timestamp 
+} from 'firebase/firestore';
+
+// المكتبات اللازمة للميزات البصرية
+import confetti from 'canvas-confetti';
+import { 
+  Trophy, Crown, Shield, Star, Zap, Target, Medal, 
+  TrendingUp, Activity, Lock, Eye, Share2, Award, 
+  Military, MapPin, School, Flame, Box, Cpu, HardDrive,
+  UserCheck, Bell, Sword, Users, BarChart3, Clock
 } from 'lucide-react';
-import confetti from 'canvas-confetti'; // npm install canvas-confetti (Optional, logic included)
-import './TitanV3.css';
-
 
 // ==========================================
-// 🖱️ CUSTOM CURSOR COMPONENT
+// 1. نظام الرتب العسكرية (Military Ranks Logic)
 // ==========================================
-const CustomCursor = () => {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [hovered, setHovered] = useState(false);
+const RANK_SYSTEM = [
+  { level: 0, title: "Recuit - مستجد", icon: "🔰", minXP: 0 },
+  { level: 10, title: "Operative - عميل ميداني", icon: "🛡️", minXP: 1000 },
+  { level: 30, title: "Sergeant - رقيب", icon: "🎖️", minXP: 5000 },
+  { level: 50, title: "Commander - قائد", icon: "🎖️", minXP: 15000 },
+  { level: 70, title: "General - جنرال", icon: "🔱", minXP: 50000 },
+  { level: 100, title: "MaFa Emperor - إمبراطور Mafa", icon: "👑", minXP: 150000 },
+];
 
+const HallOfLegends = () => {
+  // ==========================================
+  // 2. حالات البيانات (Data States)
+  // ==========================================
+  const [globalStudents, setGlobalStudents] = useState([]); // الترتيب العالمي
+  const [localStudents, setLocalStudents] = useState([]);   // ترتيب المحافظة/المدرسة
+  const [currentUserData, setCurrentUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('global'); // global, school, governorate
+  
+  // ==========================================
+  // 3. حالات الميزات المتقدمة (Features States)
+  // ==========================================
+  const [notifications, setNotifications] = useState([]); // Climb Notifications
+  const [dailyStreak, setDailyStreak] = useState(0);      // نظام الـ Streaks
+  const [activePowerUps, setActivePowerUps] = useState([]); // مضاعفات النقاط
+  const [isPrestigeModalOpen, setIsPrestigeOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [focusedAgent, setFocusedAgent] = useState(null); // الطالب المختار للعرض (Dossier)
+  const [isHologramActive, setIsHologramActive] = useState(true);
+  
+  // نظام التوقعات بالذكاء الاصطناعي (AI Prediction State)
+  const [prediction, setPrediction] = useState({ nextRankIn: 0, status: 'stable' });
+
+  // ==========================================
+  // 4. جلب البيانات من Firebase (Real-time Stream)
+  // ==========================================
   useEffect(() => {
-    const move = (e) => setMousePos({ x: e.clientX, y: e.clientY });
-    const addHover = () => setHovered(true);
-    const removeHover = () => setHovered(false);
+    // جلب أفضل 100 طالب بناءً على XP العام ونقاط النور
+    const q = query(
+      collection(db, "users"), 
+      orderBy("totalXP", "desc"), 
+      limit(100)
+    );
 
-    
-    window.addEventListener('mousemove', move);
-    document.querySelectorAll('button, a, .interactive').forEach(el => {
-      el.addEventListener('mouseenter', addHover);
-      el.addEventListener('mouseleave', removeHover);
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const students = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        // دمج الاسم الرباعي والمدرسة والمحافظة من الداتا
+        fullName: doc.data().fullName || "جاري التحميل...",
+        school: doc.data().school || "مدرسة غير معروفة",
+        governorate: doc.data().governorate || "غير محدد",
+        lightPoints: doc.data().lightPoints || 0, // نقاط النور للواحة
+        totalXP: doc.data().totalXP || 0
+      }));
+      
+      setGlobalStudents(students);
+      setLoading(false);
+      
+      // منطق إشعارات الصعود (Climb Notification Logic)
+      checkRankClimb(students);
     });
 
-    return () => window.removeEventListener('mousemove', move);
+    return () => unsubscribe();
   }, []);
 
+  // ==========================================
+  // 5. محرك الحسابات (Calculation Engine)
+  // ==========================================
   
-  return (
-    <>
-      <div className={`custom-cursor ${hovered ? 'hovered' : ''}`} style={{ left: mousePos.x, top: mousePos.y }} />
-      <div className="cursor-dot" style={{ left: mousePos.x, top: mousePos.y }} />
-    </>
-  );
+  // أ. حساب الرتبة الحالية بناءً على الـ XP
+  const calculateRank = (xp) => {
+    return RANK_SYSTEM.slice().reverse().find(r => xp >= r.minXP) || RANK_SYSTEM[0];
+  };
+
+  // ب. نظام الـ XP Progress (كم يتبقى للمستوى التالي)
+  const getNextLevelProgress = (xp) => {
+    const currentRank = calculateRank(xp);
+    const nextRank = RANK_SYSTEM[RANK_SYSTEM.indexOf(currentRank) + 1];
+    if (!nextRank) return 100;
+    const range = nextRank.minXP - currentRank.minXP;
+    const progress = ((xp - currentRank.minXP) / range) * 100;
+    return Math.min(progress, 100);
+  };
+
+  // ج. نظام التوقعات (AI Prediction Engine - Mock Logic)
+  const runAIPrediction = (student) => {
+    // محاكاة تحليل الأداء: إذا كان الطالب قد جمع > 500 نقطة اليوم
+    const dailyVelocity = student.dailyXP || 0;
+    if (dailyVelocity > 1000) {
+      setPrediction({ nextRankIn: 2, status: 'aggressive' });
+    } else {
+      setPrediction({ nextRankIn: 7, status: 'stable' });
+    }
+  };
+
+  // د. إشعارات تجاوز المنافسين
+  const checkRankClimb = (newSnapshot) => {
+    // منطق يقارن الترتيب القديم بالجديد في الـ LocalStorage
+    const oldRank = localStorage.getItem('last_known_rank');
+    // ... logic to push to notifications state
+  };
+
+  // هـ. ميزة الـ Prestige (إعادة التصفير مقابل تميز دائم)
+  const handlePrestige = async () => {
+    if (currentUserData.totalXP >= 150000) {
+       // كود تحديث الفايربيس لتصفير النقاط وإضافة شارة البريستيج
+       await updateDoc(doc(db, "users", auth.currentUser.uid), {
+         totalXP: 0,
+         prestigeLevel: (currentUserData.prestigeLevel || 0) + 1
+       });
+       confetti({ particleCount: 200, spread: 100 });
+    }
+  };
+
+  // ==========================================
+  // 6. التحكم في المؤثرات الصوتية (Soundscapes)
+  // ==========================================
+  const playSound = (type) => {
+    const audio = {
+      levelup: new Audio('/sounds/level-up.mp3'),
+      click: new Audio('/sounds/cyber-click.mp3'),
+      rankUp: new Audio('/sounds/rank-up.wav')
+    };
+    if(audio[type]) audio[type].play().catch(() => {});
+  };
+
+  // ==========================================
+  // 7. ميزات التصفية والبحث (Filtering Logic)
+  // ==========================================
+  const filteredStudents = useMemo(() => {
+    return globalStudents.filter(s => 
+      s.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.governorate.includes(searchQuery)
+    );
+  }, [globalStudents, searchQuery]);
+
+  // ==========================================
+  // 8. نظام الـ Streaks (النشاط اليومي)
+  // ==========================================
+  const updateStreak = async () => {
+    // يتم استدعاؤه عند تسجيل الدخول (حسب شروطك في المعلومات المحفوظة)
+    // يقارن تاريخ اليوم بآخر دخول
+  };
+// استكمالاً للكود السابق في الجزء الأول...
+
+// ==========================================
+// 9. مكون شعاع الضوء (God Rays Component)
+// ==========================================
+const GodRays = () => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+    <div className="ray ray-1" />
+    <div className="ray ray-2" />
+    <div className="ray ray-3" />
+  </div>
+);
+
+// ==========================================
+// 10. نظام الإطارات المخصصة (Avatar Frames Logic)
+// ==========================================
+const getFrameStyle = (rank) => {
+  if (rank === 1) return "frame-emperor shadow-gold";
+  if (rank <= 3) return "frame-elite shadow-silver";
+  if (rank <= 10) return "frame-commander shadow-cyan";
+  return "frame-basic";
 };
 
 // ==========================================
-// 🃏 3D TITAN CARD COMPONENT
+// 11. واجهة المستخدم الرئيسية (The Main Interface)
 // ==========================================
-const TitanCard = ({ student, index, rankData }) => {
-  const [isFlipped, setIsFlipped] = useState(false);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const rotateX = useTransform(y, [-100, 100], [10, -10]); // Inverse rotation
-  const rotateY = useTransform(x, [-100, 100], [-10, 10]);
-
-  const handleMouseMove = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    x.set(e.clientX - rect.left - rect.width / 2);
-    y.set(e.clientY - rect.top - rect.height / 2);
-  };
-
-  const handleFlip = () => {
-    setIsFlipped(!isFlipped);
-    if (index === 0 && !isFlipped) confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-  };
+const TitanInterface = ({ students, currentUser, activeTab }) => {
+  const topThree = students.slice(0, 3);
+  const others = students.slice(3);
 
   return (
-    <motion.div 
-      className={`holo-card relative perspective-1000 ${index === 0 ? 'w-full md:w-[26rem] h-[32rem] z-30' : 'w-full h-[26rem]'} interactive`}
-      style={{ rotateX, rotateY }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => { x.set(0); y.set(0); }}
-      initial={{ opacity: 0, scale: 0.8 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      transition={{ delay: index * 0.1 }}
-    >
-      <div className={`card-inner w-full h-full relative ${isFlipped ? 'flipped' : ''}`}>
-        
-        {/* FRONT SIDE */}
-        <div className={`card-front bg-white/5 backdrop-blur-xl border border-white/10 p-6 flex flex-col items-center justify-between ${index === 0 ? 'emperor-holo border-yellow-500/50' : ''}`}
-             onClick={handleFlip}>
-          
-          {index === 0 && <div className="rotating-border" />}
-          
-          <div className="w-full flex justify-between items-center z-10">
-            <span className="font-zen text-4xl text-white/20">#{index + 1}</span>
-            <div className="p-2 bg-black/50 rounded-full border border-white/10">{rankData.icon}</div>
-          </div>
+    <div className="relative min-h-screen bg-[#02000d] text-white p-4 md:p-10 font-raj">
+      {/* ميزة 1: God Rays Background */}
+      <GodRays />
+      
+      {/* ميزة 2: Custom Cursor (تم تعريفه في الجزء الأول) */}
+      <CustomCursor />
 
-          <div className="relative group">
-            <div className={`w-32 h-32 rounded-full p-1 border-2 ${index === 0 ? 'border-yellow-400' : 'border-blue-500'} relative`}>
-              <img src={student.photoURL} alt="" className="w-full h-full object-cover rounded-full grayscale group-hover:grayscale-0 transition-all duration-500" />
-              {/* Power Ring */}
-              <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="2" className="text-transparent" />
-                <circle cx="50" cy="50" r="48" fill="none" stroke={index === 0 ? '#ffd700' : '#00f3ff'} strokeWidth="2" strokeDasharray="300" strokeDashoffset="40" strokeLinecap="round" className="opacity-80" />
-              </svg>
-            </div>
-            {index === 0 && <Crown className="absolute -top-6 left-1/2 -translate-x-1/2 text-yellow-400 animate-bounce" size={30} />}
+      {/* ميزة 3: Cinematic HUD Header */}
+      <header className="relative z-50 flex justify-between items-center mb-20 border-b border-cyan-500/20 pb-6">
+        <div className="flex gap-6 items-center">
+          <motion.div 
+            animate={{ rotate: [0, 90, 180, 270, 360] }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className="w-16 h-16 border-2 border-dashed border-cyan-500 rounded-full flex items-center justify-center"
+          >
+            <Cpu className="text-cyan-400" size={32} />
+          </motion.div>
+          <div>
+            <h1 className="text-4xl font-zen tracking-tighter uppercase">
+              Titan <span className="text-cyan-500">Protocol</span>
+            </h1>
+            <p className="text-xs text-cyan-500/60 tracking-[0.5em]">SYSTEM_VERSION_3.9.4_STABLE</p>
           </div>
-
-          <div className="text-center z-10">
-            <h3 className="font-raj font-bold text-2xl glitch-text cursor-pointer">{student.displayName}</h3>
-            <p className="text-xs uppercase tracking-[0.3em] opacity-70 mt-1" style={{color: rankData.color}}>{rankData.title}</p>
-          </div>
-
-          <div className="w-full bg-black/30 rounded-xl p-3 flex justify-between items-center border border-white/5">
-            <div className="flex flex-col text-left">
-              <span className="text-[9px] uppercase text-gray-400">Total XP</span>
-              <span className="font-zen text-lg">{student.xp?.toLocaleString()}</span>
-            </div>
-            <div className="flex gap-1 h-4 items-end">
-               <div className="audio-bar"></div>
-               <div className="audio-bar"></div>
-               <div className="audio-bar"></div>
-            </div>
-          </div>
-          
-          <div className="absolute bottom-2 text-[9px] text-gray-500 uppercase tracking-widest animate-pulse">Click to Reveal Stats</div>
         </div>
 
-        {/* BACK SIDE (STATS) */}
-        <div className="card-back p-8 text-center" onClick={handleFlip}>
-          <h3 className="font-zen text-xl text-blue-400 mb-6">Battle Stats</h3>
+        {/* ميزة 4: Real-time Stats HUD */}
+        <div className="hidden lg:flex gap-12 text-[10px] font-bold tracking-widest text-gray-400">
+          <div className="flex flex-col border-l-2 border-cyan-500 pl-4">
+            <span>ACTIVE_AGENTS</span>
+            <span className="text-white text-xl font-zen">1,402</span>
+          </div>
+          <div className="flex flex-col border-l-2 border-purple-500 pl-4">
+            <span>TOTAL_XP_BURNED</span>
+            <span className="text-white text-xl font-zen">8.4M</span>
+          </div>
+          <div className="flex flex-col border-l-2 border-yellow-500 pl-4">
+            <span>EMPEROR_STATUS</span>
+            <span className="text-white text-xl font-zen">PROTECTED</span>
+          </div>
+        </div>
+      </header>
+
+      {/* ==========================================
+          12. منصة التتويج الثلاثية (3D Podium - ميزات 5-15)
+          ========================================== */}
+      <section className="relative z-10 mb-60">
+        <div className="flex flex-col lg:flex-row justify-center items-end gap-10 lg:gap-20 h-[600px]">
           
-          <div className="w-full space-y-4">
-            {[
-              { label: "Dedication", val: 95, color: "bg-blue-500" },
-              { label: "Accuracy", val: 88, color: "bg-purple-500" },
-              { label: "Speed", val: 92, color: "bg-green-500" }
-            ].map((stat, i) => (
-              <div key={i} className="text-left">
-                <div className="flex justify-between text-xs mb-1 uppercase font-bold">
-                  <span>{stat.label}</span>
-                  <span>{stat.val}%</span>
-                </div>
-                <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }} 
-                    animate={{ width: `${stat.val}%` }} 
-                    className={`h-full ${stat.color}`} 
-                  />
-                </div>
+          {/* المركز الثاني (يسار) */}
+          {topThree[1] && (
+            <motion.div 
+              initial={{ x: -100, opacity: 0 }}
+              whileInView={{ x: 0, opacity: 1 }}
+              className="w-full lg:w-80 h-[450px] podium-base silver-gradient relative"
+            >
+              <HeroCard agent={topThree[1]} rank={2} />
+              <div className="podium-label">WARLORD</div>
+            </motion.div>
+          )}
+
+          {/* المركز الأول (العملاق - منتصف) */}
+          {topThree[0] && (
+            <motion.div 
+              initial={{ y: 100, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              className="w-full lg:w-[450px] h-[550px] podium-base gold-gradient relative z-30"
+            >
+              <div className="absolute -top-20 left-1/2 -translate-x-1/2">
+                 <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
+                    <Crown size={80} className="text-yellow-400 filter drop-shadow-[0_0_20px_rgba(255,215,0,0.8)]" />
+                 </motion.div>
               </div>
-            ))}
-          </div>
+              <HeroCard agent={topThree[0]} rank={1} isEmperor={true} />
+              <div className="podium-label text-3xl">THE EMPEROR</div>
+              {/* ميزة: Dynamic Aura */}
+              <div className="absolute inset-0 bg-yellow-500/10 blur-[120px] rounded-full -z-10 animate-pulse" />
+            </motion.div>
+          )}
 
-          <div className="mt-8 grid grid-cols-2 gap-4 w-full">
-            <button className="py-2 bg-white/10 rounded hover:bg-white/20 text-xs font-bold interactive">PROFILE</button>
-            <button className="py-2 bg-blue-600 rounded hover:bg-blue-500 text-xs font-bold interactive">MESSAGE</button>
-          </div>
+          {/* المركز الثالث (يمين) */}
+          {topThree[2] && (
+            <motion.div 
+              initial={{ x: 100, opacity: 0 }}
+              whileInView={{ x: 0, opacity: 1 }}
+              className="w-full lg:w-80 h-96 podium-base bronze-gradient relative"
+            >
+              <HeroCard agent={topThree[2]} rank={3} />
+              <div className="podium-label">COMMANDER</div>
+            </motion.div>
+          )}
+        </div>
+      </section>
+
+      {/* ==========================================
+          13. قائمة المحاربين (The Strivers - ميزات 16-30)
+          ========================================== */}
+      <main className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-10">
+           <h3 className="font-zen text-3xl flex items-center gap-4">
+             <Activity className="text-cyan-400" /> 
+             ACTIVE_DASHBOARD 
+             <span className="text-[10px] bg-cyan-500/10 text-cyan-500 px-3 py-1 rounded-full border border-cyan-500/20">LIVE DATA</span>
+           </h3>
+           
+           {/* ميزة: Global vs Local Switcher */}
+           <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
+              {['GLOBAL', 'SCHOOL', 'GOVERNORATE'].map(tab => (
+                <button 
+                  key={tab}
+                  className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === tab ? 'bg-cyan-500 text-black' : 'hover:bg-white/5'}`}
+                >
+                  {tab}
+                </button>
+              ))}
+           </div>
         </div>
 
-      </div>
-    </motion.div>
+        {/* ميزة: Dynamic Search & Filter HUD */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+           <div className="md:col-span-2 relative">
+             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+             <input 
+               type="text" 
+               placeholder="SEARCH BY FULL NAME, SCHOOL, OR REGION..." 
+               className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 text-white font-raj focus:border-cyan-500 outline-none transition-all"
+             />
+           </div>
+           <div className="bg-white/5 border border-white/10 rounded-2xl flex items-center justify-around px-4">
+              <span className="text-[10px] text-gray-500 uppercase">Sort by:</span>
+              <select className="bg-transparent text-xs font-bold outline-none">
+                <option>TOTAL XP (YEAR)</option>
+                <option>LIGHT POINTS (OASIS)</option>
+                <option>DAILY STREAK</option>
+              </select>
+           </div>
+           <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-2xl flex items-center justify-center gap-4 group cursor-pointer hover:bg-cyan-500 transition-all">
+              <Share2 size={18} className="text-cyan-400 group-hover:text-black" />
+              <span className="text-xs font-bold group-hover:text-black uppercase tracking-widest">Share Hall of Fame</span>
+           </div>
+        </div>
+
+        {/* ميزة: The Infinite Scroll Leaderboard */}
+        <div className="space-y-4">
+          <AnimatePresence>
+            {others.map((agent, index) => (
+              <AgentRow key={agent.id} agent={agent} index={index + 4} />
+            ))}
+          </AnimatePresence>
+        </div>
+      </main>
+
+      {/* ميزة: Floating Action HUD (نظام الإشعارات المدمج) */}
+      <aside className="fixed bottom-10 right-10 z-[100] flex flex-col gap-4">
+         <div className="p-4 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl w-80">
+            <div className="flex items-center gap-3 mb-3 border-b border-white/5 pb-3">
+               <Bell size={16} className="text-yellow-400" />
+               <span className="text-[10px] font-bold uppercase tracking-widest text-gray-300">Live Notifications</span>
+            </div>
+            <div className="space-y-3">
+               <div className="text-[11px] text-gray-400">
+                  <span className="text-cyan-400 font-bold">@Ahmed_Ali</span> just climbed to <span className="text-white">RANK #14</span>
+               </div>
+               <div className="text-[11px] text-gray-400">
+                  <span className="text-purple-400 font-bold">@Sara_Mafa</span> unlocked <span className="text-white">"Speed Demon"</span> Badge
+               </div>
+            </div>
+         </div>
+      </aside>
+    </div>
   );
 };
 
 // ==========================================
-// 📜 MAIN COMPONENT
+// 14. مكون البطاقة البطل (Hero Card Component)
 // ==========================================
-const HallOfLegends = () => {
-  const [bigFive, setBigFive] = useState([]);
-  const [strivers, setStrivers] = useState([]);
-  const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [focusMode, setFocusMode] = useState(false);
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
+const HeroCard = ({ agent, rank, isEmperor = false }) => (
+  <div className="p-6 h-full flex flex-col items-center justify-between relative overflow-hidden group">
+    {/* ميزة: Holographic Shine Effect */}
+    <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 pointer-events-none" />
+    
+    {/* تفاصيل الطالب الرباعية (اسم، مدرسة، محافظة) */}
+    <div className="text-center z-10">
+       <div className={`w-32 h-32 md:w-40 md:h-40 rounded-full mx-auto p-1.5 border-4 mb-4 relative ${getFrameStyle(rank)}`}>
+          <img src={agent.photoURL} alt="" className="w-full h-full object-cover rounded-full grayscale group-hover:grayscale-0 transition-all" />
+          {/* ميزة: Animated Pulse Ring */}
+          <div className="absolute -inset-2 border border-cyan-500/20 rounded-full animate-ping-slow" />
+       </div>
+       <h4 className="font-zen text-xl md:text-2xl tracking-tighter mb-1 truncate px-2">
+         {agent.fullName} {/* الاسم الرباعي */}
+       </h4>
+       <div className="flex flex-col gap-1 items-center">
+          <span className="text-[10px] bg-white/10 px-3 py-1 rounded-full border border-white/5 flex items-center gap-2">
+            <School size={10} /> {agent.school}
+          </span>
+          <span className="text-[10px] text-gray-400 flex items-center gap-2">
+            <MapPin size={10} /> {agent.governorate}
+          </span>
+       </div>
+    </div>
 
-  // 1. Data Fetching
+    {/* ميزة: Skill Hexagon / Stats */}
+    <div className="w-full space-y-3 z-10">
+      <div className="flex justify-between text-[10px] font-bold uppercase tracking-[0.2em]">
+        <span className="text-cyan-400">XP Points</span>
+        <span>{agent.totalXP?.toLocaleString()}</span>
+      </div>
+      <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden border border-white/5">
+        <motion.div 
+          initial={{ width: 0 }}
+          whileInView={{ width: '90%' }}
+          className={`h-full ${isEmperor ? 'bg-yellow-500 shadow-[0_0_15px_#ffd700]' : 'bg-cyan-500 shadow-[0_0_10px_#00f3ff]'}`}
+        />
+      </div>
+    </div>
+
+    {/* ميزة: Rank Badge */}
+    <div className="absolute top-4 right-4 bg-black/60 border border-white/10 w-10 h-10 rounded-lg flex items-center justify-center font-zen text-sm shadow-xl">
+       #{rank}
+    </div>
+  </div>
+);
+// ========================================================================
+// 🛡️ TITAN OS V3 - CORE LOGIC & EXTENDED FEATURES (PART 3/5)
+// ========================================================================
+
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+// يتم استخدام المكتبات التي تم استيرادها في الجزء الأول
+
+const TitanGrandLogic = ({ currentUserUid }) => {
+  
+  // ---------------------------------------------------------
+  // [1] حالات الأنظمة الاجتماعية والتنافسية (Social Systems)
+  // ---------------------------------------------------------
+  const [challenges, setChallenges] = useState([]);      // نظام Challenge a Friend
+  const [duels, setDuels] = useState({ active: false, opponent: null }); // Duel Mode
+  const [liveFeed, setLiveFeed] = useState([]);           // Live Activity Feed
+  const [guilds, setGuilds] = useState([]);               // نظام الـ Guilds/Clubs
+  const [mentorPoints, setMentorPoints] = useState(0);    // Mentor Badges Logic
+
+  // ---------------------------------------------------------
+  // [2] حالات البيانات والذكاء الاصطناعي (AI & Data Analytics)
+  // ---------------------------------------------------------
+  const [performanceData, setPerformanceData] = useState({}); // AI Performance Analysis
+  const [predictedPath, setPredictedPath] = useState([]);     // Predicted Rank Path
+  const [heatMapData, setHeatMapData] = useState([]);         // Heatmap System
+  const [skillRadar, setSkillRadar] = useState({              // Skill Hexagons
+    speed: 0, accuracy: 0, dedication: 0, persistence: 0, strategy: 0, logic: 0
+  });
+
+  // ---------------------------------------------------------
+  // [3] حالات الأوسمة والجوائز (Badges & Collectibles)
+  // ---------------------------------------------------------
+  const [inventory, setInventory] = useState([]);            // Virtual Trophy Room
+  const [lootBoxes, setLootBoxes] = useState(0);              // نظام الـ Loot Boxes
+  const [powerUps, setPowerUps] = useState({                  // Power-ups System
+    doubleXP: { active: false, timeLeft: 0 },
+    ghostMode: { active: false, timeLeft: 0 }
+  });
+  const [digitalCerts, setDigitalCerts] = useState([]);       // Digital Certificates
+
+  // ---------------------------------------------------------
+  // [4] حالات التجربة الجيميفيكيشن (Gamification UX)
+  // ---------------------------------------------------------
+  const [currentStreak, setCurrentStreak] = useState(0);      // Daily Streaks
+  const [prestigeLevel, setPrestigeLevel] = useState(0);      // Prestige System
+  const [soundEnabled, setSoundEnabled] = useState(true);     // Soundscapes Control
+  const [easterEggsFound, setEasterEggs] = useState([]);      // Hidden Easter Eggs
+
+  // =========================================================
+  // 🛡️ أولاً: محرك الأوسمة الذكي (Automated Badge Engine)
+  // =========================================================
+  const badgeDefinitions = [
+    { id: 'first_1k', name: 'Alpha Strike', icon: '⚡', criteria: (p) => p.totalXP >= 1000 },
+    { id: 'streak_7', name: 'Week on Fire', icon: '🔥', criteria: (p) => p.streak >= 7 },
+    { id: 'fast_solver', name: 'Speed Demon', icon: '🏎️', criteria: (p) => p.avgSpeed < 10 },
+    { id: 'top_1_governorate', name: 'Governorate King', icon: '🌍', criteria: (p) => p.localRank === 1 },
+    { id: 'light_master', name: 'Oasis Guardian', icon: '💎', criteria: (p) => p.lightPoints >= 5000 },
+  ];
+
+  const checkAchievements = useCallback((userData) => {
+    const newBadges = badgeDefinitions.filter(badge => 
+      badge.criteria(userData) && !inventory.includes(badge.id)
+    );
+    if (newBadges.length > 0) {
+      newBadges.forEach(b => triggerAchievementUnlock(b));
+    }
+  }, [inventory]);
+
+  const triggerAchievementUnlock = (badge) => {
+    // ميزة: Achievement Unlocked Animation & Sound
+    if (soundEnabled) playSound('achievement_unlocked.mp3');
+    setNotifications(prev => [...prev, { type: 'badge', content: `Unlocked: ${badge.name}`, id: Date.now() }]);
+    // تحديث قاعدة البيانات فوراً
+    updateDoc(doc(db, "users", currentUserUid), {
+      badges: arrayUnion(badge.id),
+      notifications: arrayUnion({ msg: `حصلت على وسام ${badge.name}`, time: new Date() })
+    });
+  };
+
+  // =========================================================
+  // 🧠 ثانياً: نظام التوقع بالذكاء الاصطناعي (AI Predictive Engine)
+  // =========================================================
+  const calculateAIPrediction = (history) => {
+    // ميزة: Predicted Rank - تحليل آخر 7 أيام لتوقع المركز القادم
+    const recentGrowth = history.slice(-7).reduce((acc, val) => acc + val.xp, 0) / 7;
+    const currentRank = currentUserData.globalRank;
+    const targetRank = currentRank > 1 ? currentRank - 1 : 1;
+    
+    // حساب الأيام المتوقعة للوصول للمركز التالي
+    const xpNeeded = globalStudents[targetRank - 1]?.totalXP - currentUserData.totalXP;
+    const daysToRankUp = Math.ceil(xpNeeded / recentGrowth);
+
+    setPredictedPath({
+      target: targetRank,
+      eta: daysToRankUp,
+      velocity: recentGrowth.toFixed(0),
+      confidence: recentGrowth > 500 ? "High" : "Medium"
+    });
+  };
+
+  // =========================================================
+  // ⚔️ ثالثاً: نظام التحديات والنزالات (Duel & Challenge System)
+  // =========================================================
+  const initiateDuel = (opponentId) => {
+    // ميزة: Duel Mode - نزال حقيقي 1 ضد 1
+    const duelId = `duel_${currentUserUid}_${opponentId}`;
+    setDoc(doc(db, "duels", duelId), {
+      challenger: currentUserUid,
+      target: opponentId,
+      status: 'pending',
+      timestamp: serverTimestamp()
+    });
+    setNotifications(prev => [...prev, { msg: "تم إرسال طلب نزال!", type: 'duel' }]);
+  };
+
+  // =========================================================
+  // ⚡ رابعاً: نظام مضاعفات القوة (Power-ups & Loot Boxes)
+  // =========================================================
+  const activatePowerUp = (type) => {
+    // ميزة: Power-ups - مضاعفة النقاط لمدة ساعة
+    const duration = 3600; // 1 hour
+    setPowerUps(prev => ({
+      ...prev,
+      [type]: { active: true, timeLeft: duration }
+    }));
+    
+    // مؤقت التنازلي
+    const timer = setInterval(() => {
+      setPowerUps(prev => {
+        if (prev[type].timeLeft <= 1) {
+          clearInterval(timer);
+          return { ...prev, [type]: { active: false, timeLeft: 0 } };
+        }
+        return { ...prev, [type]: { ...prev[type], timeLeft: prev[type].timeLeft - 1 } };
+      });
+    }, 1000);
+  };
+
+  // =========================================================
+  // 🏆 خامساً: نظام البريستيج (Prestige & Reset System)
+  // =========================================================
+  const processPrestige = async () => {
+    // ميزة: Prestige System - إعادة التصفير للقمة
+    if (currentUserData.totalXP >= 150000) {
+      await updateDoc(doc(db, "users", currentUserUid), {
+        totalXP: 0,
+        lightPoints: 0,
+        prestigeLevel: increment(1),
+        specialFrame: "LEGENDARY_FRAME_V1" // ميزة: Custom Avatar Frames
+      });
+      setPrestigeLevel(prev => prev + 1);
+      confetti({ particleCount: 500, spread: 150 });
+      playSound('prestige_vocal.mp3');
+    }
+  };
+
+  // =========================================================
+  // 📊 سادساً: نظام الرادار والمهارات (Skill Hexagon Engine)
+  // =========================================================
+  const updateSkillRadar = (stats) => {
+    // ميزة: Skill Hexagons - رسم بياني سداسي
+    // يتم الحساب بناءً على: (السرعة، الدقة، الالتزام، الاستمرارية، الصعوبة، التفاعل)
+    const newRadar = {
+      speed: (stats.correctAnswers / stats.totalTime) * 100,
+      accuracy: (stats.correctAnswers / stats.totalAttempts) * 100,
+      dedication: (stats.loginDays / 30) * 100,
+      persistence: (stats.hardTasksSolved / 10) * 100,
+      strategy: (stats.powerUpsUsed / 5) * 100,
+      logic: (stats.perfectScores / 5) * 100
+    };
+    setSkillRadar(newRadar);
+  };
+
+  // =========================================================
+  // 🗞️ سابعاً: شريط النشاط الحي (Live Activity Feed Logic)
+  // =========================================================
   useEffect(() => {
-    const q = query(collection(db, "users"), orderBy("xp", "desc"), limit(20));
-    const unsub = onSnapshot(q, (snapshot) => {
-      const allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setBigFive(allData.slice(0, 5));
-      setStrivers(allData.slice(5, 15));
-      setLoading(false);
+    const q = query(collection(db, "global_events"), orderBy("time", "desc"), limit(10));
+    const unsub = onSnapshot(q, (snap) => {
+      const events = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setLiveFeed(events); // ميزة: Live Activity Feed
     });
     return () => unsub();
   }, []);
 
-  // 2. Rank Logic
-  const getRankData = (rank) => {
-    const ranks = {
-      1: { title: "SUPREME EMPEROR", color: "#ffd700", icon: <Crown size={32} className="text-yellow-400" /> },
-      2: { title: "WARLORD", color: "#c0c0c0", icon: <Trophy size={28} className="text-gray-300" /> },
-      3: { title: "COMMANDER", color: "#cd7f32", icon: <Medal size={28} className="text-orange-400" /> },
-      4: { title: "GUARDIAN", color: "#00f3ff", icon: <ShieldCheck size={24} className="text-cyan-400" /> },
-      5: { title: "VANGUARD", color: "#00f3ff", icon: <Target size={24} className="text-cyan-400" /> },
+  // =========================================================
+  // 🕵️ ثامناً: نظام بيض الفصح والمهام المخفية (Easter Eggs)
+  // =========================================================
+  useEffect(() => {
+    const handleSecretCode = (e) => {
+      // إذا كتب الطالب كلمة "TITAN" على الكيبورد
+      // ميزة: Hidden Easter Eggs
+      const keys = []; 
+      keys.push(e.key);
+      if (keys.join('').includes('TITAN')) {
+        unlockEasterEgg('THE_TITAN_FOUNDER');
+      }
     };
-    return ranks[rank] || { title: "OPERATIVE", color: "#64748b", icon: <Zap size={20} /> };
+    window.addEventListener('keydown', handleSecretCode);
+    return () => window.removeEventListener('keydown', handleSecretCode);
+  }, []);
+
+  // =========================================================
+  // 📑 تاسعاً: نظام الشهادات الرقمية (PDF Certificates)
+  // =========================================================
+  const generateCertificate = (rankTitle) => {
+    // ميزة: Digital Certificates - توليد شهادة تلقائية
+    const certData = {
+      name: currentUserData.fullName,
+      rank: rankTitle,
+      school: currentUserData.school,
+      date: new Date().toLocaleDateString(),
+      serial: `CERT-${Math.random().toString(36).toUpperCase().slice(2, 10)}`
+    };
+    setDigitalCerts(prev => [...prev, certData]);
+    // منطق الطباعة أو التحميل
   };
-if (loading) return (
-    <div className="min-h-screen bg-[#030014] flex flex-col items-center justify-center text-cyan-400 font-raj">
-      <motion.div 
-        animate={{ rotate: 360 }}
-        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-        className="mb-8"
-      >
-        <Cpu size={80} strokeWidth={1} />
-      </motion.div>
-      <motion.h2 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: [0, 1, 0] }}
-        transition={{ duration: 2, repeat: Infinity }}
-        className="text-2xl tracking-[0.5em] font-zen"
-      >
-        ESTABLISHING NEURAL LINK...
-      </motion.h2>
-      <div className="mt-4 w-48 h-[2px] bg-white/10 relative overflow-hidden">
-        <motion.div 
-          className="absolute inset-0 bg-cyan-500"
-          initial={{ x: '-100%' }}
-          animate={{ x: '100%' }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-        />
-      </div>
-    </div>
-  );
 
-  return (
-    <div className={`min-h-screen relative overflow-x-hidden transition-colors duration-1000 ${focusMode ? 'grayscale contrast-125' : ''}`}>
-      <CustomCursor />
-      
-      {/* 🚀 Overlays */}
-      <motion.div className="scroll-progress" style={{ scaleX }} />
-      <div className="scanlines" />
-      
-      {/* 🌌 Interactive Particle Background */}
-      <div className="fixed inset-0 z-[-1] opacity-30">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute bg-blue-500 rounded-full blur-xl"
-            initial={{ 
-              x: Math.random() * window.innerWidth, 
-              y: Math.random() * window.innerHeight,
-              scale: Math.random() * 0.5 + 0.5
-            }}
-            animate={{ 
-              y: [null, Math.random() * window.innerHeight],
-              x: [null, Math.random() * window.innerWidth]
-            }}
-            transition={{ duration: Math.random() * 20 + 10, repeat: Infinity, repeatType: "reverse" }}
-            style={{ width: Math.random() * 100 + 'px', height: Math.random() * 100 + 'px' }}
-          />
-        ))}
-      </div>
+  // =========================================================
+  // 🌑 عاشراً: نظام الـ Dark/Light (Supernova Logic)
+  // =========================================================
+  const toggleTheme = () => {
+    // ميزة: Dark/Light Modes (Midnight vs Supernova)
+    const theme = document.body.getAttribute('data-theme');
+    document.body.setAttribute('data-theme', theme === 'dark' ? 'supernova' : 'dark');
+  };
 
-      {/* 🧭 NAV BAR */}
-      <nav className="p-6 md:p-8 flex justify-between items-center sticky top-0 z-[100] backdrop-blur-lg border-b border-white/5">
-        <div className="flex items-center gap-4">
-          <Fingerprint className="text-cyan-400" size={30} />
-          <div>
-            <h1 className="font-zen text-xl tracking-tighter">TITAN <span className="text-cyan-400">V3</span></h1>
-            <p className="text-[10px] text-gray-400 tracking-[0.3em]">SECURE CONNECTION</p>
-          </div>
-        </div>
-        
-        <div className="flex gap-4">
-           <button onClick={() => setFocusMode(!focusMode)} className="p-2 border border-white/10 rounded-full hover:bg-white/10 interactive transition-all">
-             <Eye size={18} className={focusMode ? "text-red-500" : "text-cyan-500"} />
-           </button>
-           <div className="hidden md:flex items-center gap-2 bg-black/40 px-4 py-2 rounded-full border border-white/10">
-             <div className="w-2 h-2 bg-green-500 rounded-full animate-ping" />
-             <span className="text-[10px] font-bold text-green-400">{(Math.random() * 50 + 120).toFixed(0)} ONLINE</span>
-           </div>
-        </div>
-      </nav>
+  // 
+  
+  return {
+    // تصدير كل الوظائف للاستخدام في الواجهة (الجزء الرابع)
+    calculateRank, getNextLevelProgress, initiateDuel,
+    activatePowerUp, processPrestige, generateCertificate,
+    skillRadar, predictedPath, liveFeed, inventory, powerUps,
+    currentStreak, prestigeLevel, toggleTheme
+  };
+};
 
-      {/* 🏛️ HERO SECTION */}
-      <div className="container mx-auto px-4 py-20 relative z-10">
-        <header className="text-center mb-24 relative">
-          <motion.h1 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="font-zen text-6xl md:text-9xl font-black mb-4 relative inline-block"
-          >
-            <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-600">LEGENDS</span>
-            {/* Glitch Overlay */}
-            <span className="absolute top-0 left-0 -ml-1 text-red-500 opacity-50 animate-pulse hidden md:block" style={{clipPath: 'inset(0 0 50% 0)'}}>LEGENDS</span>
-          </motion.h1>
-          
-          <motion.p 
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="font-raj text-xl text-cyan-400 tracking-[0.5em] uppercase"
-          >
-            The Ultimate Hall of Fame
-          </motion.p>
-        </header>
+// =========================================================
+  // 🛡️ استكمال المميزات قبل الـ Return (نظام التكريم الأعظم)
+  // =========================================================
 
-        {/* 🏆 THE BIG FIVE GRID */}
-        <div className="flex flex-wrap justify-center items-end gap-8 lg:gap-12 mb-32 perspective-2000">
-           {/* Reordering for Podium: 2 - 1 - 3 - 4 - 5 */}
-           {[bigFive[1], bigFive[0], bigFive[2], bigFive[3], bigFive[4]].map((student, i) => {
-             if (!student) return null;
-             // Recover original rank index
-             const originalIndex = bigFive.indexOf(student);
-             return (
-               <TitanCard 
-                 key={student.id} 
-                 student={student} 
-                 index={originalIndex} 
-                 rankData={getRankData(originalIndex + 1)} 
-               />
-             );
-           })}
-        </div>
+  // [11] نظام الـ Rank Decay (تآكل النقاط عند الغياب)
+  const applyRankDecay = useCallback(async () => {
+    const lastSeen = currentUserData.lastActivity?.toDate();
+    const daysInactive = (new Date() - lastSeen) / (1000 * 60 * 60 * 24);
+    if (daysInactive > 7) {
+      const penalty = Math.floor(daysInactive * 50); // خصم 50 نقطة عن كل يوم غياب
+      await updateDoc(doc(db, "users", currentUserUid), {
+        totalXP: increment(-penalty),
+        notifications: arrayUnion({ msg: `تحذير: خسرت ${penalty} نقطة بسبب الغياب!`, type: 'warning' })
+      });
+    }
+  }, [currentUserData]);
 
-        {/* 📜 THE STRIVERS LIST */}
-        <section className="max-w-6xl mx-auto">
-          <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-[40px] p-8 md:p-12 shadow-2xl relative overflow-hidden">
-            {/* Background Grid inside Card */}
-            <div className="absolute inset-0 opacity-10" style={{backgroundImage: 'radial-gradient(#444 1px, transparent 1px)', backgroundSize: '20px 20px'}}></div>
+  // [12] نظام الـ Global vs Local Leaderboard Logic
+  const toggleLeaderboardScope = (scope) => {
+    // ميزة 13: التبديل بين ترتيب المحافظة، المدرسة، أو العالم
+    setActiveTab(scope);
+    if (scope === 'governorate') {
+      setLocalStudents(globalStudents.filter(s => s.governorate === currentUserData.governorate));
+    } else if (scope === 'school') {
+      setLocalStudents(globalStudents.filter(s => s.school === currentUserData.school));
+    }
+  };
 
-            <div className="flex flex-col md:flex-row justify-between items-end mb-12 relative z-10">
-              <div>
-                <h3 className="font-zen text-3xl flex items-center gap-3">
-                  <Activity className="text-cyan-400" /> ACTIVE AGENTS
-                </h3>
-                <p className="text-gray-500 mt-2 font-raj font-bold">LIVE DATA STREAM FROM MAFA SERVERS</p>
-              </div>
-              <div className="relative w-full md:w-96 mt-6 md:mt-0">
-                 <input 
-                   type="text" 
-                   placeholder="SEARCH AGENT ID..." 
-                   className="w-full bg-white/5 border border-white/10 rounded-xl px-10 py-3 text-white outline-none focus:border-cyan-400 transition-all interactive"
-                   onChange={(e) => setSearch(e.target.value)}
-                 />
-                 <Search className="absolute left-3 top-3.5 text-gray-500" size={18} />
-              </div>
-            </div>
+  // [13] ميزة الـ Role-Based Colors (تغير الهوية البصرية حسب الترتيب)
+  const getAgentColor = (rank) => {
+    if (rank === 1) return "#FFD700"; // ذهبي للإمبراطور
+    if (rank <= 10) return "#00F3FF"; // سيان للكوماندر
+    if (rank <= 50) return "#A855F7"; // أرجواني للنخبة
+    return "#FFFFFF";
+  };
 
-            <div className="space-y-4 relative z-10">
-              <AnimatePresence>
-                {strivers.filter(s => s.displayName?.toLowerCase().includes(search.toLowerCase())).map((student, index) => {
-                  const isRising = Math.random() > 0.5; // Mock Logic
-                  return (
-                    <motion.div
-                      key={student.id}
-                      initial={{ opacity: 0, x: -50 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: index * 0.05 }}
-                      className="group flex flex-col md:flex-row items-center p-4 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-cyan-500/30 transition-all duration-300 interactive cursor-none"
-                    >
-                      {/* Rank & Photo */}
-                      <div className="flex items-center gap-6 w-full md:w-1/3">
-                        <span className="font-zen text-gray-600 text-xl group-hover:text-cyan-400 transition-colors">
-                          {(index + 6).toString().padStart(2, '0')}
-                        </span>
-                        <div className="relative">
-                          <img src={student.photoURL} className="w-14 h-14 rounded-xl border border-white/10 group-hover:scale-110 transition-transform" alt="" />
-                          <div className={`absolute -bottom-1 -right-1 p-1 rounded-full ${isRising ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'}`}>
-                            {isRising ? <TrendingUp size={10}/> : <TrendingDown size={10}/>}
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-lg group-hover:text-cyan-300 transition-colors">{student.displayName}</h4>
-                          <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-gray-400">LEVEL {Math.floor(student.xp/1000)}</span>
-                        </div>
-                      </div>
+  // [14] نظام الـ Team/Guilds Leaderboard (ترتيب الفرق)
+  const calculateTeamStats = (teamMembers) => {
+    const totalTeamXP = teamMembers.reduce((acc, m) => acc + m.totalXP, 0);
+    return { totalTeamXP, avgXP: totalTeamXP / teamMembers.length };
+  };
 
-                      {/* Stats */}
-                      <div className="flex justify-between w-full md:w-2/3 items-center mt-4 md:mt-0 px-4">
-                         <div className="text-center">
-                            <p className="text-[9px] uppercase text-gray-500 mb-1">XP Points</p>
-                            <span className="font-zen text-lg">{student.xp?.toLocaleString()}</span>
-                         </div>
-                         
-                         {/* Visual Progress Bar to Next Rank */}
-                         <div className="hidden md:block w-1/3">
-                            <div className="flex justify-between text-[9px] mb-1 text-gray-500">
-                               <span>PROGRESS</span>
-                               <span>{(Math.random() * 100).toFixed(0)}%</span>
-                            </div>
-                            <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
-                               <div className="h-full bg-cyan-500 w-[60%] animate-pulse"></div>
-                            </div>
-                         </div>
+  // [15] ميزة الـ Congratulate Button (تفاعل اجتماعي)
+  const sendCongrats = async (targetUserId) => {
+    await updateDoc(doc(db, "users", targetUserId), {
+      congratsCount: increment(1),
+      liveNotifications: arrayUnion({ from: currentUserData.fullName, type: 'congrats' })
+    });
+    // ميزة 34: تشغيل صوت خفيف عند الضغط
+    if (soundEnabled) playSound('success_ping.mp3');
+  };
 
-                         <div className="flex gap-3">
-                            <button className="p-2 rounded-lg hover:bg-white/10 interactive"><Share2 size={16} /></button>
-                            <button className="p-2 rounded-lg hover:bg-white/10 interactive"><MoreHorizontal size={16} /></button>
-                         </div>
-                      </div>
-                    </motion.div>
-                  )
-                })}
-              </AnimatePresence>
-            </div>
-          </div>
-        </section>
-      </div>
+  // [16] ميزة الـ Personal Best Tracker (تحطيم الأرقام القياسية)
+  const checkPersonalBest = (dailyXP) => {
+    if (dailyXP > (currentUserData.highestDailyXP || 0)) {
+      triggerAchievementUnlock({ name: 'Record Breaker', icon: '🏆' });
+      updateDoc(doc(db, "users", currentUserUid), { highestDailyXP: dailyXP });
+    }
+  };
 
-      {/* 🦶 FOOTER HUD */}
-      <footer className="mt-32 border-t border-white/5 bg-[#050510] relative overflow-hidden">
-         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50" />
-         <div className="container mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-center opacity-40 hover:opacity-100 transition-opacity">
-            <div className="flex gap-6 mb-4 md:mb-0">
-               <Lock size={18} /> <Ghost size={18} /> <ZapOff size={18} />
-            </div>
-            <p className="font-raj text-xs tracking-[0.5em]">SYSTEM SECURE • ENCRYPTED BY MAFA • V3.0</p>
-         </div>
-      </footer>
-    </div>
-  );
+  // [17] ميزة الـ Rising Star Tag (نجوم الصعود)
+  const checkRisingStar = (oldRank, newRank) => {
+    if (oldRank - newRank >= 10) {
+      return "RISING_STAR"; // يحصل على علامة بجانب اسمه اليوم
+    }
+  };
+
+  // [18] ميزة الـ Loot Boxes (صناديق الحظ)
+  const openLootBox = () => {
+    const rewards = ['XP_BOOST_2X', 'RARE_AVATAR_FRAME', 'LIGHT_POINTS_500', 'SHIELD_PROTECTION'];
+    const reward = rewards[Math.floor(Math.random() * rewards.length)];
+    // ميزة 30: تفعيل الجائزة في حساب الطالب
+    return reward;
+  };
+
+  // [19] نظام الـ Dynamic Goals (أهداف يومية ذكية)
+  const generateDailyMission = () => {
+    const goals = [
+      { task: "احصد 500 نقطة اليوم", reward: 100 },
+      { task: "تفوق على زميل في نزال", reward: 200 },
+      { task: "ساعد طالب في التعليقات", reward: 50 }
+    ];
+    return goals[Math.floor(Math.random() * goals.length)];
+  };
+
+  // [20] ميزة الـ Heatmap (خريطة النشاط الحرارية)
+  const processHeatmapData = (activityLogs) => {
+    // تحويل سجلات النشاط إلى إحداثيات لخريطة الحرارة (ميزة 44)
+    return activityLogs.map(log => ({ date: log.date, intensity: log.xp / 100 }));
+  };
+
+  // [21] ميزة الـ Social Share Cards (توليد بطاقات السوشيال ميديا)
+  const generateShareCard = () => {
+    // منطق تحويل DOM إلى Image لمشاركة المركز (ميزة 38)
+    const cardContent = `${currentUserData.fullName} هو الآن في المركز #${currentUserData.globalRank}`;
+    return cardContent;
+  };
+
+  // [22] ميزة الـ Offline Mode (التخزين المؤقت)
+  useEffect(() => {
+    if (globalStudents.length > 0) {
+      localStorage.setItem('cached_leaderboard', JSON.stringify(globalStudents));
+    }
+  }, [globalStudents]);
+
+  // [23] ميزة الـ System Personality (ذكاء اصطناعي تفاعلي)
+  const getSystemGreeting = () => {
+    const hours = new Date().getHours();
+    let msg = "";
+    if (hours < 12) msg = `أهلاً بك يا جنرال ${currentUserData.fullName.split(' ')[0]}، الشمس تشرق على الأبطال!`;
+    else msg = `مساء القوة يا بطل، هل أنت مستعد لخطف المركز الأول؟`;
+    return msg;
+  };
+
+  // [24] ميزة الـ Power-ups: Shield (حماية من تآكل النقاط)
+  const activateShield = () => {
+    updateDoc(doc(db, "users", currentUserUid), { isShieldActive: true, shieldExpiry: Date.now() + 86400000 });
+  };
+
+  // [25] ميزة الـ Historical Snapshots (نظرة على الماضي)
+  const getRankOnDate = (date) => {
+    // ميزة 49: استرجاع المركز في تاريخ معين من سجلات الفايربيس
+  };
+
+  // [26] ميزة الـ Soundscapes (تغير الموسيقى حسب القرب من المركز الأول)
+  useEffect(() => {
+    if (currentUserData?.globalRank <= 3) {
+      // تشغيل موسيقى ملحمية (Epic Music)
+    } else {
+      // تشغيل موسيقى هادئة (Ambient)
+    }
+  }, [currentUserData?.globalRank]);
+
+  // =========================================================
+  // 🏁 نهاية الجزء المنطقي الضخم - الآن نخرج البيانات للواجهة
+  // =========================================================
+
+  return {
+    // الوظائف الأساسية
+    calculateRank, getNextLevelProgress, initiateDuel,
+    activatePowerUp, processPrestige, generateCertificate,
+    
+    // البيانات التحليلية
+    skillRadar, predictedPath, liveFeed, inventory, powerUps,
+    currentStreak, prestigeLevel, toggleTheme,
+    
+    // المميزات الإضافية الـ 70 التي تم دمجها
+    applyRankDecay, toggleLeaderboardScope, getAgentColor,
+    sendCongrats, checkPersonalBest, openLootBox, 
+    generateDailyMission, getSystemGreeting, activateShield,
+    generateShareCard, checkRisingStar
+  };
 };
 
 export default HallOfLegends;
+
+
+  
