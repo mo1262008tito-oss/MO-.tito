@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import { db, auth } from '../firebase'; // تأكد من مسار ملف الفايربيس
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { 
-  collection, query, orderBy, limit, onSnapshot, 
-  doc, updateDoc, getDoc, where, timestamp 
+  doc, updateDoc, increment, arrayUnion, 
+  onSnapshot, query, collection, orderBy, limit 
 } from 'firebase/firestore';
 
 // المكتبات اللازمة للميزات البصرية
