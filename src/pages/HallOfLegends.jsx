@@ -13,7 +13,7 @@ import {
   Trophy, Crown, Shield, Star, Zap, Target, Medal, 
   TrendingUp, Activity, Lock, Eye, Share2, Award, 
   Military, MapPin, School, Flame, Box, Cpu, HardDrive,
-  UserCheck, Bell, Sword, Users, BarChart3, Clock
+  UserCheck, Bell, Sword, Users, BarChart3, Clock ,Search
 } from 'lucide-react';
 
 // ==========================================
