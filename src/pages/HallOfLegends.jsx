@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import { db, auth } from '../firebase'; // تأكد من مسار ملف الفايربيس
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+
 import { 
   doc, updateDoc, increment, arrayUnion, 
   onSnapshot, query, collection, orderBy, limit 
