@@ -1,19 +1,52 @@
-/* إجبار السكرول على المستوى الجذري */
-html, body {
-    overflow-y: scroll !important; /* إظهار شريط التمرير دائماً */
+/* --- إصلاح السكرول العالمي --- */
+
+html {
+    /* السماح بالسكرول دائماً ومنع القفزة العرضية */
+    overflow-y: auto !important;
     overflow-x: hidden !important;
     height: auto !important;
-    position: static !important; /* منع المكتبات من تثبيت الصفحة */
+    scroll-behavior: smooth; /* تمرير ناعم للموقع كله */
 }
 
-/* في حال كانت المكتبة تضيف كلاس خاص عند فتح المودال، سنقوم بإلغاء تأثيره */
-body[style] {
-    overflow: auto !important;
-    padding-right: 0 !important; /* لمنع القفزة التي تحدثها بعض المكتبات */
+body {
+    /* التأكد أن الجسم ليس ثابتاً (Fixed) */
+    position: relative !important;
+    overflow-y: visible !important;
+    overflow-x: hidden !important;
+    min-height: 100vh !important;
+    margin: 0;
+    padding: 0;
+    /* دعم اللمس على الجوال */
+    -webkit-overflow-scrolling: touch;
 }
 
-/* التأكد من أن حاوية ريأكت لا تقيد الارتفاع */
+/* التأكد من أن حاوية ريأكت لا تعيق التمرير */
 #root {
     min-height: 100vh !important;
-    display: block !important;
+    display: flex;
+    flex-direction: column;
+}
+
+/* تخصيص شكل السكرول بار ليناسب فخامة الموقع (اختياري) */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #02010a; /* نفس لون خلفية موقعك العميقة */
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #ffcc00, #00f3ff);
+    border-radius: 10px;
+}
+
+/* إذا كان هناك مودال أو لودينج سكرين معطلة، هذا الكود سيمنعها من حجب السكرول */
+.loading-screen, .overlay {
+    pointer-events: none; /* يسمح للماوس بالمرور من خلالها للسكرول */
+}
+
+/* ولكن إذا كانت الشاشة نشطة، نعيد لها التفاعل */
+.loading-screen.active, .overlay.active {
+    pointer-events: auto;
 }
