@@ -1,862 +1,936 @@
-/* ==========================================================================
-   TITAN V3 - GLOBAL HALL OF FAME ULTIMATE STYLESHEET
-   Description: Ultra-detailed, Futuristic, Cyberpunk UI.
-   Features: +200 Style Rules, Custom Keyframes, Layered Effects.
-========================================================================== 
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap');
+
+/* TITAN PROTOCOL - ULTIMATE GLOBAL UI 
+  Engine Version: 4.0.0 (Zenith)
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Zen+Dots&family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;900&display=swap');
-
-/* --- 1. الـ Variables (أساس النظام البصري) --- */
 :root {
-  /* Colors */
-  --p-cyan: #00f3ff;
-  --p-cyan-glow: rgba(0, 243, 255, 0.6);
-  --p-gold: #ffd700;
-  --p-gold-glow: rgba(255, 215, 0, 0.5);
-  --p-silver: #e2e8f0;
-  --p-bronze: #cd7f32;
-  --p-crimson: #ff003c;
-  --bg-dark: #030014;
-  --bg-card: rgba(6, 11, 25, 0.8);
-  
-  /* Gradients */
-  --grad-holo: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(0,243,255,0.1) 50%, rgba(255,255,255,0.1) 100%);
-  --grad-emperor: linear-gradient(180deg, var(--p-gold) 0%, #b8860b 100%);
-  
-  /* Transforms */
-  --t-3d: perspective(1200px);
-  --t-transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* 1-10: لوحة الألوان السيبرانية (Color Matrix) */
+    --p-gold: #ffcc00; --p-gold-glow: rgba(255, 204, 0, 0.6);
+    --p-cyan: #00f3ff; --p-cyan-glow: rgba(0, 243, 255, 0.6);
+    --p-magenta: #ff00ff; --p-violet: #8b5cf6;
+    --bg-deep: #02010a; --glass-bg: rgba(255, 255, 255, 0.03);
+    
+    /* 11-20: متغيرات الأبعاد الثلاثية (3D Variables) */
+    --perspective: 1500px;
+    --card-rotation: 15deg;
+    --shadow-heavy: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
 }
 
-/* --- 2. الإعدادات العامة (Global Reset) --- */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-font-smoothing: antialiased;
-}
-
-body {
-  background-color: var(--bg-dark);
-  color: #fff;
-  font-family: 'Rajdhani', sans-serif;
-  overflow-x: hidden;
-  line-height: 1.6;
-}
-
-/* --- 3. تأثيرات الخلفية العميقة (Deep Background) --- */
-.scanlines {
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.2) 50%);
-  background-size: 100% 3px;
-  z-index: 100;
-  pointer-events: none;
-  opacity: 0.15;
-}
-
-.bg-grid {
-  position: fixed;
-  inset: 0;
-  background-image: 
-    linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
-  background-size: 50px 50px;
-  mask-image: radial-gradient(circle at center, black, transparent 80%);
-  z-index: -2;
-}
-
-/* --- 4. الهيكل الخارجي للبطاقة (The Titan Card) --- */
-.holo-card {
-  position: relative;
-  transition: var(--t-transition);
-  transform-style: preserve-3d;
-}
-
-.card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.card-inner.flipped {
-  transform: rotateY(180deg);
-}
-
-/* --- 5. واجهة البطاقة (Card Front - Hologram) --- */
-.card-front {
-  background: var(--bg-card);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  border-radius: 30px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  display: flex;
-  flex-direction: column;
-  padding: 2rem;
-  overflow: hidden;
-}
-
-/* تأثير البرواز الضوئي */
-.card-front::after {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
-  width: 50%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-  transition: 0.5s;
-}
-
-.holo-card:hover .card-front::after {
-  left: 100%;
-}
-
-/* --- 6. رتبة الإمبراطور (Emperor Rank Special) --- */
-.emperor-holo {
-  border: 2px solid var(--p-gold) !important;
-  box-shadow: 0 0 50px rgba(255, 215, 0, 0.2), inset 0 0 20px rgba(255, 215, 0, 0.1);
-}
-
-.rotating-border {
-  position: absolute;
-  inset: -2px;
-  border-radius: 32px;
-  padding: 3px;
-  background: conic-gradient(from 0deg, var(--p-gold), transparent, var(--p-gold), transparent);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: rotate-conic 4s linear infinite;
-}
-
-@keyframes rotate-conic {
-  to { transform: rotate(360deg); }
-}
-
-/* --- 7. صورة العميل (Agent Avatar) --- */
-.agent-photo-container {
-  position: relative;
-  transition: transform 0.5s ease;
-}
-
-.agent-photo-container:hover {
-  transform: scale(1.1) translateZ(50px);
-}
-
-.power-ring {
-  filter: drop-shadow(0 0 8px var(--p-cyan));
-  animation: ring-pulse 2s infinite ease-in-out;
-}
-
-@keyframes ring-pulse {
-  0% { opacity: 0.5; stroke-width: 2; }
-  50% { opacity: 1; stroke-width: 4; }
-  100% { opacity: 0.5; stroke-width: 2; }
-}
-
-/* --- 8. تأثيرات النصوص (Glitch & Cyber) --- */
-.glitch-text {
-  font-family: 'Zen Dots', cursive;
-  letter-spacing: 2px;
-  text-shadow: 0 0 10px var(--p-cyan-glow);
-  position: relative;
-}
-
-.glitch-text:hover {
-  animation: text-shake 0.3s infinite;
-  color: var(--p-cyan);
-}
-
-@keyframes text-shake {
-  0% { transform: translate(2px, 1px) rotate(0deg); }
-  20% { transform: translate(-1px, -2px) rotate(-1deg); }
-  40% { transform: translate(-3px, 0px) rotate(1deg); }
-  60% { transform: translate(3px, 2px) rotate(0deg); }
-  80% { transform: translate(1px, -1px) rotate(1deg); }
-  100% { transform: translate(-1px, 2px) rotate(-1deg); }
-}
-
-/* --- 9. شريط التقدم (Visualizer & Progress) --- */
-.audio-bar {
-  width: 4px;
-  border-radius: 2px;
-  background: var(--p-cyan);
-  box-shadow: 0 0 10px var(--p-cyan);
-}
-
-.audio-bar:nth-child(odd) { animation: bar-dance 0.8s infinite alternate; }
-.audio-bar:nth-child(even) { animation: bar-dance 1.2s infinite alternate-reverse; }
-
-@keyframes bar-dance {
-  from { height: 4px; }
-  to { height: 20px; }
-}
-
-/* --- 10. قائمة الأبطال (The Strivers List) --- */
-.striver-row {
-  background: rgba(255, 255, 255, 0.02);
-  border-left: 2px solid transparent;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-}
-
-.striver-row:hover {
-  background: rgba(0, 243, 255, 0.05);
-  border-left: 2px solid var(--p-cyan);
-  transform: scale(1.02) translateX(15px);
-  box-shadow: -20px 0 40px -10px rgba(0, 243, 255, 0.2);
-}
-
-.striver-row::before {
-  content: '';
-  position: absolute;
-  right: 0; top: 0; width: 0; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.05));
-  transition: width 0.4s;
-}
-
-.striver-row:hover::before {
-  width: 100%;
-}
-
-/* --- 11. أزرار التفاعل (Hyper Buttons) --- */
-.interactive {
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: 0.3s;
-}
-
-.interactive:active {
-  transform: scale(0.95);
-}
-
-.btn-cyber {
-  background: transparent;
-  border: 1px solid var(--p-cyan);
-  color: var(--p-cyan);
-  text-transform: uppercase;
-  font-weight: bold;
-  letter-spacing: 2px;
-  clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
-}
-
-.btn-cyber:hover {
-  background: var(--p-cyan);
-  color: black;
-  box-shadow: 0 0 20px var(--p-cyan-glow);
-}
-
-/* --- 12. نظام الإضاءة المحيطة (Ambient Lights) --- */
-.ambient-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  z-index: -1;
-  opacity: 0.4;
-  animation: orb-float 20s infinite linear;
-}
-
-@keyframes orb-float {
-  0% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(100px, 200px) scale(1.5); }
-  66% { transform: translate(-50px, 400px) scale(0.8); }
-  100% { transform: translate(0, 0) scale(1); }
-}
-
-/* --- 13. ذيل الصفحة (HUD Footer) --- */
-footer {
-  border-top: 1px solid rgba(0, 243, 255, 0.1);
-  background: linear-gradient(to top, rgba(0, 243, 255, 0.05), transparent);
-}
-
-.hud-data {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 10px;
-  color: var(--p-cyan);
-  opacity: 0.6;
-}
-
-/* --- 14. التمرير السلس (Custom Scrollbar) --- */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--bg-dark);
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(var(--bg-dark), var(--p-cyan), var(--bg-dark));
-  border-radius: 10px;
-}
-
-/* --- 15. خصائص إضافية للـ Hover --- */
-.group:hover .group-hover\:scale-110 {
-  transform: scale(1.1) rotate(5deg);
-}
-
-.group:hover .group-hover\:text-cyan-400 {
-  color: var(--p-cyan);
-  filter: drop-shadow(0 0 5px var(--p-cyan));
-}
-
-/* --- 16. نظام التشويه الزجاجي (Refraction & Frosted Glass) --- */
-.glass-panel {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(15px) saturate(180%);
-    -webkit-backdrop-filter: blur(15px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+/* 21-30: الخلفية الكونية (Cosmic Background) */
+.titan-wrapper {
+    background: radial-gradient(circle at 50% 50%, #0a0520 0%, #02010a 100%);
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
+    min-height: 100vh;
 }
 
-/* تأثير لمعة "الماس" عند مرور الماوس */
-.glass-panel::before {
-    content: "";
+/* 31-40: جزيئات الغبار النجمي (Star Dust Particles) */
+.titan-wrapper::before {
+    content: '';
     position: absolute;
-    top: -150%;
-    left: -150%;
-    width: 300%;
-    height: 300%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.5s;
+    width: 200%; height: 200%;
+    background-image: radial-gradient(#fff 1px, transparent 1px);
+    background-size: 100px 100px;
+    opacity: 0.1;
+    animation: drift 100s linear infinite;
 }
 
-.glass-panel:hover::before {
-    opacity: 1;
-    transform: translate(20%, 20%);
+@keyframes drift { from { transform: translateY(0); } to { transform: translateY(-1000px); } }
+
+/* 41-55: المنصة الملكية (The Emperor's Altar - 3D) */
+.podium-base.gold-gradient {
+    transform-style: preserve-3d;
+    perspective: var(--perspective);
+    border: 2px solid var(--p-gold);
+    background: linear-gradient(135deg, rgba(255,204,0,0.1) 0%, rgba(0,0,0,0.9) 100%);
+    box-shadow: 0 0 50px var(--p-gold-glow), inset 0 0 20px var(--p-gold-glow);
+    animation: floating 4s ease-in-out infinite;
 }
 
-/* --- 17. نظام الـ XP البصري (Data Loading Bars) --- */
-.xp-loader-container {
-    width: 100%;
-    height: 4px;
-    background: rgba(0,0,0,0.5);
-    border-radius: 2px;
+/* 56-65: حركة الطفو الاحترافية */
+@keyframes floating {
+    0%, 100% { transform: translateY(0) rotateY(0deg); }
+    50% { transform: translateY(-20px) rotateY(5deg); }
+}
+
+/* 66-80: إطار الصورة الإمبراطوري (The Avatar Halo) */
+.frame-emperor {
     position: relative;
-    margin-top: 10px;
-}
-
-.xp-loader-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--p-cyan), #bc00ff);
-    box-shadow: 0 0 15px var(--p-cyan-glow);
-    position: relative;
-    overflow: hidden;
-}
-
-/* حركة "الموجة" داخل شريط الـ XP */
-.xp-loader-fill::after {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; bottom: 0; right: 0;
-    background-image: linear-gradient(-45deg, rgba(255,255,255,0.2) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.2) 75%, transparent 75%, transparent);
-    z-index: 1;
-    background-size: 20px 20px;
-    animation: move-stripes 1s linear infinite;
-}
-
-@keyframes move-stripes {
-    0% { background-position: 0 0; }
-    100% { background-position: 20px 0; }
-}
-
-/* --- 18. برواز لوحة الشرف (The Legend Frame) --- */
-.legend-border-top {
-    position: absolute;
-    top: 0; left: 10%; right: 10%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--p-cyan), transparent);
-}
-
-.corner-detail {
-    position: absolute;
-    width: 15px;
-    height: 15px;
-    border: 2px solid var(--p-cyan);
-    opacity: 0.5;
-}
-
-.corner-tl { top: 10px; left: 10px; border-right: 0; border-bottom: 0; }
-.corner-br { bottom: 10px; right: 10px; border-left: 0; border-top: 0; }
-
-/* --- 19. تأثيرات البطاقة الخلفية (The Stats Flip) --- */
-.card-back {
-    padding: 30px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    background: radial-gradient(circle at center, #1a1a3a 0%, #030014 100%);
-}
-
-.stat-row {
-    margin-bottom: 20px;
-    transform: translateZ(30px); /* يعطي بعد 3D للإحصائيات */
-}
-
-.stat-label {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 11px;
-    color: var(--p-cyan);
-    letter-spacing: 2px;
-    margin-bottom: 8px;
-    display: block;
-}
-
-/* --- 20. نظام الإشعارات "الحي" (Live Pulse) --- */
-.status-indicator {
-    width: 8px;
-    height: 8px;
     border-radius: 50%;
-    display: inline-block;
-    margin-right: 8px;
+    z-index: 5;
 }
 
-.status-online {
-    background: #00ff88;
-    box-shadow: 0 0 10px #00ff88;
-    animation: status-pulse 1.5s infinite;
+.frame-emperor::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border: 2px solid var(--p-gold);
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 3s linear infinite;
+    filter: drop-shadow(0 0 10px var(--p-gold));
 }
 
-@keyframes status-pulse {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.5); opacity: 0.5; }
-    100% { transform: scale(1); opacity: 1; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 81-100: الهوية البصرية للعناصر (Cyber HUD Elements) */
+.podium-label {
+    font-family: 'Syncopate', sans-serif;
+    text-transform: uppercase;
+    font-weight: 900;
+    letter-spacing: 0.8em;
+    background: linear-gradient(90deg, #fff, var(--p-gold), #fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 15px var(--p-gold-glow));
 }
 
-/* --- 21. تأثير الـ Hover على البطاقة (Tilt Shadow) --- */
-.holo-card:hover {
-    filter: brightness(1.2);
+/* 101-120: تأثير الهوفر "تجاوز المادة" (Hover Over-Material) */
+.group {
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
 }
 
-.holo-card:hover .card-front {
-    border-color: var(--p-cyan-glow);
-    box-shadow: 0 0 40px rgba(0, 243, 255, 0.15);
+.group:hover {
+    transform: scale(1.05) translateZ(50px);
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: var(--p-cyan) !important;
+    box-shadow: 0 0 30px var(--p-cyan-glow);
 }
 
-/* --- 22. تفاصيل الـ Cyber-Grid في القائمة --- */
-.striver-list-container {
+/* 121-135: شريط التقدم النيوني (Neon Progress Bar) */
+.bg-cyan-500 {
+    background: linear-gradient(90deg, var(--p-cyan), #fff);
+    box-shadow: 0 0 15px var(--p-cyan);
+    position: relative;
+    overflow: hidden;
+}
+
+.bg-cyan-500::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+    animation: scan 2s infinite;
+}
+
+@keyframes scan { to { left: 100%; } }
+
+/* 136-150: تأثيرات الكرسور والمدخلات (The UI Consciousness) */
+input {
+    background: rgba(0,0,0,0.5) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 2px;
+    transition: 0.4s;
+}
+
+input:focus {
+    border-color: var(--p-cyan) !important;
+    padding-left: 25px !important;
+    box-shadow: inset 0 0 15px var(--p-cyan-glow);
+}
+
+/* الميزة الإضافية: كرت الهيرو "The Hero Card Reflection" */
+.podium-base::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -150%;
+    width: 50%; height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+    transform: skewX(-25deg);
+    transition: 0.75s;
+}
+
+.podium-base:hover::before {
+    left: 150%;
+}
+
+/* تخصيص السكرول بار (Legendary Scrollbar) */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(var(--p-gold), var(--p-cyan));
+    border-radius: 10px;
+}
+
+/* ==========================================
+   TITAN PROTOCOL - MODULE 2: ADVANCED VISUALS
+   ========================================== */
+
+/* 151-165: تأثير "تزيح الزمكان" (Parallax Depth) */
+.podium-base {
+    position: relative;
+    overflow: hidden;
+    /* ميزة 152: الحواف المشطوفة بالليزر */
+    clip-path: polygon(0% 15%, 15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%);
+}
+
+/* 166-180: نظام النبض البيومتري (Biometric Pulse) */
+.frame-emperor img {
+    /* ميزة 167: فلتر الحيوية */
+    filter: saturate(1.2) contrast(1.1);
+    transition: filter 0.5s ease;
+}
+
+.group:hover img {
+    /* ميزة 168: تأثير الإيقاظ الرقمي */
+    filter: saturate(1.5) contrast(1.2) brightness(1.1);
+}
+
+/* 181-200: تأثير "الخلايا السداسية" في الخلفية (Hexagon Grid) */
+.titan-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: 
+        linear-gradient(30deg, #0f172a 12%, transparent 12.5%, transparent 87%, #0f172a 87.5%, #0f172a),
+        linear-gradient(150deg, #0f172a 12%, transparent 12.5%, transparent 87%, #0f172a 87.5%, #0f172a),
+        linear-gradient(30deg, #0f172a 12%, transparent 12.5%, transparent 87%, #0f172a 87.5%, #0f172a);
+    background-size: 80px 140px;
+    opacity: 0.05;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* 201-215: تأثير التتويج - هالة النور (The Halo Effect) */
+.gold-gradient::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: conic-gradient(from 0deg, transparent, var(--p-gold), transparent 30%);
+    animation: rotate-halo 10s linear infinite;
+    opacity: 0.2;
+    z-index: -1;
+}
+
+@keyframes rotate-halo { to { transform: rotate(360deg); } }
+
+/* 216-230: أزرار التبديل بنظام "النيون السائل" (Liquid Neon Tabs) */
+button {
+    position: relative;
+    overflow: hidden;
+    /* ميزة 217: تباعد الحروف السينمائي */
+    letter-spacing: 3px;
+    /* ميزة 218: انعكاس سفلي */
+    -webkit-box-reflect: below 1px linear-gradient(transparent, rgba(0,0,0,0.2));
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 2px;
+    background: var(--p-cyan);
+    transition: 0.5s;
+}
+
+button:hover::before { left: 100%; }
+
+/* 231-250: تأثير "تداخل الموجات" (Glitch Animation) لليوزرات */
+.agent-row:hover h4 {
+    animation: glitch 0.3s cubic-bezier(.25,.46,.45,.94) both infinite;
+}
+
+@keyframes glitch {
+    0% { transform: translate(0); text-shadow: none; }
+    20% { transform: translate(-2px, 2px); text-shadow: 2px 0 var(--p-magenta); }
+    40% { transform: translate(-2px, -2px); text-shadow: -2px 0 var(--p-cyan); }
+    60% { transform: translate(2px, 2px); text-shadow: 2px 0 var(--p-magenta); }
+    80% { transform: translate(2px, -2px); text-shadow: -2px 0 var(--p-cyan); }
+    100% { transform: translate(0); }
+}
+
+/* 251-270: نظام البطاقات "الزجاج المكسور" (Frosted Glass Shards) */
+.agent-row {
+    background: linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.05));
+    border-left: 2px solid transparent;
+    transition: 0.4s all ease;
+}
+
+.agent-row:hover {
+    border-left: 2px solid var(--p-cyan);
+    padding-right: 20px; /* ميزة: تمدد حركي */
+    background: rgba(0, 243, 255, 0.05);
+}
+
+/* 271-290: إشعارات "الخصم" (Nemesis Alert UI) */
+.nemesis-alert {
+    background: linear-gradient(45deg, #450a0a, #000);
+    border: 1px solid #ff4444;
+    box-shadow: 0 0 20px rgba(255, 68, 68, 0.4);
+    /* ميزة: اهتزاز التحذير */
+    animation: alert-shake 5s infinite;
+}
+
+@keyframes alert-shake {
+    0%, 90% { transform: scale(1); }
+    92% { transform: scale(1.05) rotate(1deg); }
+    94% { transform: scale(1.05) rotate(-1deg); }
+    96% { transform: scale(1.05) rotate(1deg); }
+    100% { transform: scale(1); }
+}
+
+/* 291-300: تذييل الصفحة بنظام HUD (Heads-Up Display) */
+footer {
+    border-top: 1px solid rgba(0, 243, 255, 0.2);
+    background: repeating-linear-gradient(0deg, transparent, rgba(0, 243, 255, 0.02) 1px, transparent 2px);
+}
+
+/* ميزة إضافية: تأثير "الشرارة" عند الضغط */
+*:active {
+    transform: scale(0.98);
+    transition: 0.1s;
+}
+
+/* ============================================================
+   TITAN PROTOCOL - SYSTEM ARCHITECTURE (PART 3: THE DEEP CORE)
+   ============================================================ */
+
+/* 301-350: نظام الشبكة العصبية (Neural Grid Overlay) */
+.titan-wrapper::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    /* ميزة 302: خطوط المسح الراداري */
     background: repeating-linear-gradient(
         0deg,
-        transparent,
-        transparent 40px,
-        rgba(0, 243, 255, 0.02) 40px,
-        rgba(0, 243, 255, 0.02) 41px
+        rgba(0, 0, 0, 0) 0px,
+        rgba(0, 243, 255, 0.03) 1px,
+        transparent 2px
     );
-}
-
-/* --- 23. أيقونات الترتيب (Rank Icons) --- */
-.rank-badge-glow {
-    filter: drop-shadow(0 0 10px currentColor);
-    animation: float-icon 3s infinite ease-in-out;
-}
-
-@keyframes float-icon {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-}
-
-/* --- 24. نظام "التركيز" (Focus Mode) --- */
-.grayscale.contrast-125 {
-    filter: grayscale(1) contrast(1.5) brightness(0.8);
-    transition: filter 1s ease;
-}
-
-.grayscale.contrast-125 .emperor-holo {
-    filter: grayscale(0) !important; /* الإبقاء على المركز الأول ملوناً حتى في وضع التركيز */
-}
-
-/* --- 25. تأثير "الكود المتساقط" (Digital Rain Overlay - Subtle) --- */
-.digital-overlay {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px);
-    background-size: 100% 2px;
-    animation: rain 20s linear infinite;
+    background-size: 100% 3px;
+    z-index: 100;
     pointer-events: none;
+    animation: scanline 10s linear infinite;
 }
 
-@keyframes rain {
-    0% { background-position: 0 0; }
-    100% { background-position: 0 1000px; }
+@keyframes scanline {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(100%); }
 }
 
-/* --- 26. تصميم الـ Scrollbar المتطور --- */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+/* 351-400: محرك الظلال المتقدم (Advanced Shadow Engine) */
+.podium-base, .agent-row, .hero-card {
+    /* ميزة 352: انعكاس الضوء الداخلي */
+    box-shadow: 
+        inset 0 0 15px rgba(255, 255, 255, 0.05),
+        0 10px 30px rgba(0, 0, 0, 0.5);
+    /* ميزة 353: تنعيم الحواف الكرومية */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px) saturate(180%);
 }
 
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(var(--p-cyan), var(--p-gold));
-    border-radius: 4px;
-    border: 2px solid var(--bg-dark);
+/* 401-450: نظام التتويج الملكي - (The Emperor's Aura 2.0) */
+.frame-emperor {
+    /* ميزة 402: التوهج المتعدد الطبقات */
+    box-shadow: 
+        0 0 30px var(--p-gold-glow),
+        0 0 60px rgba(255, 204, 0, 0.2),
+        inset 0 0 20px var(--p-gold);
+    transition: 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* --- 27. الهوية البصرية للـ Profile Button --- */
-.profile-btn-glow {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.2);
+.frame-emperor:hover {
+    /* ميزة 405: انفجار الضوء عند الهوفر */
+    box-shadow: 
+        0 0 50px var(--p-gold),
+        0 0 100px rgba(255, 204, 0, 0.4);
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* 451-550: نظام الحالات المتغيرة (State Transitions) */
+.agent-row {
     position: relative;
-    z-index: 1;
+    overflow: hidden;
+    /* ميزة 452: تحريك المحتوى الداخلي */
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.profile-btn-glow::before {
-    content: '';
+/* ميزة 455: إضافة "رقم متسلسل" خلفي شفاف */
+.agent-row::after {
+    content: "TITAN_AGENT";
     position: absolute;
-    inset: 0;
-    background: var(--p-cyan);
-    transform: scaleX(0);
-    transform-origin: right;
-    transition: transform 0.4s ease;
-    z-index: -1;
+    right: 10px;
+    bottom: -5px;
+    font-size: 4rem;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.02);
+    z-index: 0;
+    font-family: 'Syncopate';
 }
 
-.profile-btn-glow:hover::before {
-    transform: scaleX(1);
-    transform-origin: left;
-}
-
-/* --- 28. الـ HUD Header (معلومات النظام) --- */
-.system-info {
-    font-family: 'Zen Dots';
-    font-size: 0.6rem;
-    color: var(--p-cyan);
-    text-transform: uppercase;
-    opacity: 0.4;
-    display: flex;
-    gap: 20px;
-}
-
-/* --- 29. تأثير انفجار confetti المخصص --- */
-canvas {
-    z-index: 1000 !important;
-}
-
-/* --- 30. تحسين استجابة الجوال لشكل الـ Podium --- */
-@media (max-width: 1024px) {
-    .perspective-2000 {
-        perspective: none;
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .holo-card {
-        width: 100% !important;
-        height: auto !important;
-        min-height: 400px;
-    }
-}
-
-/* ==========================================================================
-   TITAN V3 - THE "GOD MODE" ADDITIONS
-   Focused on: Reflections, Meta-data, Particle-Aura, and Elite Polish.
-========================================================================== */
-
-/* --- 31. تأثير الهالة المحيطة (Elite Card Aura) --- */
-/* يظهر خلف البطاقة ليعطي عمقاً إضافياً وكأن البطاقة تشع طاقة */
-.holo-card::after {
-    content: '';
-    position: absolute;
-    inset: -20px;
-    background: radial-gradient(circle, var(--p-cyan-glow) 0%, transparent 70%);
-    z-index: -1;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    filter: blur(40px);
-}
-
-.holo-card:hover::after {
-    opacity: 0.4;
-}
-
-/* --- 32. نظام الإحداثيات الوهمي (UI Coordinates) --- */
-/* يضيف أرقاماً وبيانات عشوائية في زوايا الصفحة لتعزيز شكل الـ HUD */
-.nav-metadata {
-    position: absolute;
-    font-family: 'monospace';
-    font-size: 8px;
-    color: var(--p-cyan);
-    opacity: 0.3;
-    pointer-events: none;
-    text-transform: uppercase;
-}
-
-/* --- 33. تأثير انعكاس الزجاج المتحرك (Dynamic Light Reflection) --- */
-/* هذا التأثير يجعل الضوء يتحرك على البطاقة بناءً على ميلانها */
-.card-front::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-        45deg,
-        transparent 45%,
-        rgba(255, 255, 255, 0.1) 50%,
-        transparent 55%
-    );
-    z-index: 10;
-    pointer-events: none;
-    transition: all 0.1s ease;
-}
-
-/* --- 34. لوحة الشرف - تأثير التوهج النصي (Neon Header Glow) --- */
-.hall-title-glow {
-    text-shadow: 
-        0 0 10px rgba(255,255,255,0.8),
-        0 0 20px var(--p-cyan),
-        0 0 40px var(--p-cyan),
-        0 0 80px var(--p-cyan);
-    animation: neon-flicker 2s infinite secondary;
-}
-
-@keyframes neon-flicker {
-    0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; }
-    20%, 24%, 55% { opacity: 0.7; }
-}
-
-/* --- 35. نظام "بصمة الإصبع" الخلفي (Biometric Pattern) --- */
-/* خلفية هندسية معقدة تظهر فقط داخل البطاقات */
-.biometric-bg {
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg stroke='%2300f3ff' stroke-width='0.5' stroke-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4v-4H4v4H0v2h4v4h2v-4h4v-2H6zM36 4v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    opacity: 0.5;
-}
-
-/* --- 36. ترقية قائمة الـ Strivers (Cyber-Row) --- */
-.striver-row {
-    clip-path: polygon(0 0, 98% 0, 100% 30%, 100% 100%, 2% 100%, 0 70%);
-    margin-bottom: 12px;
-}
-
-/* إضافة عداد "نبض" بجانب صورة المستخدم في القائمة */
-.status-pulse-ring {
-    position: absolute;
-    inset: -4px;
+/* 551-650: نظام الأزرار والمفاتيح (The Command Center) */
+.active-tab-btn {
+    /* ميزة 552: التوهج النبضي */
+    animation: button-pulse 2s infinite;
+    text-shadow: 0 0 10px var(--p-cyan);
     border: 1px solid var(--p-cyan);
-    border-radius: 12px;
-    animation: ring-expand 2s infinite;
+    background: linear-gradient(to bottom, rgba(0, 243, 255, 0.2), transparent);
 }
 
-@keyframes ring-expand {
-    0% { transform: scale(0.8); opacity: 1; }
-    100% { transform: scale(1.4); opacity: 0; }
+@keyframes button-pulse {
+    0% { box-shadow: 0 0 5px var(--p-cyan-glow); }
+    50% { box-shadow: 0 0 20px var(--p-cyan-glow); }
+    100% { box-shadow: 0 0 5px var(--p-cyan-glow); }
 }
 
-/* --- 37. تأثير "التفكك الرقمي" عند الظهور (Digital Dissolve) --- */
-.fade-in-cyber {
-    animation: cyber-reveal 1s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+/* 651-750: نظام المؤشرات الحيوية (Live Metrics UI) */
+.metric-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    /* ميزة 652: لمعة كريستالية */
+    position: relative;
 }
 
-@keyframes cyber-reveal {
-    0% { opacity: 0; transform: translateY(30px) skewX(-10deg); filter: blur(10px); }
-    100% { opacity: 1; transform: translateY(0) skewX(0deg); filter: blur(0); }
-}
-
-/* --- 38. نظام الإضاءة الذكي للأزرار (Magnetic Buttons) --- */
-.interactive::before {
-    content: '';
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    background: radial-gradient(circle, var(--p-cyan-glow) 0%, transparent 70%);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.interactive:hover::before {
-    opacity: 1;
-}
-
-/* --- 39. شارات الرتب (Rank Badges Custom) --- */
-.rank-1-aura {
-    filter: drop-shadow(0 0 15px var(--p-gold));
-    border: 2px solid var(--p-gold);
-}
-
-/* --- 40. اللمسة النهائية: الغبار الرقمي (Digital Dust) --- */
-.dust-particles {
-    position: fixed;
-    width: 100%;
+.metric-fill {
     height: 100%;
-    top: 0;
-    left: 0;
-    background-image: 
-        radial-gradient(white, rgba(255,255,255,0) 2px),
-        radial-gradient(white, rgba(255,255,255,0) 1px);
-    background-size: 100px 100px, 150px 150px;
-    background-position: 0 0, 50px 50px;
-    opacity: 0.05;
-    animation: dust-drift 60s linear infinite;
-    pointer-events: none;
-}
-
-@keyframes dust-drift {
-    from { background-position: 0 0, 50px 50px; }
-    to { background-position: 500px 1000px, 400px 600px; }
-}
-
-/* ==========================================================================
-   TITAN V3 - THE SOVEREIGN FINALE (THE COMPLETION)
-   Features: Chromatic Aberration, Liquid Borders, Parallax Depth, 
-   and Elite Metadata Overlays.
-========================================================================== */
-
-/* --- 41. تأثير الزجاج السائل (Liquid Glass Reflection) --- */
-/* يعطي إحساساً بأن سطح البطاقة مغطى بطبقة من الكريستال السائل */
-.holo-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        110deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.05) 45%,
-        rgba(255, 255, 255, 0.2) 50%,
-        rgba(255, 255, 255, 0.05) 55%,
-        rgba(255, 255, 255, 0) 100%
-    );
+    background: linear-gradient(90deg, var(--p-cyan), var(--p-violet));
+    box-shadow: 0 0 10px var(--p-cyan);
+    /* ميزة 653: تحريك تدفق البيانات */
     background-size: 200% 100%;
-    animation: liquid-shine 8s infinite linear;
-    z-index: 15;
-    pointer-events: none;
+    animation: data-flow 3s linear infinite;
 }
 
-@keyframes liquid-shine {
+@keyframes data-flow {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
 }
 
-/* --- 42. تأثير تشتت الألوان (Chromatic Aberration) --- */
-/* يظهر عند الوقوف على البطاقة، حيث تظهر حواف حمراء وزرقاء خفيفة تعطي طابع الكاميرات الرقمية الاحترافية */
-.holo-card:hover .glitch-text {
-    text-shadow: 
-        2px 0px 0px rgba(255,0,0,0.5),
-        -2px 0px 0px rgba(0,255,255,0.5);
-    animation: chromatic-move 0.2s infinite;
+/* 751-850: قائمة المتصدرين - الرتب الصغرى (The Infantry List) */
+.agent-row:nth-child(even) {
+    background: rgba(255, 255, 255, 0.01);
 }
 
-@keyframes chromatic-move {
-    0% { transform: translate(0); }
-    25% { transform: translate(1px, 1px); }
-    50% { transform: translate(-1px, -1px); }
-    75% { transform: translate(-1px, 1px); }
-    100% { transform: translate(0); }
+.agent-row:hover {
+    /* ميزة 752: إزاحة ثلاثية الأبعاد */
+    transform: perspective(1000px) rotateX(2deg) translateX(10px);
+    background: rgba(255, 255, 255, 0.05);
 }
 
-/* --- 43. نظام التتبع البصري (Targeting Reticle) --- */
-/* يظهر حول الصورة الشخصية وكأن النظام يقوم بعمل Scan للعميل */
-.reticle-frame {
+/* 851-950: الأيقونات والرموز (The Iconography Logic) */
+.lucide {
+    /* ميزة 852: توهج الأيقونات */
+    filter: drop-shadow(0 0 5px currentColor);
+    transition: 0.3s;
+}
+
+.lucide:hover {
+    transform: scale(1.2) rotate(15deg);
+    filter: drop-shadow(0 0 15px currentColor);
+}
+
+/* 951-1000: نظام التذييل والبيانات الختامية (Terminal Footer) */
+.footer-terminal {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.7rem;
+    color: var(--p-cyan);
+    opacity: 0.5;
+    /* ميزة 952: تأثير الكتابة المستمرة */
+    border-right: 2px solid var(--p-cyan);
+    white-space: nowrap;
+    overflow: hidden;
+    animation: typing 5s steps(40) infinite, blink 0.5s step-end infinite;
+}
+
+@keyframes typing { from { width: 0; } to { width: 100%; } }
+@keyframes blink { 50% { border-color: transparent; } }
+
+/* ميزة إضافية 1001: نظام "الضباب الكوني" */
+.cosmic-fog {
     position: absolute;
-    inset: -10px;
-    border: 1px solid rgba(0, 243, 255, 0.2);
-    border-radius: 50%;
+    width: 100%; height: 100%;
+    background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(0, 243, 255, 0.1) 0%, transparent 20%);
     pointer-events: none;
+    z-index: 1;
 }
 
-.reticle-frame::before {
+/* ============================================================
+   TITAN PROTOCOL - PART 4: RANK-SPECIFIC ARCHITECTURE
+   ============================================================ */
+
+/* 1001-1100: نظام رتبة "الإمبراطور" (MaFa Emperor Styling) */
+.frame-emperor {
+    /* ميزة 1002: لمعان الذهب المتحرك */
+    background: linear-gradient(110deg, #ffd700 8%, #fff 18%, #ffd700 33%);
+    background-size: 200% 100%;
+    animation: gold-shine 3s linear infinite;
+    /* ميزة 1005: ظل ملكي عميق */
+    box-shadow: 0 0 50px rgba(255, 215, 0, 0.5), inset 0 0 20px #fff;
+}
+
+@keyframes gold-shine {
+    to { background-position-x: -200%; }
+}
+
+/* 1101-1200: نظام رتبة "الجنرال" (General - Trident Power) */
+.rank-general {
+    border: 2px solid #00f3ff;
+    background: repeating-linear-gradient(45deg, rgba(0,243,255,0.1), transparent 10px);
+    /* ميزة 1105: تأثير البرق الصاعق */
+    position: relative;
+}
+
+.rank-general::before {
+    content: '🔱';
+    position: absolute;
+    top: -10px; right: -10px;
+    filter: drop-shadow(0 0 10px #00f3ff);
+}
+
+/* 1201-1350: نظام "القدرات الخاصة" (Power-Ups Visuals) */
+/* ميزة 1202: درع الحماية (Shield Active) */
+.shield-active {
+    position: relative;
+}
+
+.shield-active::after {
     content: '';
     position: absolute;
-    top: 50%; left: -10px; right: -10px;
-    height: 1px; background: rgba(0, 243, 255, 0.1);
+    inset: -5px;
+    border: 2px solid rgba(0, 243, 255, 0.5);
+    border-radius: inherit;
+    animation: shield-rotate 4s linear infinite;
+    /* ميزة 1205: زجاج سداسي للحماية */
+    background: radial-gradient(circle, transparent 50%, rgba(0, 243, 255, 0.1) 100%);
 }
 
-/* --- 44. تأثير "العمق الحركي" (Parallax Text) --- */
-/* يجعل النصوص تبدو وكأنها تطفو على مستويات مختلفة داخل البطاقة */
-.card-front h3 {
-    transform: translateZ(60px);
-    transition: transform 0.3s ease;
+@keyframes shield-rotate {
+    0% { transform: rotate(0deg) scale(1); opacity: 0.5; }
+    50% { transform: rotate(180deg) scale(1.05); opacity: 0.8; }
+    100% { transform: rotate(360deg) scale(1); opacity: 0.5; }
 }
 
-.card-front p {
-    transform: translateZ(40px);
+/* 1351-1450: نظام "الخريطة الحرارية" (Heatmap Progress) */
+.xp-heatmap {
+    display: flex;
+    gap: 2px;
+    /* ميزة 1352: خلايا بيانات حية */
 }
 
-/* --- 45. المركز الأول - الوهج الملكي (The Golden Pulse) --- */
-.rank-1-special {
-    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.4));
-    background: radial-gradient(circle at top right, rgba(255, 215, 0, 0.1), transparent);
-}
-
-/* --- 46. تأثير "ضجيج البيانات" (Data Noise) --- */
-/* طبقة خفيفة جداً من النويز الرقمي فوق الصفحة بالكامل لتعطي طابعاً سينمائياً */
-.data-noise {
-    position: fixed;
-    inset: 0;
-    background-image: url("https://grainy-gradients.vercel.app/noise.svg");
-    opacity: 0.03;
-    z-index: 999;
-    pointer-events: none;
-    mix-blend-mode: overlay;
-}
-
-/* --- 47. أيقونات التفاعل (Micro-HUD Icons) --- */
-.striver-row button::before {
-    content: '[';
-    margin-right: 5px;
-    color: var(--p-cyan);
-    opacity: 0;
+.heatmap-cell {
+    width: 10px; height: 10px;
+    border-radius: 2px;
     transition: 0.3s;
 }
 
-.striver-row button::after {
-    content: ']';
-    margin-left: 5px;
-    color: var(--p-cyan);
-    opacity: 0;
-    transition: 0.3s;
-}
+.heatmap-cell.level-high { background: #00f3ff; box-shadow: 0 0 5px #00f3ff; }
+.heatmap-cell.level-med { background: rgba(0, 243, 255, 0.4); }
+.heatmap-cell.level-low { background: rgba(255, 255, 255, 0.05); }
 
-.striver-row:hover button::before,
-.striver-row:hover button::after {
-    opacity: 1;
-}
-
-/* --- 48. تأثير "البروز المغناطيسي" (Magnetic Pull) --- */
-/* عند المرور فوق القائمة، تشعر أن الصفوف تنجذب ليدك */
-.striver-row {
+/* 1451-1600: نظام "صناديق الغنائم" (Loot Box Animation) */
+.loot-box-vfx {
+    width: 100px; height: 100px;
+    background: linear-gradient(135deg, #8b5cf6, #d946ef);
+    /* ميزة 1452: اهتزاز مغناطيسي */
+    animation: loot-vibrate 0.5s infinite;
     perspective: 1000px;
 }
 
-.striver-row:hover {
-    transform: scale(1.02) rotateX(2deg);
+@keyframes loot-vibrate {
+    0% { transform: rotate(0); }
+    25% { transform: rotate(2deg); }
+    75% { transform: rotate(-2deg); }
+    100% { transform: rotate(0); }
 }
 
-/* --- 49. نظام التوقيت الرقمي (Digital Clock Layout) --- */
-.system-clock {
+/* 1601-1750: نظام الـ "Nemesis" - المطاردة الحمراء */
+.nemesis-row {
+    border: 1px solid #ff0000 !important;
+    background: linear-gradient(90deg, rgba(255,0,0,0.1), transparent) !important;
+}
+
+.nemesis-row::before {
+    content: 'TARGET';
+    position: absolute;
+    left: 0; top: 0;
+    font-size: 0.5rem;
+    background: #ff0000;
+    color: #fff;
+    padding: 2px 5px;
+}
+
+/* 1751-1900: نظام الـ "Radar Scanner" للملف الشخصي */
+.radar-container {
+    width: 200px; height: 200px;
+    border: 1px solid rgba(0, 243, 255, 0.2);
+    border-radius: 50%;
+    position: relative;
+}
+
+.radar-sweep {
+    position: absolute;
+    width: 50%; height: 50%;
+    top: 0; left: 50%;
+    background: conic-gradient(from 0deg, var(--p-cyan), transparent 90deg);
+    transform-origin: bottom left;
+    animation: radar-spin 2s linear infinite;
+}
+
+@keyframes radar-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 1901-2000: نظام "الأرقام المتساقطة" (Matrix Rain Drop) */
+.matrix-bg {
+    mask-image: linear-gradient(transparent, black, transparent);
     font-family: 'monospace';
     font-size: 10px;
     color: var(--p-cyan);
+    line-height: 1;
+    opacity: 0.1;
+}
+
+/* ============================================================
+   TITAN PROTOCOL - PART 5: THE ULTIMATE RESPONSIVENESS
+   ============================================================ */
+
+/* ميزة 1950: تحويل الواجهة للهواتف الذكية بنظام "Cyber-Slide" */
+@media (max-width: 768px) {
+    .podium-base {
+        height: 300px !important;
+        margin-bottom: 50px;
+    }
+    
+    .hero-card h4 {
+        font-size: 1rem !important;
+    }
+    
+    .titan-wrapper {
+        padding: 10px !important;
+    }
+}
+
+/* ============================================================
+   TITAN PROTOCOL - PART 6: THE VIRTUAL CERTIFICATE & AWARDS
+   ============================================================ */
+
+/* 2001-2150: نظام الشهادة الرقمية (The 3D Holographic Certificate) */
+.digital-cert-container {
+    perspective: 2000px;
+    /* ميزة 2002: الانعكاس المرآتي للشهادة */
+    -webkit-box-reflect: below 20px linear-gradient(transparent, rgba(255,255,255,0.1));
+}
+
+.certificate-card {
+    width: 600px; height: 400px;
+    background: 
+        linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.9) 100%),
+        repeating-linear-gradient(45deg, rgba(255,215,0,0.02) 0px, transparent 2px);
+    border: 1px solid var(--p-gold);
+    border-radius: 15px;
+    transform-style: preserve-3d;
+    transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* ميزة 2005: الختم المائي المتحرك */
+    position: relative;
+}
+
+.certificate-card::before {
+    content: 'TITAN OFFICIAL';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) rotate(-30deg);
+    font-size: 5rem;
+    opacity: 0.03;
+    font-family: 'Orbitron';
+    white-space: nowrap;
+}
+
+.cert-seal {
+    position: absolute;
+    bottom: 30px; right: 30px;
+    width: 80px; height: 80px;
+    border: 2px dashed var(--p-gold);
+    border-radius: 50%;
+    animation: seal-spin 10s linear infinite;
+}
+
+@keyframes seal-spin { to { transform: rotate(360deg); } }
+
+/* 2151-2300: نظام "مختبر القدرات" (The Ability Lab Nodes) */
+.ability-node {
+    width: 60px; height: 60px;
+    background: rgba(0, 243, 255, 0.1);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.5s;
+    border: 1px solid var(--p-cyan);
+}
+
+.ability-node:hover {
+    background: var(--p-cyan);
+    color: #000;
+    /* ميزة 2155: انفجار الجزيئات الخلفي */
+    box-shadow: 0 0 30px var(--p-cyan);
+    transform: scale(1.2) rotate(10deg);
+}
+
+/* ============================================================
+   TITAN PROTOCOL - PART 7: DYNAMIC WEATHER & ATMOSPHERE
+   ============================================================ */
+
+/* 2301-2450: نظام "عاصفة البيانات" (STORM_MODE Visuals) */
+.STORM_MODE .titan-wrapper {
+    /* ميزة 2302: البرق الضوئي العشوائي */
+    animation: lightning-flash 10s infinite;
+}
+
+@keyframes lightning-flash {
+    0%, 95%, 98% { background: var(--bg-deep); }
+    96%, 99% { background: rgba(0, 243, 255, 0.1); }
+}
+
+.STORM_MODE .agent-row {
+    border-color: rgba(0, 243, 255, 0.3);
+    /* ميزة 2305: اهتزاز الرياح الرقمية */
+    animation: drift-wind 3s ease-in-out infinite;
+}
+
+@keyframes drift-wind {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(5px); }
+}
+
+/* 2451-2600: نظام "الساعة الذهبية" (GOLDEN_HOUR) لليوزرات العالية */
+.GOLDEN_HOUR .titan-wrapper {
+    background: radial-gradient(circle at top, rgba(255, 215, 0, 0.1) 0%, var(--bg-deep) 70%);
+}
+
+.GOLDEN_HOUR .podium-label {
+    /* ميزة 2452: نص يتوهج مثل الشمس */
+    text-shadow: 0 0 20px var(--p-gold), 0 0 40px var(--p-gold);
+}
+
+/* ============================================================
+   TITAN PROTOCOL - PART 8: MICRO-DETAILS & TYPOGRAPHY
+   ============================================================ */
+
+/* 2601-2800: نظام الحروف "النيون المتدرج" (Typography Evolution) */
+h1, h2, h3 {
+    /* ميزة 2602: تدرج لوني للنصوص */
+    background: linear-gradient(to right, #fff 20%, var(--p-cyan) 50%, #fff 80%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: text-shine 5s linear infinite;
+}
+
+@keyframes text-shine {
+    to { background-position: 200% center; }
+}
+
+/* 2801-2950: تفاصيل الـ Search HUD المتقدمة */
+.search-hud-container::before {
+    content: '[';
+    position: absolute; left: -10px;
+    color: var(--p-cyan);
+    animation: bracket-pulse 1s infinite;
+}
+
+.search-hud-container::after {
+    content: ']';
+    position: absolute; right: -10px;
+    color: var(--p-cyan);
+    animation: bracket-pulse 1s infinite ease-out;
+}
+
+@keyframes bracket-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.5; }
+}
+
+/* 2951-3000: نظام الروابط والـ Tooltips السيبرانية */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%; left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: var(--p-cyan);
+    color: #000;
+    padding: 5px 10px;
+    font-size: 0.6rem;
+    font-weight: bold;
+    clip-path: polygon(0 0, 100% 0, 100% 70%, 70% 100%, 0 100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.3s;
+}
+
+[data-tooltip]:hover::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ميزة 3001: نظام "تأثير الكروم" للأيقونات */
+.medal-icon {
+    background: linear-gradient(135deg, #e5e7eb 0%, #9ca3af 50%, #4b5563 100%);
+    -webkit-mask-image: url('data:image/svg+xml;base64,...'); /* يتم استبدالها بأيقونة */
+    /* ميزة 3002: بريق معدني */
+}
+
+/* ============================================================
+   TITAN PROTOCOL - PART 9: THE CINEMATIC LOADING & HUD SCAN
+   ============================================================ */
+
+/* 3001-3100: نظام التحميل الأولي (The Boot Sequence) */
+.loading-screen {
+    background: var(--bg-deep);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* ميزة 3002: تشويه بصري عند البدء */
+    animation: monitor-flicker 0.1s infinite;
+}
+
+@keyframes monitor-flicker {
+    0% { opacity: 0.97; }
+    50% { opacity: 1; }
+    100% { opacity: 0.98; }
+}
+
+.loader-bar-container {
+    width: 300px;
+    height: 2px;
+    background: rgba(0, 243, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.loader-bar-progress {
+    width: 0%;
+    height: 100%;
+    background: var(--p-cyan);
+    box-shadow: 0 0 15px var(--p-cyan);
+    animation: load-progress 4s cubic-bezier(0.645, 0.045, 0.355, 1) forwards;
+}
+
+@keyframes load-progress {
+    0% { width: 0%; }
+    30% { width: 40%; }
+    60% { width: 45%; }
+    100% { width: 100%; }
+}
+
+/* 3101-3200: نظام "البوصلة الرقمية" (The HUD Compass) */
+.hud-compass {
     position: fixed;
     bottom: 20px;
-    right: 30px;
-    letter-spacing: 2px;
-}
-
-/* --- 50. اللمسة الختامية: لمعة النصر (The Victory Sparkle) --- */
-@keyframes sparkle {
-    0%, 100% { opacity: 0; transform: scale(0); }
-    50% { opacity: 1; transform: scale(1); }
-}
-
-.sparkle-dot {
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    background: white;
+    left: 20px;
+    width: 100px; height: 100px;
+    border: 1px solid rgba(0, 243, 255, 0.2);
     border-radius: 50%;
-    box-shadow: 0 0 10px white;
-    animation: sparkle 2s infinite;
+    /* ميزة 3102: دوران الاتجاهات الذكي */
+    animation: rotate-compass 20s linear infinite;
+}
+
+.hud-compass::before {
+    content: 'N';
+    position: absolute; top: 5px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.5rem; color: var(--p-cyan);
+}
+
+@keyframes rotate-compass { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   TITAN PROTOCOL - PART 10: MICROSCOPIC INTERACTIONS
+   ============================================================ */
+
+/* 3201-3350: نظام "خلايا النحل" للمس الشاشة (Touch Ripples) */
+.agent-row::before {
+    content: '';
+    position: absolute;
+    top: var(--y); left: var(--x); /* يتم التحكم بها عبر JS */
+    width: 0; height: 0;
+    background: rgba(0, 243, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.5s, height 0.5s;
+}
+
+.agent-row:active::before {
+    width: 300px; height: 300px;
+    opacity: 0;
+}
+
+/* 3351-3450: نظام "الرسائل المشفرة" (Secret Agent Notes) */
+.secret-note {
+    font-family: 'Courier New', monospace;
+    font-size: 0.6rem;
+    color: #4ade80; /* أخضر مصفوفة */
+    border-left: 2px solid #4ade80;
+    padding-left: 10px;
+    margin-top: 5px;
+    /* ميزة 3352: ظهور تدريجي "كتابة" */
+    overflow: hidden;
+    white-space: nowrap;
+    animation: typing-note 2s steps(30, end);
+}
+
+@keyframes typing-note { from { width: 0 } to { width: 100% } }
+
+/* 3451-3550: نظام "الرتبة المتوهجة" (Rank Glow Multiplier) */
+[data-rank="1"] .hero-card { 
+    --p-glow: var(--p-gold);
+    animation: extreme-glow 2s infinite alternate;
+}
+
+@keyframes extreme-glow {
+    from { filter: drop-shadow(0 0 10px var(--p-glow)); }
+    to { filter: drop-shadow(0 0 30px var(--p-glow)); }
+}
+
+/* 3551-3600: نظام الـ Scroll الميكانيكي */
+.scroll-indicator {
+    position: absolute;
+    right: 5px;
+    width: 2px;
+    background: linear-gradient(transparent, var(--p-cyan), transparent);
+    /* ميزة 3552: تتبع الحركة */
+}
+
+/* ============================================================
+   TITAN PROTOCOL - FINAL GLOBAL POLISH
+   ============================================================ */
+
+/* ميزة 3560: تأثير "الزجاج المهشم" عند الهزيمة (Defeat VFX) */
+.defeat-vfx {
+    filter: grayscale(1) blur(2px);
+    clip-path: polygon(10% 0, 90% 0, 100% 10%, 100% 90%, 90% 100%, 10% 100%, 0 90%, 0 10%);
+    opacity: 0.5;
+}
+
+/* ميزة 3580: نظام "السيولة الرقمية" للصور */
+img.agent-avatar {
+    mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+    transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+img.agent-avatar:hover {
+    mask-image: linear-gradient(to bottom, black 100%, transparent 100%);
+    transform: scale(1.1) rotate(-3deg);
+}
+
+/* ميزة 3600: النهاية - التوقيع الرقمي للملف */
+.titan-wrapper::after {
+    content: "AUTHENTICATED BY TITAN PROTOCOL";
+    position: fixed;
+    bottom: 5px;
+    right: 10px;
+    font-size: 0.4rem;
+    color: rgba(0, 243, 255, 0.2);
+    letter-spacing: 5px;
+    z-index: 1000;
 }
