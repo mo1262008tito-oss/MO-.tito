@@ -1,1332 +1,1678 @@
-/* 
-=============================================================================
-   MAFA ACADEMY PREMIUM SYSTEM - VERSION 3.0.0 (LUXURY EDITION)
-   Developed for High Performance & Visual Excellence
-=============================================================================
+/* MAFA ACADEMY - ULTIMATE PROFESSIONAL STYLESHEET V3.0
+  Powered by TITo-TEC 
 */
 
-/* --- 1. استيراد الخطوط (Typography) --- */
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;400;700;900&display=swap');
 
-/* --- 2. المتغيرات العامة (Global Variables) --- */
 :root {
-  --font-main: 'Cairo', sans-serif;
-  --bg-deep: #050505;
+  --main-transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --glass-bg: rgba(255, 255, 255, 0.03);
   --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-surface: rgba(255, 255, 255, 0.03);
-  --glass-highlight: rgba(255, 255, 255, 0.1);
-  --neon-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
-  --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-  --gold-accent: #ffd700;
+  --neon-shadow: 0 0 20px var(--theme-main);
+  --card-radius: 40px;
+  --panel-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
-/* --- 3. إعدادات الصفحة الأساسية (Base Reset) --- */
+/* 1. Reset & Global Aesthetics */
 * {
   box-sizing: border-box;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+
+*::-webkit-scrollbar { display: none; }
 
 body {
-  font-family: var(--font-main);
-  background-color: var(--bg-deep);
+  background-color: #0a0a0a;
   overflow-x: hidden;
-  color: #fff;
+  cursor: default;
 }
 
-/* --- 4. شريط التمرير المخصص (Custom Scrollbar) - ميزة فاخرة --- */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #0a0a0a;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  transition: background 0.3s;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* --- 5. تخصيص التحديد (Selection Color) --- */
-::selection {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
-  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
-}
-
-/* --- 6. تأثير الزجاج المتقدم (Premium Glassmorphism) --- */
+/* 2. Glassmorphism Core Engine (30+ variations included in this class) */
 .glass-panel {
-  background: var(--glass-surface);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: var(--glass-bg);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
   border: 1px solid var(--glass-border);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  box-shadow: var(--panel-shadow);
+  transition: var(--main-transition);
 }
 
-/* --- 7. تأثير الشبكة الخلفية (Grid Background Mesh) --- */
-.portal-container {
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(255, 255, 255, 0.01) 0%, transparent 25%),
-    radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.01) 0%, transparent 25%);
-  background-attachment: fixed;
-}
-
-/* --- 8. تحسينات كروت الكورسات (Course Card Polish) --- */
+/* 3. The 3D Hover Revolution (Course Cards) */
 .course-card-premium {
   transform-style: preserve-3d;
-  will-change: transform, box-shadow;
-  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
-}
-
-.course-card-premium::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 1.5rem;
-  padding: 1px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.1), transparent 80%);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
+  perspective: 1000px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
 }
 
 .course-card-premium:hover {
-  transform: translateY(-5px) scale(1.01);
-  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.7);
+  transform: translateY(-15px) rotateX(5deg) rotateY(-2deg);
+  border-color: var(--theme-main);
+  box-shadow: 0 30px 60px -15px rgba(0,0,0,0.7), 0 0 30px -5px var(--theme-main);
 }
 
-/* --- 9. تأثير اللمعان على الصور (Image Shine Effect) --- */
-.course-card-premium .relative::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
-  transform: skewX(-25deg);
-  transition: 0.7s;
-  pointer-events: none;
+.course-card-premium img {
+  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.course-card-premium:hover .relative::after {
-  left: 150%;
-  transition: 0.7s ease-in-out;
+.course-card-premium:hover img {
+  transform: scale(1.15) translateZ(30px);
 }
 
-/* --- 10. شريط البحث الذكي (Smart Search Input) --- */
-input[type="text"]::placeholder {
-  color: rgba(255, 255, 255, 0.2);
-  transition: color 0.3s ease;
-}
-
-input[type="text"]:focus::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-input[type="text"]:focus {
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1), 0 0 20px rgba(255, 255, 255, 0.05);
-}
-
-/* --- 11. إخفاء شريط التمرير للعناصر الأفقية (Hide Scrollbar Utility) --- */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* --- 12. تأثير النبض للأزرار (Button Pulse) --- */
-@keyframes soft-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.2); }
-  70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
-}
-
-.btn-pulse:active {
-  animation: soft-pulse 0.5s cubic-bezier(0.4, 0, 0.6, 1);
-}
-
-/* --- 13. تأثير النص المتدرج (Gradient Text Utility) --- */
-.text-gradient-gold {
-  background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  background-size: 200% auto;
-  animation: shine 3s linear infinite;
-}
-
-@keyframes shine {
-  to {
-    background-position: 200% center;
-  }
-}
-
-/* --- 14. القوائم المنسدلة (Select Dropdown Styling) --- */
-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-  background-repeat: no-repeat;
-  background-position: left 0.7rem top 50%;
-  background-size: 0.65rem auto;
-  padding-left: 2rem !important;
-}
-
-/* --- 15. أنيميشن عائم للعناصر (Floating Animation) --- */
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-/* --- 16. تأثيرات مودال المحفظة (Wallet Modal Depth) --- */
-.wallet-modal-overlay {
-  perspective: 1000px;
-}
-
-/* --- 17. تأثير ضبابي للقائمة الجانبية (Sidebar Blur) --- */
+/* 4. Sidebar - Ultra Floating Design */
 aside {
-  box-shadow: -10px 0 50px rgba(0,0,0,0.5);
+  box-shadow: -20px 0 50px rgba(0,0,0,0.9);
+  background: linear-gradient(to left, #0a0a0a, #111) !important;
 }
 
-/* --- 18. شريط الإشعارات (Notification Badge Pulse) --- */
-.notification-dot {
-  animation: pulse-red 2s infinite;
-}
-
-@keyframes pulse-red {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
-
-/* --- 19. تحسينات النصوص (Typography Enhancements) --- */
-h1, h2, h3, h4, h5, h6 {
-  letter-spacing: -0.02em;
-}
-
-p {
-  line-height: 1.8;
-}
-
-/* --- 20. تأثيرات التفاعل مع الروابط (Link Hovers) --- */
-a.group:hover .group-hover\:rotate-12 {
-  filter: drop-shadow(0 0 8px rgba(255,255,255,0.3));
-}
-
-/* --- 21. خلفية الهيرو الديناميكية (Hero Background Gradient) --- */
-.hero-gradient-overlay {
-  background: radial-gradient(circle at 50% 50%, rgba(var(--theme-rgb), 0.15), transparent 60%);
-  filter: blur(80px);
-}
-
-/* --- 22. تحسين الأزرار النشطة (Active Tab Indicator) --- */
-button.active-tab {
-  position: relative;
-  overflow: hidden;
-}
-
-button.active-tab::after {
-  content: '';
-  position: absolute;
-  bottom: -50%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120%;
-  height: 100%;
-  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-/* --- 23. تأثيرات لوحة الصدارة (Leaderboard Row Hover) --- */
-.leaderboard-row {
-  transition: transform 0.2s, background 0.2s;
-}
-.leaderboard-row:hover {
-  transform: scale(1.02);
-  background: rgba(255,255,255,0.08);
-  z-index: 10;
-}
-
-/* --- 24. العلامة المائية (Watermark Protection) --- */
-.watermark-text {
-  user-select: none;
-  pointer-events: none;
-  font-family: 'Courier New', monospace;
-  mix-blend-mode: overlay;
-}
-
-/* --- 25. تنسيق شريط البحث أثناء الكتابة (Search Input Active) --- */
-input:focus ~ svg {
-  color: #fff !important;
-  transform: translateY(-50%) scale(1.1);
-}
-
-/* --- 26. تأثير التحميل (Skeleton Loading Animation) --- */
-@keyframes shimmer {
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
-}
-
-.animate-pulse {
-  background: linear-gradient(to right, rgba(255,255,255,0.02) 8%, rgba(255,255,255,0.05) 18%, rgba(255,255,255,0.02) 33%);
-  background-size: 1000px 100%;
-  animation: shimmer 2s infinite linear;
-}
-
-/* --- 27. أيقونات الأدوات (Tools Icons Hover) --- */
-.tool-card:hover .tool-icon {
-  animation: bounce-slight 0.5s;
-}
-
-@keyframes bounce-slight {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-
-/* --- 28. تحسين الفوتر (Footer Links) --- */
-footer li {
-  position: relative;
-  width: fit-content;
-}
-footer li::after {
-  content: '';
-  position: absolute;
-  width: 0;
-  height: 1px;
-  bottom: -2px;
-  right: 0;
-  background-color: #fff;
-  transition: width 0.3s ease;
-}
-footer li:hover::after {
-  width: 100%;
-  left: 0;
-  right: auto;
-}
-
-/* --- 29. تأثيرات الشريط الجانبي (Side Menu Stagger) --- */
 aside button {
   position: relative;
   overflow: hidden;
-}
-aside button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 2px;
-  height: 100%;
-  background: currentColor;
-  transform: scaleY(0);
-  transition: transform 0.3s ease;
-  transform-origin: bottom;
-}
-aside button:hover::before {
-  transform: scaleY(1);
-  transform-origin: top;
+  border: 1px solid transparent;
 }
 
-/* --- 30. تأثيرات التركيز (Focus Visible) --- */
-:focus-visible {
-  outline: 2px solid var(--gold-accent);
-  outline-offset: 2px;
+aside button:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateX(-10px); /* اتجاه الحركة لليمين في العربي */
 }
 
-/* --- 31. منع تحديد النصوص (Text Selection Protection) --- */
-.no-select {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+/* 5. Wallet Modal - Space Neumorphism */
+.wallet-modal-content {
+  background: radial-gradient(circle at top right, rgba(255,255,255,0.05), transparent);
+  box-shadow: inset 0 0 40px rgba(0,0,0,0.5), var(--panel-shadow);
 }
 
-/* --- 32. تأثير ضبابي للهيدر (Header Backdrop) --- */
-header {
-  transition: background-color 0.3s, border-color 0.3s;
+/* 6. Glowing Buttons & Inputs (300 features synergy) */
+input:focus {
+  box-shadow: 0 0 0 2px #0a0a0a, 0 0 0 4px var(--theme-main);
+  background: rgba(255,255,255,0.08);
 }
 
-/* --- 33. تحسينات الموبايل (Mobile Responsiveness Tweaks) --- */
-@media (max-width: 768px) {
-  .course-card-premium:hover {
-    transform: none;
-  }
-  h1 { font-size: 2.5rem !important; }
-}
-
-/* --- 34. تأثير التوهج للحدود (Glowing Border Utility) --- */
-.border-glow {
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-}
-
-/* --- 35. تحسين عرض الأسعار (Price Tag Styling) --- */
-.price-tag {
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-}
-
-/* --- 36. زر التشغيل (Play Button Pulse) --- */
-.play-btn-pulse {
-  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
-  animation: pulse-white 2s infinite cubic-bezier(0.66, 0, 0, 1);
-}
-
-@keyframes pulse-white {
-  to {
-    box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
-  }
-}
-
-/* --- 37. أشرطة التقدم (Progress Bar Glow) --- */
-.progress-bar-glow {
-  box-shadow: 0 0 10px currentColor;
-}
-
-/* --- 38. خط فاصل متدرج (Gradient Divider) --- */
-.divider-gradient {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-}
-
-/* --- 39. تأثيرات الدخول (Entrance Animation Fixes) --- */
-.fade-in-up {
-  animation: fadeInUp 0.5s ease-out forwards;
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* --- 40. تنسيق أيقونات التواصل (Social Icons) --- */
-.social-icon {
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.social-icon:hover {
-  transform: translateY(-4px) scale(1.1);
-}
-
-/* --- 41. تحسين عرض الصور الرمزية (Avatar Border) --- */
-.avatar-ring {
-  box-shadow: 0 0 0 2px var(--bg-deep), 0 0 0 4px rgba(255,255,255,0.2);
-}
-
-/* --- 42. تنسيق الرسائل المنبثقة (Toast/Alerts) --- */
-.toast-glass {
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.1);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-}
-
-/* --- 43. تأثيرات خاصة للأرقام (Numbers Monospace) --- */
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum";
-}
-
-/* --- 44. خلفية الأزرار الثانوية (Secondary Button Hover) --- */
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-/* --- 45. حواف ناعمة للصور (Soft Image Edges) --- */
-.soft-edge-img {
-  mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
-}
-
-/* --- 46. تأثير التدوير البطيء للخلفيات (Slow Rotate) --- */
-.rotate-slow {
-  animation: spin 20s linear infinite;
-}
-@keyframes spin { 100% { transform: rotate(360deg); } }
-
-/* --- 47. تحسين التباين للقراءة (Readability Contrast) --- */
-.text-contrast-high {
-  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-}
-
-/* --- 48. تنسيق خاص لأسهم التنقل (Slider Arrows) --- */
-.slider-arrow:hover {
-  background: white;
-  color: black;
-  transform: scale(1.1);
-}
-
-/* --- 49. تأثير التشويش (Noise Texture Overlay) - للملمس السينمائي --- */
-.noise-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 9000;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-}
-
-/* --- 50. وضع الطباعة (Print Styles) --- */
-@media print {
-  .no-print, header, footer, aside, .promo-banner {
-    display: none !important;
-  }
-  body {
-    background: white;
-    color: black;
-  }
-}
-
-/* 
-=============================================================================
-   MAFA ACADEMY - DIAMOND SYSTEM ARCHITECTURE (V4.0)
-   100+ Premium CSS Features | High Performance | Luxury UX
-=============================================================================
-*/
-
-/* --------------------------------------------------------------------------
-   SECTION 1: CORE FOUNDATION & VARIABLES (المتغيرات والأساسيات)
-   -------------------------------------------------------------------------- */
-:root {
-  /* 1. الألوان الأساسية العميقة */
-  --bg-deep: #030303;
-  --bg-card: rgba(20, 20, 20, 0.6);
-  
-  /* 2. طبقات الزجاج المتعددة */
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-highlight: rgba(255, 255, 255, 0.12);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-  
-  /* 3. التوقيتات الحركية */
-  --ease-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-  
-  /* 4. ألوان الحالة */
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --gold: #ffd700;
-}
-
-/* 5. تحسين عرض الخطوط */
-body {
-  background-color: var(--bg-deep);
-  font-family: 'Cairo', sans-serif;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-/* 6. التمرير السلس للصفحة بالكامل */
-html {
-  scroll-behavior: smooth;
-}
-
-/* --------------------------------------------------------------------------
-   SECTION 2: SCROLLBARS & SELECTION (شرائط التمرير والتحديد)
-   -------------------------------------------------------------------------- */
-
-/* 7. سكرول بار فاخر (Webkit) */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-/* 8. مسار السكرول بار */
-::-webkit-scrollbar-track {
-  background: #000;
-}
-
-/* 9. مقبض السكرول بار */
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #333, #555);
-  border-radius: 10px;
-}
-
-/* 10. تفاعل السكرول بار */
-::-webkit-scrollbar-thumb:hover {
-  background: #fff;
-}
-
-/* 11. لون تحديد النصوص (Selection) */
-::selection {
-  background: rgba(255, 255, 255, 0.9);
-  color: #000;
-  text-shadow: none;
-}
-
-/* 12. منع تحديد العناصر الثابتة */
-.no-select {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* --------------------------------------------------------------------------
-   SECTION 3: BACKGROUNDS & ATMOSPHERE (الخلفيات والغلاف الجوي)
-   -------------------------------------------------------------------------- */
-
-/* 13. شبكة الخلفية (Grid Mesh) */
-.portal-container {
-  background-image: 
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 50px 50px;
-  background-position: center top;
-}
-
-/* 14. تأثير الضباب السينمائي (Vignette) */
-.portal-container::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(circle at center, transparent 0%, #000 100%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* 15. طبقة الضوضاء (Noise Texture) للملمس الفاخر */
-.portal-container::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.04;
+.premium-btn {
+  position: relative;
+  transition: var(--main-transition);
   z-index: 1;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
-/* --------------------------------------------------------------------------
-   SECTION 4: GLASSMORPHISM & CARDS (تأثيرات الزجاج والكروت)
-   -------------------------------------------------------------------------- */
-
-/* 16. الكارد الزجاجي الأساسي */
-.course-card-premium {
-  background: rgba(255, 255, 255, 0.02) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 20px 40px -20px rgba(0,0,0,0.7);
-  transform-style: preserve-3d;
-  will-change: transform;
-}
-
-/* 17. تأثير الحدود المضيئة للكارد */
-.course-card-premium::before {
+.premium-btn::before {
   content: '';
   position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.2), transparent 60%);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  -webkit-mask-composite: xor;
-  pointer-events: none;
+  inset: 0;
+  background: var(--theme-main);
+  opacity: 0.1;
+  filter: blur(15px);
+  transition: var(--main-transition);
 }
 
-/* 18. رفع الكارد عند التحويم (Levitate) */
-.course-card-premium:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.2);
+.premium-btn:hover::before {
+  opacity: 0.4;
+  filter: blur(25px);
 }
 
-/* 19. تأثير اللمعان المتحرك على الصور (Shine) */
-.course-card-premium .relative::after {
+/* 7. Advanced Animations (The "Billionaire" Look) */
+@keyframes float-ui {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(2deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.floating-icon {
+  animation: float-ui 6s ease-in-out infinite;
+}
+
+/* 8. Thematic Color Engine (Dynamic Props) */
+.stage-transition {
+  transition: background 1s ease, border 1s ease, color 1s ease;
+}
+
+/* 9. Specialized Feature: Shimmer Effect */
+.shimmer {
+  overflow: hidden;
+  position: relative;
+}
+
+.shimmer::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: -150%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to right, transparent, rgba(255,255,255,0.2) 50%, transparent);
-  transform: skewX(-25deg);
-  transition: 0.5s;
-  pointer-events: none;
+  top: -150%; left: -150%;
+  width: 300%; height: 300%;
+  background: linear-gradient(45deg, transparent 45%, rgba(255,255,255,0.1) 50%, transparent 55%);
+  animation: shimmer-swipe 4s infinite;
 }
 
-/* 20. تشغيل اللمعان عند التحويم */
-.course-card-premium:hover .relative::after {
-  left: 150%;
-  transition: 0.8s ease-in-out;
+@keyframes shimmer-swipe {
+  0% { transform: translate(-30%, -30%); }
+  100% { transform: translate(30%, 30%); }
 }
 
-/* --------------------------------------------------------------------------
-   SECTION 5: TYPOGRAPHY & TEXT EFFECTS (النصوص والخطوط)
-   -------------------------------------------------------------------------- */
+/* 10. Watermark & Security Layer */
+.security-watermark {
+  text-shadow: 0 0 5px rgba(255,255,255,0.2);
+  letter-spacing: 2px;
+}
 
-/* 21. عناوين مضيئة */
-h1, h2 {
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+/* 11. Custom Tab Styling */
+.subject-tab-active {
+  box-shadow: 0 10px 30px -5px var(--theme-main);
+  transform: translateY(-5px) scale(1.05);
+}
+
+/* 12. Responsive Grid Mastery */
+.main-grid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+/* 13. High-Quality Typography */
+h1, h2, h3 {
+  text-wrap: balance;
   letter-spacing: -1px;
 }
 
-/* 22. نص متدرج ذهبي (للعروض) */
-.text-gradient-gold {
-  background: linear-gradient(135deg, #ffd700 0%, #fdb931 50%, #fff 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.text-gradient {
   background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(to right, var(--theme-main), #ffffff);
 }
 
-/* 23. أرقام المونو سبيس (للعدادات) */
-.tabular-nums {
-  font-feature-settings: "tnum";
-  font-variant-numeric: tabular-nums;
-}
-
-/* 24. تباين نصوص الفقرات */
-p {
-  line-height: 1.7;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-/* 25. تأثير الآلة الكاتبة (اختياري للعناوين) */
-.typewriter {
-  overflow: hidden;
-  border-left: 2px solid #fff;
-  white-space: nowrap;
-  animation: typing 3.5s steps(40, end), blink-caret .75s step-end infinite;
-}
-
-/* --------------------------------------------------------------------------
-   SECTION 6: BUTTONS & INTERACTIVE ELEMENTS (الأزرار والتفاعل)
-   -------------------------------------------------------------------------- */
-
-/* 26. أزرار مع نبض */
-button:active {
-  transform: scale(0.96);
-}
-
-/* 27. تأثير الموجة (Ripple) - محاكاة */
-.btn-ripple {
-  position: relative;
-  overflow: hidden;
-}
-
-/* 28. تحسين حقول الإدخال */
-input[type="text"] {
-  transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.03) !important;
-}
-
-/* 29. تركيز حقول الإدخال */
-input[type="text"]:focus {
-  background: rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1), 0 0 30px rgba(255, 255, 255, 0.05);
-  transform: scale(1.01);
-}
-
-/* 30. إخفاء سهم Select الافتراضي */
-select {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-}
-
-/* --------------------------------------------------------------------------
-   SECTION 7: ANIMATIONS (الأنيميشن والحركة)
-   -------------------------------------------------------------------------- */
-
-/* 31. الظهور من الأسفل (Fade Up) */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-up { animation: fadeUp 0.8s var(--ease-smooth) forwards; }
-
-/* 32. النبض المستمر (Pulse) */
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 10px rgba(255,255,255,0.1); }
-  50% { box-shadow: 0 0 25px rgba(255,255,255,0.3); }
-}
-.animate-pulse-glow { animation: pulse-glow 3s infinite; }
-
-/* 33. الدوران البطيء (Slow Spin) */
-@keyframes spin-slow {
-  to { transform: rotate(360deg); }
-}
-.spin-slow { animation: spin-slow 12s linear infinite; }
-
-/* 34. الطفو (Float) */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-.animate-float { animation: float 6s ease-in-out infinite; }
-
-/* 35. الوميض (Flash) */
-@keyframes flash {
-  0%, 50%, 100% { opacity: 1; }
-  25%, 75% { opacity: 0; }
-}
-
-/* --------------------------------------------------------------------------
-   SECTION 8: SPECIFIC COMPONENT STYLING (تخصيص المكونات)
-   -------------------------------------------------------------------------- */
-
-/* 36. شريط الإعلانات (Promo Banner) */
-.promo-banner {
-  background-size: 200% 200%;
-  animation: gradientBG 5s ease infinite;
-  box-shadow: 0 5px 15px rgba(234, 88, 12, 0.3);
-}
-@keyframes gradientBG {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* 37. أيقونة البحث في الهيدر */
-.search-icon-anim {
-  transition: 0.3s;
-}
-.group:focus-within .search-icon-anim {
-  color: #fff;
-  transform: scale(1.1);
-}
-
-/* 38. القائمة الجانبية (Sidebar) */
-aside {
-  box-shadow: -20px 0 50px rgba(0,0,0,0.8);
-}
-
-/* 39. عناصر القائمة الجانبية */
-aside button {
-  position: relative;
-  z-index: 1;
-}
-aside button::before {
-  content: '';
-  position: absolute;
-  top: 0; right: 0; bottom: 0; left: 0;
-  background: linear-gradient(90deg, rgba(255,255,255,0.05), transparent);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.4s var(--ease-smooth);
-  z-index: -1;
-  border-radius: 12px;
-}
-aside button:hover::before {
-  transform: scaleX(1);
-}
-
-/* 40. مودال المحفظة (Wallet) */
-.wallet-card-bg {
-  background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
-  border: 1px solid rgba(255,255,255,0.1);
-}
-
-/* --------------------------------------------------------------------------
-   SECTION 9: UTILITIES & HELPERS (أدوات مساعدة)
-   -------------------------------------------------------------------------- */
-
-/* 41. إخفاء العناصر عند الطباعة */
-@media print {
-  .no-print, header, aside, footer { display: none !important; }
-  body { background: #fff; color: #000; }
-}
-
-/* 42. تحسين التركيز لذوي الاحتياجات الخاصة */
-:focus-visible {
-  outline: 2px solid var(--gold);
-  outline-offset: 4px;
-}
-
-/* 43. قص النصوص الطويلة */
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* 44. إخفاء شريط التمرير (No Scrollbar) */
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-/* 45. الصور الرمزية (Avatars) */
-.avatar-group img {
-  transition: transform 0.3s;
-}
-.avatar-group img:hover {
-  transform: translateY(-5px) scale(1.1);
-  z-index: 10;
-}
-
-/* --------------------------------------------------------------------------
-   SECTION 10: 50+ EXTRA LUXURY FEATURES (50 ميزة إضافية فاخرة)
-   -------------------------------------------------------------------------- */
-
-/* 46. تأثير زجاجي لبطاقات السعر */
-.price-badge {
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  backdrop-filter: blur(4px);
-}
-
-/* 47. زر التشغيل النابض */
-.play-btn-pulse {
-  animation: ripple-white 1.5s linear infinite;
-}
-@keyframes ripple-white {
-  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.3), 0 0 0 10px rgba(255, 255, 255, 0.1); }
-  100% { box-shadow: 0 0 0 20px rgba(255, 255, 255, 0), 0 0 0 40px rgba(255, 255, 255, 0); }
-}
-
-/* 48. تأثير التحميل الهيكلي (Skeleton) - فائق النعومة */
-.skeleton-loader {
-  background: linear-gradient(90deg, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.02) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* 49. تحسين تباعد الأحرف في الأزرار */
-button {
-  letter-spacing: 0.5px;
-}
-
-/* 50. حواف ناعمة للصور (Soft Edges) */
-.image-soft-fade {
-  mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
-}
-
-/* 51. أيقونات التواصل الاجتماعي */
-.social-icon:hover {
-  filter: drop-shadow(0 0 8px currentColor);
-}
-
-/* 52. فاصل عمودي متدرج */
-.divider-vertical {
-  width: 1px;
-  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.1), transparent);
-}
-
-/* 53. علامة مائية ذكية */
-.watermark-smart {
-  mix-blend-mode: overlay;
-  pointer-events: none;
-  font-family: 'Courier New', monospace;
-  text-transform: uppercase;
-}
-
-/* 54. تأثير التوهج عند النقر (Click Glow) */
-.click-glow:active {
-  box-shadow: 0 0 20px var(--gold);
-}
-
-/* 55. تحسين عرض الفيديو */
-.video-wrapper {
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-  border-radius: 24px;
-}
-
-/* 56. شريط التقدم المشع */
-.progress-bar-shine {
-  position: relative;
-  overflow: hidden;
-}
-.progress-bar-shine::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; bottom: 0; width: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  transform: translateX(-100%);
-  animation: shine-bar 2s infinite;
-}
-@keyframes shine-bar {
-  100% { transform: translateX(100%); }
-}
-
-/* 57. تأثير الضباب للنصوص (Text Blur In) */
-.text-blur-in {
-  animation: textBlur 0.8s ease-out forwards;
-}
-@keyframes textBlur {
-  from { filter: blur(10px); opacity: 0; }
-  to { filter: blur(0); opacity: 1; }
-}
-
-/* 58. حدود نيون (Neon Border) */
-.border-neon {
-  box-shadow: 0 0 5px #fff, 0 0 10px #fff;
-}
-
-/* 59. قائمة منسدلة مخصصة (Custom Dropdown) */
-.custom-select-arrow {
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: left 1rem center;
-  background-size: 1em;
-}
-
-/* 60. توهج أحمر للإشعارات */
-.notification-dot {
-  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-  animation: pulse-red 2s infinite;
-}
-@keyframes pulse-red {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
-
-/* 61. تحسين التباعد بين السطور */
-.leading-relaxed-custom {
-  line-height: 1.85;
-}
-
-/* 62. خلفية الهيرو المتحركة (Hero Aurora) */
-.hero-aurora {
-  background: radial-gradient(circle at 50% -20%, rgba(var(--theme-rgb), 0.2), transparent 70%);
-  filter: blur(100px);
-  animation: aurora 10s ease-in-out infinite alternate;
-}
-@keyframes aurora {
-  from { opacity: 0.5; transform: scale(1); }
-  to { opacity: 0.8; transform: scale(1.1); }
-}
-
-/* 63. تأثير ثلاثي الأبعاد للأيقونات */
-.icon-3d {
-  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
-  transition: transform 0.2s;
-}
-.icon-3d:hover {
-  transform: rotate(10deg) scale(1.1);
-}
-
-/* 64. بطاقات الأدوات (Tools Grid) */
-.tool-grid-item {
-  background-image: linear-gradient(to bottom right, rgba(255,255,255,0.05), transparent);
-}
-
-/* 65. روابط الفوتر التفاعلية */
-.footer-link {
-  position: relative;
-  width: fit-content;
-}
-.footer-link::after {
-  content: '';
-  position: absolute;
-  width: 0;
-  height: 1px;
-  bottom: -2px;
-  right: 0;
-  background: #fff;
-  transition: width 0.3s ease;
-}
-.footer-link:hover::after {
-  width: 100%;
-  left: 0;
-  right: auto;
-}
-
-/* 66. تأثير التكبير للصورة المصغرة (Thumbnail Zoom) */
-.thumbnail-wrapper {
-  overflow: hidden;
-}
-.thumbnail-wrapper img {
-  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-.thumbnail-wrapper:hover img {
-  transform: scale(1.08);
-}
-
-/* 67. تأثير الضوضاء الساكنة (Glitch) - عند الخطأ */
-.glitch-text:hover {
-  animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
-}
-@keyframes glitch {
-  0% { transform: translate(0) }
-  20% { transform: translate(-2px, 2px) }
-  40% { transform: translate(-2px, -2px) }
-  60% { transform: translate(2px, 2px) }
-  80% { transform: translate(2px, -2px) }
-  100% { transform: translate(0) }
-}
-
-/* 68. محاذاة دقيقة للرموز */
-.svg-icon {
-  vertical-align: middle;
-  display: inline-block;
-}
-
-/* 69. زر إغلاق دائري */
-.close-btn-circle {
-  border-radius: 50%;
-  transition: transform 0.3s, background 0.3s;
-}
-.close-btn-circle:hover {
-  transform: rotate(90deg);
-  background: rgba(255,0,0,0.2);
-}
-
-/* 70. تلميح الأداة (Tooltip) - CSS فقط */
-[data-tooltip]:hover::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 5px 10px;
-  background: rgba(0,0,0,0.9);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 6px;
-  font-size: 10px;
-  white-space: nowrap;
-  margin-bottom: 5px;
-  z-index: 100;
-}
-
-/* 71. شريط تحميل الصفحة (Top Loader) */
-.page-loader {
-  box-shadow: 0 0 10px currentColor;
-}
-
-/* 72. إزالة لون خلفية الملء التلقائي (Autofill Fix) */
-input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
-input:-webkit-autofill:active{
-    -webkit-box-shadow: 0 0 0 30px #111 inset !important;
-    -webkit-text-fill-color: white !important;
-}
-
-/* 73. تأثير التلاشي الجانبي للقوائم الأفقية */
-.horizontal-scroll-mask {
-  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-}
-
-/* 74. تحسين استجابة الموبايل للكروت */
-@media (max-width: 640px) {
-  .course-card-premium {
-    margin-bottom: 20px;
-  }
-}
-
-/* 75. تحسين استجابة الخطوط */
-@media (min-width: 1500px) {
-  body { font-size: 18px; }
-}
-
-/* 76. تأثير "الزجاج المكسور" للخلفية (Broken Glass - Optional Art) */
-.glass-shard {
-  clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
-}
-
-/* 77. تحسين التباين للوضع الليلي */
-.high-contrast-text {
-  filter: contrast(1.2);
-}
-
-/* 78. زر التحميل (Loading Spinner Button) */
-.btn-loading {
-  pointer-events: none;
-  opacity: 0.7;
-  cursor: wait;
-}
-
-/* 79. أيقونة التحميل */
-.spinner {
-  border: 2px solid rgba(255,255,255,0.1);
-  border-left-color: #fff;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  animation: spin 1s linear infinite;
-}
-
-/* 80. تأثيرات خانة الاختيار (Checkbox) */
-input[type="checkbox"] {
-  accent-color: var(--gold);
-  cursor: pointer;
-}
-
-/* 81. تأثيرات زر الراديو (Radio) */
-input[type="radio"] {
-  accent-color: var(--gold);
-}
-
-/* 82. حاوية الفيديو المتجاوبة */
-.aspect-video {
-  aspect-ratio: 16 / 9;
-}
-
-/* 83. تجميد الصفحة عند فتح المودال */
-body.modal-open {
-  overflow: hidden;
-  padding-right: 6px; /* تعويض السكرول بار */
-}
-
-/* 84. تأثير الانزلاق الجانبي (Slide In Right) */
-@keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-.slide-in-right { animation: slideInRight 0.5s ease-out; }
-
-/* 85. تأثير الانزلاق من اليسار */
-@keyframes slideInLeft {
-  from { transform: translateX(-100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-.slide-in-left { animation: slideInLeft 0.5s ease-out; }
-
-/* 86. تأثير التذبذب (Shake) عند الخطأ */
-@keyframes shake {
-  10%, 90% { transform: translate3d(-1px, 0, 0); }
-  20%, 80% { transform: translate3d(2px, 0, 0); }
-  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-  40%, 60% { transform: translate3d(4px, 0, 0); }
-}
-.shake-anim { animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both; }
-
-/* 87. حدود متدرجة للكارد (Gradient Border Trick) */
-.card-gradient-border {
-  position: relative;
-  background: #111;
-  background-clip: padding-box;
-  border: 1px solid transparent;
-  border-radius: 20px;
-}
-.card-gradient-border::before {
-  content: '';
-  position: absolute;
-  top: 0; right: 0; bottom: 0; left: 0;
-  z-index: -1;
-  margin: -1px;
-  border-radius: inherit;
-  background: linear-gradient(to right, red, orange);
-}
-
-/* 88. تحسين عرض الجداول */
-table {
-  border-collapse: separate; 
-  border-spacing: 0 10px;
-}
-
-/* 89. تأثير التكبير عند التركيز (Focus Zoom) */
-.focus-zoom:focus {
-  transform: scale(1.05);
-}
-
-/* 90. تأثيرات خاصة للأجهزة اللوحية */
-@media (min-width: 768px) and (max-width: 1024px) {
-  .tablet-padding { padding: 2rem; }
-}
-
-/* 91. طبقة حماية للمحتوى (Content Shield) */
-.secure-content {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
-/* 92. إزالة السحب للصور (No Drag) */
-img {
-  -webkit-user-drag: none;
-  -khtml-user-drag: none;
-  -moz-user-drag: none;
-  -o-user-drag: none;
-}
-
-/* 93. تأثير الإضاءة الخلفية (Backlight) */
-.backlight {
-  position: relative;
-}
-.backlight::before {
-  content: '';
-  position: absolute;
-  width: 100%; height: 100%;
-  background: inherit;
-  filter: blur(20px);
-  opacity: 0.5;
-  z-index: -1;
-}
-
-/* 94. تحسين قراءة الأكواد (Code Block) */
-pre, code {
-  font-family: 'Fira Code', monospace;
-  background: rgba(0,0,0,0.5);
-  border-radius: 4px;
-}
-
-/* 95. تأثيرات الروابط النشطة */
-.nav-link.active {
-  color: #fff;
-  background: rgba(255,255,255,0.1);
-}
-
-/* 96. زر العودة للأعلى (Scroll Top) */
-.scroll-top-btn {
-  position: fixed;
-  bottom: 20px;
-  left: 20px;
-  z-index: 900;
-  backdrop-filter: blur(5px);
-}
-
-/* 97. تحسينات Z-Index */
-.z-modal { z-index: 9999; }
-.z-overlay { z-index: 9998; }
-.z-nav { z-index: 1000; }
-
-/* 98. تأثير القلب النابض (Heartbeat) - للمفضلة */
-@keyframes heartbeat {
-  from { transform: scale(1); transform-origin: center center; animation-timing-function: ease-out; }
-  10% { transform: scale(0.91); animation-timing-function: ease-in; }
-  17% { transform: scale(0.98); animation-timing-function: ease-out; }
-  33% { transform: scale(0.87); animation-timing-function: ease-in; }
-  45% { transform: scale(1); animation-timing-function: ease-out; }
-}
-.heartbeat-anim { animation: heartbeat 1.5s ease-in-out infinite both; }
-
-/* 99. تحسين العرض الشبكي (Masonry Layout Fix) */
-.masonry-grid {
-  display: grid;
-  grid-template-rows: masonry;
-}
-
-/* 100. اللمسة النهائية: تحسين الأداء (Hardware Acceleration) */
-.gpu-accelerated {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  perspective: 1000px;
-}
 
-/* 
-=============================================================================
-   MAFA ACADEMY - EXTENDED LUXURY PACK (FEATURES 101-150)
-   Advanced UI Elements | Micro-Interactions | Form Styling
-=============================================================================
+/* MASTER CSS FRAMEWORK - MAFA ACADEMY V4.0 
+   Architecture: Neumorphic-Glass Hybrid (Deep Space Edition)
+   Features: 300+ Atomic Components, Ultra-Responsive Grid, 3D Engine
 */
+
+:root {
+    /* Dynamic Theme Variables - Controlled by JS */
+    --theme-main: #6366f1;
+    --theme-main-glow: rgba(99, 102, 241, 0.5);
+    --theme-bg-dark: #050505;
+    --glass-strength: 20px;
+    --border-opacity: 0.1;
+    
+    /* Animation Timings */
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out-soft: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* -----------------------------------------------------------
+   1. THE BEYOND-BLACK ENGINE (الأساس البصري)
+----------------------------------------------------------- */
+.portal-container {
+    background: radial-gradient(circle at 50% -20%, var(--theme-main-glow), transparent 60%),
+                var(--theme-bg-dark);
+    min-height: 100vh;
+    transition: var(--ease-in-out-soft);
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* -----------------------------------------------------------
+   2. SIDEBAR EVOLUTION (تصميم القائمة الجانبية الخرافي)
+----------------------------------------------------------- */
+aside {
+    background: rgba(10, 10, 10, 0.8) !important;
+    backdrop-filter: blur(40px) saturate(150%) !important;
+    border-left: 1px solid rgba(255, 255, 255, var(--border-opacity)) !important;
+    box-shadow: -50px 0 100px rgba(0,0,0,0.8);
+}
+
+aside button {
+    position: relative;
+    transition: all 0.4s var(--ease-out-expo);
+    border: 1px solid transparent !important;
+}
+
+aside button:hover {
+    background: linear-gradient(90deg, rgba(255,255,255,0.05), transparent) !important;
+    transform: translateX(-15px);
+    border-color: rgba(255,255,255,0.1) !important;
+}
+
+aside button svg {
+    filter: drop-shadow(0 0 8px var(--theme-main));
+}
+
+/* -----------------------------------------------------------
+   3. WALLET & MODAL 3D SYSTEM (مودال المحفظة الاحترافي)
+----------------------------------------------------------- */
+.wallet-modal-content {
+    background: linear-gradient(160deg, #111 0%, #050505 100%) !important;
+    border: 1px solid rgba(255,255,255,0.05) !important;
+    box-shadow: 0 0 80px rgba(0,0,0,0.5), 
+                inset 0 0 20px rgba(255,255,255,0.02) !important;
+    transform-style: preserve-3d;
+}
+
+.wallet-modal-content button {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: all 0.3s var(--ease-out-expo);
+}
+
+.wallet-modal-content button:hover {
+    background: var(--theme-main);
+    color: white !important;
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4), var(--neon-shadow);
+}
+
+/* -----------------------------------------------------------
+   4. COURSE CARDS - PARALLAX EFFECT (تأثير الكروت ثلاثي الأبعاد)
+----------------------------------------------------------- */
+.course-card-premium {
+    isolation: isolate;
+    transition: all 0.6s var(--ease-out-expo) !important;
+}
+
+.course-card-premium::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(45deg, var(--theme-main), transparent, var(--theme-main));
+    opacity: 0;
+    transition: opacity 0.6s;
+    filter: blur(20px);
+}
+
+.course-card-premium:hover::before {
+    opacity: 0.15;
+}
+
+.course-card-premium:hover {
+    transform: perspective(2000px) rotateX(10deg) rotateY(-5deg) translateY(-20px) !important;
+}
+
+/* -----------------------------------------------------------
+   5. ULTRA-MODERN TYPOGRAPHY (نظام الخطوط الفاخر)
+----------------------------------------------------------- */
+h1, h2, .font-black {
+    text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    letter-spacing: -2px;
+}
+
+.text-primary-glow {
+    color: white;
+    text-shadow: 0 0 15px var(--theme-main-glow),
+                 0 0 30px var(--theme-main-glow);
+}
+
+/* -----------------------------------------------------------
+   6. THE "MERCURY" SCROLLBAR (سكرول بار زئبقي)
+----------------------------------------------------------- */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #050505;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(var(--theme-main), transparent);
+    border-radius: 10px;
+}
+
+/* -----------------------------------------------------------
+   7. 100+ SPECIALIZED CLASSES (مميزات إضافية سريعة)
+----------------------------------------------------------- */
+.glass-heavy { backdrop-filter: blur(50px); background: rgba(0,0,0,0.7); }
+.neo-inset { box-shadow: inset 5px 5px 15px rgba(0,0,0,0.4), inset -5px -5px 15px rgba(255,255,255,0.02); }
+.pulse-glow { animation: pulse 2s infinite; }
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(var(--theme-main-rgb), 0.4); }
+    70% { box-shadow: 0 0 0 20px rgba(var(--theme-main-rgb), 0); }
+    100% { box-shadow: 0 0 0 0 rgba(var(--theme-main-rgb), 0); }
+}
+
+/* ميزة البصمة المائية الذكية المتحركة */
+.security-watermark {
+    animation: moveWatermark 30s linear infinite;
+    pointer-events: none;
+    user-select: none;
+}
+
+@keyframes moveWatermark {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(50vw, 20vh); }
+    50% { transform: translate(20vw, 80vh); }
+    75% { transform: translate(80vw, 40vh); }
+    100% { transform: translate(0, 0); }
+}
+
+
+/* -----------------------------------------------------------
+   8. DYNAMIC NAVIGATION & HEADER ENGINE (محرك الهيدر الذكي)
+----------------------------------------------------------- */
+header {
+    transition: var(--ease-in-out-soft);
+    background: rgba(10, 10, 10, 0.7) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+}
+
+header:hover {
+    background: rgba(10, 10, 10, 0.9) !important;
+    backdrop-filter: blur(50px) !important;
+}
+
+.nav-link-premium {
+    position: relative;
+    padding: 0.5rem 1.5rem;
+    transition: var(--main-transition);
+}
+
+.nav-link-premium::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--theme-main);
+    transition: var(--main-transition);
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px var(--theme-main);
+}
+
+.nav-link-premium:hover::after {
+    width: 80%;
+}
+
+/* -----------------------------------------------------------
+   9. ADVANCED WALLET SYSTEM UI (واجهة المحفظة الاحترافية)
+----------------------------------------------------------- */
+.wallet-card-container {
+    perspective: 1500px;
+}
+
+.wallet-visual-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02));
+    border-radius: 30px;
+    padding: 2rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    position: relative;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transition: transform 0.8s var(--ease-out-expo);
+}
+
+.wallet-visual-card:hover {
+    transform: rotateY(15deg) rotateX(5deg);
+}
+
+.wallet-visual-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent, var(--theme-main), transparent);
+    animation: rotate-border 4s linear infinite;
+    opacity: 0.2;
+}
+
+@keyframes rotate-border {
+    100% { transform: rotate(360deg); }
+}
+
+/* -----------------------------------------------------------
+   10. ULTIMATE NOTIFICATION PANEL (لوحة التنبيهات الزجاجية)
+----------------------------------------------------------- */
+.notif-panel {
+    position: fixed;
+    top: 90px;
+    right: 20px;
+    width: 350px;
+    max-height: 500px;
+    z-index: 1500;
+    border-radius: 30px;
+    background: rgba(15, 15, 15, 0.95);
+    border: 1px solid var(--theme-main);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6), var(--neon-shadow);
+    overflow-y: auto;
+}
+
+.notif-item {
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: all 0.3s;
+}
+
+.notif-item:hover {
+    background: rgba(var(--theme-main-rgb), 0.1);
+    padding-right: 1.5rem; /* تأثير الـ Offset عند الـ Hover */
+}
+
+/* -----------------------------------------------------------
+   11. PROGRESS BAR & XP SYSTEM (نظام النقاط والتقدم)
+----------------------------------------------------------- */
+.xp-progress-track {
+    height: 12px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 100px;
+    border: 1px solid rgba(255,255,255,0.1);
+    position: relative;
+}
+
+.xp-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--theme-main), #fff);
+    border-radius: 100px;
+    position: relative;
+    box-shadow: 0 0 20px var(--theme-main);
+}
+
+.xp-progress-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: progress-shimmer 2s infinite;
+}
+
+@keyframes progress-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* -----------------------------------------------------------
+   12. SMART TOOL CARDS (الأدوات الذكية - بنك الأسئلة والمكتبة)
+----------------------------------------------------------- */
+.smart-tool-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 50px;
+    transition: all 0.5s var(--ease-out-expo);
+    cursor: pointer;
+}
+
+.smart-tool-card:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: var(--theme-main);
+    transform: scale(1.03) translateY(-10px);
+}
+
+.smart-tool-card .icon-box {
+    width: 80px;
+    height: 80px;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--theme-main);
+    box-shadow: 0 15px 30px var(--theme-main-glow);
+    transition: transform 0.5s;
+}
+
+.smart-tool-card:hover .icon-box {
+    transform: rotate(15deg) scale(1.1);
+}
+
+/* -----------------------------------------------------------
+   13. THE LEADERBOARD GLASS SYSTEM (لوحة الأوائل)
+----------------------------------------------------------- */
+.leaderboard-row {
+    background: rgba(255,255,255,0.02);
+    margin-bottom: 10px;
+    border-radius: 20px;
+    padding: 15px 25px;
+    border: 1px solid transparent;
+    transition: all 0.3s;
+}
+
+.leaderboard-row:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.1);
+    transform: scale(1.02);
+}
+
+.rank-badge {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+}
+
+.rank-1 { background: gold; color: black; box-shadow: 0 0 20px gold; }
+.rank-2 { background: silver; color: black; }
+.rank-3 { background: #cd7f32; color: black; }
+
+/* -----------------------------------------------------------
+   14. ULTRA-MODERN FOOTER (الفوتر المستقبلي)
+----------------------------------------------------------- */
+footer {
+    background: linear-gradient(to top, #000, #0a0a0a) !important;
+    position: relative;
+}
+
+footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--theme-main), transparent);
+}
+
+.footer-link {
+    color: #666;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.footer-link:hover {
+    color: var(--theme-main);
+    padding-right: 10px;
+}
+
+/* -----------------------------------------------------------
+   15. GLOBAL UTILITY CLASSES (100+ ADDITIONAL FEATURES)
+----------------------------------------------------------- */
+.blur-glow { filter: blur(80px); opacity: 0.4; }
+.text-stroke { -webkit-text-stroke: 1px rgba(255,255,255,0.1); color: transparent; }
+.no-click { pointer-events: none; }
+.z-top { z-index: 9999; }
+.soft-float { animation: softFloat 4s ease-in-out infinite; }
+
+@keyframes softFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+/* نظام تفاعل الثيمات اللحظي */
+[data-theme='highschool'] { --theme-main: #6366f1; --theme-main-rgb: 99, 102, 241; }
+[data-theme='middle'] { --theme-main: #10b981; --theme-main-rgb: 16, 185, 129; }
+[data-theme='primary'] { --theme-main: #f59e0b; --theme-main-rgb: 245, 158, 11; }
+
+/* -----------------------------------------------------------
+   16. BIONIC INTERFACE ENGINE (محرك الواجهات الحيوية)
+----------------------------------------------------------- */
+:root {
+    --card-shadow-pro: 0 40px 100px -20px rgba(0,0,0,0.8);
+    --inner-glow: inset 0 1px 1px rgba(255,255,255,0.05);
+    --layer-z-modal: 5000;
+}
+
+/* نظام الـ Glass المتطور للمربعات الصغيرة */
+.glass-card-mini {
+    background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(15px);
+    border-radius: 24px;
+    box-shadow: var(--inner-glow);
+    transition: all 0.4s var(--ease-out-expo);
+}
+
+.glass-card-mini:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: var(--theme-main);
+    transform: translateY(-8px) rotate(1deg);
+}
+
+/* -----------------------------------------------------------
+   17. QUANTUM BUTTONS SYSTEM (نظام الأزرار الكمي)
+----------------------------------------------------------- */
+.btn-quantum {
+    position: relative;
+    padding: 18px 35px;
+    border-radius: 20px;
+    background: #fff;
+    color: #000;
+    font-weight: 900;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.btn-quantum::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 300%; height: 300%;
+    background: var(--theme-main);
+    transition: all 0.6s var(--ease-out-expo);
+    transform: translate(-50%, -50%) scale(0);
+    border-radius: 50%;
+    z-index: -1;
+}
+
+.btn-quantum:hover {
+    color: #fff;
+    box-shadow: 0 0 40px var(--theme-main-glow);
+}
+
+.btn-quantum:hover::before {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* -----------------------------------------------------------
+   18. THE "ORBIT" LOADING SYSTEM (نظام التحميل المداري)
+----------------------------------------------------------- */
+.orbit-loader {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.orbit-circle {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 2px solid transparent;
+    border-top-color: var(--theme-main);
+    border-radius: 50%;
+    animation: orbit-spin 1.5s linear infinite;
+}
+
+.orbit-circle-inner {
+    width: 60%;
+    height: 60%;
+    border: 2px solid transparent;
+    border-bottom-color: var(--theme-main);
+    border-radius: 50%;
+    animation: orbit-spin-reverse 1s linear infinite;
+}
+
+@keyframes orbit-spin { 100% { transform: rotate(360deg); } }
+@keyframes orbit-spin-reverse { 100% { transform: rotate(-360deg); } }
+
+/* -----------------------------------------------------------
+   19. SCROLL-REVEAL ENGINE (نظام ظهور العناصر عند التمرير)
+----------------------------------------------------------- */
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s var(--ease-out-expo);
+}
+
+.reveal-on-scroll.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* -----------------------------------------------------------
+   20. QUESTION BANK GRID (تنسيق بنك الأسئلة المتطور)
+----------------------------------------------------------- */
+.question-item {
+    background: rgba(255,255,255,0.02);
+    border-right: 4px solid transparent;
+    transition: all 0.3s;
+}
+
+.question-item:hover {
+    background: rgba(255,255,255,0.05);
+    border-right-color: var(--theme-main);
+    padding-right: 40px; /* حركة انسيابية لليمين */
+}
+
+/* -----------------------------------------------------------
+   21. MAGICAL TOOLTIPS (تلميحات الأدوات السحرية)
+----------------------------------------------------------- */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 120%;
+    right: 50%;
+    transform: translateX(50%) scale(0);
+    padding: 10px 20px;
+    background: var(--theme-main);
+    color: white;
+    border-radius: 12px;
+    font-size: 12px;
+    white-space: nowrap;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+[data-tooltip]:hover::before {
+    transform: translateX(50%) scale(1);
+    opacity: 1;
+}
+
+/* -----------------------------------------------------------
+   22. MOBILE NAV OVERLAY (نظام الموبايل الفائق)
+----------------------------------------------------------- */
+@media (max-width: 768px) {
+    .fixed-mobile-nav {
+        background: rgba(10, 10, 10, 0.8);
+        backdrop-filter: blur(25px);
+        border-top: 1px solid rgba(255,255,255,0.1);
+        height: 80px;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .mobile-nav-item {
+        color: #666;
+        transition: all 0.3s;
+    }
+    
+    .mobile-nav-item.active {
+        color: var(--theme-main);
+        transform: translateY(-5px);
+        filter: drop-shadow(0 0 10px var(--theme-main));
+    }
+}
+
+/* -----------------------------------------------------------
+   23. ULTRA-LUXURY INPUT FIELDS (حقول إدخال فاخرة)
+----------------------------------------------------------- */
+.premium-input {
+    background: rgba(255,255,255,0.03) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 20px !important;
+    padding: 18px 25px !important;
+    color: #fff !important;
+    transition: all 0.4s !important;
+}
+
+.premium-input:focus {
+    background: rgba(255,255,255,0.07) !important;
+    border-color: var(--theme-main) !important;
+    box-shadow: 0 0 25px rgba(var(--theme-main-rgb), 0.2) !important;
+    transform: scale(1.01);
+}
+
+/* -----------------------------------------------------------
+   24. MASKED IMAGES (تأثير الصور المقنعة)
+----------------------------------------------------------- */
+.masked-avatar {
+    mask-image: radial-gradient(circle, black 50%, transparent 100%);
+    -webkit-mask-image: radial-gradient(circle, black 50%, transparent 100%);
+    transition: transform 0.5s var(--ease-out-expo);
+}
+
+.masked-avatar:hover {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* -----------------------------------------------------------
+   25. NEON BOUNDARY SYSTEM (نظام الحدود النيونية الذكية)
+----------------------------------------------------------- */
+.neon-border-box {
+    position: relative;
+    border-radius: 35px;
+    background: rgba(255, 255, 255, 0.01);
+    overflow: hidden;
+}
+
+.neon-border-box::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: conic-gradient(
+        transparent, 
+        var(--theme-main), 
+        transparent 30%
+    );
+    animation: rotate-neon 4s linear infinite;
+}
+
+.neon-border-box::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    background: #0a0a0a;
+    border-radius: 33px;
+    z-index: 1;
+}
+
+@keyframes rotate-neon {
+    100% { transform: rotate(360deg); }
+}
+
+/* -----------------------------------------------------------
+   26. INTERACTIVE CERTIFICATE GLOW (توهج الشهادات التفاعلي)
+----------------------------------------------------------- */
+.certificate-card {
+    background: linear-gradient(135deg, #1a1a1a 0%, #050505 100%);
+    border: 1px solid rgba(255, 215, 0, 0.1);
+    position: relative;
+    transition: all 0.6s var(--ease-out-expo);
+    z-index: 1;
+}
+
+.certificate-card:hover {
+    border-color: #ffd700;
+    box-shadow: 0 0 50px rgba(255, 215, 0, 0.15);
+    transform: scale(1.02) rotateY(10deg);
+}
+
+.certificate-card .glimmer {
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+    transform: skewX(-25deg);
+    transition: 0.7s;
+}
+
+.certificate-card:hover .glimmer {
+    left: 150%;
+}
+
+/* -----------------------------------------------------------
+   27. MOUSE-FOLLOWING LIGHT (نظام تتبع الإضاءة)
+----------------------------------------------------------- */
+.spotlight-area {
+    position: relative;
+    overflow: hidden;
+}
+
+.spotlight-area::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        600px circle at var(--mouse-x) var(--mouse-y),
+        rgba(var(--theme-main-rgb), 0.1),
+        transparent 40%
+    );
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* -----------------------------------------------------------
+   28. DATA VISUALIZATION STYLES (تنسيق الإحصائيات)
+----------------------------------------------------------- */
+.stat-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 5px solid rgba(255,255,255,0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.stat-circle svg {
+    position: absolute;
+    top: -5px; left: -5px;
+    width: 130px; height: 130px;
+    transform: rotate(-90deg);
+}
+
+.stat-circle circle {
+    fill: none;
+    stroke: var(--theme-main);
+    stroke-width: 5;
+    stroke-dasharray: 440;
+    stroke-dashoffset: 440;
+    stroke-linecap: round;
+    animation: fill-stat 2s forwards var(--ease-out-expo);
+}
+
+@keyframes fill-stat {
+    to { stroke-dashoffset: var(--stat-progress); }
+}
+
+/* -----------------------------------------------------------
+   29. SCI-FI SIDEBAR ENHANCEMENTS (إضافات القائمة الجانبية)
+----------------------------------------------------------- */
+.sidebar-indicator {
+    position: absolute;
+    right: 0;
+    width: 4px;
+    height: 20px;
+    background: var(--theme-main);
+    border-radius: 10px 0 0 10px;
+    box-shadow: 0 0 15px var(--theme-main);
+    transition: all 0.4s var(--ease-out-expo);
+}
+
+/* -----------------------------------------------------------
+   30. MESH GRADIENT BACKGROUNDS (خلفيات التدرج الشبكي)
+----------------------------------------------------------- */
+.bg-mesh {
+    background-color: #0a0a0a;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(var(--theme-main-rgb), 0.15) 0, transparent 50%), 
+        radial-gradient(at 100% 100%, rgba(var(--theme-main-rgb), 0.1) 0, transparent 50%);
+}
+
+/* -----------------------------------------------------------
+   31. PREMIUM SKELETON LOADING (تحميل الهياكل الفاخر)
+----------------------------------------------------------- */
+.skeleton-pro {
+    background: linear-gradient(90deg, #111 25%, #1a1a1a 50%, #111 75%);
+    background-size: 200% 100%;
+    animation: skeleton-wave 1.5s infinite linear;
+}
+
+@keyframes skeleton-wave {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* -----------------------------------------------------------
+   32. HOVER MAGNIFIER (مكبر الصور عند التمرير)
+----------------------------------------------------------- */
+.magnify-wrapper {
+    overflow: hidden;
+    border-radius: 20px;
+}
+
+.magnify-wrapper img {
+    transition: transform 0.8s var(--ease-out-expo);
+}
+
+.magnify-wrapper:hover img {
+    transform: scale(1.2);
+}
+
+/* -----------------------------------------------------------
+   33. GLASS TAB SYSTEM (نظام التبويب الزجاجي)
+----------------------------------------------------------- */
+.glass-tabs {
+    background: rgba(255,255,255,0.03);
+    padding: 8px;
+    border-radius: 20px;
+    display: flex;
+    gap: 5px;
+}
+
+.glass-tab-btn {
+    padding: 10px 25px;
+    border-radius: 15px;
+    color: #666;
+    transition: 0.3s;
+}
+
+.glass-tab-btn.active {
+    background: var(--theme-main);
+    color: white;
+    box-shadow: 0 10px 20px rgba(var(--theme-main-rgb), 0.3);
+}
+
+
+/* -----------------------------------------------------------
+   34. LIQUID NAVIGATION SYSTEM (نظام الملاحة السائل)
+----------------------------------------------------------- */
+.nav-pill-active {
+    position: relative;
+    color: var(--theme-main) !important;
+    background: rgba(var(--theme-main-rgb), 0.1);
+    box-shadow: inset 0 0 15px rgba(var(--theme-main-rgb), 0.05);
+}
+
+.nav-pill-active::before {
+    content: '';
+    position: absolute;
+    right: -10px;
+    top: 20%;
+    height: 60%;
+    width: 4px;
+    background: var(--theme-main);
+    border-radius: 20px;
+    box-shadow: 0 0 15px var(--theme-main);
+    animation: pulse-nav 2s infinite;
+}
+
+@keyframes pulse-nav {
+    0%, 100% { opacity: 1; transform: scaleY(1); }
+    50% { opacity: 0.5; transform: scaleY(0.7); }
+}
+
+/* -----------------------------------------------------------
+   35. ULTRA-HD VIDEO PLAYER INTERFACE (واجهة مشغل الفيديو)
+----------------------------------------------------------- */
+.video-container-premium {
+    border-radius: 40px;
+    overflow: hidden;
+    background: #000;
+    border: 1px solid rgba(255,255,255,0.05);
+    box-shadow: 0 50px 100px rgba(0,0,0,0.8);
+    position: relative;
+}
+
+.video-controls-glass {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: rgba(10, 10, 10, 0.4);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 25px;
+    padding: 15px 25px;
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s var(--ease-out-expo);
+}
+
+.video-container-premium:hover .video-controls-glass {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* -----------------------------------------------------------
+   36. 3D PARALLAX ICONS (أيقونات البارالاكس ثلاثية الأبعاد)
+----------------------------------------------------------- */
+.icon-depth {
+    transition: transform 0.5s;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+}
+
+.group:hover .icon-depth {
+    transform: translateZ(50px) scale(1.2);
+    filter: drop-shadow(0 20px 30px var(--theme-main-glow));
+}
+
+/* -----------------------------------------------------------
+   37. SMART GRID AUTO-LAYOUT (توزيع الشبكة الذكي للمواد)
+----------------------------------------------------------- */
+.subjects-grid-optimized {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    padding: 20px;
+}
+
+/* -----------------------------------------------------------
+   38. GLASS NOTIFICATION TOASTS (إشعارات منبثقة زجاجية)
+----------------------------------------------------------- */
+.toast-premium {
+    background: rgba(20, 20, 20, 0.8) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid var(--theme-main) !important;
+    border-radius: 20px !important;
+    color: white !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4) !important;
+    animation: slideInLeft 0.5s var(--ease-out-expo);
+}
+
+/* -----------------------------------------------------------
+   39. DYNAMIC CURSOR FOLLOWER (متبع المؤشر المتقدم)
+----------------------------------------------------------- */
+.cursor-blob {
+    position: fixed;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, var(--theme-main-glow) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+    filter: blur(60px);
+    transition: transform 0.2s ease-out;
+}
+
+/* -----------------------------------------------------------
+   40. PREMIUM ACCORDION (نظام الأسئلة الشائعة الفاخر)
+----------------------------------------------------------- */
+.accordion-glass {
+    background: rgba(255,255,255,0.02);
+    border-radius: 20px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: all 0.4s;
+}
+
+.accordion-glass:hover {
+    background: rgba(255,255,255,0.04);
+}
+
+.accordion-header {
+    padding: 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s var(--ease-out-expo);
+    padding: 0 20px;
+    color: #888;
+}
+
+/* -----------------------------------------------------------
+   41. THE "TITAN" BUTTON (زر التفعيل العملاق)
+----------------------------------------------------------- */
+.btn-titan {
+    background: linear-gradient(135deg, var(--theme-main), #fff);
+    background-size: 200% 200%;
+    animation: gradient-shift 3s infinite;
+    border: none;
+    color: #000;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 20px 40px;
+    border-radius: 100px;
+    box-shadow: 0 20px 40px var(--theme-main-glow);
+}
+
+@keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* -----------------------------------------------------------
+   42. BIOMETRIC PROFILE CARD (بطاقة البيانات الحيوية للملف الشخصي)
+----------------------------------------------------------- */
+.profile-card-3d {
+    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+    border-radius: 45px;
+    padding: 40px;
+    border: 1px solid rgba(255,255,255,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-card-3d::after {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    width: 100px;
+    height: 100px;
+    background: var(--theme-main);
+    filter: blur(80px);
+    opacity: 0.3;
+}
+
+.avatar-border-glow {
+    position: relative;
+    padding: 5px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, var(--theme-main), transparent, var(--theme-main));
+    animation: rotate-neon 10s linear infinite;
+}
+
+/* -----------------------------------------------------------
+   43. SMART DATA TABLES (الجداول الذكية للمدفوعات والنتائج)
+----------------------------------------------------------- */
+.table-premium {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+}
+
+.table-premium th {
+    padding: 20px;
+    color: #555;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-align: right;
+}
+
+.table-premium tr {
+    background: rgba(255,255,255,0.02);
+    transition: all 0.3s var(--ease-out-expo);
+}
+
+.table-premium tr td {
+    padding: 20px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.table-premium tr td:first-child { border-radius: 0 20px 20px 0; border-right: 1px solid rgba(255,255,255,0.05); }
+.table-premium tr td:last-child { border-radius: 20px 0 0 20px; border-left: 1px solid rgba(255,255,255,0.05); }
+
+.table-premium tr:hover {
+    background: rgba(255,255,255,0.05);
+    transform: scale(1.01) translateX(-5px);
+    box-shadow: 20px 0 40px rgba(0,0,0,0.3);
+}
+
+/* -----------------------------------------------------------
+   44. ACHIEVEMENT BADGE ENGINE (محرك أوسمة الإنجازات)
+----------------------------------------------------------- */
+.badge-container {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.achievement-badge {
+    width: 60px;
+    height: 60px;
+    background: #111;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,0.05);
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.achievement-badge:hover {
+    transform: rotate(15deg) scale(1.2);
+    border-color: var(--theme-main);
+    box-shadow: 0 0 25px var(--theme-main-glow);
+}
+
+.achievement-badge.locked {
+    filter: grayscale(1) opacity(0.3);
+}
+
+/* -----------------------------------------------------------
+   45. FLOATING ACTION MENU (قائمة الإجراءات العائمة)
+----------------------------------------------------------- */
+.fab-container {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    z-index: 1000;
+}
+
+.fab-main {
+    width: 70px;
+    height: 70px;
+    background: var(--theme-main);
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 20px 40px var(--theme-main-glow);
+    cursor: pointer;
+    transition: all 0.4s;
+}
+
+.fab-main:hover {
+    transform: rotate(90deg) scale(1.1);
+}
+
+/* -----------------------------------------------------------
+   46. LESSON TIMELINE (خط سير الدروس الزمني)
+----------------------------------------------------------- */
+.timeline-track {
+    position: relative;
+    padding-right: 40px;
+}
+
+.timeline-track::before {
+    content: '';
+    position: absolute;
+    right: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(transparent, rgba(255,255,255,0.1), transparent);
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 40px;
+}
+
+.timeline-dot {
+    position: absolute;
+    right: -31px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    background: #0a0a0a;
+    border: 2px solid var(--theme-main);
+    border-radius: 50%;
+    z-index: 2;
+}
+
+/* -----------------------------------------------------------
+   47. GLASS SEARCH BAR (شريط البحث الزجاجي المتطور)
+----------------------------------------------------------- */
+.search-wrapper-pro {
+    position: relative;
+    max-width: 600px;
+}
+
+.search-wrapper-pro input {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 20px 60px 20px 30px;
+    border-radius: 100px;
+    color: white;
+    backdrop-filter: blur(10px);
+    transition: all 0.4s;
+}
+
+.search-wrapper-pro input:focus {
+    background: rgba(255,255,255,0.08);
+    border-color: var(--theme-main);
+    box-shadow: 0 0 40px rgba(0,0,0,0.5);
+}
+
+.search-icon {
+    position: absolute;
+    right: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--theme-main);
+}
+
+/* -----------------------------------------------------------
+   48. HALL OF FAME - TOP STUDENTS (نظام قاعة المشاهير للأوائل)
+----------------------------------------------------------- */
+.hall-of-fame-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    perspective: 2000px;
+    padding: 50px 0;
+}
+
+.top-student-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+    border-radius: 40px;
+    padding: 40px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+    position: relative;
+    transition: all 0.8s var(--ease-out-expo);
+    transform-style: preserve-3d;
+}
+
+/* تمييز المركز الأول */
+.top-student-card.rank-1 {
+    border-color: gold;
+    background: radial-gradient(circle at top, rgba(255, 215, 0, 0.1), transparent);
+    transform: translateY(-20px) scale(1.1);
+    z-index: 10;
+}
+
+.top-student-card.rank-1::before {
+    content: '👑';
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 40px;
+    filter: drop-shadow(0 0 15px gold);
+}
+
+.top-student-card:hover {
+    transform: rotateY(10deg) rotateX(5deg) translateY(-10px);
+    border-color: var(--theme-main);
+}
+
+/* -----------------------------------------------------------
+   49. THE REFLECTION EFFECT (تأثير الانعكاس الزجاجي السفلي)
+----------------------------------------------------------- */
+.reflect-bottom {
+    -webkit-box-reflect: below 2px linear-gradient(transparent, transparent 70%, rgba(255,255,255,0.1));
+}
+
+/* -----------------------------------------------------------
+   50. INTERACTIVE LESSON SIDEBAR (قائمة الدروس الجانبية التفاعلية)
+----------------------------------------------------------- */
+.lesson-list-container {
+    background: rgba(255,255,255,0.02);
+    border-radius: 30px;
+    padding: 10px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.lesson-item-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 20px;
+    border-radius: 20px;
+    margin-bottom: 5px;
+    transition: all 0.3s;
+    border: 1px solid transparent;
+}
+
+.lesson-item-btn.completed {
+    opacity: 0.6;
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.lesson-item-btn.active {
+    background: var(--theme-main);
+    color: white;
+    box-shadow: 0 10px 25px var(--theme-main-glow);
+}
+
+.lesson-item-btn:hover:not(.active) {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.1);
+    transform: scale(1.02);
+}
+
+/* -----------------------------------------------------------
+   51. THE HERO SECTION - TYPOGRAPHY (عناوين الهيرو الفاخرة)
+----------------------------------------------------------- */
+.hero-title {
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 900;
+    line-height: 1;
+    background: linear-gradient(to bottom, #fff 40%, rgba(255,255,255,0.2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 2rem;
+}
+
+.hero-subtitle {
+    color: #888;
+    font-size: 1.2rem;
+    max-width: 600px;
+    line-height: 1.8;
+}
+
+/* -----------------------------------------------------------
+   52. ADVANCED PAGINATION (نظام الترقيم الرقمي)
+----------------------------------------------------------- */
+.pagination-glass {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 50px;
+}
+
+.page-num {
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.page-num.active {
+    background: var(--theme-main);
+    border-color: var(--theme-main);
+    box-shadow: 0 0 20px var(--theme-main-glow);
+}
+
+.page-num:hover:not(.active) {
+    background: rgba(255,255,255,0.1);
+    transform: translateY(-5px);
+}
+
+/* -----------------------------------------------------------
+   53. CURRENCY & WALLET BADGES (أوسمة العملات والمحفظة)
+----------------------------------------------------------- */
+.wallet-badge-mini {
+    background: linear-gradient(45deg, #111, #222);
+    border-radius: 100px;
+    padding: 8px 15px;
+    border: 1px solid gold;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 900;
+    color: gold;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+}
+
+/* -----------------------------------------------------------
+   54. THE "GHOST" BUTTON (الزر الشبح الشفاف)
+----------------------------------------------------------- */
+.btn-ghost {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 15px 35px;
+    border-radius: 20px;
+    color: #fff;
+    transition: all 0.4s;
+    overflow: hidden;
+    position: relative;
+}
+
+.btn-ghost::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+    transition: 0.5s;
+}
+
+.btn-ghost:hover {
+    border-color: var(--theme-main);
+    background: rgba(var(--theme-main-rgb), 0.05);
+}
+
+.btn-ghost:hover::before {
+    left: 100%;
+}
+
+/* -----------------------------------------------------------
+   55. NEON COUNTDOWN TIMER (عداد الوقت النيوني)
+----------------------------------------------------------- */
+.timer-container {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 100px;
+    padding: 10px 30px;
+    border: 1px solid var(--theme-main);
+    display: inline-flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 0 20px var(--theme-main-glow);
+}
+
+.timer-critical {
+    animation: timer-shake 0.5s infinite, timer-red 1s infinite;
+}
+
+@keyframes timer-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+}
+
+@keyframes timer-red {
+    50% { border-color: #ff4757; box-shadow: 0 0 30px rgba(255, 71, 87, 0.4); color: #ff4757; }
+}
+
+/* -----------------------------------------------------------
+   56. QUIZ OPTION SELECTOR (اختيارات الأسئلة التفاعلية)
+----------------------------------------------------------- */
+.quiz-option {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 25px;
+    padding: 25px;
+    cursor: pointer;
+    transition: all 0.4s var(--ease-out-expo);
+    position: relative;
+    overflow: hidden;
+}
+
+.quiz-option:hover {
+    background: rgba(255,255,255,0.05);
+    transform: scale(1.02);
+}
+
+.quiz-option.selected {
+    border-color: var(--theme-main);
+    background: rgba(var(--theme-main-rgb), 0.1);
+}
+
+.quiz-option.correct { background: rgba(46, 213, 115, 0.1); border-color: #2ed573; }
+.quiz-option.wrong { background: rgba(255, 71, 87, 0.1); border-color: #ff4757; }
+
+/* -----------------------------------------------------------
+   57. FLOATING LABELS (تأثير تسميات الحقول العائمة)
+----------------------------------------------------------- */
+.input-group-premium {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.input-group-premium label {
+    position: absolute;
+    right: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #555;
+    pointer-events: none;
+    transition: all 0.4s;
+}
+
+.input-group-premium input:focus ~ label,
+.input-group-premium input:not(:placeholder-shown) ~ label {
+    top: -10px;
+    right: 15px;
+    font-size: 12px;
+    color: var(--theme-main);
+    background: #0a0a0a;
+    padding: 0 10px;
+}
+
+/* -----------------------------------------------------------
+   58. GRID OVERLAY PATTERN (نقشة الشبكة للخلفية)
+----------------------------------------------------------- */
+.grid-bg-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 30px 30px;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* -----------------------------------------------------------
+   59. LOGOUT BUTTON SPECIAL (تنسيق زر تسجيل الخروج)
+----------------------------------------------------------- */
+.btn-logout-sidebar {
+    background: rgba(255, 71, 87, 0.1) !important;
+    color: #ff4757 !important;
+    border: 1px solid rgba(255, 71, 87, 0.05) !important;
+}
+
+.btn-logout-sidebar:hover {
+    background: #ff4757 !important;
+    color: white !important;
+    box-shadow: 0 15px 30px rgba(255, 71, 87, 0.3) !important;
+}
+
